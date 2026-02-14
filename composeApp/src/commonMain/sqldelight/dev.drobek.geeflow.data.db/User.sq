@@ -1,0 +1,17 @@
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  photoUri TEXT
+);
+
+selectAll:
+SELECT * FROM users;
+
+selectById:
+SELECT * FROM users WHERE id = ?;
+
+insertUser:
+INSERT OR REPLACE INTO users(id, name, photoUri) VALUES (?, ?, ?);
+
+deleteById:
+DELETE FROM users WHERE id = ?;

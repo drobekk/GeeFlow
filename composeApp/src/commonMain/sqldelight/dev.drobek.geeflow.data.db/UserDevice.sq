@@ -1,0 +1,18 @@
+CREATE TABLE user_devices (
+  userId INTEGER NOT NULL,
+  deviceSerialNumber TEXT NOT NULL,
+  PRIMARY KEY(userId, deviceSerialNumber),
+  FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(deviceSerialNumber) REFERENCES devices(serialNumber) ON DELETE CASCADE
+);
+
+selectDevicesForUser:
+SELECT d.* FROM devices d
+JOIN user_devices ud ON d.serialNumber = ud.deviceSerialNumber
+WHERE ud.userId = ?;
+
+insertUserDevice:
+INSERT OR IGNORE INTO user_devices(userId, deviceSerialNumber) VALUES (?, ?);
+
+deleteUserDevice:
+DELETE FROM user_devices WHERE userId = ? AND deviceSerialNumber = ?;

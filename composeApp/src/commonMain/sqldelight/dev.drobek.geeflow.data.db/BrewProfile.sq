@@ -1,0 +1,18 @@
+CREATE TABLE brew_profiles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+selectAll:
+SELECT * FROM brew_profiles;
+
+selectByUserId:
+SELECT * FROM brew_profiles WHERE userId = ?;
+
+insertBrewProfile:
+INSERT OR REPLACE INTO brew_profiles(id, userId, name) VALUES (?, ?, ?);
+
+deleteById:
+DELETE FROM brew_profiles WHERE id = ?;
