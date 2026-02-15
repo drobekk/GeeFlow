@@ -1,5 +1,4 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -14,7 +13,9 @@ plugins {
 
 kotlin {
     androidLibrary {
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        compileSdk = libs.versions.android.compileSdk
+            .get()
+            .toInt()
         namespace = "dev.drobek.geeflow"
         androidResources { enable = true }
     }
@@ -37,6 +38,8 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
+            implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.adaptiveLayout)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
@@ -49,6 +52,9 @@ kotlin {
             implementation(libs.koin.compose.viewmodel.navigation)
             implementation(libs.koin.core)
             implementation(libs.koin.annotations)
+            implementation(libs.qrCode.scanner)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.compose.material.icons.extended)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -57,6 +63,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.jvm.driver)
+            implementation(libs.compose.material3.adaptive)
         }
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)

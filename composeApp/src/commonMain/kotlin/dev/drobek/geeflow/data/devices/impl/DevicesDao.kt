@@ -8,21 +8,27 @@ import org.koin.core.annotation.Singleton
 class DevicesDao(databaseProvider: DatabaseProvider) {
     private val dbQuery = databaseProvider.database.deviceQueries
 
-    fun getAllDevices() = dbQuery.selectAll(::mapToDevice).executeAsList()
+    fun getAllDevices() = dbQuery
+        .selectAll(::mapToDevice)
+        .executeAsList()
 
     fun getDeviceBySerialNumber(serialNumber: String) =
-        dbQuery.selectBySerialNumber(serialNumber, ::mapToDevice).executeAsOneOrNull()
+        dbQuery
+            .selectBySerialNumber(serialNumber, ::mapToDevice)
+            .executeAsOneOrNull()
 
     fun insertDevice(device: Device) {
         dbQuery.insertDevice(
             serialNumber = device.serialNumber,
             name = device.name,
+            macAddress = device.macAddress,
             isLastUsed = device.isLastUsed
         )
     }
 
     fun updateLastUsed(serialNumber: String) {
-        dbQuery.updateLastUsed(serialNumber)
+        dbQuery.resetLastUsed()
+        dbQuery.setLastUsed(serialNumber)
     }
 
     fun deleteDevice(serialNumber: String) {
@@ -36,6 +42,12 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
     private fun mapToDevice(
         serialNumber: String,
         name: String,
+        macAddress: String,
         isLastUsed: Boolean
-    ): Device = Device(serialNumber, name, isLastUsed)
+    ): Device = Device(
+        serialNumber = serialNumber,
+        name = name,
+        macAddress = macAddress,
+        isLastUsed = isLastUsed
+    )
 }

@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">GeeFlow</string>
+
+    <!-- Intro screen-->
+    <string name="intro_screen_welcome_message">One drop at a time</string>
+    <string name="intro_screen_set_up">Let’s set up your profile.</string>
+
+    <!-- Add device screen -->
+    <string name="add_device_screen_title">Add device</string>
+    <string name="add_device_screen_description">Scan the QR code on your\nespresso machine to add device</string>
+    <string name="add_device_screen_select_qr">Select QR Code Image</string>
+    <string name="add_device_screen_enter_manually">Enter manually</string>
+    <string name="add_device_screen_scan_qr">Scan QR Code</string>
+    <string name="add_device_screen_no_camera_permission">Camera permission is missing, please grant it in app settings</string>
+    <string name="add_device_screen_qr_parsing_error">Could not parse device data</string>
+
+    <!-- Devices list screen -->
+    <string name="devices_list_screen_title">Devices</string>
+    <string name="devices_list_screen_subtitle">View and manage your devices</string>
+    <string name="devices_list_screen_add_device">Add device</string>
+
+    <!-- COMMON -->
+    <string name="common_user_name">User name</string>
+    <string name="common_device_name">Device name</string>
+    <string name="common_serial_number">Serial number</string>
+    <string name="common_mac_address">Mac Address</string>
+    <string name="common_open_settings">Open Settings</string>
+    <string name="common_go_back">Go back</string>
+    <string name="common_confirm">Confirm</string>
+</resources>

@@ -1,0 +1,64 @@
+package dev.drobek.geeflow.app
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import dev.drobek.geeflow.app.navigation.AppNavigation
+import dev.drobek.geeflow.app.navigation.destinationsSavedStateConfiguration
+import dev.drobek.geeflow.domain.user.usecase.GetUsersUseCase
+import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
+import dev.drobek.geeflow.presentation.feature.device.deviceEntries
+import dev.drobek.geeflow.presentation.feature.intro.IntroDestinations
+import dev.drobek.geeflow.presentation.feature.intro.introEntries
+import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
+
+@Composable
+fun App(closeApp: () -> Unit) {
+    KoinApplication(koinConfiguration()) {
+        GeeFlowTheme {
+            RootNavigation(closeApp)
+        }
+    }
+}
+
+@Composable
+private fun RootNavigation(closeApp: () -> Unit) {
+    val getUsersUseCase = koinInject<GetUsersUseCase>()
+    val users by getUsersUseCase().collectAsStateWithLifecycle()
+    val initialDestination = remember {
+        if (users.isNotEmpty()) {
+            DeviceDestinations.DeviceList
+        } else {
+            IntroDestinations.CreateUser
+        }
+    }
+    val backStack = rememberNavBackStack(destinationsSavedStateConfiguration, initialDestination)
+    val navigator = remember {
+        AppNavigation(
+            finish = { closeApp() },
+            backStack = backStack
+        )
+    }
+
+    NavDisplay(
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
+        ),
+        onBack = { backStack.removeLast() },
+        backStack = backStack,
+        entryProvider = entryProvider {
+            introEntries(navigator)
+            deviceEntries(navigator)
+        }
+    )
+}
+
