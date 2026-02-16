@@ -11,6 +11,10 @@ class AppNavigation(
     val finish: () -> Unit,
     val backStack: NavBackStack<NavKey>
 ) : IntroNavigation, DeviceNavigation {
+
+    override val isAtRoot: Boolean
+        get() = backStack.size == 1
+
     override fun showAddDevice() {
         backStack.add(AddDevice)
     }

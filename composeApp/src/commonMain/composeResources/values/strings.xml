@@ -18,6 +18,8 @@
     <string name="devices_list_screen_title">Devices</string>
     <string name="devices_list_screen_subtitle">View and manage your devices</string>
     <string name="devices_list_screen_add_device">Add device</string>
+    <string name="devices_list_screen_set_as_default">Set as default</string>
+    <string name="devices_list_screen_empty">No devices yet.\nThat explains the lack of god shots.</string>
 
     <!-- COMMON -->
     <string name="common_user_name">User name</string>
@@ -27,4 +29,7 @@
     <string name="common_open_settings">Open Settings</string>
     <string name="common_go_back">Go back</string>
     <string name="common_confirm">Confirm</string>
+    <string name="common_more">More</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_favourite">Favourite</string>
 </resources>

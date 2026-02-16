@@ -8,15 +8,21 @@ import org.koin.core.annotation.Singleton
 class UsersDao(databaseProvider: DatabaseProvider) {
     private val dbQuery = databaseProvider.database.userQueries
 
-    fun getAllUsers() = dbQuery.selectAll(::mapToUser).executeAsList()
+    fun getAllUsers() = dbQuery
+        .selectAll(::mapToUser)
+        .executeAsList()
 
-    fun getUserById(id: Long) = dbQuery.selectById(id, ::mapToUser).executeAsOneOrNull()
+    fun getUserById(id: Long) = dbQuery
+        .selectById(id, ::mapToUser)
+        .executeAsOneOrNull()
 
     fun insertUser(user: User) {
         dbQuery.insertUser(
             id = if (user.id == 0L) null else user.id,
             name = user.name,
-            photoUri = user.photoUri
+            photoUri = user.photoUri,
+            isSelected = user.isSelected,
+            favoriteDeviceSerialNumber = user.favoriteDeviceSerialNumber
         )
     }
 
@@ -24,9 +30,28 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         dbQuery.deleteById(id)
     }
 
+    fun setSelectedUser(id: Long) {
+        dbQuery.transaction {
+            dbQuery.resetSelected()
+            dbQuery.setSelected(id)
+        }
+    }
+
+    fun setFavoriteDevice(userId: Long, deviceSerialNumber: String?) {
+        dbQuery.setFavoriteDevice(deviceSerialNumber, userId)
+    }
+
     private fun mapToUser(
         id: Long,
         name: String,
-        photoUri: String?
-    ): User = User(id, name, photoUri)
+        photoUri: String?,
+        isSelected: Boolean,
+        favoriteDeviceSerialNumber: String?
+    ): User = User(
+        id = id,
+        name = name,
+        photoUri = photoUri,
+        isSelected = isSelected,
+        favoriteDeviceSerialNumber = favoriteDeviceSerialNumber
+    )
 }

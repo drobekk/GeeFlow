@@ -2,14 +2,18 @@ package dev.drobek.geeflow.presentation.feature.intro
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -63,7 +67,9 @@ private fun IntroScreenContent(
     onEvent: (IntroEvent) -> Unit = {}
 ) {
     AdaptiveColumnRow(
-        modifier = Modifier,
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .height(IntrinsicSize.Min),
         first = { Logo() },
         second = { Form(onEvent = onEvent) },
         firstAlignment = Alignment.Center

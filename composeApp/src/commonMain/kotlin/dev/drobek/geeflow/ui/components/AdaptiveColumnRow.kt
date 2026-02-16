@@ -10,11 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,11 +35,10 @@ fun AdaptiveColumnRow(
     secondAlignment: Alignment = Alignment.TopStart
 ) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(secondColor)
-            .verticalScroll(rememberScrollState())
-            .height(IntrinsicSize.Min)
+            .then(modifier)
     ) {
         if (isExpanded) {
             Row(Modifier.fillMaxWidth()) {
@@ -56,14 +52,6 @@ fun AdaptiveColumnRow(
                     first()
                 }
 
-                WaveDivider(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .background(firstColor),
-                    color = secondColor,
-                    orientation = WaveOrientation.Vertical
-                )
-
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -71,6 +59,11 @@ fun AdaptiveColumnRow(
                     contentAlignment = secondAlignment
                 ) {
                     second()
+                    WaveDivider(
+                        modifier = Modifier.fillMaxHeight(),
+                        color = firstColor,
+                        orientation = WaveOrientation.Vertical
+                    )
                 }
             }
         } else {
@@ -82,21 +75,18 @@ fun AdaptiveColumnRow(
             ) {
                 first()
             }
-
-            WaveDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(firstColor),
-                color = secondColor,
-                orientation = WaveOrientation.Horizontal
-            )
-
             Spacer(Modifier.weight(1f))
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize(),
                 contentAlignment = secondAlignment
             ) {
                 second()
+                WaveDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = firstColor,
+                    orientation = WaveOrientation.Horizontal
+                )
             }
             Spacer(Modifier.weight(1f))
         }

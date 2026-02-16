@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
@@ -37,11 +38,12 @@ fun GeeFlowTopBar(
         .padding(16.dp)
         .fillMaxWidth()
 ) {
-    IconButton(onClick = navIconClick) {
+    IconButton(onClick = navIconClick, enabled = navIconPainter != null) {
         navIconPainter?.let {
             Icon(
                 painter = navIconPainter,
-                contentDescription = nacIconContentDescription
+                contentDescription = nacIconContentDescription,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -52,7 +54,7 @@ fun GeeFlowTopBar(
         modifier = Modifier.padding(horizontal = 16.dp)
     )
     subtitle?.let {
-        VerticalSpacer(16.dp)
+        VerticalSpacer(8.dp)
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyLarge,

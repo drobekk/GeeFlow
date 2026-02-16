@@ -5,14 +5,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
@@ -32,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -49,6 +55,7 @@ import dev.drobek.geeflow.ui.components.AdaptiveColumnRow
 import dev.drobek.geeflow.ui.components.GeeFlowIconButton
 import dev.drobek.geeflow.ui.components.GeeFlowOutlinedTextField
 import dev.drobek.geeflow.ui.components.GeeFlowTopBar
+import dev.drobek.geeflow.ui.isExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.isPreview
@@ -109,6 +116,9 @@ private fun AddDeviceContent(
 ) {
     Box {
         AdaptiveColumnRow(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .height(IntrinsicSize.Min),
             first = {
                 GeeFlowTopBar(
                     title = stringResource(Res.string.add_device_screen_title),
@@ -157,30 +167,49 @@ private fun Form(
     showQrCodeScannerButtonVisible: Boolean,
     onEvent: (AddDeviceEvent) -> Unit
 ) {
+    val nameTextFieldState = rememberTextFieldState()
+    val macAddressTextFieldState = rememberTextFieldState()
+    val serialNumberTextFieldState = rememberTextFieldState()
+    val buttonEnabled = nameTextFieldState.text.isNotEmpty() &&
+            macAddressTextFieldState.text.isNotEmpty() &&
+            serialNumberTextFieldState.text.isNotEmpty()
+
+    fun submitForm() {
+        if (buttonEnabled) {
+            onEvent(
+                FormSubmitted(
+                    nameTextFieldState.text.toString(),
+                    macAddressTextFieldState.text.toString(),
+                    serialNumberTextFieldState.text.toString()
+                )
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .imePadding()
             .fillMaxWidth()
-            .padding(48.dp),
+            .padding(if (isExpanded()) 24.dp else 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val nameTextFieldState = rememberTextFieldState()
-        val macAddressTextFieldState = rememberTextFieldState()
-        val serialNumberTextFieldState = rememberTextFieldState()
-
         GeeFlowOutlinedTextField(
             state = nameTextFieldState,
-            label = { Text(stringResource(Res.string.common_device_name)) }
+            label = { Text(stringResource(Res.string.common_device_name)) },
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
         )
         VerticalSpacer(16.dp)
         GeeFlowOutlinedTextField(
             state = serialNumberTextFieldState,
-            label = { Text(stringResource(Res.string.common_serial_number)) }
+            label = { Text(stringResource(Res.string.common_serial_number)) },
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
         )
         VerticalSpacer(16.dp)
         GeeFlowOutlinedTextField(
             state = macAddressTextFieldState,
-            label = { Text(stringResource(Res.string.common_mac_address)) }
+            label = { Text(stringResource(Res.string.common_mac_address)) },
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = if (buttonEnabled) ImeAction.Done else ImeAction.None),
+            onKeyboardAction = { submitForm() }
         )
         if (showQrCodeScannerButtonVisible) {
             VerticalSpacer(16.dp)
@@ -198,19 +227,9 @@ private fun Form(
         VerticalSpacer(1f)
         GeeFlowIconButton(
             painter = rememberVectorPainter(Icons.Filled.Check),
-            enabled = nameTextFieldState.text.isNotEmpty() &&
-                    macAddressTextFieldState.text.isNotEmpty() &&
-                    serialNumberTextFieldState.text.isNotEmpty(),
+            enabled = buttonEnabled,
             contentDescription = stringResource(Res.string.common_confirm),
-            onClick = {
-                onEvent(
-                    FormSubmitted(
-                        nameTextFieldState.text.toString(),
-                        macAddressTextFieldState.text.toString(),
-                        serialNumberTextFieldState.text.toString()
-                    )
-                )
-            }
+            onClick = { submitForm() }
         )
         VerticalSpacer(24.dp)
     }
@@ -229,11 +248,12 @@ private fun Scanner(
     ) {
         val shape = RoundedCornerShape(32.dp)
         val modifier = Modifier
+            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, shape)
             .clip(shape)
-            .background(Color.Black)
+            .padding(2.dp)
+            .background(Color.Black, shape)
             .fillMaxSize()
             .weight(1f)
-            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, shape)
 
         if (isPreview) {
             Box(modifier = modifier)

@@ -14,7 +14,7 @@ internal class IntroViewModel(
     }
 
     private fun addUser(name: String) {
-        addUserUseCase(name = name)
+        addUserUseCase(name = name, isSelected = true)
         emitEvent(Navigation.AddDevice)
     }
 }

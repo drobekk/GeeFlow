@@ -8,11 +8,12 @@ import org.koin.core.annotation.Factory
 class AddUserUseCase(
     private val userRepository: UserRepository
 ) {
-    operator fun invoke(name: String, photoUri: String? = null) {
+    operator fun invoke(name: String, photoUri: String? = null, isSelected: Boolean = false) {
         userRepository.addUser(
             User(
                 name = name,
-                photoUri = photoUri
+                photoUri = photoUri,
+                isSelected = isSelected
             )
         )
     }
