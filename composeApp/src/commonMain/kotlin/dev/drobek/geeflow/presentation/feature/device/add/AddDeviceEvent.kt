@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.adddevice
+package dev.drobek.geeflow.presentation.feature.device.add
 
 internal sealed interface AddDeviceEvent {
     data object BackClicked: AddDeviceEvent

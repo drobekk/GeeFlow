@@ -1,14 +1,14 @@
-package dev.drobek.geeflow.presentation.feature.device.adddevice
+package dev.drobek.geeflow.presentation.feature.device.add
 
 import dev.drobek.geeflow.domain.device.usecase.AddDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.ParseDeviceQrCodeUseCase
 import dev.drobek.geeflow.platform.Platform
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.BackClicked
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.FormSubmitted
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.QrCodeScanned
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.ShowFormClicked
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.ShowQrCodeScannerClicked
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceViewModelEvent.ShowSnackbar
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.BackClicked
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.FormSubmitted
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.QrCodeScanned
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.ShowFormClicked
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.ShowQrCodeScannerClicked
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.add_device_screen_qr_parsing_error

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -126,6 +127,7 @@ private fun Form(
         VerticalSpacer(16.dp)
         GeeFlowOutlinedTextField(
             state = userNameTextFieldState,
+            lineLimits = TextFieldLineLimits.SingleLine,
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             onKeyboardAction = {
                 if (userNameTextFieldState.text.isNotEmpty()) {

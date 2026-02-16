@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.adddevice
+package dev.drobek.geeflow.presentation.feature.device.add
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -43,12 +44,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.presentation.feature.device.DeviceNavigation
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.BackClicked
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.FormSubmitted
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.QrCodeScanned
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.ShowFormClicked
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceEvent.ShowQrCodeScannerClicked
-import dev.drobek.geeflow.presentation.feature.device.adddevice.AddDeviceViewModelEvent.ShowSnackbar
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.BackClicked
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.FormSubmitted
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.QrCodeScanned
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.ShowFormClicked
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.ShowQrCodeScannerClicked
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.VerticalSpacer
 import dev.drobek.geeflow.ui.components.AdaptiveColumnRow
@@ -195,18 +196,21 @@ private fun Form(
     ) {
         GeeFlowOutlinedTextField(
             state = nameTextFieldState,
+            lineLimits = TextFieldLineLimits.SingleLine,
             label = { Text(stringResource(Res.string.common_device_name)) },
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
         )
         VerticalSpacer(16.dp)
         GeeFlowOutlinedTextField(
             state = serialNumberTextFieldState,
+            lineLimits = TextFieldLineLimits.SingleLine,
             label = { Text(stringResource(Res.string.common_serial_number)) },
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
         )
         VerticalSpacer(16.dp)
         GeeFlowOutlinedTextField(
             state = macAddressTextFieldState,
+            lineLimits = TextFieldLineLimits.SingleLine,
             label = { Text(stringResource(Res.string.common_mac_address)) },
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = if (buttonEnabled) ImeAction.Done else ImeAction.None),
             onKeyboardAction = { submitForm() }
