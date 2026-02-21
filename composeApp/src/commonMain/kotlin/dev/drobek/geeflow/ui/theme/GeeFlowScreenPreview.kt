@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
     heightDp = 480,
     fontScale = 1f
 )
-annotation class GeeFlowPreview
+annotation class GeeFlowScreenPreview
 
 val isPreview: Boolean
     @Composable

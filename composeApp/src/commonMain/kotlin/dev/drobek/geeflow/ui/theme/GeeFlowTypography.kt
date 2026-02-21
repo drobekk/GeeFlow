@@ -33,13 +33,7 @@ internal fun geeFlowTypography(): Typography {
             headlineSmall = headlineSmall.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
             titleLarge = titleLarge.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
             titleMedium = titleMedium.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
-            titleSmall = titleSmall.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
-            labelLarge = labelLarge.copy(fontFamily = sansSerifFont, fontWeight = FontWeight.Normal),
-            labelMedium = labelMedium.copy(fontFamily = sansSerifFont, fontWeight = FontWeight.Normal),
-            labelSmall = labelSmall.copy(fontFamily = sansSerifFont, fontWeight = FontWeight.Normal),
-            bodyLarge = bodyLarge.copy(fontFamily = sansSerifFont, fontWeight = FontWeight.Normal),
-            bodyMedium = bodyMedium.copy(fontFamily = sansSerifFont, fontWeight = FontWeight.Normal),
-            bodySmall = bodySmall.copy(fontFamily = sansSerifFont, fontWeight = FontWeight.Normal),
+            titleSmall = titleSmall.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold)
         )
     }
 }

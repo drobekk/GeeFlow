@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.isExpanded
-import dev.drobek.geeflow.ui.theme.GeeFlowPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 
 @Composable
@@ -94,7 +94,7 @@ fun AdaptiveColumnRow(
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun AdaptiveColumnRowPreview() = GeeFlowTheme {
     AdaptiveColumnRow(
         isExpanded = isExpanded(),

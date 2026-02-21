@@ -56,17 +56,17 @@ import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.AdaptiveColumnRow
 import dev.drobek.geeflow.ui.components.GeeFlowTopBar
 import dev.drobek.geeflow.ui.isExpanded
-import dev.drobek.geeflow.ui.theme.GeeFlowPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_favourite
 import geeflow.composeapp.generated.resources.common_more
 import geeflow.composeapp.generated.resources.common_remove
-import geeflow.composeapp.generated.resources.devices_list_screen_add_device
-import geeflow.composeapp.generated.resources.devices_list_screen_empty
-import geeflow.composeapp.generated.resources.devices_list_screen_set_as_default
-import geeflow.composeapp.generated.resources.devices_list_screen_subtitle
-import geeflow.composeapp.generated.resources.devices_list_screen_title
+import geeflow.composeapp.generated.resources.device_list_screen_add_device
+import geeflow.composeapp.generated.resources.device_list_screen_empty
+import geeflow.composeapp.generated.resources.device_list_screen_set_as_default
+import geeflow.composeapp.generated.resources.device_list_screen_subtitle
+import geeflow.composeapp.generated.resources.device_list_screen_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -85,7 +85,10 @@ fun DeviceListScreen(navigation: DeviceNavigation) {
         when (it) {
             is Navigation.AddDevice -> navigation.showAddDevice()
             is Navigation.Back -> navigation.back()
-            is Navigation.DeviceDetails -> navigation.showDeviceDetails(it.id)
+            is Navigation.DeviceDetails -> {
+                navigation.clearBackStack()
+                navigation.showDeviceDashboard(it.id)
+            }
         }
     }
 }
@@ -100,8 +103,8 @@ private fun DevicesListContent(
         modifier = Modifier,
         first = {
             GeeFlowTopBar(
-                title = stringResource(Res.string.devices_list_screen_title),
-                subtitle = stringResource(Res.string.devices_list_screen_subtitle),
+                title = stringResource(Res.string.device_list_screen_title),
+                subtitle = stringResource(Res.string.device_list_screen_subtitle),
                 navIconPainter = if (showBackButton) rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack) else null,
                 navIconClick = { onEvent(BackClicked) }
             )
@@ -211,7 +214,7 @@ private fun DeviceItemMenu(device: DeviceListViewState.Device, onEvent: (DeviceL
             shape = RoundedCornerShape(16.dp)
         ) {
             DropdownMenuItem(
-                text = { Text(text = stringResource(Res.string.devices_list_screen_set_as_default)) },
+                text = { Text(text = stringResource(Res.string.device_list_screen_set_as_default)) },
                 leadingIcon = {
                     Icon(
                         painter = rememberVectorPainter(image = Icons.Filled.Star),
@@ -242,11 +245,10 @@ private fun AddButton(
 ) = FloatingActionButton(
     modifier = modifier,
     onClick = { onEvent(DeviceListEvent.AddDeviceClicked) },
-    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
     content = {
         Icon(
             rememberVectorPainter(image = Icons.Filled.Add),
-            contentDescription = stringResource(Res.string.devices_list_screen_add_device)
+            contentDescription = stringResource(Res.string.device_list_screen_add_device)
         )
     }
 )
@@ -256,7 +258,7 @@ private fun ListEmptyItem(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = stringResource(Res.string.devices_list_screen_empty),
+        text = stringResource(Res.string.device_list_screen_empty),
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.labelLarge,
@@ -265,7 +267,7 @@ private fun ListEmptyItem(
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
     DevicesListContent(
         DeviceListViewState(
@@ -286,7 +288,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun PreviewDark() = GeeFlowTheme(true) {
     DevicesListContent(DeviceListViewState())
 }

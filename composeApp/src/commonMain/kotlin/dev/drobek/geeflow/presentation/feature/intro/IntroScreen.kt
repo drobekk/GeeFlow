@@ -34,7 +34,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowIconButton
 import dev.drobek.geeflow.ui.components.GeeFlowOutlinedTextField
 import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
-import dev.drobek.geeflow.ui.theme.GeeFlowPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.app_name
@@ -148,13 +148,13 @@ private fun Form(
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
     IntroScreenContent()
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun PreviewDark() = GeeFlowTheme(true) {
     IntroScreenContent()
 }

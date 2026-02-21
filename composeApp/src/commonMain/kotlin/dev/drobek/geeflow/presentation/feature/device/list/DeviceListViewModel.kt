@@ -51,7 +51,7 @@ internal class DeviceListViewModel(
     fun handleEvent(event: DeviceListEvent) = when (event) {
         is AddDeviceClicked -> emitEvent(Navigation.AddDevice)
         is BackClicked -> emitEvent(Navigation.Back)
-        is DeviceClicked -> Unit // TODO emitEvent(Navigation.Dashboard(event.device))
+        is DeviceClicked -> emitEvent(Navigation.DeviceDetails(event.device.id))
         is DeviceRemoveClicked -> deleteDeviceUseCase(event.device.id)
         is DeviceSetAsDefaultClicked -> {
             viewState.value.user?.let { user ->

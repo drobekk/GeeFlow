@@ -10,7 +10,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dev.drobek.geeflow.app.navigation.AppNavigation
+import dev.drobek.geeflow.app.navigation.GetInitialDestinationUseCase
 import dev.drobek.geeflow.app.navigation.destinationsSavedStateConfiguration
+import dev.drobek.geeflow.domain.device.usecase.GetDevicesUseCase
 import dev.drobek.geeflow.domain.user.usecase.GetUsersUseCase
 import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
 import dev.drobek.geeflow.presentation.feature.device.deviceEntries
@@ -31,15 +33,8 @@ fun App(closeApp: () -> Unit) {
 
 @Composable
 private fun RootNavigation(closeApp: () -> Unit) {
-    val getUsersUseCase = koinInject<GetUsersUseCase>()
-    val users by getUsersUseCase().collectAsStateWithLifecycle()
-    val initialDestination = remember {
-        if (users.isNotEmpty()) {
-            DeviceDestinations.DeviceList
-        } else {
-            IntroDestinations.CreateUser
-        }
-    }
+    val getInitialDestinationUseCase = koinInject<GetInitialDestinationUseCase>()
+    val initialDestination = remember { getInitialDestinationUseCase() }
     val backStack = rememberNavBackStack(destinationsSavedStateConfiguration, initialDestination)
     val navigator = remember {
         AppNavigation(

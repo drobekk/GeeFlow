@@ -57,7 +57,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowIconButton
 import dev.drobek.geeflow.ui.components.GeeFlowOutlinedTextField
 import dev.drobek.geeflow.ui.components.GeeFlowTopBar
 import dev.drobek.geeflow.ui.isExpanded
-import dev.drobek.geeflow.ui.theme.GeeFlowPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.isPreview
 import geeflow.composeapp.generated.resources.Res
@@ -305,13 +305,13 @@ private fun Scanner(
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
     AddDeviceContent(viewState = AddDeviceViewState(isFormVisible = true))
 }
 
 @Composable
-@GeeFlowPreview
+@GeeFlowScreenPreview
 private fun PreviewDark() = GeeFlowTheme(true) {
     AddDeviceContent(viewState = AddDeviceViewState())
 }
