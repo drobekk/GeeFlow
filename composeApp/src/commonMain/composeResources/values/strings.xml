@@ -29,6 +29,7 @@
     <string name="device_dashboard_disconnected">Disconnected</string>
     <string name="device_dashboard_connecting">Connecting</string>
     <string name="device_dashboard_add_profile">Add profile</string>
+    <string name="device_dashboard_no_bt_permission">Bluetooth permission is missing, please grant it in app settings</string>
 
     <!-- COMMON -->
     <string name="common_user_name">User name</string>

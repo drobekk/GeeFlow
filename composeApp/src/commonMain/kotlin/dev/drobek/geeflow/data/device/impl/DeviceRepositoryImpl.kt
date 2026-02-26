@@ -1,6 +1,6 @@
-package dev.drobek.geeflow.data.devices.impl
+package dev.drobek.geeflow.data.device.impl
 
-import dev.drobek.geeflow.data.devices.api.DeviceRepository
+import dev.drobek.geeflow.data.device.api.DeviceRepository
 import dev.drobek.geeflow.domain.device.model.Device
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +22,10 @@ class DeviceRepositoryImpl(
     override fun addDevice(device: Device) {
         devicesDao.insertDevice(device)
         refresh()
+    }
+
+    override fun getDeviceBySerialNumber(serialNumber: String): Device? {
+        return devicesDao.getDeviceBySerialNumber(serialNumber)
     }
 
     override fun removeDeviceBySerialNumber(serialNumber: String) {

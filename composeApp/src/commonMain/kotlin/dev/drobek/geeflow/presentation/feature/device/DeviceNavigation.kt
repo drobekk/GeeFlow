@@ -1,5 +1,6 @@
 package dev.drobek.geeflow.presentation.feature.device
 
+import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.navigation.Navigation
@@ -10,6 +11,10 @@ import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewModel
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListScreen
+import dev.drobek.geeflow.platform.permissions.PermissionsController
+import dev.drobek.geeflow.platform.permissions.BindEffect
+import dev.drobek.geeflow.platform.permissions.PermissionsControllerFactory
+import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFactory
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import org.koin.compose.viewmodel.koinViewModel
@@ -46,10 +51,13 @@ fun EntryProviderScope<NavKey>.deviceEntries(devicesNavigator: DeviceNavigation)
         DeviceListScreen(devicesNavigator)
     }
     entry<DeviceDashboard> {
-        val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it) }
+        val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
+        val controller: PermissionsController = remember(factory) { factory.createPermissionsController() }
+        val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, controller) }
         DeviceDashboardScreen(
             viewModel,
             devicesNavigator
         )
+        BindEffect(controller)
     }
 }

@@ -1,30 +1,99 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
+import dev.drobek.geeflow.data.device.api.DeviceController
+import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.model.MachineState.ConnectionStatus
+import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
+import dev.drobek.geeflow.platform.permissions.DeniedException
+import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
+import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
+import dev.drobek.geeflow.platform.permissions.PermissionsController
 import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.CleaningClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.DeviceClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.DialogDismissed
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.OpenSystemSettingsClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.PermissionDialogResumed
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Connected
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Connecting
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Disconnected
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Dialog.BluetoothPermissionMissing
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class DeviceDashboardViewModel(
-    deviceDashboard: DeviceDestinations.DeviceDashboard
+    args: DeviceDestinations.DeviceDashboard,
+    getDevice: GetDeviceUseCase,
+    private val deviceController: DeviceController,
+    private val permissionsController: PermissionsController
 ) : BaseViewModel<DeviceDashboardViewState, DeviceLitViewModelEvent>(DeviceDashboardViewState()) {
 
+    private var macAddress: String? = null
+
     init {
-        modify { copy(device = device.copy(name = deviceDashboard.id)) }
+        val machine = getDevice(args.id)
+        macAddress = machine?.macAddress
+        modify { copy(device = device.copy(id = args.id, name = machine?.name ?: args.id)) }
+        launch {
+            deviceController.machineState.collect { state -> updateMachineStateUi(state) }
+        }
     }
 
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
-        is ConnectionButtonClicked -> Unit
+        is ConnectionButtonClicked -> toggleConnection()
         is DeviceClicked -> emitEvent(Navigation.DeviceList)
         is SettingsClicked -> Unit
         is UserClicked -> Unit
         is ConnectedDevicesClicked -> Unit
         is CleaningClicked -> Unit
+        is DialogDismissed -> modify { copy(dialog = null) }
+        is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
+        is BrewClicked -> deviceController.triggerManualBrew()
+        is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
+    }
+
+    private fun updateMachineStateUi(state: MachineState) = modify {
+        copy(
+            device = device.copy(
+                brewBoilerTemp = state.brewBoilerTemp.toString(),
+                steamBoilerTemp = state.steamBoilerTemp.toString(),
+                pressure = state.pressure.toString(),
+                connectionStatus = when (state.connectionStatus) {
+                    ConnectionStatus.Disconnected -> Disconnected
+                    ConnectionStatus.Connecting -> Connecting
+                    ConnectionStatus.Connected -> Connected
+                }
+            )
+        )
+    }
+
+    private fun toggleConnection() {
+        if (viewState.value.device.connectionStatus == Connected) {
+            deviceController.disconnect()
+        } else {
+            withBluetoothPermissions {
+                macAddress?.let { deviceController.connect(it) }
+            }
+        }
+    }
+
+    private fun withBluetoothPermissions(block: suspend () -> Unit) = launch {
+        try {
+            permissionsController.providePermission(PermissionBluetoothScan)
+            permissionsController.providePermission(PermissionBluetoothConnect)
+            block()
+        } catch (_: DeniedException) {
+            showBluetoothPermissionMissingDialog()
+        }
+    }
+
+    private fun showBluetoothPermissionMissingDialog() {
+        modify { copy(dialog = BluetoothPermissionMissing) }
     }
 }

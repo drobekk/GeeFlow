@@ -55,6 +55,8 @@ kotlin {
             implementation(libs.qrCode.scanner)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.compose.material.icons.extended)
+            implementation(libs.blue.falcon)
+            implementation(libs.kermit)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -68,6 +70,14 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.koin.android)
+            api(libs.moko.permissions)
+            api(libs.moko.permissions.bluetooth)
+            api(libs.moko.permissions.compose)
+        }
+        iosMain.dependencies {
+            api(libs.moko.permissions)
+            api(libs.moko.permissions.bluetooth)
+            api(libs.moko.permissions.compose)
         }
         nativeMain.dependencies {
             implementation(libs.sqldelight.native.driver)

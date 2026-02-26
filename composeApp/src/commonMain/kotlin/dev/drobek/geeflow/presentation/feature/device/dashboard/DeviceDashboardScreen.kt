@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -95,6 +96,13 @@ internal fun DeviceDashboardScreen(
             Navigation.DeviceList -> navigation.showDevicesList()
         }
     }
+
+    viewState.dialog?.let {
+        DeviceDashboardDialog(
+            model = it,
+            onEvent = viewModel::handleEvent
+        )
+    }
 }
 
 @Composable
@@ -115,10 +123,18 @@ private fun DeviceDashboardContent(
             )
         },
         floatingActionButton = {
-            FloatingButton(onClick = { onEvent(DeviceClicked) })
+            FloatingButton(onClick = { onEvent(DeviceDashboardEvent.BrewClicked) })
         }
     ) {
+        Column(
+            modifier = Modifier
+                .padding(it)
+                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(12.dp))
+        ) {
 
+        }
     }
 }
 

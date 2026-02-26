@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.data.devices.impl
+package dev.drobek.geeflow.data.device.impl
 
 import dev.drobek.geeflow.data.db.DatabaseProvider
 import dev.drobek.geeflow.domain.device.model.Device

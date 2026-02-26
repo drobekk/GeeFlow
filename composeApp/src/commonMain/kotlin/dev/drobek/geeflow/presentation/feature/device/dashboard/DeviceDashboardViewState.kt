@@ -3,7 +3,8 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard
 data class DeviceDashboardViewState(
     val user: User = User(),
     val device: Device = Device(),
-    val brewProfiles: List<Profile> = emptyList()
+    val brewProfiles: List<Profile> = emptyList(),
+    val dialog: Dialog? = null
 ) {
     data class User(
         val id: String = "",
@@ -28,4 +29,8 @@ data class DeviceDashboardViewState(
         val description: String,
         val brewByWeight: Boolean
     )
+
+    sealed interface Dialog {
+        object BluetoothPermissionMissing : Dialog
+    }
 }

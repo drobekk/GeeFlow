@@ -1,19 +1,23 @@
 package dev.drobek.geeflow.device
 
-import dev.drobek.geeflow.data.devices.api.DeviceRepository
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import dev.drobek.geeflow.data.device.api.DeviceRepository
 import dev.drobek.geeflow.domain.device.model.Device
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class InMemoryDeviceRepository : DeviceRepository {
     private val _devices = MutableStateFlow<List<Device>>(emptyList())
     override val devices: StateFlow<List<Device>> = _devices.asStateFlow()
 
     override fun addDevice(device: Device) {
-        _devices.value = _devices.value + device
+        _devices.value += device
+    }
+
+    override fun getDeviceBySerialNumber(serialNumber: String): Device? {
+        return _devices.value.find { it.serialNumber == serialNumber }
     }
 
     override fun removeDeviceBySerialNumber(serialNumber: String) {
