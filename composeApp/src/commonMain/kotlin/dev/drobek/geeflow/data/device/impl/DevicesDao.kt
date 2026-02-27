@@ -12,27 +12,26 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
         .selectAll(::mapToDevice)
         .executeAsList()
 
-    fun getDeviceBySerialNumber(serialNumber: String) =
+    fun getDeviceByMacAddress(macAddress: String) =
         dbQuery
-            .selectBySerialNumber(serialNumber, ::mapToDevice)
+            .selectByMacAddress(macAddress, ::mapToDevice)
             .executeAsOneOrNull()
 
     fun insertDevice(device: Device) {
         dbQuery.insertDevice(
-            serialNumber = device.serialNumber,
-            name = device.name,
             macAddress = device.macAddress,
+            name = device.name,
             isLastUsed = device.isLastUsed
         )
     }
 
-    fun updateLastUsed(serialNumber: String) {
+    fun updateLastUsed(macAddress: String) {
         dbQuery.resetLastUsed()
-        dbQuery.setLastUsed(serialNumber)
+        dbQuery.setLastUsed(macAddress)
     }
 
-    fun deleteDevice(serialNumber: String) {
-        dbQuery.deleteBySerialNumber(serialNumber)
+    fun deleteDevice(macAddress: String) {
+        dbQuery.deleteByMacAddress(macAddress)
     }
 
     fun clearAll() {
@@ -40,14 +39,12 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
     }
 
     private fun mapToDevice(
-        serialNumber: String,
-        name: String,
         macAddress: String,
+        name: String,
         isLastUsed: Boolean
     ): Device = Device(
-        serialNumber = serialNumber,
-        name = name,
         macAddress = macAddress,
+        name = name,
         isLastUsed = isLastUsed
     )
 }

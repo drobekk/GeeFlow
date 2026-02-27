@@ -11,5 +11,5 @@ interface UserRepository {
     fun getUserById(id: Long): User?
     fun removeUser(id: Long)
     fun setSelectedUser(id: Long)
-    fun setFavoriteDevice(userId: Long, deviceSerialNumber: String?)
+    fun setFavoriteDevice(userId: Long, deviceMacAddress: String?)
 }

@@ -9,7 +9,7 @@ import org.koin.core.annotation.Factory
 @Serializable
 private data class QrDeviceData(
     @SerialName("deviceid")
-    val deviceId: String,
+    val deviceId: String? = null,
     @SerialName("blemac")
     val macAddress: String,
     val name: String,
@@ -30,9 +30,8 @@ class ParseDeviceQrCodeUseCase {
             val qrData = json.decodeFromString<QrDeviceData>(decodedJson)
 
             Device(
-                serialNumber = qrData.deviceId,
-                name = qrData.name,
-                macAddress = qrData.macAddress
+                macAddress = qrData.macAddress,
+                name = qrData.name
             )
         } catch (e: Exception) {
             null

@@ -15,6 +15,7 @@ import dev.drobek.geeflow.platform.permissions.PermissionsController
 import dev.drobek.geeflow.platform.permissions.BindEffect
 import dev.drobek.geeflow.platform.permissions.PermissionsControllerFactory
 import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFactory
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import org.koin.compose.viewmodel.koinViewModel
@@ -45,7 +46,11 @@ fun PolymorphicModuleBuilder<NavKey>.registerDeviceSerializers() {
 
 fun EntryProviderScope<NavKey>.deviceEntries(devicesNavigator: DeviceNavigation) {
     entry<AddDevice> {
-        AddDeviceScreen(devicesNavigator)
+        val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
+        val controller: PermissionsController = remember(factory) { factory.createPermissionsController() }
+        val viewModel = koinViewModel<AddDeviceViewModel> { parametersOf(controller) }
+        AddDeviceScreen(viewModel, devicesNavigator)
+        BindEffect(controller)
     }
     entry<DeviceList> {
         DeviceListScreen(devicesNavigator)

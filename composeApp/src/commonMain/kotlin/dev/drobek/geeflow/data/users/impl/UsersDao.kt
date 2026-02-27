@@ -22,7 +22,7 @@ class UsersDao(databaseProvider: DatabaseProvider) {
             name = user.name,
             photoUri = user.photoUri,
             isSelected = user.isSelected,
-            favoriteDeviceSerialNumber = user.favoriteDeviceSerialNumber
+            favoriteDeviceMacAddress = user.favoriteDeviceMacAddress
         )
     }
 
@@ -37,8 +37,8 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         }
     }
 
-    fun setFavoriteDevice(userId: Long, deviceSerialNumber: String?) {
-        dbQuery.setFavoriteDevice(deviceSerialNumber, userId)
+    fun setFavoriteDevice(userId: Long, deviceMacAddress: String?) {
+        dbQuery.setFavoriteDevice(deviceMacAddress, userId)
     }
 
     private fun mapToUser(
@@ -46,12 +46,12 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         name: String,
         photoUri: String?,
         isSelected: Boolean,
-        favoriteDeviceSerialNumber: String?
+        favoriteDeviceMacAddress: String?
     ): User = User(
         id = id,
         name = name,
         photoUri = photoUri,
         isSelected = isSelected,
-        favoriteDeviceSerialNumber = favoriteDeviceSerialNumber
+        favoriteDeviceMacAddress = favoriteDeviceMacAddress
     )
 }

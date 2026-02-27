@@ -7,12 +7,13 @@
 
     <!-- Add device screen -->
     <string name="add_device_screen_title">Add device</string>
-    <string name="add_device_screen_description">Scan the QR code on your\nespresso machine to add device</string>
+    <string name="add_device_screen_description">Connect your espresso machine\nto start brewing</string>
     <string name="add_device_screen_select_qr">Select QR Code Image</string>
-    <string name="add_device_screen_enter_manually">Enter manually</string>
+    <string name="add_device_screen_show_nearby">Show nearby devices</string>
     <string name="add_device_screen_scan_qr">Scan QR Code</string>
     <string name="add_device_screen_no_camera_permission">Camera permission is missing, please grant it in app settings</string>
     <string name="add_device_screen_qr_parsing_error">Could not parse device data</string>
+    <string name="add_device_screen_empty">No devices found.\nTime to wake up your espresso machine.</string>
 
     <!-- Devices list screen -->
     <string name="device_list_screen_title">Devices</string>

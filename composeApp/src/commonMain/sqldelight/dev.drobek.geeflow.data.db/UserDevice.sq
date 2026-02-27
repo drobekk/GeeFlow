@@ -1,18 +1,18 @@
 CREATE TABLE user_devices (
   userId INTEGER NOT NULL,
-  deviceSerialNumber TEXT NOT NULL,
-  PRIMARY KEY(userId, deviceSerialNumber),
+  deviceMacAddress TEXT NOT NULL,
+  PRIMARY KEY(userId, deviceMacAddress),
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY(deviceSerialNumber) REFERENCES devices(serialNumber) ON DELETE CASCADE
+  FOREIGN KEY(deviceMacAddress) REFERENCES devices(macAddress) ON DELETE CASCADE
 );
 
 selectDevicesForUser:
 SELECT d.* FROM devices d
-JOIN user_devices ud ON d.serialNumber = ud.deviceSerialNumber
+JOIN user_devices ud ON d.macAddress = ud.deviceMacAddress
 WHERE ud.userId = ?;
 
 insertUserDevice:
-INSERT OR IGNORE INTO user_devices(userId, deviceSerialNumber) VALUES (?, ?);
+INSERT OR IGNORE INTO user_devices(userId, deviceMacAddress) VALUES (?, ?);
 
 deleteUserDevice:
-DELETE FROM user_devices WHERE userId = ? AND deviceSerialNumber = ?;
+DELETE FROM user_devices WHERE userId = ? AND deviceMacAddress = ?;

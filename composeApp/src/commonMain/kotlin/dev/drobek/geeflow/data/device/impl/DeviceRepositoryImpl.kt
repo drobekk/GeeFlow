@@ -24,17 +24,17 @@ class DeviceRepositoryImpl(
         refresh()
     }
 
-    override fun getDeviceBySerialNumber(serialNumber: String): Device? {
-        return devicesDao.getDeviceBySerialNumber(serialNumber)
+    override fun getDeviceByMacAddress(macAddress: String): Device? {
+        return devicesDao.getDeviceByMacAddress(macAddress)
     }
 
-    override fun removeDeviceBySerialNumber(serialNumber: String) {
-        devicesDao.deleteDevice(serialNumber)
+    override fun removeDeviceByMacAddress(macAddress: String) {
+        devicesDao.deleteDevice(macAddress)
         refresh()
     }
 
-    override fun setLastUsedDevice(serialNumber: String) {
-        devicesDao.updateLastUsed(serialNumber)
+    override fun setLastUsedDevice(macAddress: String) {
+        devicesDao.updateLastUsed(macAddress)
         refresh()
     }
 

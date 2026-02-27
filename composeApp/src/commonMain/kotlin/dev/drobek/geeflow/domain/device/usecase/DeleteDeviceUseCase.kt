@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 class DeleteDeviceUseCase(
     private val deviceRepository: DeviceRepository
 ) {
-    operator fun invoke(serialNumber: String) {
-        deviceRepository.removeDeviceBySerialNumber(serialNumber)
+    operator fun invoke(macAddress: String) {
+        deviceRepository.removeDeviceByMacAddress(macAddress)
     }
 }

@@ -1,29 +1,28 @@
 import kotlin.Boolean;
 
 CREATE TABLE devices (
-  serialNumber TEXT NOT NULL PRIMARY KEY,
+  macAddress TEXT NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
-  macAddress TEXT NOT NULL,
   isLastUsed INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 selectAll:
 SELECT * FROM devices;
 
-selectBySerialNumber:
-SELECT * FROM devices WHERE serialNumber = ?;
+selectByMacAddress:
+SELECT * FROM devices WHERE macAddress = ?;
 
 insertDevice:
-INSERT OR REPLACE INTO devices(serialNumber, name, macAddress, isLastUsed) VALUES (?, ?, ?, ?);
+INSERT OR REPLACE INTO devices(macAddress, name, isLastUsed) VALUES (?, ?, ?);
 
 resetLastUsed:
 UPDATE devices SET isLastUsed = 0;
 
 setLastUsed:
-UPDATE devices SET isLastUsed = 1 WHERE serialNumber = ?;
+UPDATE devices SET isLastUsed = 1 WHERE macAddress = ?;
 
-deleteBySerialNumber:
-DELETE FROM devices WHERE serialNumber = ?;
+deleteByMacAddress:
+DELETE FROM devices WHERE macAddress = ?;
 
 clearAll:
 DELETE FROM devices;

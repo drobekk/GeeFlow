@@ -8,5 +8,5 @@ import org.koin.core.annotation.Factory
 class GetDeviceUseCase(
     private val deviceRepository: DeviceRepository
 ) {
-    operator fun invoke(serialNumber: String): Device? = deviceRepository.getDeviceBySerialNumber(serialNumber)
+    operator fun invoke(macAddress: String): Device? = deviceRepository.getDeviceByMacAddress(macAddress)
 }

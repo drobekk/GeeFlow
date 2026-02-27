@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 class SetFavoriteDeviceUseCase(
     private val userRepository: UserRepository
 ) {
-    operator fun invoke(userId: Long, deviceSerialNumber: String?) {
-        userRepository.setFavoriteDevice(userId, deviceSerialNumber)
+    operator fun invoke(userId: Long, deviceMacAddress: String?) {
+        userRepository.setFavoriteDevice(userId, deviceMacAddress)
     }
 }

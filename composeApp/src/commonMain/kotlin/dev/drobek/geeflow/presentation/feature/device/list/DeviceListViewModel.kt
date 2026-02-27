@@ -32,9 +32,9 @@ internal class DeviceListViewModel(
                 copy(
                     devices = domainDevices.map { domainDevice ->
                         DeviceListViewState.Device(
-                            id = domainDevice.serialNumber,
+                            id = domainDevice.macAddress,
                             name = domainDevice.name,
-                            favourite = selectedUser?.favoriteDeviceSerialNumber == domainDevice.serialNumber
+                            favourite = selectedUser?.favoriteDeviceMacAddress == domainDevice.macAddress
                         )
                     },
                     user = selectedUser?.let {

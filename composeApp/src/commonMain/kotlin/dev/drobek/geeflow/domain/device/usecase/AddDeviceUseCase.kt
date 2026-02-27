@@ -9,7 +9,6 @@ class AddDeviceUseCase(
     private val deviceRepository: DeviceRepository
 ) {
     operator fun invoke(
-        serialNumber: String,
         macAddress: String,
         name: String
     ) {
@@ -22,9 +21,8 @@ class AddDeviceUseCase(
 
         deviceRepository.addDevice(
             Device(
-                serialNumber = serialNumber,
-                name = name,
-                macAddress = normalizedMacAddress
+                macAddress = normalizedMacAddress,
+                name = name
             )
         )
     }

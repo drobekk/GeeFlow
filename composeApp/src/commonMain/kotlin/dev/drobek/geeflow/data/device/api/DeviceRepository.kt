@@ -7,8 +7,8 @@ interface DeviceRepository {
     val devices: StateFlow<List<Device>>
 
     fun addDevice(device: Device)
-    fun getDeviceBySerialNumber(serialNumber: String): Device?
-    fun removeDeviceBySerialNumber(serialNumber: String)
-    fun setLastUsedDevice(serialNumber: String)
+    fun getDeviceByMacAddress(macAddress: String): Device?
+    fun removeDeviceByMacAddress(macAddress: String)
+    fun setLastUsedDevice(macAddress: String)
     fun clearAll()
 }

@@ -42,16 +42,26 @@ class WendougeeController(
     private var connectionTimeoutJob: Job? = null
 
     companion object {
+        private const val TAG = "WendougeeController"
+        private val hexPattern = Regex("([a-fA-F0-9]{12})$")
+        
         private val CMD_POLLING = "0103057C001484D1".decodeHex()
         private val CMD_BREW_START = "01050096FF002C24".decodeHex()
         private val CMD_BREW_STOP = "0105009600006DE4".decodeHex()
-
+        
         private const val DATA_UUID_SUFFIX = "2b10"
         private const val CTRL_UUID_SUFFIX = "2c10"
-
+        
         private const val CONNECTION_TIMEOUT_MS = 10000L
         private const val POLLING_INTERVAL_MS = 1000L
         private const val BREW_PULSE_MS = 150L
+
+        private fun String.decodeHex(): ByteArray {
+            check(length % 2 == 0) { "Must have an even length" }
+            return chunked(2)
+                .map { it.toInt(16).toByte() }
+                .toByteArray()
+        }
     }
 
     init {
@@ -59,10 +69,10 @@ class WendougeeController(
     }
 
     private fun startPolling(peripheral: BluetoothPeripheral) {
-        Logger.d { "Starting Modbus polling" }
+        Logger.withTag(TAG).d { "Starting Modbus polling" }
         pollingJob?.cancel()
         pollingJob = scope.launch {
-            Logger.d { "Negotiating MTU (512)" }
+            Logger.withTag(TAG).d { "Negotiating MTU (512)" }
             blueFalcon.changeMTU(peripheral, 512)
             delay(1000)
 
@@ -71,7 +81,7 @@ class WendougeeController(
                     try {
                         blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING, 2)
                     } catch (e: Exception) {
-                        Logger.e(e) { "Error writing polling command" }
+                        Logger.withTag(TAG).e(e) { "Error writing polling command" }
                     }
                 }
                 delay(POLLING_INTERVAL_MS)
@@ -83,34 +93,29 @@ class WendougeeController(
         val peripheral = connectedPeripheral ?: return
         scope.launch {
             writeChar?.let { char ->
-                Logger.i { "Triggering manual brew pulse" }
+                Logger.withTag(TAG).i { "Triggering manual brew pulse" }
                 try {
                     blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_BREW_START, 2)
                     delay(BREW_PULSE_MS)
                     blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_BREW_STOP, 2)
                 } catch (e: Exception) {
-                    Logger.e(e) { "Error during brew pulse execution" }
+                    Logger.withTag(TAG).e(e) { "Error during brew pulse execution" }
                 }
             }
         }
     }
 
     private fun ByteArray.toHex(): String = joinToString("") {
-        it
-            .toInt()
-            .and(0xFF)
-            .toString(16)
-            .padStart(2, '0')
-            .lowercase()
+        it.toInt().and(0xFF).toString(16).padStart(2, '0').lowercase()
     }
 
     override fun connect(macAddress: String) {
         if (_machineState.value.connectionStatus != ConnectionStatus.Disconnected) {
-            Logger.w { "Already connected or connecting, ignoring request for $macAddress" }
+            Logger.withTag(TAG).w { "Already connected or connecting, ignoring request for $macAddress" }
             return
         }
         targetMacAddress = macAddress
-        Logger.i { "Starting scan for target device: $macAddress" }
+        Logger.withTag(TAG).i { "Starting scan for target device: $macAddress" }
 
         _machineState.update { it.copy(connectionStatus = ConnectionStatus.Connecting) }
 
@@ -118,7 +123,7 @@ class WendougeeController(
         connectionTimeoutJob = scope.launch {
             delay(CONNECTION_TIMEOUT_MS)
             if (_machineState.value.connectionStatus == ConnectionStatus.Connecting) {
-                Logger.w { "Connection timeout reached (10s)" }
+                Logger.withTag(TAG).w { "Connection timeout reached (10s)" }
                 blueFalcon.stopScanning()
                 connectedPeripheral?.let { blueFalcon.disconnect(it) }
                 _machineState.update { it.copy(connectionStatus = ConnectionStatus.Disconnected) }
@@ -131,7 +136,7 @@ class WendougeeController(
     override fun disconnect() {
         connectionTimeoutJob?.cancel()
         connectedPeripheral?.let {
-            Logger.i { "Initiating disconnect from ${it.uuid}" }
+            Logger.withTag(TAG).i { "Initiating disconnect from ${it.uuid}" }
             blueFalcon.disconnect(it)
         }
     }
@@ -141,15 +146,23 @@ class WendougeeController(
         advertisementData: Map<AdvertisementDataRetrievalKeys, Any>
     ) {
         val target = targetMacAddress ?: return
-        val normalizedTarget = target
-            .filter { it.isLetterOrDigit() }
-            .uppercase()
-        val pUuid = bluetoothPeripheral.uuid
-            .filter { it.isLetterOrDigit() }
-            .uppercase()
+        val normalizedTarget = target.filter { it.isLetterOrDigit() }.uppercase()
+        
+        // 1. Get name from advertisementData or peripheral
+        val deviceName = advertisementData[AdvertisementDataRetrievalKeys.LocalName] as? String 
+            ?: bluetoothPeripheral.name ?: ""
 
-        if (pUuid == normalizedTarget && _machineState.value.connectionStatus == ConnectionStatus.Connecting) {
-            Logger.i { "Target device discovered. Stopping scan and connecting..." }
+        // 2. Recognize by MAC suffix in name
+        val macInName = hexPattern.find(deviceName)?.value?.uppercase()
+        val isOurDevice = if (macInName != null) {
+            macInName == normalizedTarget
+        } else {
+            // Fallback for Android where MAC is accessible directly as peripheral.uuid
+            bluetoothPeripheral.uuid.filter { it.isLetterOrDigit() }.uppercase() == normalizedTarget
+        }
+
+        if (isOurDevice && _machineState.value.connectionStatus == ConnectionStatus.Connecting) {
+            Logger.withTag(TAG).i { "Target device discovered ($deviceName). Stopping scan and connecting..." }
             blueFalcon.stopScanning()
             scope.launch {
                 delay(200)
@@ -159,7 +172,7 @@ class WendougeeController(
     }
 
     override fun didConnect(bluetoothPeripheral: BluetoothPeripheral) {
-        Logger.i { "Successfully connected to ${bluetoothPeripheral.uuid}" }
+        Logger.withTag(TAG).i { "Successfully connected to ${bluetoothPeripheral.uuid}" }
         connectionTimeoutJob?.cancel()
         connectedPeripheral = bluetoothPeripheral
         _machineState.update { it.copy(connectionStatus = ConnectionStatus.Connected) }
@@ -167,7 +180,7 @@ class WendougeeController(
     }
 
     override fun didDisconnect(bluetoothPeripheral: BluetoothPeripheral) {
-        Logger.i { "Disconnected from ${bluetoothPeripheral.uuid}" }
+        Logger.withTag(TAG).i { "Disconnected from ${bluetoothPeripheral.uuid}" }
         connectionTimeoutJob?.cancel()
         pollingJob?.cancel()
         writeChar = null
@@ -190,12 +203,12 @@ class WendougeeController(
 
                 if (uuid.contains(DATA_UUID_SUFFIX)) {
                     writeChar = characteristic
-                    Logger.d { "DATA characteristic discovered and ready (2b10)" }
+                    Logger.withTag(TAG).d { "DATA characteristic ready (2b10)" }
                     blueFalcon.notifyCharacteristic(bluetoothPeripheral, characteristic, true)
                 }
                 if (uuid.contains(CTRL_UUID_SUFFIX)) {
                     notifyChar = characteristic
-                    Logger.d { "CTRL characteristic discovered and ready (2c10)" }
+                    Logger.withTag(TAG).d { "CTRL characteristic ready (2c10)" }
                     blueFalcon.notifyCharacteristic(bluetoothPeripheral, characteristic, true)
                 }
             }
@@ -206,10 +219,10 @@ class WendougeeController(
         bluetoothCharacteristic: BluetoothCharacteristic
     ) {
         val uuid = bluetoothCharacteristic.name?.lowercase() ?: ""
-        Logger.d { "Notification state updated for: $uuid" }
+        Logger.withTag(TAG).d { "Notification state updated for: $uuid" }
 
         if (writeChar != null && notifyChar != null) {
-            if (pollingJob == null || pollingJob?.isActive == false) {
+            if (pollingJob == null || !pollingJob!!.isActive) {
                 startPolling(bluetoothPeripheral)
             }
         }
@@ -241,18 +254,7 @@ class WendougeeController(
                 )
             }
         } catch (e: Exception) {
-            Logger.e(e) { "Modbus parser error" }
+            Logger.withTag(TAG).e(e) { "Modbus parser error" }
         }
     }
-}
-
-internal fun String.decodeHex(): ByteArray {
-    check(length % 2 == 0) { "Must have an even length" }
-    return chunked(2)
-        .map {
-            it
-                .toInt(16)
-                .toByte()
-        }
-        .toByteArray()
 }

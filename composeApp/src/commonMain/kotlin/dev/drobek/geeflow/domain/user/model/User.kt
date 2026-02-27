@@ -8,5 +8,5 @@ data class User(
     val name: String,
     val photoUri: String? = null,
     val isSelected: Boolean = false,
-    val favoriteDeviceSerialNumber: String? = null
+    val favoriteDeviceMacAddress: String? = null
 )

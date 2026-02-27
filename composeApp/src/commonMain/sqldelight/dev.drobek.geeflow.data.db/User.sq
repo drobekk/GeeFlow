@@ -5,7 +5,7 @@ CREATE TABLE users (
   name TEXT NOT NULL,
   photoUri TEXT,
   isSelected INTEGER AS Boolean NOT NULL DEFAULT 0,
-  favoriteDeviceSerialNumber TEXT
+  favoriteDeviceMacAddress TEXT
 );
 
 selectAll:
@@ -15,7 +15,7 @@ selectById:
 SELECT * FROM users WHERE id = ?;
 
 insertUser:
-INSERT OR REPLACE INTO users(id, name, photoUri, isSelected, favoriteDeviceSerialNumber) VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO users(id, name, photoUri, isSelected, favoriteDeviceMacAddress) VALUES (?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM users WHERE id = ?;
@@ -27,4 +27,4 @@ setSelected:
 UPDATE users SET isSelected = 1 WHERE id = ?;
 
 setFavoriteDevice:
-UPDATE users SET favoriteDeviceSerialNumber = ? WHERE id = ?;
+UPDATE users SET favoriteDeviceMacAddress = ? WHERE id = ?;

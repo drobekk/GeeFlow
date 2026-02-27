@@ -41,8 +41,8 @@ class UserRepositoryImpl(
         refresh()
     }
 
-    override fun setFavoriteDevice(userId: Long, deviceSerialNumber: String?) {
-        usersDao.setFavoriteDevice(userId, deviceSerialNumber)
+    override fun setFavoriteDevice(userId: Long, deviceMacAddress: String?) {
+        usersDao.setFavoriteDevice(userId, deviceMacAddress)
         refresh()
     }
 
