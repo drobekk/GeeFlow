@@ -4,6 +4,7 @@ import dev.drobek.geeflow.data.device.api.NearbyDevicesController
 import dev.drobek.geeflow.domain.device.model.Device
 import dev.drobek.geeflow.domain.device.usecase.AddDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.ParseDeviceQrCodeUseCase
+import dev.drobek.geeflow.platform.Platform
 import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
@@ -29,11 +30,12 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class AddDeviceViewModel(
+    platform: Platform,
     private val addDeviceUseCase: AddDeviceUseCase,
     private val parseDeviceQrCodeUseCase: ParseDeviceQrCodeUseCase,
     private val nearbyDevicesController: NearbyDevicesController,
     private val permissionsController: PermissionsController
-) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(AddDeviceViewState()) {
+) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(AddDeviceViewState(platform.getMethod())) {
 
     init {
         startScanning()
@@ -111,4 +113,10 @@ internal class AddDeviceViewModel(
         super.onCleared()
         nearbyDevicesController.stopScanning()
     }
+}
+
+private fun Platform.getMethod(): AddDeviceViewState.Method = when (this.type) {
+    Platform.Type.Desktop -> NearbyDevices(changeMethodButtonVisible = false)
+    Platform.Type.Android -> QrCodeScanner(changeMethodButtonVisible = true)
+    Platform.Type.IOS -> QrCodeScanner(changeMethodButtonVisible = true)
 }
