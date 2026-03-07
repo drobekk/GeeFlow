@@ -1,20 +1,18 @@
 package dev.drobek.geeflow.presentation.feature.intro
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -29,11 +27,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.VerticalSpacer
-import dev.drobek.geeflow.ui.components.AdaptiveColumnRow
 import dev.drobek.geeflow.ui.components.GeeFlowIconButton
 import dev.drobek.geeflow.ui.components.GeeFlowOutlinedTextField
+import dev.drobek.geeflow.ui.components.GeeFlowScaffold
+import dev.drobek.geeflow.ui.conditional
 import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
+import dev.drobek.geeflow.ui.isExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
@@ -67,13 +67,14 @@ fun IntroScreen(introNavigation: IntroNavigation) {
 private fun IntroScreenContent(
     onEvent: (IntroEvent) -> Unit = {}
 ) {
-    AdaptiveColumnRow(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .height(IntrinsicSize.Min),
-        first = { Logo() },
-        second = { Form(onEvent = onEvent) },
-        firstAlignment = Alignment.Center
+    GeeFlowScaffold(
+        topBar = { Logo() },
+        content = {
+            Form(
+                onEvent = onEvent,
+                modifier = Modifier.padding(it)
+            )
+        }
     )
 }
 
@@ -81,6 +82,12 @@ private fun IntroScreenContent(
 private fun Logo(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
+            .conditional(
+                condition = isExpanded(),
+                ifTrue = { fillMaxHeight() },
+                ifFalse = { fillMaxWidth() }
+            )
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .systemBarsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

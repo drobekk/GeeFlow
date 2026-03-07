@@ -2,7 +2,6 @@ package dev.drobek.geeflow.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -28,21 +27,20 @@ fun GeeFlowTopBar(
     title: String,
     subtitle: String?,
     navIconPainter: Painter? = rememberVectorPainter(image = Icons.AutoMirrored.Filled.ArrowBack),
-    nacIconContentDescription: String? = stringResource(Res.string.common_go_back),
+    navIconContentDescription: String? = stringResource(Res.string.common_go_back),
     navIconClick: () -> Unit,
     windowInsets: WindowInsets = WindowInsets.statusBars,
     modifier: Modifier = Modifier
 ) = Column(
     modifier = modifier
         .windowInsetsPadding(windowInsets)
-        .padding(16.dp)
-        .fillMaxWidth()
+        .padding(vertical = 16.dp, horizontal = 8.dp)
 ) {
     IconButton(onClick = navIconClick, enabled = navIconPainter != null) {
         navIconPainter?.let {
             Icon(
                 painter = navIconPainter,
-                contentDescription = nacIconContentDescription,
+                contentDescription = navIconContentDescription,
                 modifier = Modifier.size(24.dp)
             )
         }

@@ -31,7 +31,7 @@ fun WaveDivider(
     waves: Float = 1.5f,
     durationMillis: Int = 4000,
     orientation: WaveOrientation = WaveOrientation.Horizontal,
-    reverseFill: Boolean = false
+    reverseFill: Boolean = true
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "waveTransition")
 

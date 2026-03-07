@@ -11,14 +11,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -49,9 +51,7 @@ import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Met
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.QrCodeScanner
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.VerticalSpacer
-import dev.drobek.geeflow.ui.components.AdaptiveColumnRow
-import dev.drobek.geeflow.ui.components.GeeFlowTopBar
-import dev.drobek.geeflow.ui.isExpanded
+import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.isPreview
@@ -72,8 +72,7 @@ import org.publicvalue.multiplatform.qrcode.ScannerWithPermissions
 
 @Composable
 internal fun AddDeviceScreen(
-    viewModel: AddDeviceViewModel,
-    deviceNavigation: DeviceNavigation
+    viewModel: AddDeviceViewModel, deviceNavigation: DeviceNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -113,100 +112,113 @@ private fun AddDeviceContent(
     onEvent: (AddDeviceEvent) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
-    Box {
-        AdaptiveColumnRow(
-            first = {
-                GeeFlowTopBar(
-                    title = stringResource(Res.string.add_device_screen_title),
-                    subtitle = stringResource(Res.string.add_device_screen_description),
-                    navIconClick = { onEvent(BackClicked) }
+    GeeFlowScaffold(
+        title = stringResource(Res.string.add_device_screen_title),
+        subtitle = stringResource(Res.string.add_device_screen_description),
+        navIconClick = { onEvent(BackClicked) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            if (viewState.method.changeMethodButtonVisible) {
+                FloatingActionButton(
+                    viewState = viewState,
+                    onEvent = onEvent
                 )
-            },
-            second = { Content(viewState, onEvent) },
-            firstAlignment = Alignment.TopStart,
-            secondAlignment = Alignment.TopStart
-        )
-        SnackbarHost(
-            modifier = Modifier
-                .navigationBarsPadding()
-                .align(Alignment.BottomCenter),
-            hostState = snackbarHostState
-        )
-    }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        content = {
+            Content(
+                viewState = viewState,
+                onEvent = onEvent,
+                contentPadding = it
+            )
+        }
+    )
 }
 
 @Composable
 private fun Content(
     viewState: AddDeviceViewState,
-    onEvent: (AddDeviceEvent) -> Unit
+    onEvent: (AddDeviceEvent) -> Unit,
+    contentPadding: PaddingValues
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedContent(
-            targetState = viewState.method,
-            modifier = Modifier.navigationBarsPadding()
-        ) { method ->
-            when (method) {
-                is NearbyDevices -> NearbyDevicesList(
-                    model = method,
-                    onEvent = onEvent
-                )
+    AnimatedContent(
+        modifier = Modifier.fillMaxSize(),
+        targetState = viewState.method
+    ) { method ->
+        when (method) {
+            is NearbyDevices -> NearbyDevicesList(
+                model = method,
+                onEvent = onEvent,
+                contentPadding = contentPadding
+            )
 
-                is QrCodeScanner -> Scanner(
-                    model = method,
-                    onEvent = onEvent
-                )
-            }
-        }
-        if (viewState.method.changeMethodButtonVisible) {
-            FloatingActionButton(
-                onClick = {
-                    when (viewState.method) {
-                        is NearbyDevices -> onEvent(ShowQrCodeScannerClicked)
-                        is QrCodeScanner -> onEvent(ShowNearbyDevicesClicked)
-                    }
-                },
-                modifier = Modifier
-                    .padding(bottom = 36.dp)
-                    .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
-            ) {
-                Text(
-                    text = stringResource(
-                        when (viewState.method) {
-                            is NearbyDevices -> Res.string.add_device_screen_scan_qr
-                            is QrCodeScanner -> Res.string.add_device_screen_show_nearby
-                        }
-                    ),
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-            }
+            is QrCodeScanner -> Scanner(
+                model = method,
+                onEvent = onEvent,
+                contentPadding = contentPadding
+            )
         }
     }
+}
+
+@Composable
+private fun FloatingActionButton(
+    viewState: AddDeviceViewState,
+    onEvent: (AddDeviceEvent) -> Unit,
+    modifier: Modifier = Modifier
+) = FloatingActionButton(
+    modifier = modifier.padding(
+        horizontal = GeeFlowTheme.spacing.fabHorizontal,
+        vertical = GeeFlowTheme.spacing.fabVertical
+    ),
+    onClick = {
+        when (viewState.method) {
+            is NearbyDevices -> onEvent(ShowQrCodeScannerClicked)
+            is QrCodeScanner -> onEvent(ShowNearbyDevicesClicked)
+        }
+    }
+) {
+    Text(
+        text = stringResource(
+            when (viewState.method) {
+                is NearbyDevices -> Res.string.add_device_screen_scan_qr
+                is QrCodeScanner -> Res.string.add_device_screen_show_nearby
+            }
+        ),
+        modifier = Modifier.padding(horizontal = 24.dp)
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun NearbyDevicesList(
     model: NearbyDevices,
-    onEvent: (AddDeviceEvent) -> Unit
+    onEvent: (AddDeviceEvent) -> Unit,
+    contentPadding: PaddingValues
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                horizontal = if (isExpanded()) 48.dp else 32.dp,
-                vertical = if (isExpanded()) 24.dp else 60.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(model.devices) {
-                DeviceItem(it, onEvent)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding + PaddingValues(
+            horizontal = GeeFlowTheme.spacing.contentHorizontal,
+            vertical = GeeFlowTheme.spacing.contentVertical
+        ),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        when {
+            model.showMissingPermissionMessage -> item {
+                MissingPermissionsMessage(
+                    onEvent = onEvent,
+                    modifier = Modifier.fillParentMaxSize()
+                )
+            }
+
+            model.devices.isEmpty() -> item {
+                EmptyListMessage(modifier = Modifier.fillParentMaxSize())
             }
         }
-
-        when {
-            model.showMissingPermissionMessage -> MissingPermissionsMessage(onEvent)
-            model.devices.isEmpty() -> EmptyListMessage()
+        items(model.devices) {
+            DeviceItem(it, onEvent)
         }
     }
 }
@@ -217,9 +229,7 @@ private fun DeviceItem(
     onEvent: (AddDeviceEvent) -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(onClick = { onEvent(NearbyDeviceClicked(model.id)) })
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
@@ -240,78 +250,73 @@ private fun DeviceItem(
 @Composable
 private fun Scanner(
     model: QrCodeScanner,
-    onEvent: (AddDeviceEvent) -> Unit
+    onEvent: (AddDeviceEvent) -> Unit,
+    contentPadding: PaddingValues
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val shape = RoundedCornerShape(32.dp)
-        val modifier = Modifier
-            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, shape)
-            .clip(shape)
-            .padding(2.dp)
-            .background(Color.Black, shape)
-            .fillMaxSize()
-            .weight(1f)
+    val shape = RoundedCornerShape(32.dp)
+    val modifier = Modifier
+        .fillMaxHeight()
+        .padding(contentPadding)
+        .padding(48.dp)
+        .border(2.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+        .clip(shape)
+        .padding(2.dp)
+        .background(Color.Black, shape)
+        .fillMaxSize()
 
-        if (isPreview) {
-            Box(modifier = modifier)
-        } else {
-            ScannerWithPermissions(
-                modifier = modifier.clipToBounds(),
-                onScanned = {
-                    onEvent(QrCodeScanned(it))
-                    !model.scanningEnabled
-                },
-                types = listOf(CodeType.QR),
-                cameraPosition = CameraPosition.BACK,
-                enableTorch = false,
-                permissionDeniedContent = { permissionState ->
-                    Column(
-                        modifier = modifier.padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        VerticalSpacer(1f)
-                        Text(
-                            modifier = Modifier.padding(6.dp),
-                            text = stringResource(Res.string.add_device_screen_no_camera_permission),
-                            textAlign = TextAlign.Center,
-                            color = Color.White
-                        )
-                        Button(onClick = { permissionState.goToSettings() }) {
-                            Text(text = stringResource(Res.string.common_open_settings))
-                        }
-                        VerticalSpacer(1f)
+    if (isPreview) {
+        Box(modifier = modifier)
+    } else {
+        ScannerWithPermissions(
+            modifier = modifier.clipToBounds(),
+            onScanned = {
+                onEvent(QrCodeScanned(it))
+                !model.scanningEnabled
+            },
+            types = listOf(CodeType.QR),
+            cameraPosition = CameraPosition.BACK,
+            enableTorch = false,
+            permissionDeniedContent = { permissionState ->
+                Column(
+                    modifier = modifier.padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    VerticalSpacer(1f)
+                    Text(
+                        modifier = Modifier.padding(6.dp),
+                        text = stringResource(Res.string.add_device_screen_no_camera_permission),
+                        textAlign = TextAlign.Center,
+                        color = Color.White
+                    )
+                    Button(onClick = { permissionState.goToSettings() }) {
+                        Text(text = stringResource(Res.string.common_open_settings))
                     }
+                    VerticalSpacer(1f)
                 }
-            )
-        }
-        VerticalSpacer(32.dp)
+            }
+        )
     }
 }
 
 @Composable
 private fun MissingPermissionsMessage(
-    onEvent: (AddDeviceEvent) -> Unit
+    onEvent: (AddDeviceEvent) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = stringResource(Res.string.device_dashboard_no_bt_permission),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelLarge,
-            textAlign = TextAlign.Center,
-
-            )
+            textAlign = TextAlign.Center
+        )
         VerticalSpacer(24.dp)
         OutlinedButton(
-            onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) }
-        ) {
+            onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) }) {
             Text(text = stringResource(Res.string.common_open_settings))
         }
     }
@@ -323,7 +328,7 @@ private fun EmptyListMessage(
 ) {
     Text(
         text = stringResource(Res.string.add_device_screen_empty),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().wrapContentHeight(),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.labelLarge,
         textAlign = TextAlign.Center
@@ -336,11 +341,9 @@ private fun PreviewLight() = GeeFlowTheme(false) {
     AddDeviceContent(
         viewState = AddDeviceViewState(
             method = NearbyDevices(
-                changeMethodButtonVisible = true,
-                devices = listOf(
+                changeMethodButtonVisible = true, devices = listOf(
                     AddDeviceViewState.DeviceItem(
-                        id = "B0234556",
-                        name = "DATA-S"
+                        id = "B0234556", name = "DATA-S"
                     )
                 )
             )
@@ -353,7 +356,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 private fun PreviewDark() = GeeFlowTheme(true) {
     AddDeviceContent(
         viewState = AddDeviceViewState(
-            method = NearbyDevices()
+            method = QrCodeScanner()
         )
     )
 }
