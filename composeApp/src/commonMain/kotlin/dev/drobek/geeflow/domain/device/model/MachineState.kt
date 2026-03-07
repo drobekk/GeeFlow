@@ -1,14 +1,48 @@
 package dev.drobek.geeflow.domain.device.model
 
 data class MachineState(
-    val steamBoilerTemp: Float = 0.0f,
-    val brewBoilerTemp: Float = 0.0f,
-    val pressure: Float = 0.0f,
-    val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected
+    val steamBoilerTemp: Float? = null,
+    val brewBoilerTemp: Float? = null,
+    val pressure: Float? = null,
+    val time: Int? = null,
+    val volume: Int? = null,
+    val flowRate: Int? = null,
+    val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
+    val brewStatus: BrewStatus = BrewStatus.Idle,
+    val config: Config? = null
 ) {
+    data class Config(
+        val targetSteamTemp: Float,
+        val targetBrewTemp: Float,
+        val steamBoilerEnabled: Boolean,
+        val brewBoilerEnabled: Boolean,
+        val manualBrewTimeSec: Float,
+        val manualBrewPressure: Float,
+        val cleaningTimeSec: Float,
+        val cleaningStandbySec: Float,
+        val cleaningCount: Int,
+        val heatingMode: HeatingMode,
+        val waterAlarm: Boolean
+    )
+
     enum class ConnectionStatus {
         Disconnected,
         Connecting,
         Connected
+    }
+
+    enum class BrewStatus {
+        Manual,
+        Profile,
+        Idle
+    }
+
+    enum class HeatingMode {
+        FullSpeed,
+        Pulse
+    }
+
+    enum class BoilerType {
+        Steam, Brew
     }
 }

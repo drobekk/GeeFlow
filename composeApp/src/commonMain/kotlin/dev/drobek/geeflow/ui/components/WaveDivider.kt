@@ -30,7 +30,8 @@ fun WaveDivider(
     thickness: Dp = 20.dp,
     waves: Float = 1.5f,
     durationMillis: Int = 4000,
-    orientation: WaveOrientation = WaveOrientation.Horizontal
+    orientation: WaveOrientation = WaveOrientation.Horizontal,
+    reverseFill: Boolean = false
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "waveTransition")
 
@@ -54,74 +55,56 @@ fun WaveDivider(
     )
 
     Canvas(
-        modifier = when (orientation) {
-            WaveOrientation.Horizontal -> modifier
-                .fillMaxWidth()
-                .height(thickness)
-
-            WaveOrientation.Vertical -> modifier
-                .fillMaxHeight()
-                .width(thickness)
-        }
+        modifier = modifier.then(
+            when (orientation) {
+                WaveOrientation.Horizontal -> Modifier.fillMaxWidth().height(thickness)
+                WaveOrientation.Vertical -> Modifier.fillMaxHeight().width(thickness)
+            }
+        )
     ) {
         val w = size.width
         val h = size.height
-        val step = 2f
         val path = Path()
-        val borderPath = Path()
+        val waveRangePx = thickness.toPx()
 
         if (orientation == WaveOrientation.Horizontal) {
-
             val midY = h / 2f
-            val amplitude = (h / 2f) * amplitudeFactor
+            val amplitude = (waveRangePx / 2f) * amplitudeFactor
+            val fillEdge = if (reverseFill) 0f else h
 
-            fun yAt(x: Float): Float {
-                val t = x / w
-                val angle = (2f * PI.toFloat()) * waves * t + phase
-                return midY + sin(angle) * amplitude
-            }
+            fun yAt(x: Float): Float = midY + sin((2f * PI.toFloat()) * waves * (x / w) + phase) * amplitude
 
-            path.moveTo(0f, yAt(0f))
-            borderPath.moveTo(0f, yAt(0f))
+            path.moveTo(0f, fillEdge)
+            path.lineTo(0f, yAt(0f))
 
             var x = 0f
-            while (x <= w + step) {
-                val xx = x.coerceAtMost(w)
-                val yy = yAt(xx)
-                path.lineTo(xx, yy)
-                borderPath.lineTo(xx, yy)
-                x += step
+            while (x <= w) {
+                path.lineTo(x, yAt(x))
+                x += 2f
             }
 
-            path.lineTo(w, 0f)
-            path.lineTo(0f, 0f)
+            path.lineTo(w, yAt(w))
+            path.lineTo(w, fillEdge)
             path.close()
 
         } else {
-
             val midX = w / 2f
-            val amplitude = (w / 2f) * amplitudeFactor
+            val amplitude = (waveRangePx / 2f) * amplitudeFactor
+            val fillEdge = if (reverseFill) 0f else w
 
-            fun xAt(y: Float): Float {
-                val t = y / h
-                val angle = (2f * PI.toFloat()) * waves * t + phase
-                return midX + sin(angle) * amplitude
-            }
+            fun xAt(y: Float): Float = midX + sin((2f * PI.toFloat()) * waves * (y / h) + phase) * amplitude
 
-            path.moveTo(xAt(0f), 0f)
-            borderPath.moveTo(xAt(0f), 0f)
+            path.moveTo(fillEdge, 0f)
+            path.lineTo(xAt(0f), 0f)
 
             var y = 0f
-            while (y <= h + step) {
-                val yy = y.coerceAtMost(h)
-                val xx = xAt(yy)
-                path.lineTo(xx, yy)
-                borderPath.lineTo(xx, yy)
-                y += step
+            while (y <= h) {
+                path.lineTo(xAt(y), y)
+                y += 2f
             }
 
-            path.lineTo(0f, h)
-            path.lineTo(0f, 0f)
+            path.lineTo(xAt(h), h)
+            path.lineTo(fillEdge, h)
             path.close()
         }
 

@@ -62,7 +62,8 @@ fun AdaptiveColumnRow(
                     WaveDivider(
                         modifier = Modifier.fillMaxHeight(),
                         color = firstColor,
-                        orientation = WaveOrientation.Vertical
+                        orientation = WaveOrientation.Vertical,
+                        reverseFill = true
                     )
                 }
             }
@@ -85,7 +86,8 @@ fun AdaptiveColumnRow(
                 WaveDivider(
                     modifier = Modifier.fillMaxWidth(),
                     color = firstColor,
-                    orientation = WaveOrientation.Horizontal
+                    orientation = WaveOrientation.Horizontal,
+                    reverseFill = true
                 )
             }
             Spacer(Modifier.weight(1f))

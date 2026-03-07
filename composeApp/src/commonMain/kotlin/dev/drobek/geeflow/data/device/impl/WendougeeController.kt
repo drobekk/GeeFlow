@@ -10,16 +10,24 @@ import dev.bluefalcon.BluetoothCharacteristic
 import dev.bluefalcon.BluetoothPeripheral
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
+import dev.drobek.geeflow.domain.device.model.MachineState.BrewStatus
 import dev.drobek.geeflow.domain.device.model.MachineState.ConnectionStatus
+import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.koin.core.annotation.Singleton
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -31,6 +39,8 @@ class WendougeeController(
 
     private val _machineState = MutableStateFlow(MachineState())
     override val machineState: StateFlow<MachineState> = _machineState.asStateFlow()
+
+    private val incomingFrames = MutableSharedFlow<ByteArray>(extraBufferCapacity = 20)
 
     private var targetMacAddress: String? = null
     private var connectedPeripheral: BluetoothPeripheral? = null
@@ -44,17 +54,33 @@ class WendougeeController(
     companion object {
         private const val TAG = "WendougeeController"
         private val hexPattern = Regex("([a-fA-F0-9]{12})$")
-        
-        private val CMD_POLLING = "0103057C001484D1".decodeHex()
-        private val CMD_BREW_START = "01050096FF002C24".decodeHex()
-        private val CMD_BREW_STOP = "0105009600006DE4".decodeHex()
-        
+
+        private const val REG_STEAM_STATE = 0x0006
+        private const val REG_BREW_STATE = 0x0007
+
+        // Init and configuration
+        private val CMD_INIT_HANDSHAKE = "ff55ffff9a000104f2".decodeHex()
+        private val CMD_READ_CONFIG_LONG = "0103000000258411".decodeHex()
+
+        // Telemetry polling
+        private val CMD_POLLING_LONG = "0103057C001484D1".decodeHex()
+        private val CMD_POLLING_SHORT = "010100B600079C2E".decodeHex()
+
+        private val CMD_STATE_ON_PROP = "ff55ffff83000100d7".decodeHex()
+        private val CMD_STATE_OFF_PROP = "ff55ffff83000101d8".decodeHex()
+
+        private val CMD_MANUAL_ON = "0105009aff00ac15".decodeHex()
+        private val CMD_MANUAL_OFF = "0105009a0000ede5".decodeHex()
+
+        private val CMD_SHORT_PRESS_ON = "01050096ff006c16".decodeHex()
+        private val CMD_SHORT_PRESS_OFF = "0105009600002de6".decodeHex()
+
         private const val DATA_UUID_SUFFIX = "2b10"
         private const val CTRL_UUID_SUFFIX = "2c10"
-        
+
         private const val CONNECTION_TIMEOUT_MS = 10000L
-        private const val POLLING_INTERVAL_MS = 1000L
-        private const val BREW_PULSE_MS = 150L
+        private const val POLLING_INTERVAL_MS = 100000L
+        private const val BREW_PULSE_MS = 100L
 
         private fun String.decodeHex(): ByteArray {
             check(length % 2 == 0) { "Must have an even length" }
@@ -68,45 +94,94 @@ class WendougeeController(
         blueFalcon.delegates.add(this)
     }
 
-    private fun startPolling(peripheral: BluetoothPeripheral) {
-        Logger.withTag(TAG).d { "Starting Modbus polling" }
+    private fun startDeviceInitialization(peripheral: BluetoothPeripheral) {
+        Logger.withTag(TAG).i { "Starting device initialization sequence" }
         pollingJob?.cancel()
+
         pollingJob = scope.launch {
             Logger.withTag(TAG).d { "Negotiating MTU (512)" }
             blueFalcon.changeMTU(peripheral, 512)
-            delay(1000)
+            delay(500)
+
+            try {
+                notifyChar?.let { ctrlChar ->
+                    Logger.withTag(TAG).d { "Sending proprietary INIT handshake" }
+                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, ctrlChar, CMD_INIT_HANDSHAKE, 2)
+                }
+
+                delay(300)
+
+                writeChar?.let { dataChar ->
+                    Logger.withTag(TAG).d { "Requesting static configuration (Target temps, etc.)" }
+                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, dataChar, CMD_READ_CONFIG_LONG, 2)
+                }
+
+                delay(500)
+
+            } catch (e: Exception) {
+                Logger.withTag(TAG).e(e) { "Initialization sequence failed, proceeding to telemetry loop" }
+            }
 
             while (isActive) {
-                writeChar?.let { char ->
-                    try {
-                        blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING, 2)
-                    } catch (e: Exception) {
-                        Logger.withTag(TAG).e(e) { "Error writing polling command" }
-                    }
-                }
+                pollData(peripheral)
                 delay(POLLING_INTERVAL_MS)
             }
         }
     }
 
-    override fun triggerManualBrew() {
-        val peripheral = connectedPeripheral ?: return
-        scope.launch {
-            writeChar?.let { char ->
-                Logger.withTag(TAG).i { "Triggering manual brew pulse" }
-                try {
-                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_BREW_START, 2)
-                    delay(BREW_PULSE_MS)
-                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_BREW_STOP, 2)
-                } catch (e: Exception) {
-                    Logger.withTag(TAG).e(e) { "Error during brew pulse execution" }
-                }
-            }
+    private suspend fun pollData(peripheral: BluetoothPeripheral) {
+        writeChar?.let { char ->
+            logFrame(Direction.TX, char, CMD_POLLING_LONG, note = "poll-long")
+            blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_LONG, 2)
+
+            delay(80)
+
+            logFrame(Direction.TX, char, CMD_POLLING_SHORT, note = "poll-short")
+            blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_SHORT, 2)
         }
     }
 
     private fun ByteArray.toHex(): String = joinToString("") {
         it.toInt().and(0xFF).toString(16).padStart(2, '0').lowercase()
+    }
+
+    /**
+     * Helper function to send a command and await the exact Modbus confirmation.
+     * Starts listening BEFORE sending to prevent race conditions.
+     */
+    private suspend fun writeAndAwaitModbus(
+        char: BluetoothCharacteristic,
+        payload: ByteArray,
+        expectedFc: Byte,
+        expectedRegHi: Byte,
+        expectedRegLo: Byte,
+        timeoutMs: Long = 2000L
+    ): Boolean {
+        val peripheral = connectedPeripheral ?: return false
+
+        return try {
+            withTimeout(timeoutMs) {
+                // Subscribe to incoming frames first
+                val ackDeferred = async {
+                    incomingFrames.first { data ->
+                        data.size >= 4 && data[1] == expectedFc && data[2] == expectedRegHi && data[3] == expectedRegLo
+                    }
+                }
+
+                // Send the command
+                blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, payload, 2)
+
+                // Suspend until the specific frame arrives
+                ackDeferred.await()
+                true
+            }
+        } catch (e: TimeoutCancellationException) {
+            Logger.withTag(TAG).w { "Timeout waiting for ACK: FC=$expectedFc Reg=$expectedRegHi$expectedRegLo" }
+            false
+        } catch (e: Exception) {
+            Logger.withTag(TAG).e(e) { "Error sending command" }
+            false
+        }
     }
 
     override fun connect(macAddress: String) {
@@ -141,23 +216,162 @@ class WendougeeController(
         }
     }
 
+    override suspend fun setBoilerState(boilerType: BoilerType, enabled: Boolean) {
+        val peripheral = connectedPeripheral ?: return
+        val ctrlChar = notifyChar ?: return
+        val dataChar = writeChar ?: return
+
+        val targetRegister = if (boilerType == BoilerType.Steam) REG_STEAM_STATE else REG_BREW_STATE
+
+        try {
+            val propCmd = if (enabled) CMD_STATE_ON_PROP else CMD_STATE_OFF_PROP
+            blueFalcon.writeCharacteristicWithoutEncoding(peripheral, ctrlChar, propCmd, 2)
+
+            delay(300) // Small delay before sending Modbus part
+
+            val stateValue = if (enabled) 0x00 else 0x01
+            val header = byteArrayOf(
+                0x01, 0x10,
+                (targetRegister ushr 8).toByte(), (targetRegister and 0xFF).toByte(),
+                0x00, 0x01,
+                0x02,
+                0x00, stateValue.toByte()
+            )
+            val fullModbus = header + calculateCRC(header)
+
+            val success = writeAndAwaitModbus(
+                dataChar, fullModbus,
+                expectedFc = 0x10,
+                expectedRegHi = (targetRegister ushr 8).toByte(),
+                expectedRegLo = (targetRegister and 0xFF).toByte()
+            )
+
+            if (success) {
+                Logger.withTag(TAG)
+                    .i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
+            }
+        } catch (e: Exception) {
+            Logger.withTag(TAG).e(e) { "Error toggling boiler" }
+        }
+    }
+
+    override suspend fun setSteamTemperature(temp: Int) {
+        val char = writeChar ?: return
+
+        if (temp !in 0..140) {
+            Logger.withTag(TAG).e { "Temperature $temp out of safe range!" }
+            return
+        }
+
+        val header = byteArrayOf(
+            0x01,
+            0x10,
+            0x00, 0x08,
+            0x00, 0x01,
+            0x02,
+            (temp ushr 8).toByte(),
+            (temp and 0xFF).toByte()
+        )
+
+        val fullCommand = header + calculateCRC(header)
+
+        val success = writeAndAwaitModbus(char, fullCommand, 0x10, 0x00, 0x08)
+        if (success) {
+            Logger.withTag(TAG).i { "Steam temperature set to $temp°C confirmed" }
+        }
+    }
+
+    override suspend fun setBrewTemperature(temp: Int) {
+        val char = writeChar ?: return
+
+        if (temp !in 0..110) {
+            Logger.withTag(TAG).e { "Brew temperature $temp out of range!" }
+            return
+        }
+
+        val header = byteArrayOf(
+            0x01,
+            0x10,
+            0x00, 0x09,
+            0x00, 0x01,
+            0x02,
+            (temp ushr 8).toByte(),
+            (temp and 0xFF).toByte()
+        )
+
+        val fullCommand = header + calculateCRC(header)
+
+        val success = writeAndAwaitModbus(char, fullCommand, 0x10, 0x00, 0x09)
+        if (success) {
+            Logger.withTag(TAG).i { "Brew temperature set to $temp°C confirmed" }
+        }
+    }
+
+    override suspend fun manualBrewToggle() {
+        // Register for manual brew is 0x009A
+        sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, 0x9A.toByte())
+    }
+
+    override suspend fun triggerShortPress() {
+        // Register for short press is 0x0096
+        sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, 0x96.toByte())
+    }
+
+    override suspend fun setHeatingMode(heatingMode: HeatingMode) {
+        val char = writeChar ?: return
+
+        val regAddressHi: Byte = 0x00
+        val regAddressLo: Byte = 0x16
+
+        val modeValue = if (heatingMode == HeatingMode.FullSpeed) 0x01 else 0x00
+
+        val header = byteArrayOf(
+            0x01,
+            0x10,
+            regAddressHi, regAddressLo,
+            0x00, 0x01,
+            0x02,
+            0x00, modeValue.toByte()
+        )
+
+        val fullCommand = header + calculateCRC(header)
+
+        val success = writeAndAwaitModbus(char, fullCommand, 0x10, regAddressHi, regAddressLo)
+        if (success) {
+            Logger.withTag(TAG).i { "Heating mode set to $heatingMode confirmed" }
+
+            _machineState.update { it.copy(config = it.config?.copy(heatingMode = heatingMode)) }
+        }
+    }
+
+    private suspend fun sendModbusPulse(onCommand: ByteArray, offCommand: ByteArray, label: String, regHi: Byte, regLo: Byte) {
+        val char = writeChar ?: return
+
+        try {
+            writeAndAwaitModbus(char, onCommand, 0x05, regHi, regLo)
+            delay(BREW_PULSE_MS)
+            writeAndAwaitModbus(char, offCommand, 0x05, regHi, regLo)
+
+            Logger.withTag(TAG).i { "$label pulse completed and confirmed" }
+        } catch (e: Exception) {
+            Logger.withTag(TAG).e(e) { "Failed to send $label pulse" }
+        }
+    }
+
     override fun didDiscoverDevice(
         bluetoothPeripheral: BluetoothPeripheral,
         advertisementData: Map<AdvertisementDataRetrievalKeys, Any>
     ) {
         val target = targetMacAddress ?: return
         val normalizedTarget = target.filter { it.isLetterOrDigit() }.uppercase()
-        
-        // 1. Get name from advertisementData or peripheral
-        val deviceName = advertisementData[AdvertisementDataRetrievalKeys.LocalName] as? String 
+
+        val deviceName = advertisementData[AdvertisementDataRetrievalKeys.LocalName] as? String
             ?: bluetoothPeripheral.name ?: ""
 
-        // 2. Recognize by MAC suffix in name
         val macInName = hexPattern.find(deviceName)?.value?.uppercase()
         val isOurDevice = if (macInName != null) {
             macInName == normalizedTarget
         } else {
-            // Fallback for Android where MAC is accessible directly as peripheral.uuid
             bluetoothPeripheral.uuid.filter { it.isLetterOrDigit() }.uppercase() == normalizedTarget
         }
 
@@ -186,7 +400,14 @@ class WendougeeController(
         writeChar = null
         notifyChar = null
         connectedPeripheral = null
-        _machineState.update { it.copy(connectionStatus = ConnectionStatus.Disconnected) }
+        _machineState.update {
+            it.copy(
+                connectionStatus = ConnectionStatus.Disconnected,
+                pressure = null,
+                steamBoilerTemp = null,
+                brewBoilerTemp = null
+            )
+        }
     }
 
     override fun didDiscoverServices(bluetoothPeripheral: BluetoothPeripheral) {
@@ -223,7 +444,7 @@ class WendougeeController(
 
         if (writeChar != null && notifyChar != null) {
             if (pollingJob == null || !pollingJob!!.isActive) {
-                startPolling(bluetoothPeripheral)
+                startDeviceInitialization(bluetoothPeripheral)
             }
         }
     }
@@ -233,28 +454,240 @@ class WendougeeController(
         bluetoothCharacteristic: BluetoothCharacteristic
     ) {
         val data = bluetoothCharacteristic.value ?: return
-        val hex = data.toHex()
+        logFrame(Direction.RX, bluetoothCharacteristic, data)
 
-        if (hex.startsWith("010328")) {
-            parseModbusBinaryState(data)
+        // Route raw byte array to any awaiters (suspend functions)
+        incomingFrames.tryEmit(data)
+
+        if (data.size >= 4 && data[0] == 0xFF.toByte() && data[1] == 0x55.toByte() && data[2] == 0xFF.toByte() && data[3] == 0xFF.toByte()) {
+            parseProprietaryFrame(data)
+            return
+        }
+
+        if (data.size < 3) return
+        val functionCode = data[1].toInt() and 0xFF
+
+        when (functionCode) {
+            0x03 -> {
+                val byteCount = data[2].toInt() and 0xFF
+                if (byteCount == 0x28) {
+                    parseTelemetryFrame(data) // 40 bytes: Telemetry
+                } else if (byteCount == 0x4A) {
+                    parseConfigFrame(data)    // 74 bytes: Init Configuration
+                }
+            }
+
+            0x01 -> parseShortStatusFrame(data)
+            0x05, 0x10 -> {
+                // Confirmations are now handled individually by suspended functions via incomingFrames
+            }
         }
     }
 
-    private fun parseModbusBinaryState(payload: ByteArray) {
+    private fun parseProprietaryFrame(payload: ByteArray) {
         try {
-            val steamRaw = ((payload[11].toInt() and 0xFF) shl 8) or (payload[12].toInt() and 0xFF)
-            val brewRaw = ((payload[13].toInt() and 0xFF) shl 8) or (payload[14].toInt() and 0xFF)
-            val pressureRaw = ((payload[15].toInt() and 0xFF) shl 8) or (payload[16].toInt() and 0xFF)
+            if (payload.size < 8) return
+            val command = payload[4].toInt() and 0xFF
+            val length = (payload[5].toInt() and 0xFF shl 8) or (payload[6].toInt() and 0xFF)
+
+            if (payload.size < 7 + length) return
+
+            val safeEndIndex = minOf(7 + length, payload.size)
+            val asciiString = payload.decodeToString(startIndex = 7, endIndex = safeEndIndex)
+
+            if (command == 0x04) {
+                Logger.withTag(TAG).i { "Received Serial Number: $asciiString" }
+            } else if (asciiString.contains("BOOKOO")) {
+                Logger.withTag(TAG).i { "Connected Smart Scale recognized: $asciiString" }
+            }
+        } catch (e: Exception) {
+            Logger.withTag(TAG).e(e) { "Error parsing proprietary frame" }
+        }
+    }
+
+    private fun parseConfigFrame(payload: ByteArray) {
+        try {
+            if (payload.size < ConfigFrame.MIN_HEADER_SIZE) return
+
+            // Helper to extract 16-bit unsigned integers from the data payload
+            fun dataU16be(off: Int) = payload.u16be(ConfigFrame.DATA_START + off)
+
+            // General maintenance settings
+            val cleaningTimeSec = dataU16be(0) / 10f       // Reg 0
+            val cleaningStandbySec = dataU16be(2) / 10f    // Reg 1
+            val cleaningCount = dataU16be(4)               // Reg 2
+
+            // Boiler states (Active-Low: 0 = ON, 1 = OFF)
+            val isSteamBoilerEnabled = dataU16be(12) == 0  // Reg 6
+            val isBrewBoilerEnabled = dataU16be(14) == 0   // Reg 7
+
+            // Target temperatures
+            val targetSteam = dataU16be(16).toFloat()          // Reg 8
+            val targetBrew = dataU16be(18).toFloat()           // Reg 9
+
+            // Manual profile (M) parameters
+            val manualBrewTimeSec = dataU16be(34) / 10f        // Reg 17
+            val unknown = dataU16be(36).toFloat()       // Reg 18
+            val manualBrewPressure = dataU16be(38) / 10f       // Reg 19
+
+            // Hardware flags
+            val isFullSpeedHeating = dataU16be(44) == 1    // Reg 22 (1 = Full Speed, 0 = Pulse)
+            val waterAlarm = dataU16be(52) == 1   // Reg 26 // Potentially water tank empty
+
+            Logger.withTag(TAG).i {
+                """Config parsed: 
+                | Target Brew=${targetBrew}°C, Target Steam=${targetSteam}°C 
+                | Steam Boiler ON=${isSteamBoilerEnabled}, Brew Boiler ON=${isBrewBoilerEnabled}
+                | Manual M: Time=${manualBrewTimeSec}s, Unknown=${unknown}°C, Pressure=${manualBrewPressure}bar
+                | Heating Mode: ${if (isFullSpeedHeating) "Full Speed" else "Pulse"}
+                | Water Alarm: ${if (waterAlarm) "NO WATER" else "WATER"}
+                | Cleaning: Time=${cleaningTimeSec}s, Standby=${cleaningStandbySec}s, Count=${cleaningCount}
+                """.trimMargin()
+            }
 
             _machineState.update {
                 it.copy(
-                    steamBoilerTemp = steamRaw / 10.0f,
-                    brewBoilerTemp = brewRaw / 10.0f,
-                    pressure = pressureRaw / 10.0f
+                    config = MachineState.Config(
+                        targetSteamTemp = targetSteam,
+                        targetBrewTemp = targetBrew,
+                        steamBoilerEnabled = isSteamBoilerEnabled,
+                        brewBoilerEnabled = isBrewBoilerEnabled,
+                        manualBrewTimeSec = manualBrewTimeSec,
+                        manualBrewPressure = manualBrewPressure,
+                        heatingMode = if (isFullSpeedHeating) HeatingMode.FullSpeed else HeatingMode.Pulse,
+                        waterAlarm = waterAlarm,
+                        cleaningTimeSec = cleaningTimeSec,
+                        cleaningStandbySec = cleaningStandbySec,
+                        cleaningCount = cleaningCount
+                    )
                 )
             }
         } catch (e: Exception) {
-            Logger.withTag(TAG).e(e) { "Modbus parser error" }
+            Logger.withTag(TAG).e(e) { "Config frame parser error" }
+        }
+    }
+
+    private fun parseShortStatusFrame(payload: ByteArray) {
+        if (payload.size < 4) return
+        val statusByte = payload[3].toInt() and 0xFF
+        val isProfile = (statusByte and 0x02) != 0
+        val isManual = (statusByte and 0x10) != 0
+
+        val brewStatus = when {
+            isManual -> BrewStatus.Manual
+            isProfile -> BrewStatus.Profile
+            else -> BrewStatus.Idle
+        }
+        _machineState.update { it.copy(brewStatus = brewStatus) }
+    }
+
+    private fun parseTelemetryFrame(payload: ByteArray) {
+        try {
+            if (payload.size < TelemetryFrame.MIN_HEADER_SIZE) return
+
+            fun dataU8(off: Int) = payload.u8(TelemetryFrame.DATA_START + off)
+            fun dataU16be(off: Int) = payload.u16be(TelemetryFrame.DATA_START + off)
+
+            val steamActual = dataU16be(TelemetryFrame.STEAM_TEMP) / 10f
+            val brewActual = dataU16be(TelemetryFrame.BREW_TEMP) / 10f
+            val pressure = dataU16be(TelemetryFrame.PRESSURE) / 10f
+
+            val time = dataU8(TelemetryFrame.TIME)
+            val volume = dataU8(TelemetryFrame.VOLUME)
+            val flowRate = dataU8(TelemetryFrame.FLOW_RATE)
+
+            _machineState.update {
+                it.copy(
+                    steamBoilerTemp = steamActual,
+                    brewBoilerTemp = brewActual,
+                    pressure = pressure,
+                    time = time,
+                    volume = volume,
+                    flowRate = flowRate
+                )
+            }
+        } catch (e: Exception) {
+            Logger.withTag(TAG).e(e) { "Modbus telemetry parser error" }
+        }
+    }
+
+    private object ConfigFrame {
+        const val DATA_START = 3
+        const val MIN_HEADER_SIZE = 3 + 74 + 2
+    }
+
+    private object TelemetryFrame {
+        const val DATA_START = 3
+        const val TIME = 3
+        const val STEAM_TEMP = 8
+        const val BREW_TEMP = 10
+        const val PRESSURE = 12
+        const val VOLUME = 15
+        const val FLOW_RATE = 37
+        const val MIN_HEADER_SIZE = 3 + 40 + 2
+    }
+
+    private fun ByteArray.u8(i: Int): Int = this[i].toInt() and 0xFF
+    private fun ByteArray.u16be(i: Int): Int = (u8(i) shl 8) or u8(i + 1)
+
+    private fun calculateCRC(bytes: ByteArray): ByteArray {
+        var crc = 0xFFFF
+        for (b in bytes) {
+            crc = crc xor (b.toInt() and 0xFF)
+            repeat(8) {
+                crc = if (crc and 0x0001 != 0) {
+                    (crc ushr 1) xor 0xA001
+                } else {
+                    crc ushr 1
+                }
+            }
+        }
+        return byteArrayOf(
+            (crc and 0xFF).toByte(),
+            ((crc ushr 8) and 0xFF).toByte()
+        )
+    }
+
+    private enum class Direction { TX, RX }
+
+    private fun logFrame(
+        dir: Direction,
+        characteristic: BluetoothCharacteristic,
+        bytes: ByteArray,
+        note: String? = null
+    ) {
+        val uuid = characteristic.name?.lowercase() ?: "unknown-uuid"
+        val hex = bytes.toHex()
+
+        val isProprietary = bytes.size >= 4 && bytes[0] == 0xFF.toByte() && bytes[1] == 0x55.toByte()
+        val fc = bytes.getOrNull(1)?.toInt()?.and(0xFF)
+
+        val fcName = if (isProprietary) {
+            "Proprietary FF55"
+        } else {
+            when (fc) {
+                0x01 -> "ReadCoils"
+                0x03 -> "ReadHoldingRegisters"
+                0x05 -> "WriteSingleCoil"
+                0x06 -> "WriteSingleRegister"
+                0x10 -> "WriteMultipleRegisters"
+                else -> null
+            }
+        }
+
+        Logger.withTag(TAG).d {
+            buildString {
+                append("$dir uuid=$uuid len=${bytes.size}")
+                append(" fc=")
+                if (isProprietary) append(fcName)
+                else if (fc != null) {
+                    append("0x${fc.toString(16)}")
+                    fcName?.let { append("($it)") }
+                } else append("?")
+
+                if (note != null) append(" note=$note")
+                append(" hex=$hex")
+            }
         }
     }
 }

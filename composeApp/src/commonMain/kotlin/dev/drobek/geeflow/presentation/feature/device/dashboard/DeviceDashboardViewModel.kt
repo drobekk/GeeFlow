@@ -9,16 +9,21 @@ import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
 import dev.drobek.geeflow.platform.permissions.PermissionsController
 import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.CleaningClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.DeviceClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.DialogDismissed
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.FlowControlClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ManualBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.OpenSystemSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.PermissionDialogResumed
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Idle
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Manual
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Profile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Connected
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Connecting
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Disconnected
@@ -54,20 +59,28 @@ internal class DeviceDashboardViewModel(
         is CleaningClicked -> Unit
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
-        is BrewClicked -> deviceController.triggerManualBrew()
+        is ManualBrewClicked -> launch { deviceController.manualBrewToggle() }
+        is StopBrewClicked -> launch { deviceController.manualBrewToggle() }
+        is FlowControlClicked -> Unit // TODO
+        is DeviceDashboardEvent.BrewClicked -> launch { deviceController.triggerShortPress() }
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
     }
 
     private fun updateMachineStateUi(state: MachineState) = modify {
         copy(
             device = device.copy(
-                brewBoilerTemp = state.brewBoilerTemp.toString(),
-                steamBoilerTemp = state.steamBoilerTemp.toString(),
-                pressure = state.pressure.toString(),
+                brewBoilerTemp = state.brewBoilerTemp?.toString(),
+                steamBoilerTemp = state.steamBoilerTemp?.toString(),
+                pressure = state.pressure?.toString(),
                 connectionStatus = when (state.connectionStatus) {
                     ConnectionStatus.Disconnected -> Disconnected
                     ConnectionStatus.Connecting -> Connecting
                     ConnectionStatus.Connected -> Connected
+                },
+                brewStatus = when (state.brewStatus) {
+                    MachineState.BrewStatus.Manual -> Manual
+                    MachineState.BrewStatus.Profile -> Profile
+                    else -> Idle
                 }
             )
         )

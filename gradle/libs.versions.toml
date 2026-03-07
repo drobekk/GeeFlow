@@ -30,7 +30,6 @@ qrCodeScanner = "0.7.1"
 kotlinx-serialization = "1.10.0"
 moko = "0.20.1"
 
-
 [libraries]
 blue-falcon = { module = "dev.bluefalcon:blue-falcon", version.ref = "blueFalcon" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }

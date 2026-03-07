@@ -38,7 +38,7 @@ internal class AddDeviceViewModel(
 ) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(AddDeviceViewState(platform.getMethod())) {
 
     init {
-        startScanning()
+        if (viewState.value.method is NearbyDevices) startScanning()
         launch { nearbyDevicesController.discoveredDevices.collect(::onDevicesFound) }
     }
 
@@ -63,7 +63,7 @@ internal class AddDeviceViewModel(
             }
         }
 
-        is Resumed -> startScanning()
+        is Resumed -> (viewState.value.method as? NearbyDevices)?.let { startScanning() }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
     }
 
