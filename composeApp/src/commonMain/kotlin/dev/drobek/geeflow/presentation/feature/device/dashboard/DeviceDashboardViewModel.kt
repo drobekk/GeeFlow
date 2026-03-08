@@ -33,8 +33,8 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class DeviceDashboardViewModel(
-    args: DeviceDestinations.DeviceDashboard,
     getDevice: GetDeviceUseCase,
+    private val args: DeviceDestinations.DeviceDashboard,
     private val deviceController: DeviceController,
     private val permissionsController: PermissionsController
 ) : BaseViewModel<DeviceDashboardViewState, DeviceLitViewModelEvent>(DeviceDashboardViewState()) {
@@ -53,7 +53,7 @@ internal class DeviceDashboardViewModel(
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
         is ConnectionButtonClicked -> toggleConnection()
         is DeviceClicked -> emitEvent(Navigation.DeviceList)
-        is SettingsClicked -> Unit
+        is SettingsClicked -> emitEvent(Navigation.Settings(args.id))
         is UserClicked -> Unit
         is ConnectedDevicesClicked -> Unit
         is CleaningClicked -> Unit

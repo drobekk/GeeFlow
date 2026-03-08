@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import org.koin.core.annotation.Singleton
 import kotlin.uuid.ExperimentalUuidApi
@@ -41,6 +43,7 @@ class WendougeeController(
     override val machineState: StateFlow<MachineState> = _machineState.asStateFlow()
 
     private val incomingFrames = MutableSharedFlow<ByteArray>(extraBufferCapacity = 20)
+    private val bleMutex = Mutex()
 
     private var targetMacAddress: String? = null
     private var connectedPeripheral: BluetoothPeripheral? = null
@@ -66,9 +69,6 @@ class WendougeeController(
         private val CMD_POLLING_LONG = "0103057C001484D1".decodeHex()
         private val CMD_POLLING_SHORT = "010100B600079C2E".decodeHex()
 
-        private val CMD_STATE_ON_PROP = "ff55ffff83000100d7".decodeHex()
-        private val CMD_STATE_OFF_PROP = "ff55ffff83000101d8".decodeHex()
-
         private val CMD_MANUAL_ON = "0105009aff00ac15".decodeHex()
         private val CMD_MANUAL_OFF = "0105009a0000ede5".decodeHex()
 
@@ -79,7 +79,7 @@ class WendougeeController(
         private const val CTRL_UUID_SUFFIX = "2c10"
 
         private const val CONNECTION_TIMEOUT_MS = 10000L
-        private const val POLLING_INTERVAL_MS = 100000L
+        private const val POLLING_INTERVAL_MS = 200L
         private const val BREW_PULSE_MS = 100L
 
         private fun String.decodeHex(): ByteArray {
@@ -106,14 +106,18 @@ class WendougeeController(
             try {
                 notifyChar?.let { ctrlChar ->
                     Logger.withTag(TAG).d { "Sending proprietary INIT handshake" }
-                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, ctrlChar, CMD_INIT_HANDSHAKE, 2)
+                    bleMutex.withLock {
+                        blueFalcon.writeCharacteristicWithoutEncoding(peripheral, ctrlChar, CMD_INIT_HANDSHAKE, 2)
+                    }
                 }
 
                 delay(300)
 
                 writeChar?.let { dataChar ->
-                    Logger.withTag(TAG).d { "Requesting static configuration (Target temps, etc.)" }
-                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, dataChar, CMD_READ_CONFIG_LONG, 2)
+                    Logger.withTag(TAG).d { "Requesting static configuration" }
+                    bleMutex.withLock {
+                        blueFalcon.writeCharacteristicWithoutEncoding(peripheral, dataChar, CMD_READ_CONFIG_LONG, 2)
+                    }
                 }
 
                 delay(500)
@@ -131,13 +135,17 @@ class WendougeeController(
 
     private suspend fun pollData(peripheral: BluetoothPeripheral) {
         writeChar?.let { char ->
-            logFrame(Direction.TX, char, CMD_POLLING_LONG, note = "poll-long")
-            blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_LONG, 2)
+            bleMutex.withLock {
+                logFrame(Direction.TX, char, CMD_POLLING_LONG, note = "poll-long")
+                blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_LONG, 2)
+            }
 
-            delay(80)
+            delay(100)
 
-            logFrame(Direction.TX, char, CMD_POLLING_SHORT, note = "poll-short")
-            blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_SHORT, 2)
+            bleMutex.withLock {
+                logFrame(Direction.TX, char, CMD_POLLING_SHORT, note = "poll-short")
+                blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_SHORT, 2)
+            }
         }
     }
 
@@ -146,8 +154,7 @@ class WendougeeController(
     }
 
     /**
-     * Helper function to send a command and await the exact Modbus confirmation.
-     * Starts listening BEFORE sending to prevent race conditions.
+     * Sends a command safely wrapped in a Mutex, and suspends until the exact Modbus ACK is received.
      */
     private suspend fun writeAndAwaitModbus(
         char: BluetoothCharacteristic,
@@ -160,20 +167,18 @@ class WendougeeController(
         val peripheral = connectedPeripheral ?: return false
 
         return try {
-            withTimeout(timeoutMs) {
-                // Subscribe to incoming frames first
-                val ackDeferred = async {
-                    incomingFrames.first { data ->
-                        data.size >= 4 && data[1] == expectedFc && data[2] == expectedRegHi && data[3] == expectedRegLo
+            bleMutex.withLock {
+                withTimeout(timeoutMs) {
+                    val ackDeferred = async {
+                        incomingFrames.first { data ->
+                            data.size >= 4 && data[1] == expectedFc && data[2] == expectedRegHi && data[3] == expectedRegLo
+                        }
                     }
+
+                    blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, payload, 2)
+                    ackDeferred.await()
+                    true
                 }
-
-                // Send the command
-                blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, payload, 2)
-
-                // Suspend until the specific frame arrives
-                ackDeferred.await()
-                true
             }
         } catch (e: TimeoutCancellationException) {
             Logger.withTag(TAG).w { "Timeout waiting for ACK: FC=$expectedFc Reg=$expectedRegHi$expectedRegLo" }
@@ -217,41 +222,44 @@ class WendougeeController(
     }
 
     override suspend fun setBoilerState(boilerType: BoilerType, enabled: Boolean) {
-        val peripheral = connectedPeripheral ?: return
-        val ctrlChar = notifyChar ?: return
-        val dataChar = writeChar ?: return
+        val char = writeChar ?: return
 
         val targetRegister = if (boilerType == BoilerType.Steam) REG_STEAM_STATE else REG_BREW_STATE
+        val stateValue = if (enabled) 0x00 else 0x01 // Active-Low logic: 0x00 = ON, 0x01 = OFF
+
+        val header = byteArrayOf(
+            0x01, 0x10,
+            (targetRegister ushr 8).toByte(), (targetRegister and 0xFF).toByte(),
+            0x00, 0x01,
+            0x02,
+            0x00, stateValue.toByte()
+        )
+        val fullModbus = header + calculateCRC(header)
 
         try {
-            val propCmd = if (enabled) CMD_STATE_ON_PROP else CMD_STATE_OFF_PROP
-            blueFalcon.writeCharacteristicWithoutEncoding(peripheral, ctrlChar, propCmd, 2)
-
-            delay(300) // Small delay before sending Modbus part
-
-            val stateValue = if (enabled) 0x00 else 0x01
-            val header = byteArrayOf(
-                0x01, 0x10,
-                (targetRegister ushr 8).toByte(), (targetRegister and 0xFF).toByte(),
-                0x00, 0x01,
-                0x02,
-                0x00, stateValue.toByte()
-            )
-            val fullModbus = header + calculateCRC(header)
-
             val success = writeAndAwaitModbus(
-                dataChar, fullModbus,
+                char, fullModbus,
                 expectedFc = 0x10,
                 expectedRegHi = (targetRegister ushr 8).toByte(),
                 expectedRegLo = (targetRegister and 0xFF).toByte()
             )
 
             if (success) {
-                Logger.withTag(TAG)
-                    .i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
+                Logger.withTag(TAG).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
+                _machineState.update { currentState ->
+                    val currentConfig = currentState.config ?: return@update currentState
+                    val newConfig = if (boilerType == BoilerType.Steam) {
+                        currentConfig.copy(steamBoilerEnabled = enabled)
+                    } else {
+                        currentConfig.copy(brewBoilerEnabled = enabled)
+                    }
+                    currentState.copy(config = newConfig)
+                }
+            } else {
+                Logger.withTag(TAG).e { "Failed to receive Modbus ACK for Boiler State change" }
             }
         } catch (e: Exception) {
-            Logger.withTag(TAG).e(e) { "Error toggling boiler" }
+            Logger.withTag(TAG).e(e) { "Error toggling boiler state" }
         }
     }
 
@@ -278,6 +286,11 @@ class WendougeeController(
         val success = writeAndAwaitModbus(char, fullCommand, 0x10, 0x00, 0x08)
         if (success) {
             Logger.withTag(TAG).i { "Steam temperature set to $temp°C confirmed" }
+
+            _machineState.update { currentState ->
+                val currentConfig = currentState.config ?: return@update currentState
+                currentState.copy(config = currentConfig.copy(targetSteamTemp = temp.toFloat()))
+            }
         }
     }
 
@@ -304,16 +317,19 @@ class WendougeeController(
         val success = writeAndAwaitModbus(char, fullCommand, 0x10, 0x00, 0x09)
         if (success) {
             Logger.withTag(TAG).i { "Brew temperature set to $temp°C confirmed" }
+
+            _machineState.update { currentState ->
+                val currentConfig = currentState.config ?: return@update currentState
+                currentState.copy(config = currentConfig.copy(targetBrewTemp = temp.toFloat()))
+            }
         }
     }
 
     override suspend fun manualBrewToggle() {
-        // Register for manual brew is 0x009A
         sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, 0x9A.toByte())
     }
 
     override suspend fun triggerShortPress() {
-        // Register for short press is 0x0096
         sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, 0x96.toByte())
     }
 
@@ -456,7 +472,7 @@ class WendougeeController(
         val data = bluetoothCharacteristic.value ?: return
         logFrame(Direction.RX, bluetoothCharacteristic, data)
 
-        // Route raw byte array to any awaiters (suspend functions)
+        // Route raw byte array to any awaiters
         incomingFrames.tryEmit(data)
 
         if (data.size >= 4 && data[0] == 0xFF.toByte() && data[1] == 0x55.toByte() && data[2] == 0xFF.toByte() && data[3] == 0xFF.toByte()) {
@@ -471,15 +487,14 @@ class WendougeeController(
             0x03 -> {
                 val byteCount = data[2].toInt() and 0xFF
                 if (byteCount == 0x28) {
-                    parseTelemetryFrame(data) // 40 bytes: Telemetry
+                    parseTelemetryFrame(data)
                 } else if (byteCount == 0x4A) {
-                    parseConfigFrame(data)    // 74 bytes: Init Configuration
+                    parseConfigFrame(data)
                 }
             }
-
             0x01 -> parseShortStatusFrame(data)
             0x05, 0x10 -> {
-                // Confirmations are now handled individually by suspended functions via incomingFrames
+                // Confirmations handled by suspended functions
             }
         }
     }
@@ -509,36 +524,31 @@ class WendougeeController(
         try {
             if (payload.size < ConfigFrame.MIN_HEADER_SIZE) return
 
-            // Helper to extract 16-bit unsigned integers from the data payload
             fun dataU16be(off: Int) = payload.u16be(ConfigFrame.DATA_START + off)
 
-            // General maintenance settings
-            val cleaningTimeSec = dataU16be(0) / 10f       // Reg 0
-            val cleaningStandbySec = dataU16be(2) / 10f    // Reg 1
-            val cleaningCount = dataU16be(4)               // Reg 2
+            val cleaningTimeSec = dataU16be(0) / 10f
+            val cleaningStandbySec = dataU16be(2) / 10f
+            val cleaningCount = dataU16be(4)
 
-            // Boiler states (Active-Low: 0 = ON, 1 = OFF)
-            val isSteamBoilerEnabled = dataU16be(12) == 0  // Reg 6
-            val isBrewBoilerEnabled = dataU16be(14) == 0   // Reg 7
+            val isSteamBoilerEnabled = dataU16be(12) == 0
+            val isBrewBoilerEnabled = dataU16be(14) == 0
 
-            // Target temperatures
-            val targetSteam = dataU16be(16).toFloat()          // Reg 8
-            val targetBrew = dataU16be(18).toFloat()           // Reg 9
+            // Target temperatures are whole values (not scaled by 10)
+            val targetSteam = dataU16be(16).toFloat()
+            val targetBrew = dataU16be(18).toFloat()
 
-            // Manual profile (M) parameters
-            val manualBrewTimeSec = dataU16be(34) / 10f        // Reg 17
-            val unknown = dataU16be(36).toFloat()       // Reg 18
-            val manualBrewPressure = dataU16be(38) / 10f       // Reg 19
+            val manualBrewTimeSec = dataU16be(34) / 10f
+            val unknownReg18 = dataU16be(36).toFloat()
+            val manualBrewPressure = dataU16be(38) / 10f
 
-            // Hardware flags
-            val isFullSpeedHeating = dataU16be(44) == 1    // Reg 22 (1 = Full Speed, 0 = Pulse)
-            val waterAlarm = dataU16be(52) == 1   // Reg 26 // Potentially water tank empty
+            val isFullSpeedHeating = dataU16be(44) == 1
+            val waterAlarm = dataU16be(52) == 1
 
             Logger.withTag(TAG).i {
                 """Config parsed: 
                 | Target Brew=${targetBrew}°C, Target Steam=${targetSteam}°C 
                 | Steam Boiler ON=${isSteamBoilerEnabled}, Brew Boiler ON=${isBrewBoilerEnabled}
-                | Manual M: Time=${manualBrewTimeSec}s, Unknown=${unknown}°C, Pressure=${manualBrewPressure}bar
+                | Manual M: Time=${manualBrewTimeSec}s, UnknownReg18=${unknownReg18}, Pressure=${manualBrewPressure}bar
                 | Heating Mode: ${if (isFullSpeedHeating) "Full Speed" else "Pulse"}
                 | Water Alarm: ${if (waterAlarm) "NO WATER" else "WATER"}
                 | Cleaning: Time=${cleaningTimeSec}s, Standby=${cleaningStandbySec}s, Count=${cleaningCount}
@@ -555,10 +565,10 @@ class WendougeeController(
                         manualBrewTimeSec = manualBrewTimeSec,
                         manualBrewPressure = manualBrewPressure,
                         heatingMode = if (isFullSpeedHeating) HeatingMode.FullSpeed else HeatingMode.Pulse,
-                        waterAlarm = waterAlarm,
                         cleaningTimeSec = cleaningTimeSec,
                         cleaningStandbySec = cleaningStandbySec,
-                        cleaningCount = cleaningCount
+                        cleaningCount = cleaningCount,
+                        waterAlarm = waterAlarm
                     )
                 )
             }

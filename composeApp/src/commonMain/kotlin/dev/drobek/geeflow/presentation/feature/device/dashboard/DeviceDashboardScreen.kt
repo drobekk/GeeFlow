@@ -51,8 +51,9 @@ internal fun DeviceDashboardScreen(
 
     EventsDispatcher(viewModel.events) {
         when (it) {
-            Navigation.Back -> navigation.back()
-            Navigation.DeviceList -> navigation.showDevicesList()
+            is Navigation.Back -> navigation.back()
+            is Navigation.DeviceList -> navigation.showDevicesList()
+            is Navigation.Settings -> navigation.showQuickSettings(it.id)
         }
     }
 

@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations.AddDevice
 import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations.DeviceDashboard
 import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations.DeviceList
+import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.DeviceNavigation
 import dev.drobek.geeflow.presentation.feature.intro.IntroNavigation
 
@@ -34,5 +35,9 @@ class AppNavigation(
 
     override fun showDevicesList() {
         backStack.add(DeviceList)
+    }
+
+    override fun showQuickSettings(id: String) {
+        backStack.add(QuickSettings(id))
     }
 }

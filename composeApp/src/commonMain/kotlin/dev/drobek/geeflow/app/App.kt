@@ -1,22 +1,18 @@
 package dev.drobek.geeflow.app
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import dev.drobek.geeflow.app.navigation.AppNavigation
 import dev.drobek.geeflow.app.navigation.GetInitialDestinationUseCase
 import dev.drobek.geeflow.app.navigation.destinationsSavedStateConfiguration
-import dev.drobek.geeflow.domain.device.usecase.GetDevicesUseCase
-import dev.drobek.geeflow.domain.user.usecase.GetUsersUseCase
-import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
 import dev.drobek.geeflow.presentation.feature.device.deviceEntries
-import dev.drobek.geeflow.presentation.feature.intro.IntroDestinations
 import dev.drobek.geeflow.presentation.feature.intro.introEntries
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import org.koin.compose.KoinApplication
@@ -42,6 +38,7 @@ private fun RootNavigation(closeApp: () -> Unit) {
             backStack = backStack
         )
     }
+    val dialogSceneStrategy = remember { DialogSceneStrategy<NavKey>() }
 
     NavDisplay(
         entryDecorators = listOf(
@@ -49,6 +46,7 @@ private fun RootNavigation(closeApp: () -> Unit) {
             rememberViewModelStoreNavEntryDecorator()
         ),
         onBack = { backStack.removeLast() },
+        sceneStrategy = dialogSceneStrategy,
         backStack = backStack,
         entryProvider = entryProvider {
             introEntries(navigator)

@@ -5,4 +5,5 @@ sealed interface DeviceLitViewModelEvent
 sealed interface Navigation : DeviceLitViewModelEvent {
     data object Back : Navigation
     data object DeviceList : Navigation
+    data class Settings(val id: String) : Navigation
 }
