@@ -56,11 +56,11 @@ internal class DeviceDashboardViewModel(
         is SettingsClicked -> emitEvent(Navigation.Settings(args.id))
         is UserClicked -> Unit
         is ConnectedDevicesClicked -> Unit
-        is CleaningClicked -> Unit
+        is CleaningClicked -> emitEvent(Navigation.Clean(args.id))
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
-        is ManualBrewClicked -> launch { deviceController.manualBrewToggle() }
-        is StopBrewClicked -> launch { deviceController.manualBrewToggle() }
+        is ManualBrewClicked -> launch { deviceController.startManualBrewing() }
+        is StopBrewClicked -> launch { deviceController.stopManualBrewing() }
         is FlowControlClicked -> Unit // TODO
         is DeviceDashboardEvent.BrewClicked -> launch { deviceController.triggerShortPress() }
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }

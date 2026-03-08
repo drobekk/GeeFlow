@@ -16,7 +16,7 @@ fun GeeFlowIconButton(
     painter: Painter,
     contentDescription: String,
     onClick: () -> Unit,
-    enabled: Boolean,
+    enabled: Boolean = true,
     size: Dp = 80.dp,
     shape: Shape = CircleShape,
     modifier: Modifier = Modifier

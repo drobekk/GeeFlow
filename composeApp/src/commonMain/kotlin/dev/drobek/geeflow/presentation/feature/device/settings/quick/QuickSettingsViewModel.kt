@@ -5,7 +5,7 @@ import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
 import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.BrewTempChanged
-import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.DismissClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.MoreSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.SaveClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.SteamBoilerToggled
@@ -60,7 +60,7 @@ internal class QuickSettingsViewModel(
             brewTemp?.let { deviceController.setBrewTemperature(it) }
             emitEvent(Navigation.Back)
         }
-        is DismissClicked -> emitEvent(Navigation.Back)
+        is CloseClicked -> emitEvent(Navigation.Back)
         is MoreSettingsClicked -> Unit
     }
 }

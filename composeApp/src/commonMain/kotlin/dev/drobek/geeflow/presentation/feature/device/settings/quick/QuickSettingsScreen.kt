@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +27,7 @@ import dev.drobek.geeflow.presentation.feature.device.settings.navigation.Device
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.VerticalSpacer
+import dev.drobek.geeflow.ui.components.GeeDialogTopBar
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -32,7 +35,8 @@ import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_brew_boiler
 import geeflow.composeapp.generated.resources.common_confirm
 import geeflow.composeapp.generated.resources.common_steam_boiler
-import geeflow.composeapp.generated.resources.quick_settings_more
+import geeflow.composeapp.generated.resources.settings_quick_more
+import geeflow.composeapp.generated.resources.settings_quick_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -61,10 +65,16 @@ private fun QuickSettingsContent(
 ) = Column(
     modifier = Modifier
         .background(MaterialTheme.colorScheme.background, RoundedCornerShape(16.dp))
-        .padding(24.dp)
+        .verticalScroll(rememberScrollState())
+        .padding(horizontal = 24.dp, vertical = 16.dp)
         .fillMaxWidth(),
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
+    GeeDialogTopBar(
+        title = stringResource(Res.string.settings_quick_title),
+        onCloseClick = { onEvent(QuickSettingsEvent.CloseClicked) }
+    )
+    VerticalSpacer(16.dp)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -162,7 +172,7 @@ private fun Buttons(
 ) {
     TextButton(
         onClick = { onEvent(QuickSettingsEvent.MoreSettingsClicked) },
-        content = { Text(stringResource(Res.string.quick_settings_more)) }
+        content = { Text(stringResource(Res.string.settings_quick_more)) }
     )
     Button(
         onClick = { onEvent(QuickSettingsEvent.SaveClicked) },

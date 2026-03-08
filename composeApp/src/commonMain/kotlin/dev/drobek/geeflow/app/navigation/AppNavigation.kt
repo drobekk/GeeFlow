@@ -47,4 +47,8 @@ class AppNavigation(
     override fun showQuickSettings(id: String) {
         backStack.add(DeviceSettingsDestinations.QuickSettings(id))
     }
+
+    override fun showClean(id: String) {
+        backStack.add(DeviceSettingsDestinations.Clean(id))
+    }
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
+import dev.drobek.geeflow.ui.WaveOrientation
 import dev.drobek.geeflow.ui.conditional
 import dev.drobek.geeflow.ui.isExpanded
 import geeflow.composeapp.generated.resources.Res
@@ -198,7 +199,8 @@ fun GeeFlowScaffoldCompact(
             topBar()
             WaveDivider(
                 color = MaterialTheme.colorScheme.surfaceContainer,
-                orientation = WaveOrientation.Horizontal
+                orientation = WaveOrientation.Horizontal,
+                reversed = true
             )
         }
     },

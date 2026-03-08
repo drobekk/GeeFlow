@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import kotlinx.coroutines.launch
 
@@ -55,7 +56,8 @@ fun GeeFlowInfinitePicker(
 ) {
     if (items.isEmpty()) return
 
-    val itemHeight = 48.dp
+    val itemHeightSp = 38.sp
+    val itemHeight = with(LocalDensity.current) { itemHeightSp.toDp() }
     val totalHeight = itemHeight * 3
     val density = LocalDensity.current
     val itemHeightPx = with(density) { itemHeight.toPx() }
@@ -122,7 +124,7 @@ fun GeeFlowInfinitePicker(
                         modifier = Modifier
                             .height(itemHeight)
                             .fillMaxWidth()
-                            .padding(horizontal = 32.dp, vertical = 12.dp)
+                            .padding(horizontal = 32.dp, vertical = 8.dp)
                             .wrapContentHeight(Alignment.CenterVertically)
                     )
                 }
@@ -130,11 +132,11 @@ fun GeeFlowInfinitePicker(
 
             Surface(
                 color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(itemHeight)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 8.dp)
                     .scrollable(
                         state = listState,
                         reverseDirection = true,

@@ -75,6 +75,9 @@ class WendougeeController(
         private val CMD_SHORT_PRESS_ON = "01050096ff006c16".decodeHex()
         private val CMD_SHORT_PRESS_OFF = "0105009600002de6".decodeHex()
 
+        private val CMD_CLEANING_ON = "0105009bff00fdd5".decodeHex()
+        private val CMD_CLEANING_OFF = "0105009b0000bc25".decodeHex()
+
         private const val DATA_UUID_SUFFIX = "2b10"
         private const val CTRL_UUID_SUFFIX = "2c10"
 
@@ -245,7 +248,8 @@ class WendougeeController(
             )
 
             if (success) {
-                Logger.withTag(TAG).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
+                Logger.withTag(TAG)
+                    .i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
                 _machineState.update { currentState ->
                     val currentConfig = currentState.config ?: return@update currentState
                     val newConfig = if (boilerType == BoilerType.Steam) {
@@ -325,12 +329,74 @@ class WendougeeController(
         }
     }
 
-    override suspend fun manualBrewToggle() {
-        sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, 0x9A.toByte())
+    override suspend fun startManualBrewing() {
+        if (_machineState.value.brewStatus == BrewStatus.Idle) {
+            Logger.withTag(TAG).i { "Starting manual brew cycle..." }
+            sendModbusPulse(
+                onCommand = CMD_MANUAL_ON,
+                offCommand = CMD_MANUAL_OFF,
+                label = "Manual Brew",
+                regHi = 0x00,
+                regLo = 0x9A.toByte()
+            )
+        } else {
+            Logger.withTag(TAG).w { "Machine is not idle, ignoring manual brew request." }
+        }
+    }
+
+    override suspend fun stopManualBrewing() {
+        if (_machineState.value.brewStatus == BrewStatus.Manual) {
+            Logger.withTag(TAG).i { "Stopping manual brew cycle..." }
+            sendModbusPulse(
+                onCommand = CMD_MANUAL_ON,
+                offCommand = CMD_MANUAL_OFF,
+                label = "Manual Brew",
+                regHi = 0x00,
+                regLo = 0x9A.toByte()
+            )
+        } else {
+            Logger.withTag(TAG).w { "Machine is not in manual brew, ignoring stop request." }
+        }
     }
 
     override suspend fun triggerShortPress() {
-        sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, 0x96.toByte())
+        sendModbusPulse(
+            onCommand = CMD_SHORT_PRESS_ON,
+            offCommand = CMD_SHORT_PRESS_OFF,
+            label = "Short Press",
+            regHi = 0x00,
+            regLo = 0x96.toByte()
+        )
+    }
+
+    override suspend fun startCleaning() {
+        if (_machineState.value.brewStatus == BrewStatus.Idle) {
+            Logger.withTag(TAG).i { "Sending start signal for cleaning..." }
+            sendModbusPulse(
+                onCommand = CMD_CLEANING_ON,
+                offCommand = CMD_CLEANING_OFF,
+                label = "Cleaning Procedure",
+                regHi = 0x00,
+                regLo = 0x9B.toByte()
+            )
+        } else {
+            Logger.withTag(TAG).w { "Machine is idle, ignoring start request." }
+        }
+    }
+
+    override suspend fun stopCleaning() {
+        if (_machineState.value.brewStatus == BrewStatus.Cleaning) {
+            Logger.withTag(TAG).i { "Sending stop signal for cleaning..." }
+            sendModbusPulse(
+                onCommand = CMD_CLEANING_ON,
+                offCommand = CMD_CLEANING_OFF,
+                label = "Stop Cleaning",
+                regHi = 0x00,
+                regLo = 0x9B.toByte()
+            )
+        } else {
+            Logger.withTag(TAG).w { "Machine is not cleaning, ignoring stop request." }
+        }
     }
 
     override suspend fun setHeatingMode(heatingMode: HeatingMode) {
@@ -492,6 +558,7 @@ class WendougeeController(
                     parseConfigFrame(data)
                 }
             }
+
             0x01 -> parseShortStatusFrame(data)
             0x05, 0x10 -> {
                 // Confirmations handled by suspended functions
@@ -582,10 +649,12 @@ class WendougeeController(
         val statusByte = payload[3].toInt() and 0xFF
         val isProfile = (statusByte and 0x02) != 0
         val isManual = (statusByte and 0x10) != 0
+        val isCleaning = (statusByte and 0x20) != 0
 
         val brewStatus = when {
             isManual -> BrewStatus.Manual
             isProfile -> BrewStatus.Profile
+            isCleaning -> BrewStatus.Cleaning
             else -> BrewStatus.Idle
         }
         _machineState.update { it.copy(brewStatus = brewStatus) }

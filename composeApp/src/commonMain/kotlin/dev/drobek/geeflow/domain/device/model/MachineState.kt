@@ -34,6 +34,7 @@ data class MachineState(
     enum class BrewStatus {
         Manual,
         Profile,
+        Cleaning,
         Idle
     }
 

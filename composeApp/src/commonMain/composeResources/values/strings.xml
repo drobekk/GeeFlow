@@ -24,6 +24,7 @@
 
     <!-- Device Dashboard -->
     <string name="device_dashboard_clean">Clean</string>
+
     <string name="device_dashboard_connected_devices">Connected devices</string>
     <string name="device_dashboard_brew">Brew</string>
     <string name="device_dashboard_connected">Connected</string>
@@ -32,8 +33,14 @@
     <string name="device_dashboard_add_profile">Add profile</string>
     <string name="device_dashboard_no_bt_permission">Bluetooth permission is missing, please grant it in app settings</string>
 
-    <!-- Quick Settings -->
-    <string name="quick_settings_more">More settings</string>
+    <!-- Settings Quick -->
+    <string name="settings_quick_title">Quick settings</string>
+    <string name="settings_quick_more">More settings</string>
+
+    <!-- Settings Clean -->
+    <string name="settings_clean_title">Cleaning</string>
+    <string name="settings_clean_start">Start cleaning</string>
+    <string name="settings_clean_stop">Stop cleaning</string>
 
     <!-- COMMON -->
     <string name="common_user_name">User name</string>
@@ -43,11 +50,15 @@
     <string name="common_open_settings">Open Settings</string>
     <string name="common_go_back">Go back</string>
     <string name="common_confirm">Confirm</string>
+    <string name="common_close">Close</string>
     <string name="common_more">More</string>
     <string name="common_remove">Remove</string>
     <string name="common_favourite">Favourite</string>
     <string name="common_settings">Settings</string>
     <string name="common_stop">Stop</string>
+    <string name="common_flush">Flush</string>
+    <string name="common_seconds">seconds</string>
+    <string name="common_times">times</string>
     <string name="common_brew_boiler">Brew Boiler</string>
     <string name="common_steam_boiler">Steam Boiler</string>
 </resources>

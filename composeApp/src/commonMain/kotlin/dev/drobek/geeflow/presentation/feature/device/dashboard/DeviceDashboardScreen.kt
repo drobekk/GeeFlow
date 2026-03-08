@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
@@ -29,6 +28,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.ActionBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.DeviceTile
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
@@ -54,6 +54,7 @@ internal fun DeviceDashboardScreen(
             is Navigation.Back -> navigation.back()
             is Navigation.DeviceList -> navigation.showDevicesList()
             is Navigation.Settings -> navigation.showQuickSettings(it.id)
+            is Navigation.Clean -> navigation.showClean(it.id)
         }
     }
 

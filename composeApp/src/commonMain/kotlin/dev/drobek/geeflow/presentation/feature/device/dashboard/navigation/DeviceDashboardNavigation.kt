@@ -19,6 +19,7 @@ import org.koin.core.parameter.parametersOf
 interface DeviceNavigation : Navigation {
     fun showDevicesList()
     fun showQuickSettings(id: String)
+    fun showClean(id: String)
 }
 
 sealed interface DeviceDestinations : NavKey {
