@@ -3,7 +3,8 @@ package dev.drobek.geeflow.app.navigation
 import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.domain.device.usecase.GetDevicesUseCase
 import dev.drobek.geeflow.domain.user.usecase.GetUsersUseCase
-import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations
+import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceListDestinations
 import dev.drobek.geeflow.presentation.feature.intro.IntroDestinations
 import org.koin.core.annotation.Factory
 
@@ -23,7 +24,7 @@ class GetInitialDestinationUseCase(
                 DeviceDestinations.DeviceDashboard(deviceId)
             }
 
-            users.isNotEmpty() -> DeviceDestinations.DeviceList
+            users.isNotEmpty() -> DeviceListDestinations.DeviceList
             else -> IntroDestinations.CreateUser
         }
     }

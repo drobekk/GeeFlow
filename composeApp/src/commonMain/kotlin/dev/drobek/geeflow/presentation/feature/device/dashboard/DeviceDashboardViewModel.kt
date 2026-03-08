@@ -8,7 +8,6 @@ import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
 import dev.drobek.geeflow.platform.permissions.PermissionsController
-import dev.drobek.geeflow.presentation.feature.device.DeviceDestinations
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.CleaningClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
@@ -28,13 +27,14 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Connecting
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.ConnectionStatus.Disconnected
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Dialog.BluetoothPermissionMissing
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations.DeviceDashboard
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class DeviceDashboardViewModel(
     getDevice: GetDeviceUseCase,
-    private val args: DeviceDestinations.DeviceDashboard,
+    private val args: DeviceDashboard,
     private val deviceController: DeviceController,
     private val permissionsController: PermissionsController
 ) : BaseViewModel<DeviceDashboardViewState, DeviceLitViewModelEvent>(DeviceDashboardViewState()) {

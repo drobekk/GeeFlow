@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.quicksettings
+package dev.drobek.geeflow.presentation.feature.device.settings.quick
 
 data class QuickSettingsViewState(
     val steamBoilerEnabled: Boolean = false,

@@ -9,12 +9,22 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.drobek.geeflow.app.navigation.AppNavigation
 import dev.drobek.geeflow.app.navigation.GetInitialDestinationUseCase
-import dev.drobek.geeflow.app.navigation.destinationsSavedStateConfiguration
-import dev.drobek.geeflow.presentation.feature.device.deviceEntries
+import dev.drobek.geeflow.presentation.feature.device.add.navigation.addDeviceEntries
+import dev.drobek.geeflow.presentation.feature.device.add.navigation.registerAddDeviceSerializers
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.deviceDashboardEntries
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.registerDeviceSerializers
+import dev.drobek.geeflow.presentation.feature.device.list.navigation.deviceListEntries
+import dev.drobek.geeflow.presentation.feature.device.list.navigation.registerDeviceListSerializers
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.deviceSettingsEntries
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.registerDeviceSettingsSerializers
 import dev.drobek.geeflow.presentation.feature.intro.introEntries
+import dev.drobek.geeflow.presentation.feature.intro.registerIntroSerializers
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 
@@ -50,8 +60,22 @@ private fun RootNavigation(closeApp: () -> Unit) {
         backStack = backStack,
         entryProvider = entryProvider {
             introEntries(navigator)
-            deviceEntries(navigator)
+            addDeviceEntries(navigator)
+            deviceDashboardEntries(navigator)
+            deviceSettingsEntries(navigator)
+            deviceListEntries(navigator)
         }
     )
 }
 
+val destinationsSavedStateConfiguration = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            registerIntroSerializers()
+            registerDeviceSerializers()
+            registerAddDeviceSerializers()
+            registerDeviceSettingsSerializers()
+            registerDeviceListSerializers()
+        }
+    }
+}

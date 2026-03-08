@@ -1,15 +1,15 @@
-package dev.drobek.geeflow.presentation.feature.device.quicksettings
+package dev.drobek.geeflow.presentation.feature.device.settings.quick
 
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.BrewBoilerToggled
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.BrewTempChanged
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.DismissClicked
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.MoreSettingsClicked
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.SaveClicked
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.SteamBoilerToggled
-import dev.drobek.geeflow.presentation.feature.device.quicksettings.QuickSettingsEvent.SteamTempChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.BrewBoilerToggled
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.BrewTempChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.DismissClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.MoreSettingsClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.SaveClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.SteamBoilerToggled
+import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsEvent.SteamTempChanged
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import org.koin.core.annotation.KoinViewModel
 

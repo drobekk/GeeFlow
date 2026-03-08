@@ -2,6 +2,7 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -22,14 +23,15 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,14 +72,13 @@ internal fun ActionBar(
         }
         HorizontalSpacer(16.dp)
         Row(
-            modifier = Modifier
-                .width(IntrinsicSize.Max)
-                .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(12.dp))
+            modifier = Modifier.width(IntrinsicSize.Max)
         ) {
             ActionBarButton(
                 painter = rememberVectorPainter(Icons.Filled.AutoAwesome),
                 contentDescription = stringResource(Res.string.device_dashboard_clean),
-                onClick = { onEvent(CleaningClicked) }
+                onClick = { onEvent(CleaningClicked) },
+                modifier = Modifier.clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             ActionBarButton(
@@ -90,6 +91,7 @@ internal fun ActionBar(
                 painter = rememberVectorPainter(Icons.Filled.Tune),
                 contentDescription = stringResource(Res.string.common_settings),
                 onClick = { onEvent(SettingsClicked) },
+                modifier = Modifier.clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
             )
         }
     }
@@ -101,9 +103,13 @@ private fun ActionBarButton(
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
-) = IconButton(
-    onClick = onClick,
+) = Box(
     modifier = modifier
+        .clickable(onClick = onClick)
+        .background(MaterialTheme.colorScheme.surfaceContainer)
+        .height(48.dp)
+        .padding(horizontal = 16.dp),
+    contentAlignment = Alignment.Center
 ) {
     Icon(
         painter = painter,
@@ -142,13 +148,13 @@ private fun ConnectionStatusButton(
     )
 
     TextButton(
-        modifier = modifier,
+        modifier = modifier.height(48.dp),
         onClick = { onEvent(ConnectionButtonClicked) },
         colors = ButtonDefaults.textButtonColors(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         if (connectionStatus == Device.ConnectionStatus.Connecting) {
             CircularProgressIndicator(

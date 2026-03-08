@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.quicksettings
+package dev.drobek.geeflow.presentation.feature.device.settings.quick
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.DeviceNavigation
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.VerticalSpacer
@@ -38,7 +38,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun QuickSettingsScreen(
     viewModel: QuickSettingsViewModel,
-    navigator: DeviceNavigation
+    navigator: DeviceSettingsNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 

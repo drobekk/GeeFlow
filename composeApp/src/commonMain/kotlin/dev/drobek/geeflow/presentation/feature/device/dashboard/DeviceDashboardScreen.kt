@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.DeviceNavigation
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device

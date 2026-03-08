@@ -40,7 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.DeviceNavigation
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.NearbyDeviceClicked
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.QrCodeScanned
@@ -49,6 +48,7 @@ import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.ShowQrC
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.NearbyDevices
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.QrCodeScanner
+import dev.drobek.geeflow.presentation.feature.device.add.navigation.AddDeviceNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
@@ -72,7 +72,8 @@ import org.publicvalue.multiplatform.qrcode.ScannerWithPermissions
 
 @Composable
 internal fun AddDeviceScreen(
-    viewModel: AddDeviceViewModel, deviceNavigation: DeviceNavigation
+    viewModel: AddDeviceViewModel,
+    deviceNavigation: AddDeviceNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }

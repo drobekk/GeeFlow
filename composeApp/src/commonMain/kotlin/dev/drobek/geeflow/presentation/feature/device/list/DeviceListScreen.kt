@@ -48,11 +48,11 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.DeviceNavigation
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceClicked
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRemoveClicked
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceSetAsDefaultClicked
+import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceListNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
@@ -70,7 +70,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DeviceListScreen(navigation: DeviceNavigation) {
+fun DeviceListScreen(navigation: DeviceListNavigation) {
     val viewModel = koinViewModel<DeviceListViewModel>()
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
