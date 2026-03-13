@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import org.koin.core.annotation.Singleton
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -47,6 +48,7 @@ class WendougeeController(
 
     private var targetMacAddress: String? = null
     private var connectedPeripheral: BluetoothPeripheral? = null
+    private var isConnectingToGatt = false
     private var pollingJob: Job? = null
 
     private var writeChar: BluetoothCharacteristic? = null
@@ -139,16 +141,39 @@ class WendougeeController(
     private suspend fun pollData(peripheral: BluetoothPeripheral) {
         writeChar?.let { char ->
             bleMutex.withLock {
-                logFrame(Direction.TX, char, CMD_POLLING_LONG, note = "poll-long")
-                blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_LONG, 2)
+                try {
+                    withTimeout(400) {
+                        val ackDeferred = async {
+                            incomingFrames.first { data ->
+                                data.size >= 3 && data[1] == 0x03.toByte() && data[2] == 0x28.toByte()
+                            }
+                        }
+                        yield()
+                        logFrame(Direction.TX, char, CMD_POLLING_LONG, note = "poll-long")
+                        blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_LONG, 2)
+                        ackDeferred.await()
+                    }
+                } catch (e: Exception) {
+                    Logger.withTag(TAG).v { "Poll Long missed (timeout or error)" }
+                }
             }
-
-            delay(100)
-
+            delay(30)
             bleMutex.withLock {
-                logFrame(Direction.TX, char, CMD_POLLING_SHORT, note = "poll-short")
-                blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_SHORT, 2)
+                try {
+                    withTimeout(400) {
+                        val ackDeferred = async {
+                            incomingFrames.first { data -> data.size >= 2 && data[1] == 0x01.toByte() }
+                        }
+                        yield()
+                        logFrame(Direction.TX, char, CMD_POLLING_SHORT, note = "poll-short")
+                        blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, CMD_POLLING_SHORT, 2)
+                        ackDeferred.await()
+                    }
+                } catch (e: Exception) {
+                    Logger.withTag(TAG).v { "Poll Short missed (timeout or error)" }
+                }
             }
+            delay(20)
         }
     }
 
@@ -165,30 +190,35 @@ class WendougeeController(
         expectedFc: Byte,
         expectedRegHi: Byte,
         expectedRegLo: Byte,
-        timeoutMs: Long = 2000L
+        timeoutMs: Long = 1000L
     ): Boolean {
         val peripheral = connectedPeripheral ?: return false
-
-        return try {
-            bleMutex.withLock {
+        return bleMutex.withLock {
+            try {
                 withTimeout(timeoutMs) {
                     val ackDeferred = async {
                         incomingFrames.first { data ->
-                            data.size >= 4 && data[1] == expectedFc && data[2] == expectedRegHi && data[3] == expectedRegLo
+                            data.size >= 4 &&
+                                    data[1] == expectedFc &&
+                                    data[2] == expectedRegHi &&
+                                    data[3] == expectedRegLo
                         }
                     }
 
+                    yield()
+
                     blueFalcon.writeCharacteristicWithoutEncoding(peripheral, char, payload, 2)
+
                     ackDeferred.await()
                     true
                 }
+            } catch (e: TimeoutCancellationException) {
+                Logger.withTag(TAG).w { "Timeout waiting for ACK: FC=$expectedFc Reg=$expectedRegHi$expectedRegLo" }
+                false
+            } catch (e: Exception) {
+                Logger.withTag(TAG).e(e) { "Error sending command" }
+                false
             }
-        } catch (e: TimeoutCancellationException) {
-            Logger.withTag(TAG).w { "Timeout waiting for ACK: FC=$expectedFc Reg=$expectedRegHi$expectedRegLo" }
-            false
-        } catch (e: Exception) {
-            Logger.withTag(TAG).e(e) { "Error sending command" }
-            false
         }
     }
 
@@ -197,6 +227,7 @@ class WendougeeController(
             Logger.withTag(TAG).w { "Already connected or connecting, ignoring request for $macAddress" }
             return
         }
+        isConnectingToGatt = false
         targetMacAddress = macAddress
         Logger.withTag(TAG).i { "Starting scan for target device: $macAddress" }
 
@@ -457,7 +488,8 @@ class WendougeeController(
             bluetoothPeripheral.uuid.filter { it.isLetterOrDigit() }.uppercase() == normalizedTarget
         }
 
-        if (isOurDevice && _machineState.value.connectionStatus == ConnectionStatus.Connecting) {
+        if (isOurDevice && _machineState.value.connectionStatus == ConnectionStatus.Connecting && !isConnectingToGatt) {
+            isConnectingToGatt = true
             Logger.withTag(TAG).i { "Target device discovered ($deviceName). Stopping scan and connecting..." }
             blueFalcon.stopScanning()
             scope.launch {
@@ -482,6 +514,7 @@ class WendougeeController(
         writeChar = null
         notifyChar = null
         connectedPeripheral = null
+        isConnectingToGatt = false
         _machineState.update {
             it.copy(
                 connectionStatus = ConnectionStatus.Disconnected,
