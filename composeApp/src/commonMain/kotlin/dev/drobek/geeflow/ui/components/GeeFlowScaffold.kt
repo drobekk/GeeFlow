@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.WaveOrientation
 import dev.drobek.geeflow.ui.conditional
-import dev.drobek.geeflow.ui.isExpanded
+import dev.drobek.geeflow.ui.isWidthExpanded
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_go_back
 import org.jetbrains.compose.resources.stringResource
@@ -58,13 +58,13 @@ fun GeeFlowScaffold(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .conditional(
-                    condition = isExpanded(),
+                    condition = isWidthExpanded(),
                     ifTrue = { fillMaxHeight().widthIn(max = 300.dp) },
                     ifFalse = { fillMaxWidth() }
                 )
         )
     }
-    if (isExpanded()) {
+    if (isWidthExpanded()) {
         GeeFlowScaffoldExpanded(
             topBar = topBar,
             snackbarHost = snackbarHost,
@@ -103,7 +103,7 @@ fun GeeFlowScaffold(
     contentWindowInsets: WindowInsets = WindowInsets.systemBars,
     content: @Composable (paddingValues: PaddingValues) -> Unit
 ) {
-    if (isExpanded()) {
+    if (isWidthExpanded()) {
         GeeFlowScaffoldExpanded(
             topBar = topBar,
             snackbarHost = snackbarHost,

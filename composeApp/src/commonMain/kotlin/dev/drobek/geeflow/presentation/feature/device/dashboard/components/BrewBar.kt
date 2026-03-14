@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -97,7 +98,7 @@ fun BrewBar(
 
     Box(
         modifier = modifier
-            .height(86.dp)
+            .height(72.dp)
             .width(IntrinsicSize.Min),
         contentAlignment = Alignment.Center
     ) {
@@ -106,20 +107,21 @@ fun BrewBar(
             modifier = Modifier
                 .background(firstColor, RoundedCornerShape(16.dp))
                 .clip(RoundedCornerShape(16.dp))
-                .height(64.dp)
+                .height(50.dp)
         )
         transition.AnimatedContent(
             transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
             modifier = Modifier
                 .conditional(condition = isBrewing, ifTrue = { clickable(onClick = onStopClick, role = Role.Button) })
-                .height(64.dp),
+                .height(50.dp),
             contentAlignment = Alignment.Center
         ) {
-            if (it) {
-                BrewingContent()
-            } else {
-                BrewContent(onManualClick = onManualClick, onManualFlowClick = onManualFlowClick)
-            }
+            BrewingContent(modifier = Modifier.visible(it))
+            BrewContent(
+                onManualClick = onManualClick,
+                onManualFlowClick = onManualFlowClick,
+                modifier = Modifier.visible(!it)
+            )
         }
 
         if (logoAlpha > 0.01f) {
@@ -132,12 +134,12 @@ fun BrewBar(
                 FilledIconButton(
                     shape = GeeFlowLogoShape,
                     onClick = onFlowClick,
-                    modifier = Modifier.size(86.dp)
+                    modifier = Modifier.size(72.dp)
                 ) {
                     Icon(
                         painter = rememberVectorPainter(GeeFlowIcon.AppLogo),
                         contentDescription = null,
-                        modifier = Modifier.size(56.dp).padding(top = 5.dp),
+                        modifier = Modifier.size(48.dp).padding(top = 5.dp),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -149,10 +151,11 @@ fun BrewBar(
 @Composable
 private fun BrewContent(
     onManualClick: () -> Unit,
-    onManualFlowClick: () -> Unit
+    onManualFlowClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth().padding(horizontal = 32.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(32.dp)

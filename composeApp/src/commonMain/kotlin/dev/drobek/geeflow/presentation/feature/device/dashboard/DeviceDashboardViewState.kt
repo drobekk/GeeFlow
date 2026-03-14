@@ -1,14 +1,25 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew.Data
-
 data class DeviceDashboardViewState(
     val user: User = User(),
     val device: Device = Device(),
     val brew: Brew = Brew(),
     val brewProfiles: List<Profile> = emptyList(),
-    val dialog: Dialog? = null
+    val dialog: Dialog? = null,
+    val visibleCharts: Set<DashboardChartType> = setOf(
+        DashboardChartType.Pressure,
+        DashboardChartType.FlowRate,
+        DashboardChartType.WeightRate
+    )
 ) {
+    enum class DashboardChartType {
+        Pressure,
+        FlowRate,
+        WeightRate,
+        Volume,
+        Weight
+    }
+
     data class User(
         val id: String = "",
         val name: String = "",
@@ -16,8 +27,8 @@ data class DeviceDashboardViewState(
 
     data class Brew(
         val name: String = "",
-        val time: Int = 0,
-        val data: Map<Int, Data> = getEmptyChartData()
+        val time: Float = 0f,
+        val data: Map<Float, Data> = getEmptyChartData()
     ) {
         data class Data(
             val pressure: Float,
@@ -60,7 +71,7 @@ data class DeviceDashboardViewState(
 }
 
 internal fun getEmptyChartData() = mapOf(
-    0 to Data(
+    0f to DeviceDashboardViewState.Brew.Data(
         pressure = 0.0f,
         weight = 0f,
         weightPerSecond = 0f,

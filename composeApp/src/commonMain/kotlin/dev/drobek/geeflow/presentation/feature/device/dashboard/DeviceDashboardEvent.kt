@@ -1,6 +1,9 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType
+
 sealed interface DeviceDashboardEvent {
+    data class ToggleChartVisibility(val type: DashboardChartType) : DeviceDashboardEvent
     data object UserClicked : DeviceDashboardEvent
     data object DeviceClicked : DeviceDashboardEvent
     data object ManualBrewClicked : DeviceDashboardEvent

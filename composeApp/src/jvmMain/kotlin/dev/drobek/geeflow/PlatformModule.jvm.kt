@@ -4,11 +4,13 @@ import dev.bluefalcon.ApplicationContext
 import dev.bluefalcon.BlueFalcon
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
 import dev.drobek.geeflow.data.db.JvmDatabaseDriverFactory
+import dev.drobek.geeflow.data.users.impl.createJvmDataStore
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
 actual val platformModule: Module = module {
     single<DatabaseDriverFactory> { JvmDatabaseDriverFactory() }
+    single { createJvmDataStore() }
     single {
         // TODO Compile dll https://github.com/Reedyuk/blue-falcon?tab=readme-ov-file#windows
         BlueFalcon(

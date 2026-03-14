@@ -1,25 +1,52 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Details
+import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Profiles
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.FlowControlClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ManualBrewClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
@@ -27,15 +54,18 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.ActionBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
+import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
+import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.DeviceTile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
-import dev.drobek.geeflow.ui.conditional
-import dev.drobek.geeflow.ui.isExpanded
+import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.disabled
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun DeviceDashboardScreen(
@@ -66,14 +96,94 @@ internal fun DeviceDashboardScreen(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
+@OptIn(ExperimentalTextApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun DeviceDashboardContent(
     viewState: DeviceDashboardViewState,
     onEvent: (DeviceDashboardEvent) -> Unit = {}
 ) {
+    if (isWidthExpanded()) {
+        ExpandedDashboard(
+            viewState = viewState,
+            onEvent = onEvent
+        )
+    } else {
+        CompactDashboard(
+            viewState = viewState,
+            onEvent = onEvent
+        )
+    }
+}
+
+@Composable
+private fun ExpandedDashboard(
+    viewState: DeviceDashboardViewState,
+    onEvent: (DeviceDashboardEvent) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Row(modifier = modifier.systemBarsPadding()) {
+        Column(modifier = Modifier.weight(0.7f)) {
+            TopBar(
+                device = viewState.device,
+                user = viewState.user,
+                onEvent = onEvent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+            )
+            BrewCharts(
+                brew = viewState.brew,
+                visibleCharts = viewState.visibleCharts,
+                modifier = Modifier
+                    .weight(0.7f)
+                    .padding(start = 16.dp, bottom = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, bottom = 6.dp)
+            ) {
+                BrewData(
+                    brew = viewState.brew,
+                    visibleCharts = viewState.visibleCharts,
+                    onToggle = { onEvent(ToggleChartVisibility(it)) },
+                    modifier = Modifier.weight(1f).padding(bottom = 10.dp)
+                )
+                HorizontalSpacer(16.dp)
+                BrewBar(
+                    isBrewing = viewState.device.isBrewing,
+                    onStopClick = { onEvent(StopBrewClicked) },
+                    onManualClick = { onEvent(ManualBrewClicked) },
+                    onFlowClick = { onEvent(BrewClicked) },
+                    onManualFlowClick = { onEvent(FlowControlClicked) }
+                )
+            }
+        }
+        Column(
+            modifier = Modifier.weight(0.3f)
+                .fillMaxHeight()
+                .padding(16.dp)
+        ) {
+            ProfileList(
+                profiles = viewState.brewProfiles,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactDashboard(
+    viewState: DeviceDashboardViewState,
+    onEvent: (DeviceDashboardEvent) -> Unit = {},
+) {
+    val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         modifier = Modifier
+            .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding(),
         topBar = {
@@ -83,45 +193,138 @@ private fun DeviceDashboardContent(
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
+                    .padding(start = 24.dp, top = 24.dp, end = 24.dp)
             )
         },
-        bottomBar = { BottomBar(viewState.device, onEvent) }
+        bottomBar = {
+            BrewBar(
+                isBrewing = viewState.device.isBrewing,
+                onStopClick = { onEvent(StopBrewClicked) },
+                onManualClick = { onEvent(ManualBrewClicked) },
+                onFlowClick = { onEvent(BrewClicked) },
+                onManualFlowClick = { onEvent(FlowControlClicked) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp)
+            )
+        }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(12.dp))
-        ) {
+        Column(modifier = Modifier.padding(paddingValues)) {
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
+                onSelected = { index -> coroutineScope.launch { pagerState.animateScrollToPage(index) } }
+            )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                when (page) {
+                    Details.ordinal -> Column {
+                        BrewCharts(
+                            brew = viewState.brew,
+                            visibleCharts = viewState.visibleCharts,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f)
+                                .padding(start = 24.dp, end = 24.dp)
+                        )
+                        BrewData(
+                            brew = viewState.brew,
+                            visibleCharts = viewState.visibleCharts,
+                            onToggle = { onEvent(ToggleChartVisibility(it)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 24.dp, top = 16.dp, end = 24.dp)
+                        )
+                    }
 
+                    Profiles.ordinal -> ProfileList(
+                        profiles = viewState.brewProfiles,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp)
+                    )
+
+                    else -> Unit
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun BottomBar(
-    device: Device,
-    onEvent: (DeviceDashboardEvent) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    BrewBar(
-        isBrewing = device.isBrewing,
-        onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
-        onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
-        onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
-        onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
-        modifier = modifier
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-            .conditional(
-                condition = isExpanded(),
-                ifTrue = { wrapContentWidth() },
-                ifFalse = { fillMaxWidth() }
-            )
-    )
+private fun TabRow(
+    selectedTabIndex: Int,
+    modifier: Modifier = Modifier,
+    onSelected: (Int) -> Unit = {}
+) = Row(modifier = modifier) {
+    CompactDashboardPage.entries.forEachIndexed { index, page ->
+        val color by animateColorAsState(
+            targetValue = if (index == selectedTabIndex) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.primary.disabled()
+            }
+        )
+        Text(
+            text = when (page) {
+                Details -> "Details"
+                Profiles -> "Profiles"
+            },
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { onSelected(index) }
+                .padding(vertical = 12.dp)
+                .fillMaxWidth()
+                .weight(1f),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            color = color
+        )
+    }
 }
 
+@Composable
+private fun ProfileList(
+    profiles: List<Profile>,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
+    ) {
+        items(profiles) {
+            ProfileItem(profile = it, modifier = modifier.padding(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun ProfileItem(
+    profile: Profile,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = profile.name,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = profile.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+private enum class CompactDashboardPage {
+    Details, Profiles
+}
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TopBar(
     device: Device,
@@ -148,66 +351,64 @@ private fun TopBar(
     }
 }
 
-private val mockViewState = DeviceDashboardViewState(
-    user = User(
-        id = "1",
-        name = "John Doe"
-    ),
-    device = Device(
-        id = "B0234556",
-        name = "DATA-S",
-        brewBoilerTemp = "93°",
-        steamBoilerTemp = "125°",
-        pressure = "0.9",
-        connectionStatus = Device.ConnectionStatus.Connected
-    ),
-    brew = Brew(
-        "Manual",
-        data = mapOf(
-            1 to Brew.Data(
-                pressure = 0.9f,
-                weight = 0f,
-                weightPerSecond = 1f,
-                volume = 2f,
-                volumePerSecond = 3f
-            ),
-            30 to Brew.Data(
-                pressure = 6.1f,
-                weight = 5f,
-                weightPerSecond = 0f,
-                volume = 5f,
-                volumePerSecond = 5f
-            ),
-        )
-    ),
-    brewProfiles = listOf(
-        Profile(
-            name = "Espresso Classic",
-            description = "Traditional 1:2 ratio, 30s",
-            brewByWeight = true
-        ),
-        Profile(
-            name = "Morning Lungo",
-            description = "High yield, smooth body",
-            brewByWeight = false
-        ),
-        Profile(
-            name = "Bloom & Flow",
-            description = "Experimental pre-infusion",
-            brewByWeight = true
-        )
-    )
-)
-
-
 @Composable
-@GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
-    DeviceDashboardContent(mockViewState)
+private fun DeviceDashboardPreview(isDark: Boolean) {
+    val state = remember { mutableStateOf(getMockDeviceDashboardViewState()) }
+    GeeFlowTheme(isDark) {
+        DeviceDashboardContent(
+            viewState = state.value,
+            onEvent = { event ->
+                when (event) {
+                    StopBrewClicked -> {
+                        state.value = state.value.copy(
+                            device = state.value.device.copy(brewStatus = Device.BrewStatus.Idle),
+                            brew = state.value.brew.copy(data = emptyMap())
+                        )
+                    }
+
+                    ManualBrewClicked -> {
+                        state.value = getMockDeviceDashboardViewState()
+                    }
+
+                    ConnectionButtonClicked -> {
+                        val currentData = state.value.brew.data
+                        val nextTime = (currentData.keys.maxOrNull() ?: 0f) + 1f
+                        val newDataPoint = Brew.Data(
+                            pressure = 8f + (kotlin.math.sin(nextTime) * 0.5f),
+                            weight = nextTime * 2f,
+                            weightPerSecond = 2f,
+                            volume = nextTime * 2.2f,
+                            volumePerSecond = 2.2f
+                        )
+                        state.value = state.value.copy(
+                            brew = state.value.brew.copy(
+                                data = currentData + (nextTime to newDataPoint),
+                                time = nextTime
+                            )
+                        )
+                    }
+
+                    is ToggleChartVisibility -> {
+                        val current = state.value.visibleCharts
+                        val new = if (current.contains(event.type)) {
+                            current - event.type
+                        } else {
+                            current + event.type
+                        }
+                        state.value = state.value.copy(visibleCharts = new)
+                    }
+
+                    else -> Unit
+                }
+            }
+        )
+    }
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
-    DeviceDashboardContent(mockViewState)
-}
+private fun PreviewLight() = DeviceDashboardPreview(false)
+
+@Composable
+@GeeFlowScreenPreview
+private fun PreviewDark() = DeviceDashboardPreview(true)

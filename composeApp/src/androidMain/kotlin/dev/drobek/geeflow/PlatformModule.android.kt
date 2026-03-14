@@ -5,12 +5,14 @@ import dev.bluefalcon.BlueFalcon
 import dev.bluefalcon.Logger
 import dev.drobek.geeflow.data.db.AndroidDatabaseDriverFactory
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
+import dev.drobek.geeflow.data.users.impl.createAndroidDataStore
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
 actual val platformModule: Module = module {
     single<DatabaseDriverFactory> { AndroidDatabaseDriverFactory(get()) }
+    single { createAndroidDataStore(androidApplication()) }
     single {
         BlueFalcon(context = androidApplication(), log = object : Logger {
             override fun error(message: String, cause: Throwable?) {

@@ -1,9 +1,13 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
 import dev.drobek.geeflow.data.device.api.DeviceController
+import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.ConnectionStatus
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
+import dev.drobek.geeflow.domain.user.ChartType
+import dev.drobek.geeflow.domain.user.usecase.GetVisibleChartsUseCase
+import dev.drobek.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
@@ -19,7 +23,10 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.PermissionDialogResumed
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew.Data
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Idle
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Manual
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Profile
@@ -34,9 +41,12 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class DeviceDashboardViewModel(
     getDevice: GetDeviceUseCase,
+    val permissionsController: PermissionsController,
     private val args: DeviceDashboard,
     private val deviceController: DeviceController,
-    private val permissionsController: PermissionsController
+    private val observeBrewData: ObserveBrewDataUseCase,
+    private val getVisibleCharts: GetVisibleChartsUseCase,
+    private val toggleChartVisibility: ToggleChartVisibilityUseCase
 ) : BaseViewModel<DeviceDashboardViewState, DeviceLitViewModelEvent>(DeviceDashboardViewState()) {
 
     private var macAddress: String? = null
@@ -48,9 +58,34 @@ internal class DeviceDashboardViewModel(
         launch {
             deviceController.machineState.collect { state -> updateMachineStateUi(state) }
         }
+        launch {
+            getVisibleCharts().collect { charts ->
+                modify { copy(visibleCharts = charts.map { it.toPresentation() }.toSet()) }
+            }
+        }
+        launch {
+            observeBrewData().collect { dataMap ->
+                modify {
+                    copy(
+                        brew = brew.copy(
+                            data = dataMap.mapValues { (_, point) ->
+                                Data(
+                                    pressure = point.pressure,
+                                    weight = point.weight,
+                                    weightPerSecond = point.weightRate,
+                                    volume = point.volume,
+                                    volumePerSecond = point.flowRate
+                                )
+                            }
+                        )
+                    )
+                }
+            }
+        }
     }
 
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
+        is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is ConnectionButtonClicked -> toggleConnection()
         is DeviceClicked -> emitEvent(Navigation.DeviceList)
         is SettingsClicked -> emitEvent(Navigation.Settings(args.id))
@@ -108,5 +143,21 @@ internal class DeviceDashboardViewModel(
 
     private fun showBluetoothPermissionMissingDialog() {
         modify { copy(dialog = BluetoothPermissionMissing) }
+    }
+
+    private fun ChartType.toPresentation() = when (this) {
+        ChartType.PRESSURE -> DashboardChartType.Pressure
+        ChartType.FLOW_RATE -> DashboardChartType.FlowRate
+        ChartType.WEIGHT_RATE -> DashboardChartType.WeightRate
+        ChartType.VOLUME -> DashboardChartType.Volume
+        ChartType.WEIGHT -> DashboardChartType.Weight
+    }
+
+    private fun DashboardChartType.toDomain() = when (this) {
+        DashboardChartType.Pressure -> ChartType.PRESSURE
+        DashboardChartType.FlowRate -> ChartType.FLOW_RATE
+        DashboardChartType.WeightRate -> ChartType.WEIGHT_RATE
+        DashboardChartType.Volume -> ChartType.VOLUME
+        DashboardChartType.Weight -> ChartType.WEIGHT
     }
 }

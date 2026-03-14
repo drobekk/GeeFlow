@@ -31,10 +31,10 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class AddDeviceViewModel(
     platform: Platform,
+    val permissionsController: PermissionsController,
     private val addDeviceUseCase: AddDeviceUseCase,
     private val parseDeviceQrCodeUseCase: ParseDeviceQrCodeUseCase,
-    private val nearbyDevicesController: NearbyDevicesController,
-    private val permissionsController: PermissionsController
+    private val nearbyDevicesController: NearbyDevicesController
 ) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(AddDeviceViewState(platform.getMethod())) {
 
     init {

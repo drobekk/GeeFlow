@@ -52,14 +52,18 @@ kotlin {
             implementation(libs.koin.compose.viewmodel.navigation)
             implementation(libs.koin.core)
             implementation(libs.koin.annotations)
+            implementation(libs.androidx.datastore.preferences)
             implementation(libs.qrCode.scanner)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.blue.falcon)
             implementation(libs.kermit)
+            implementation(libs.vico.compose)
+            implementation(libs.vico.compose.m3)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

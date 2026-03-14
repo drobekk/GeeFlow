@@ -35,7 +35,7 @@ import org.koin.core.annotation.Singleton
 import kotlin.uuid.ExperimentalUuidApi
 
 @Singleton
-class WendougeeController(
+class DataSController(
     private val scope: CoroutineScope,
     private val blueFalcon: BlueFalcon
 ) : DeviceController, BlueFalconDelegate {
@@ -680,7 +680,7 @@ class WendougeeController(
     private fun parseShortStatusFrame(payload: ByteArray) {
         if (payload.size < 4) return
         val statusByte = payload[3].toInt() and 0xFF
-        val isProfile = (statusByte and 0x02) != 0
+        val isProfile = (statusByte and 0x03) != 0
         val isManual = (statusByte and 0x10) != 0
         val isCleaning = (statusByte and 0x20) != 0
 
@@ -700,13 +700,15 @@ class WendougeeController(
             fun dataU8(off: Int) = payload.u8(TelemetryFrame.DATA_START + off)
             fun dataU16be(off: Int) = payload.u16be(TelemetryFrame.DATA_START + off)
 
+            val pressure = dataU16be(TelemetryFrame.PRESSURE) / 10f
+            val weight = dataU16be(TelemetryFrame.WEIGHT) / 10f
             val steamActual = dataU16be(TelemetryFrame.STEAM_TEMP) / 10f
             val brewActual = dataU16be(TelemetryFrame.BREW_TEMP) / 10f
-            val pressure = dataU16be(TelemetryFrame.PRESSURE) / 10f
+            val weightRate = dataU16be(TelemetryFrame.WEIGHT_RATE) / 10f
 
-            val time = dataU8(TelemetryFrame.TIME)
-            val volume = dataU8(TelemetryFrame.VOLUME)
-            val flowRate = dataU8(TelemetryFrame.FLOW_RATE)
+            val volume = dataU16be(TelemetryFrame.VOLUME).toFloat()
+            val flowRate = dataU16be(TelemetryFrame.FLOW_RATE).toFloat()
+            val time = dataU16be(TelemetryFrame.TIME)
 
             _machineState.update {
                 it.copy(
@@ -715,7 +717,9 @@ class WendougeeController(
                     pressure = pressure,
                     time = time,
                     volume = volume,
-                    flowRate = flowRate
+                    flowRate = flowRate,
+                    weight = weight,
+                    weightRate = weightRate
                 )
             }
         } catch (e: Exception) {
@@ -730,12 +734,17 @@ class WendougeeController(
 
     private object TelemetryFrame {
         const val DATA_START = 3
-        const val TIME = 3
+        const val TIME = 2
         const val STEAM_TEMP = 8
         const val BREW_TEMP = 10
         const val PRESSURE = 12
-        const val VOLUME = 15
-        const val FLOW_RATE = 37
+
+        const val VOLUME = 14
+        const val WEIGHT = 16
+
+        const val FLOW_RATE = 36
+        const val WEIGHT_RATE = 38
+
         const val MIN_HEADER_SIZE = 3 + 40 + 2
     }
 

@@ -32,6 +32,7 @@
     <string name="device_dashboard_connecting">Connecting</string>
     <string name="device_dashboard_add_profile">Add profile</string>
     <string name="device_dashboard_no_bt_permission">Bluetooth permission is missing, please grant it in app settings</string>
+    <string name="device_dashboard_select_charts">Select data types below to visualize your brew</string>
 
     <!-- Settings Quick -->
     <string name="settings_quick_title">Quick settings</string>
@@ -61,4 +62,11 @@
     <string name="common_times">times</string>
     <string name="common_brew_boiler">Brew Boiler</string>
     <string name="common_steam_boiler">Steam Boiler</string>
+
+    <!-- UNITS -->
+    <string name="unit_bar">bar</string>
+    <string name="unit_grams">g</string>
+    <string name="unit_grams_per_second">g/s</string>
+    <string name="unit_milliliters">ml</string>
+    <string name="unit_milliliters_per_second">ml/s</string>
 </resources>

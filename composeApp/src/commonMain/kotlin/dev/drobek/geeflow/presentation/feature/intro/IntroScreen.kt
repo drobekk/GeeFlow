@@ -33,7 +33,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.conditional
 import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
-import dev.drobek.geeflow.ui.isExpanded
+import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
@@ -83,7 +83,7 @@ private fun Logo(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .conditional(
-                condition = isExpanded(),
+                condition = isWidthExpanded(),
                 ifTrue = { fillMaxHeight() },
                 ifFalse = { fillMaxWidth() }
             )

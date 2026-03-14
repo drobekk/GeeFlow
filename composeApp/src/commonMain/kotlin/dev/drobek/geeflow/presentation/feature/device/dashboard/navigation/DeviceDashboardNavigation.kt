@@ -1,11 +1,9 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.navigation
 
-import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.navigation.Navigation
 import dev.drobek.geeflow.platform.permissions.BindEffect
-import dev.drobek.geeflow.platform.permissions.PermissionsController
 import dev.drobek.geeflow.platform.permissions.PermissionsControllerFactory
 import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFactory
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardScreen
@@ -34,9 +32,8 @@ fun PolymorphicModuleBuilder<NavKey>.registerDeviceSerializers() {
 fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceNavigation) {
     entry<DeviceDashboard> {
         val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
-        val controller: PermissionsController = remember(factory) { factory.createPermissionsController() }
-        val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, controller) }
+        val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
+        BindEffect(viewModel.permissionsController)
         DeviceDashboardScreen(viewModel, navigation)
-        BindEffect(controller)
     }
 }

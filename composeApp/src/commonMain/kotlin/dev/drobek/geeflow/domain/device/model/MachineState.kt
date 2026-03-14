@@ -5,8 +5,10 @@ data class MachineState(
     val brewBoilerTemp: Float? = null,
     val pressure: Float? = null,
     val time: Int? = null,
-    val volume: Int? = null,
-    val flowRate: Int? = null,
+    val volume: Float? = null,
+    val flowRate: Float? = null,
+    val weight: Float? = null,
+    val weightRate: Float? = null,
     val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
     val brewStatus: BrewStatus = BrewStatus.Idle,
     val config: Config? = null
@@ -44,6 +46,7 @@ data class MachineState(
     }
 
     enum class BoilerType {
-        Steam, Brew
+        Steam,
+        Brew
     }
 }
