@@ -1,12 +1,9 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,11 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,20 +41,16 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ManualBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Profile
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
-import dev.drobek.geeflow.presentation.feature.device.dashboard.components.ActionBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
+import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
-import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewData
-import dev.drobek.geeflow.presentation.feature.device.dashboard.components.DeviceTile
+import dev.drobek.geeflow.presentation.feature.device.dashboard.components.ProfileList
+import dev.drobek.geeflow.presentation.feature.device.dashboard.components.TopBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
-import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -122,35 +112,33 @@ private fun ExpandedDashboard(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier.systemBarsPadding()) {
-        Column(modifier = Modifier.weight(0.7f)) {
+        Column(modifier = Modifier.weight(0.7f).padding(start = 16.dp)) {
             TopBar(
                 device = viewState.device,
                 user = viewState.user,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+                    .padding(top = 16.dp, bottom = 16.dp)
             )
             BrewCharts(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
-                modifier = Modifier
-                    .weight(0.7f)
-                    .padding(start = 16.dp, bottom = 16.dp)
+                modifier = Modifier.weight(0.7f)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, bottom = 6.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
             ) {
-                BrewData(
+                BrewBar(
                     brew = viewState.brew,
                     visibleCharts = viewState.visibleCharts,
                     onToggle = { onEvent(ToggleChartVisibility(it)) },
                     modifier = Modifier.weight(1f).padding(bottom = 10.dp)
                 )
                 HorizontalSpacer(16.dp)
-                BrewBar(
+                BrewButton(
                     isBrewing = viewState.device.isBrewing,
                     onStopClick = { onEvent(StopBrewClicked) },
                     onManualClick = { onEvent(ManualBrewClicked) },
@@ -160,7 +148,8 @@ private fun ExpandedDashboard(
             }
         }
         Column(
-            modifier = Modifier.weight(0.3f)
+            modifier = Modifier
+                .weight(0.3f)
                 .fillMaxHeight()
                 .padding(16.dp)
         ) {
@@ -197,7 +186,7 @@ private fun CompactDashboard(
             )
         },
         bottomBar = {
-            BrewBar(
+            BrewButton(
                 isBrewing = viewState.device.isBrewing,
                 onStopClick = { onEvent(StopBrewClicked) },
                 onManualClick = { onEvent(ManualBrewClicked) },
@@ -229,7 +218,7 @@ private fun CompactDashboard(
                                 .weight(1f)
                                 .padding(start = 24.dp, end = 24.dp)
                         )
-                        BrewData(
+                        BrewBar(
                             brew = viewState.brew,
                             visibleCharts = viewState.visibleCharts,
                             onToggle = { onEvent(ToggleChartVisibility(it)) },
@@ -287,68 +276,8 @@ private fun TabRow(
     }
 }
 
-@Composable
-private fun ProfileList(
-    profiles: List<Profile>,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
-    ) {
-        items(profiles) {
-            ProfileItem(profile = it, modifier = modifier.padding(16.dp))
-        }
-    }
-}
-
-@Composable
-private fun ProfileItem(
-    profile: Profile,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = profile.name,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = profile.description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
 private enum class CompactDashboardPage {
     Details, Profiles
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TopBar(
-    device: Device,
-    user: User, // TODO Fill user profile image
-    onEvent: (DeviceDashboardEvent) -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    FlowRow(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        GeeFlowUserAvatar(
-            modifier = Modifier.size(48.dp),
-            onClick = { onEvent(UserClicked) }
-        )
-        HorizontalSpacer(8.dp)
-        DeviceTile(device, onEvent)
-        HorizontalSpacer(24.dp)
-        ActionBar(
-            connectionStatus = device.connectionStatus,
-            onEvent = onEvent,
-            modifier = Modifier.weight(1f, false)
-        )
-    }
 }
 
 @Composable

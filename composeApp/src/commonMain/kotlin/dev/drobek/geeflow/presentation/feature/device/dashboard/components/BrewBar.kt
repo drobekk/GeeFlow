@@ -1,234 +1,202 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.visible
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.HorizontalSpacer
-import dev.drobek.geeflow.ui.components.GeeFlowLogoShape
-import dev.drobek.geeflow.ui.components.WaveDivider
-import dev.drobek.geeflow.ui.conditional
-import dev.drobek.geeflow.ui.icons.AppLogo
-import dev.drobek.geeflow.ui.icons.FlowControl
-import dev.drobek.geeflow.ui.icons.GeeFlowIcon
-import dev.drobek.geeflow.ui.icons.Manual
-import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
+import androidx.compose.ui.unit.sp
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.FlowRate
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Pressure
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Volume
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Weight
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.WeightRate
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
-import geeflow.composeapp.generated.resources.common_stop
+import geeflow.composeapp.generated.resources.unit_bar
+import geeflow.composeapp.generated.resources.unit_grams
+import geeflow.composeapp.generated.resources.unit_grams_per_second
+import geeflow.composeapp.generated.resources.unit_milliliters
+import geeflow.composeapp.generated.resources.unit_milliliters_per_second
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun BrewBar(
-    isBrewing: Boolean,
-    onManualClick: () -> Unit,
-    onFlowClick: () -> Unit,
-    onManualFlowClick: () -> Unit,
-    onStopClick: () -> Unit,
+internal fun BrewBar(
+    brew: Brew,
+    visibleCharts: Set<DashboardChartType>,
+    onToggle: (DashboardChartType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val firstColor by animateColorAsState(
-        if (isBrewing) {
-            MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHigh
-        }
-    )
-    val secondColor by animateColorAsState(
-        if (isBrewing) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHighest
-        }
-    )
-    val transition = updateTransition(targetState = isBrewing, label = "BrewingTransition")
-    val logoOffsetY by transition.animateDp(
-        transitionSpec = {
-            if (targetState) {
-                tween(durationMillis = 200)
-            } else {
-                spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
-            }
-        },
-        label = "logoOffset"
-    ) { brewing -> if (brewing) 100.dp else 0.dp }
-    val logoAlpha by transition.animateFloat(label = "logoAlpha") { if (it) 0f else 1f }
+    val lastPoint = brew.data.values.lastOrNull()
+    val currentPressure = lastPoint?.pressure?.toDouble() ?: 0.0
+    val currentFlow = lastPoint?.volumePerSecond?.toDouble() ?: 0.0
+    val currentWeightRate = lastPoint?.weightPerSecond?.toDouble() ?: 0.0
+    val totalWeight = lastPoint?.weight ?: 0f
+    val totalVolume = lastPoint?.volume ?: 0f
 
-    Box(
-        modifier = modifier
-            .height(72.dp)
-            .width(IntrinsicSize.Min),
-        contentAlignment = Alignment.Center
-    ) {
-        WaveDivider(
-            color = secondColor,
-            modifier = Modifier
-                .background(firstColor, RoundedCornerShape(16.dp))
-                .clip(RoundedCornerShape(16.dp))
-                .height(50.dp)
-        )
-        transition.AnimatedContent(
-            transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
-            modifier = Modifier
-                .conditional(condition = isBrewing, ifTrue = { clickable(onClick = onStopClick, role = Role.Button) })
-                .height(50.dp),
-            contentAlignment = Alignment.Center
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            BrewingContent(modifier = Modifier.visible(it))
-            BrewContent(
-                onManualClick = onManualClick,
-                onManualFlowClick = onManualFlowClick,
-                modifier = Modifier.visible(!it)
+            Text(
+                text = "Slayer shot",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "${brew.time.toInt()}s",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        if (logoAlpha > 0.01f) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .offset(y = logoOffsetY)
-                    .graphicsLayer { alpha = logoAlpha }
-            ) {
-                FilledIconButton(
-                    shape = GeeFlowLogoShape,
-                    onClick = onFlowClick,
-                    modifier = Modifier.size(72.dp)
-                ) {
-                    Icon(
-                        painter = rememberVectorPainter(GeeFlowIcon.AppLogo),
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp).padding(top = 5.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            SummaryItem(
+                modifier = Modifier.weight(1f),
+                values = listOf(
+                    ValueEntry(
+                        value = currentPressure,
+                        unit = stringResource(Res.string.unit_bar),
+                        color = MaterialTheme.colorScheme.error,
+                        type = Pressure,
+                        showDivider = visibleCharts.contains(Pressure)
                     )
-                }
-            }
+                ),
+                onToggle = onToggle
+            )
+            SummaryItem(
+                modifier = Modifier.weight(2f),
+                values = listOf(
+                    ValueEntry(
+                        value = currentWeightRate,
+                        unit = stringResource(Res.string.unit_grams_per_second),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        type = WeightRate,
+                        showDivider = visibleCharts.contains(WeightRate)
+                    ),
+                    ValueEntry(
+                        value = currentFlow,
+                        unit = stringResource(Res.string.unit_milliliters_per_second),
+                        color = GeeFlowTheme.colors.water,
+                        type = FlowRate,
+                        showDivider = visibleCharts.contains(FlowRate)
+                    )
+                ),
+                onToggle = onToggle
+            )
+            SummaryItem(
+                modifier = Modifier.weight(2f),
+                values = listOf(
+                    ValueEntry(
+                        value = totalWeight.toDouble(),
+                        unit = stringResource(Res.string.unit_grams),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        type = Weight,
+                        showDivider = visibleCharts.contains(Weight)
+                    ),
+                    ValueEntry(
+                        value = totalVolume.toDouble(),
+                        unit = stringResource(Res.string.unit_milliliters),
+                        color = GeeFlowTheme.colors.waterVariant,
+                        type = Volume,
+                        showDivider = visibleCharts.contains(Volume)
+                    )
+                ),
+                onToggle = onToggle
+            )
         }
     }
 }
 
+private data class ValueEntry(
+    val value: Double,
+    val unit: String,
+    val color: Color,
+    val type: DashboardChartType,
+    val showDivider: Boolean
+)
+
 @Composable
-private fun BrewContent(
-    onManualClick: () -> Unit,
-    onManualFlowClick: () -> Unit,
-    modifier: Modifier = Modifier
+private fun SummaryItem(
+    values: List<ValueEntry>,
+    onToggle: (DashboardChartType) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth().padding(horizontal = 32.dp),
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(32.dp)
+        horizontalArrangement = Arrangement.Center
     ) {
-        IconButton(
-            onClick = onManualClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) {
-            Icon(
-                painter = rememberVectorPainter(GeeFlowIcon.Manual),
-                modifier = Modifier.size(20.dp),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        HorizontalSpacer(1f)
-        IconButton(
-            onClick = onManualFlowClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) {
-            Icon(
-                painter = rememberVectorPainter(GeeFlowIcon.FlowControl),
-                modifier = Modifier.size(28.dp),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        values.forEach { entry ->
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clickable { onToggle(entry.type) }
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = entry.value.format(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                AnimatedVisibility(
+                    visible = entry.showDivider,
+                    enter = expandIn(expandFrom = Alignment.Center) + fadeIn(),
+                    exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut(),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 2.dp, horizontal = 4.dp)
+                            .background(entry.color, CircleShape)
+                            .height(2.dp)
+                            .fillMaxWidth(),
+                    )
+                }
+                Text(
+                    text = entry.unit,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
 
-@Composable
-private fun BrewingContent(
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = stringResource(Res.string.common_stop).uppercase(),
-        style = MaterialTheme.typography.headlineMedium,
-        color = MaterialTheme.colorScheme.onPrimary,
-        textAlign = TextAlign.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(horizontal = 32.dp)
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
-    var isBrewing by remember { mutableStateOf(false) }
-    BrewBar(
-        isBrewing = isBrewing,
-        onManualClick = {},
-        onFlowClick = { isBrewing = true },
-        onManualFlowClick = {},
-        onStopClick = { isBrewing = false },
-        modifier = Modifier.wrapContentWidth()
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
-    var isBrewing by remember { mutableStateOf(true) }
-    BrewBar(
-        isBrewing = isBrewing,
-        onManualClick = {},
-        onFlowClick = { isBrewing = true },
-        onManualFlowClick = {},
-        onStopClick = { isBrewing = false }
-    )
-}
+private fun Double.format() = ((this * 10).toInt() / 10.0).toString()

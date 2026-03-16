@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -41,8 +43,11 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
 import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_settings
 import geeflow.composeapp.generated.resources.device_dashboard_clean
@@ -53,8 +58,35 @@ import geeflow.composeapp.generated.resources.device_dashboard_disconnected
 import geeflow.composeapp.generated.resources.device_list_screen_set_as_default
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ActionBar(
+internal fun TopBar(
+    device: Device,
+    user: User, // TODO Fill user profile image
+    onEvent: (DeviceDashboardEvent) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    FlowRow(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        GeeFlowUserAvatar(
+            modifier = Modifier.size(48.dp),
+            onClick = { onEvent(UserClicked) }
+        )
+        HorizontalSpacer(8.dp)
+        DeviceTile(device, onEvent)
+        HorizontalSpacer(24.dp)
+        ActionBar(
+            connectionStatus = device.connectionStatus,
+            onEvent = onEvent,
+            modifier = Modifier.weight(1f, false)
+        )
+    }
+}
+
+@Composable
+private fun ActionBar(
     connectionStatus: Device.ConnectionStatus,
     onEvent: (DeviceDashboardEvent) -> Unit,
     modifier: Modifier = Modifier
