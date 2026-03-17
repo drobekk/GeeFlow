@@ -202,14 +202,17 @@ private fun CompactDashboard(
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
-                onSelected = { index -> coroutineScope.launch { pagerState.animateScrollToPage(index) } }
+                onSelected = { index ->
+                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                }
             )
             HorizontalPager(
                 state = pagerState,
+                key = { it },
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    Details.ordinal -> Column {
+                    Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
                         BrewCharts(
                             brew = viewState.brew,
                             visibleCharts = viewState.visibleCharts,

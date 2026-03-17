@@ -46,8 +46,8 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
             data = dataPoints
         ),
         brewProfiles = listOf(
-            DeviceDashboardViewState.Profile("Classic Espresso", "18g in, 36g out, 30s", true),
-            DeviceDashboardViewState.Profile("Light Roast Filter", "High temp, low pressure", false)
+            DeviceDashboardViewState.Profile("1", "1", "Classic Espresso", "36g", true, false, true),
+            DeviceDashboardViewState.Profile("2", "2", "Light Roast Filter", "88ml", false, true, false)
         )
     )
 }

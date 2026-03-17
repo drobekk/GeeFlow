@@ -60,9 +60,13 @@ data class DeviceDashboardViewState(
     }
 
     data class Profile(
+        val id: String,
+        val number: String,
         val name: String,
         val description: String,
-        val brewByWeight: Boolean
+        val brewByWeight: Boolean,
+        val bound: Boolean = false,
+        val selected: Boolean = false
     )
 
     sealed interface Dialog {

@@ -35,6 +35,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Volume
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Weight
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.WeightRate
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.unit_bar
@@ -155,7 +156,7 @@ private fun SummaryItem(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -200,3 +201,43 @@ private fun SummaryItem(
 }
 
 private fun Double.format() = ((this * 10).toInt() / 10.0).toString()
+
+private val previewBrew = Brew(
+    name = "Slayer shot",
+    time = 25f,
+    data = mapOf(
+        1f to Brew.Data(
+            pressure = 9.0f,
+            weight = 36.0f,
+            weightPerSecond = 2.5f,
+            volume = 40.0f,
+            volumePerSecond = 2.8f
+        )
+    )
+)
+
+private val previewVisibleCharts = setOf(
+    Pressure,
+    FlowRate,
+    WeightRate
+)
+
+@Composable
+@GeeFlowScreenPreview
+private fun PreviewLight() = GeeFlowTheme(false) {
+    BrewBar(
+        brew = previewBrew,
+        visibleCharts = previewVisibleCharts,
+        onToggle = {}
+    )
+}
+
+@Composable
+@GeeFlowScreenPreview
+private fun PreviewDark() = GeeFlowTheme(true) {
+    BrewBar(
+        brew = previewBrew,
+        visibleCharts = previewVisibleCharts,
+        onToggle = {},
+    )
+}

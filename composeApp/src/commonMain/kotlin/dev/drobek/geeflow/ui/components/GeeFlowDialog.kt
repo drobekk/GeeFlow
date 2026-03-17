@@ -25,7 +25,7 @@ fun GeeFlowDialog(
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 content = content
             )
         }
