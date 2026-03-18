@@ -3,8 +3,7 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard.profiles
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 data class ProfileListViewState(
-    val profiles: List<Profile> = emptyList(),
-    val selectedProfileId: String? = null
+    val profiles: List<Profile> = emptyList()
 ) {
     data class Profile(
         val id: String,

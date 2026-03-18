@@ -5,11 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -19,6 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.drobek.geeflow.ui.icons.GeeFlowIcon
+import dev.drobek.geeflow.ui.icons.Person
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 
 @Composable
@@ -38,10 +37,8 @@ fun GeeFlowUserAvatar(
         contentAlignment = Alignment.BottomCenter
     ) {
         Icon(
-            painter = rememberVectorPainter(Icons.Filled.Person),
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = 9.5.dp),
+            painter = rememberVectorPainter(GeeFlowIcon.Person),
+            modifier = Modifier.fillMaxSize(),
             tint = MaterialTheme.colorScheme.outlineVariant,
             contentDescription = null
         )

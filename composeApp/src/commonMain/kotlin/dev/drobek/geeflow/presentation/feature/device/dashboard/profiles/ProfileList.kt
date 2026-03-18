@@ -96,8 +96,7 @@ private fun ProfileListContent(
     val filteredProfiles = remember(viewState.profiles, searchQuery) {
         if (searchQuery.isBlank()) viewState.profiles
         else viewState.profiles.filter {
-            it.name.contains(searchQuery, ignoreCase = true) ||
-                    it.description.contains(searchQuery, ignoreCase = true)
+            it.name.contains(searchQuery, ignoreCase = true) || it.description.contains(searchQuery, ignoreCase = true)
         }
     }
 

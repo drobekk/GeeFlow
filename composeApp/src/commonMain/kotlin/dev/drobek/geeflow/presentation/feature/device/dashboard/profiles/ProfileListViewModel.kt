@@ -19,29 +19,23 @@ internal class ProfileListViewModel(
     init {
         launch {
             observeUserProfilesUseCase().collect { profiles ->
+                val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
                 modify {
-                    copy(profiles = profiles.mapIndexed { index, profile ->
-                        mapToProfile(index, profile, selectedProfileId)
-                    })
+                    copy(profiles = profiles.mapIndexed { index, profile -> mapToProfile(index, profile, selectedProfileId) })
                 }
             }
         }
     }
 
-    fun handleEvent(event: ProfileListEvent) {
-        when (event) {
-            is ProfileSelected -> setSelectedProfileId(event.id)
-            is HistoryClicked -> Unit // TODO
-            is AddProfileClicked -> Unit // TODO
-        }
+    fun handleEvent(event: ProfileListEvent) = when (event) {
+        is ProfileSelected -> setSelectedProfileId(event.id)
+        is HistoryClicked -> Unit // TODO
+        is AddProfileClicked -> Unit // TODO
     }
 
     private fun setSelectedProfileId(id: String?) {
         modify {
-            copy(
-                selectedProfileId = id,
-                profiles = profiles.map { it.copy(selected = it.id == id) }
-            )
+            copy(profiles = profiles.map { it.copy(selected = it.id == id) })
         }
     }
 
