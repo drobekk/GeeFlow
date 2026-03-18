@@ -1,8 +1,7 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard.components
+package dev.drobek.geeflow.presentation.feature.device.dashboard.profiles
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
@@ -10,13 +9,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -53,7 +56,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Profile
+import dev.drobek.geeflow.presentation.feature.device.dashboard.getMockProfileListViewState
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -65,13 +69,37 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun ProfileList(
-    profiles: List<Profile>,
+    viewState: ProfileListViewState,
+    onEvent: (ProfileListEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ProfileListContent(
+        viewState = viewState,
+        onEvent = onEvent,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun ProfileListContent(
+    viewState: ProfileListViewState,
+    onEvent: (ProfileListEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearchExpanded by remember { mutableStateOf(false) }
+
     val topContentPadding by animateDpAsState(if (isSearchExpanded) 78.dp else 0.dp)
     val verticalBias by animateFloatAsState(if (isSearchExpanded) -1.0f else 1.0f)
+
+    val filteredProfiles = remember(viewState.profiles, searchQuery) {
+        if (searchQuery.isBlank()) viewState.profiles
+        else viewState.profiles.filter {
+            it.name.contains(searchQuery, ignoreCase = true) ||
+                    it.description.contains(searchQuery, ignoreCase = true)
+        }
+    }
 
     Box(
         modifier = modifier
@@ -83,9 +111,10 @@ internal fun ProfileList(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp)
         ) {
-            items(profiles) {
+            items(filteredProfiles) {
                 ProfileItem(
-                    profile = it
+                    profile = it,
+                    onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) }
                 )
             }
         }
@@ -94,6 +123,7 @@ internal fun ProfileList(
             searchExpanded = isSearchExpanded,
             onSearchQueryChange = { searchQuery = it },
             onExpandedChange = { isSearchExpanded = it },
+            onEvent = onEvent,
             modifier = Modifier.align(BiasAlignment(0.0f, verticalBias))
         )
     }
@@ -105,7 +135,8 @@ private fun BottomBar(
     searchQuery: String,
     searchExpanded: Boolean,
     onSearchQueryChange: (String) -> Unit,
-    onExpandedChange: (Boolean) -> Unit = {},
+    onExpandedChange: (Boolean) -> Unit,
+    onEvent: (ProfileListEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val topBrush = Brush.verticalGradient(
@@ -126,16 +157,21 @@ private fun BottomBar(
         modifier = modifier
             .fillMaxWidth()
             .background(brush = if (searchExpanded) topBrush else bottomBrush)
-            .padding(16.dp),
+            .padding(16.dp)
+            .height(48.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AnimatedVisibility(!searchExpanded) {
+        AnimatedVisibility(
+            !searchExpanded,
+            enter = expandHorizontally(clip = false) + fadeIn(),
+            exit = shrinkHorizontally(clip = false) + fadeOut()
+        ) {
             Row(
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape)
-                    .padding(vertical = 4.dp, horizontal = 12.dp)
+                    .padding(horizontal = 6.dp)
             ) {
                 ToggleButton(
                     checked = false,
@@ -144,7 +180,7 @@ private fun BottomBar(
                         checkedShape = CircleShape,
                         pressedShape = CircleShape
                     ),
-                    onCheckedChange = { /* TODO: History action */ }
+                    onCheckedChange = { onEvent(ProfileListEvent.HistoryClicked) }
                 ) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.History),
@@ -152,7 +188,7 @@ private fun BottomBar(
                     )
                 }
                 IconButton(
-                    onClick = { /* TODO: Add profile action */ }
+                    onClick = { onEvent(ProfileListEvent.AddProfileClicked) }
                 ) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.Add),
@@ -166,7 +202,7 @@ private fun BottomBar(
             expanded = searchExpanded,
             onSearchQueryChange = onSearchQueryChange,
             onExpandedChange = onExpandedChange,
-            modifier = Modifier
+            modifier = Modifier.fillMaxHeight()
         )
     }
 }
@@ -192,8 +228,7 @@ private fun SearchBar(
     }
 
     Row(
-        modifier = modifier
-            .background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
+        modifier = modifier.background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -237,6 +272,7 @@ private fun SearchBar(
         ) { expanded ->
             if (expanded) {
                 IconButton(
+                    modifier = Modifier.aspectRatio(1f),
                     onClick = {
                         onExpandedChange(false)
                         onSearchQueryChange("")
@@ -250,6 +286,7 @@ private fun SearchBar(
                 }
             } else {
                 IconButton(
+                    modifier = Modifier.aspectRatio(1f),
                     onClick = { onExpandedChange(true) }
                 ) {
                     Icon(
@@ -266,30 +303,26 @@ private fun SearchBar(
 @Composable
 private fun ProfileItem(
     profile: Profile,
+    onProfileClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor by animateColorAsState(
-        when {
-            profile.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
-            else -> Color.Transparent
-        }
-    )
-    val numberColor by animateColorAsState(
-        when {
-            profile.selected -> MaterialTheme.colorScheme.primary
-            else -> MaterialTheme.colorScheme.surfaceContainerHigh
-        }
-    )
-    val numberTextColor by animateColorAsState(
-        when {
-            profile.selected -> MaterialTheme.colorScheme.onPrimary
-            else -> MaterialTheme.colorScheme.onSurface
-        }
-    )
+    val backgroundColor = when {
+        profile.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> Color.Transparent
+    }
+    val numberColor = when {
+        profile.selected -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val numberTextColor = when {
+        profile.selected -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(backgroundColor)
+            .clickable { onProfileClick(profile.id) }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -330,45 +363,12 @@ private fun ProfileItem(
     }
 }
 
-private val previewProfiles = listOf(
-    Profile(
-        id = "1",
-        number = "1",
-        name = "Light Roast",
-        description = "69g",
-        brewByWeight = true,
-        selected = true
-    ),
-    Profile(
-        id = "2",
-        number = "2",
-        name = "Dark Roast",
-        description = "88ml",
-        brewByWeight = false
-    ),
-    Profile(
-        id = "3",
-        number = "3",
-        name = "Turbo Shot",
-        description = "36g",
-        brewByWeight = true,
-        bound = true
-    )
-) + List(10) { index ->
-    Profile(
-        id = (index + 4).toString(),
-        number = (index + 4).toString(),
-        name = "Profile ${index + 4}",
-        description = if (index % 2 == 0) "${80 + index}ml" else "${40 + index}g",
-        brewByWeight = index % 2 == 0
-    )
-}
-
 @Composable
 @GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
     ProfileList(
-        profiles = previewProfiles,
+        viewState = getMockProfileListViewState(),
+        onEvent = {},
         modifier = Modifier.padding(16.dp)
     )
 }
@@ -377,7 +377,8 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 @GeeFlowScreenPreview
 private fun PreviewDark() = GeeFlowTheme(true) {
     ProfileList(
-        profiles = previewProfiles,
+        viewState = getMockProfileListViewState(),
+        onEvent = {},
         modifier = Modifier.padding(16.dp)
     )
 }

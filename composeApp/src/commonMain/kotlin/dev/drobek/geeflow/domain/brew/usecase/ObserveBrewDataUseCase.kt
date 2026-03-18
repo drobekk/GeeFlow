@@ -2,10 +2,12 @@ package dev.drobek.geeflow.domain.brew.usecase
 
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.brew.model.BrewDataPoint
+import dev.drobek.geeflow.domain.brew.model.BrewSession
 import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import org.koin.core.annotation.Factory
 import kotlin.time.Clock
@@ -15,10 +17,11 @@ import kotlin.time.Instant
 
 @Factory
 class ObserveBrewDataUseCase(
-    private val deviceController: DeviceController
+    private val deviceController: DeviceController,
+    private val getSelectedUserUseCase: GetSelectedUserUseCase
 ) {
-    operator fun invoke(): Flow<Map<Float, BrewDataPoint>> {
-        return deviceController.machineState
+    operator fun invoke(): Flow<BrewSession> {
+        val scanFlow = deviceController.machineState
             .scan(Accumulator()) { acc, state ->
                 val status = state.brewStatus
                 val currentlyBrewing = status == MachineState.BrewStatus.Manual || status == MachineState.BrewStatus.Profile
@@ -29,6 +32,7 @@ class ObserveBrewDataUseCase(
                         acc.data.clear()
                         acc.isBrewing = true
                         acc.startTime = now
+                        acc.status = status
                     }
 
                     val elapsed = acc.startTime?.let { now - it } ?: Duration.ZERO
@@ -46,13 +50,24 @@ class ObserveBrewDataUseCase(
                 }
                 acc
             }
-            .map { it.data.toMap() }
-            .distinctUntilChanged()
+
+        return combine(scanFlow, getSelectedUserUseCase()) { acc, user ->
+            val isManual = acc.status == MachineState.BrewStatus.Manual
+            BrewSession(
+                userId = user?.id ?: 0L,
+                profileId = if (isManual) null else null, // TODO Get Profile Id
+                profileName = if (isManual) "M" else null,
+                startTime = acc.startTime,
+                inProgress = acc.isBrewing,
+                dataPoints = acc.data.toMap()
+            )
+        }.distinctUntilChanged()
     }
 
     private class Accumulator {
         val data = mutableMapOf<Float, BrewDataPoint>()
         var isBrewing = false
         var startTime: Instant? = null
+        var status: MachineState.BrewStatus = MachineState.BrewStatus.Idle
     }
 }

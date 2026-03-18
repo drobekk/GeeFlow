@@ -35,9 +35,11 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Volume
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Weight
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.WeightRate
+import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.common_avg
 import geeflow.composeapp.generated.resources.unit_bar
 import geeflow.composeapp.generated.resources.unit_grams
 import geeflow.composeapp.generated.resources.unit_grams_per_second
@@ -48,14 +50,31 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun BrewBar(
     brew: Brew,
+    isBrewing: Boolean,
     visibleCharts: Set<DashboardChartType>,
     onToggle: (DashboardChartType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val lastPoint = brew.data.values.lastOrNull()
-    val currentPressure = lastPoint?.pressure?.toDouble() ?: 0.0
-    val currentFlow = lastPoint?.volumePerSecond?.toDouble() ?: 0.0
-    val currentWeightRate = lastPoint?.weightPerSecond?.toDouble() ?: 0.0
+
+    val currentPressure = if (!isBrewing && brew.data.isNotEmpty()) {
+        brew.data.values.map { it.pressure }.average().takeIf { !it.isNaN() } ?: 0.0
+    } else {
+        lastPoint?.pressure?.toDouble() ?: 0.0
+    }
+
+    val currentFlow = if (!isBrewing && brew.data.isNotEmpty()) {
+        brew.data.values.map { it.volumePerSecond }.average().takeIf { !it.isNaN() } ?: 0.0
+    } else {
+        lastPoint?.volumePerSecond?.toDouble() ?: 0.0
+    }
+
+    val currentWeightRate = if (!isBrewing && brew.data.isNotEmpty()) {
+        brew.data.values.map { it.weightPerSecond }.average().takeIf { !it.isNaN() } ?: 0.0
+    } else {
+        lastPoint?.weightPerSecond?.toDouble() ?: 0.0
+    }
+
     val totalWeight = lastPoint?.weight ?: 0f
     val totalVolume = lastPoint?.volume ?: 0f
 
@@ -63,17 +82,17 @@ internal fun BrewBar(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "Slayer shot",
+                text = brew.name,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = "${brew.time.toInt()}s",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
@@ -91,7 +110,8 @@ internal fun BrewBar(
                         unit = stringResource(Res.string.unit_bar),
                         color = MaterialTheme.colorScheme.error,
                         type = Pressure,
-                        showDivider = visibleCharts.contains(Pressure)
+                        showDivider = visibleCharts.contains(Pressure),
+                        showAvg = !isBrewing && brew.data.isNotEmpty()
                     )
                 ),
                 onToggle = onToggle
@@ -104,14 +124,16 @@ internal fun BrewBar(
                         unit = stringResource(Res.string.unit_grams_per_second),
                         color = MaterialTheme.colorScheme.onSurface,
                         type = WeightRate,
-                        showDivider = visibleCharts.contains(WeightRate)
+                        showDivider = visibleCharts.contains(WeightRate),
+                        showAvg = !isBrewing && brew.data.isNotEmpty()
                     ),
                     ValueEntry(
                         value = currentFlow,
                         unit = stringResource(Res.string.unit_milliliters_per_second),
                         color = GeeFlowTheme.colors.water,
                         type = FlowRate,
-                        showDivider = visibleCharts.contains(FlowRate)
+                        showDivider = visibleCharts.contains(FlowRate),
+                        showAvg = !isBrewing && brew.data.isNotEmpty()
                     )
                 ),
                 onToggle = onToggle
@@ -124,14 +146,16 @@ internal fun BrewBar(
                         unit = stringResource(Res.string.unit_grams),
                         color = MaterialTheme.colorScheme.onSurface,
                         type = Weight,
-                        showDivider = visibleCharts.contains(Weight)
+                        showDivider = visibleCharts.contains(Weight),
+                        showAvg = false
                     ),
                     ValueEntry(
                         value = totalVolume.toDouble(),
                         unit = stringResource(Res.string.unit_milliliters),
                         color = GeeFlowTheme.colors.waterVariant,
                         type = Volume,
-                        showDivider = visibleCharts.contains(Volume)
+                        showDivider = visibleCharts.contains(Volume),
+                        showAvg = false
                     )
                 ),
                 onToggle = onToggle
@@ -145,7 +169,8 @@ private data class ValueEntry(
     val unit: String,
     val color: Color,
     val type: DashboardChartType,
-    val showDivider: Boolean
+    val showDivider: Boolean,
+    val showAvg: Boolean
 )
 
 @Composable
@@ -190,11 +215,24 @@ private fun SummaryItem(
                             .fillMaxWidth(),
                     )
                 }
-                Text(
-                    text = entry.unit,
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = entry.unit,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    AnimatedVisibility(
+                        visible = entry.showAvg,
+                        enter = expandIn(expandFrom = Alignment.CenterStart) + fadeIn(),
+                        exit = shrinkOut(shrinkTowards = Alignment.CenterStart) + fadeOut(),
+                    ) {
+                        Text(
+                            text = " ${stringResource(Res.string.common_avg)}",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }
@@ -206,7 +244,7 @@ private val previewBrew = Brew(
     name = "Slayer shot",
     time = 25f,
     data = mapOf(
-        1f to Brew.Data(
+        1f to ChartData(
             pressure = 9.0f,
             weight = 36.0f,
             weightPerSecond = 2.5f,
@@ -227,6 +265,7 @@ private val previewVisibleCharts = setOf(
 private fun PreviewLight() = GeeFlowTheme(false) {
     BrewBar(
         brew = previewBrew,
+        isBrewing = true,
         visibleCharts = previewVisibleCharts,
         onToggle = {}
     )
@@ -237,6 +276,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 private fun PreviewDark() = GeeFlowTheme(true) {
     BrewBar(
         brew = previewBrew,
+        isBrewing = false,
         visibleCharts = previewVisibleCharts,
         onToggle = {},
     )

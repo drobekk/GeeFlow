@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.data.brews.api
+package dev.drobek.geeflow.data.brew.api
 
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import kotlinx.coroutines.flow.StateFlow

@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -72,9 +74,12 @@ private fun IntroScreenContent(
         content = {
             Form(
                 onEvent = onEvent,
-                modifier = Modifier.padding(it)
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(it)
             )
-        }
+        },
+        modifier = Modifier.imePadding()
     )
 }
 
@@ -88,7 +93,7 @@ private fun Logo(modifier: Modifier = Modifier) {
                 ifFalse = { fillMaxWidth() }
             )
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .systemBarsPadding()
+            .statusBarsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -119,7 +124,6 @@ private fun Form(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .imePadding()
             .navigationBarsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

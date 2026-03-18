@@ -48,6 +48,8 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Volume
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Weight
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.WeightRate
+import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import dev.drobek.geeflow.ui.isHeightCompact
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.disabled
@@ -59,11 +61,13 @@ import org.jetbrains.compose.resources.stringResource
 internal fun BrewCharts(
     brew: Brew,
     visibleCharts: Set<DashboardChartType>,
+    selectedProfile: Profile? = null,
     modifier: Modifier = Modifier
 ) {
     BrewChartsSection(
         brew = brew,
         visibleCharts = visibleCharts,
+        selectedProfile = selectedProfile,
         modifier = modifier.fillMaxSize()
     )
 }
@@ -72,6 +76,7 @@ internal fun BrewCharts(
 internal fun BrewChartsSection(
     brew: Brew,
     visibleCharts: Set<DashboardChartType>,
+    selectedProfile: Profile? = null,
     modifier: Modifier = Modifier
 ) {
     val chartModifier = Modifier
@@ -80,14 +85,17 @@ internal fun BrewChartsSection(
         .padding(16.dp)
 
     val sortedEntries = brew.data.entries.sortedBy { it.key }
-    if (sortedEntries.isEmpty()) {
-        ChartsNotSelected(modifier = modifier.then(chartModifier))
-        return
-    }
-
     val xValues = sortedEntries.map { it.key.toDouble() }
     val sortedPoints = sortedEntries.map { it.value }
-    val maxX = maxOf(xValues.maxOrNull() ?: 0.0, 20.0)
+
+    val targetData = selectedProfile?.targetData ?: emptyMap()
+    val targetPressure = targetData.map { it.key.toDouble() to it.value.pressure.toDouble() }.toMap()
+    val targetFlow = targetData.map { it.key.toDouble() to it.value.volumePerSecond.toDouble() }.toMap()
+
+    val maxBrewX = xValues.maxOrNull() ?: 0.0
+    val maxTargetPressureX = targetPressure.keys.maxOrNull() ?: 0.0
+    val maxTargetFlowX = targetFlow.keys.maxOrNull() ?: 0.0
+    val maxX = maxOf(maxBrewX, maxTargetPressureX, maxTargetFlowX, 20.0)
 
     val showPressure = visibleCharts.contains(Pressure)
     val showFlowRate = visibleCharts.contains(FlowRate)
@@ -107,6 +115,7 @@ internal fun BrewChartsSection(
         PressureChart(
             xValues = xValues,
             sortedPoints = sortedPoints,
+            targetSeries = targetPressure.ifEmpty { null },
             maxX = maxX,
             modifier = Modifier.fillMaxSize().then(chartModifier)
         )
@@ -116,6 +125,7 @@ internal fun BrewChartsSection(
         FlowRateChart(
             xValues = xValues,
             sortedPoints = sortedPoints,
+            targetSeries = targetFlow.ifEmpty { null },
             showFlowRate = showFlowRate,
             showWeightRate = showWeightRate,
             maxX = maxX,
@@ -139,20 +149,20 @@ internal fun BrewChartsSection(
             modifier = modifier,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val modifier = Modifier.weight(1f)
-            if (showPressure) Box(modifier = modifier) { pressureChart() }
-            if (showFlowChart) Box(modifier = modifier) { flowRateChart() }
-            if (showAccumulatedChart) Box(modifier = modifier) { accumulatedChart() }
+            val childModifier = Modifier.weight(1f)
+            if (showPressure) Box(modifier = childModifier) { pressureChart() }
+            if (showFlowChart) Box(modifier = childModifier) { flowRateChart() }
+            if (showAccumulatedChart) Box(modifier = childModifier) { accumulatedChart() }
         }
     } else {
         Column(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val modifier = Modifier.weight(1f)
-            if (showPressure) Box(modifier = modifier) { pressureChart() }
-            if (showFlowChart) Box(modifier = modifier) { flowRateChart() }
-            if (showAccumulatedChart) Box(modifier = modifier) { accumulatedChart() }
+            val childModifier = Modifier.weight(1f)
+            if (showPressure) Box(modifier = childModifier) { pressureChart() }
+            if (showFlowChart) Box(modifier = childModifier) { flowRateChart() }
+            if (showAccumulatedChart) Box(modifier = childModifier) { accumulatedChart() }
         }
     }
 }
@@ -177,25 +187,42 @@ private fun ChartsNotSelected(
 @Composable
 private fun PressureChart(
     xValues: List<Double>,
-    sortedPoints: List<Brew.Data>,
+    sortedPoints: List<ChartData>,
+    targetSeries: Map<Double, Double>?,
     maxX: Double,
     modifier: Modifier = Modifier
 ) {
     val producer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(xValues, sortedPoints) {
+    val tX = targetSeries?.entries?.sortedBy { it.key }?.map { it.key }
+    val tY = targetSeries?.entries?.sortedBy { it.key }?.map { it.value }
+
+    LaunchedEffect(xValues, sortedPoints, tX, tY) {
         producer.runTransaction {
             lineSeries {
-                series(x = xValues, y = sortedPoints.map { it.pressure })
+                if (xValues.isNotEmpty()) {
+                    series(x = xValues, y = sortedPoints.map { it.pressure })
+                } else {
+                    series(x = listOf(0.0), y = listOf(0.0))
+                }
+                if (tX != null) {
+                    if (tX.isNotEmpty() && tY != null) {
+                        series(x = tX, y = tY)
+                    } else {
+                        series(x = listOf(0.0), y = listOf(0.0))
+                    }
+                }
             }
         }
     }
 
-    val maxPressure = sortedPoints.maxOf { it.pressure.toDouble() }
-    val maxY = maxOf(12.0, maxPressure)
+    val maxPressure = sortedPoints.maxOfOrNull { it.pressure.toDouble() } ?: 0.0
+    val maxTarget = targetSeries?.values?.maxOrNull() ?: 0.0
+    val maxY = maxOf(12.0, maxPressure, maxTarget)
 
     BrewChart(
         modelProducer = producer,
         colors = listOf(MaterialTheme.colorScheme.error),
+        targetColor = if (tX != null) MaterialTheme.colorScheme.error.copy(alpha = 0.5f) else null,
         maxX = maxX,
         maxY = maxY,
         modifier = modifier
@@ -205,30 +232,45 @@ private fun PressureChart(
 @Composable
 private fun FlowRateChart(
     xValues: List<Double>,
-    sortedPoints: List<Brew.Data>,
+    sortedPoints: List<ChartData>,
+    targetSeries: Map<Double, Double>?,
     showFlowRate: Boolean,
     showWeightRate: Boolean,
     maxX: Double,
     modifier: Modifier = Modifier
 ) {
     val producer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(xValues, sortedPoints, showFlowRate, showWeightRate) {
-        if (showFlowRate || showWeightRate) {
-            producer.runTransaction {
-                lineSeries {
+    val tX = targetSeries?.entries?.sortedBy { it.key }?.map { it.key }
+    val tY = targetSeries?.entries?.sortedBy { it.key }?.map { it.value }
+
+    LaunchedEffect(xValues, sortedPoints, showFlowRate, showWeightRate, tX, tY) {
+        producer.runTransaction {
+            lineSeries {
+                if (xValues.isNotEmpty()) {
                     if (showFlowRate) series(x = xValues, y = sortedPoints.map { it.volumePerSecond })
                     if (showWeightRate) series(x = xValues, y = sortedPoints.map { it.weightPerSecond })
+                } else {
+                    if (showFlowRate) series(x = listOf(0.0), y = listOf(0.0))
+                    if (showWeightRate) series(x = listOf(0.0), y = listOf(0.0))
+                }
+                if (tX != null && showFlowRate) {
+                    if (tX.isNotEmpty() && tY != null) {
+                        series(x = tX, y = tY)
+                    } else {
+                        series(x = listOf(0.0), y = listOf(0.0))
+                    }
                 }
             }
         }
     }
 
-    val maxRate = sortedPoints.maxOf {
+    val maxRate = sortedPoints.maxOfOrNull {
         val v1 = if (showFlowRate) it.volumePerSecond.toDouble() else 0.0
         val v2 = if (showWeightRate) it.weightPerSecond.toDouble() else 0.0
         maxOf(v1, v2)
-    }
-    val maxY = maxOf(12.0, maxRate)
+    } ?: 0.0
+    val maxTarget = if (showFlowRate) targetSeries?.values?.maxOrNull() ?: 0.0 else 0.0
+    val maxY = maxOf(12.0, maxRate, maxTarget)
 
     val colors = buildList {
         if (showFlowRate) add(GeeFlowTheme.colors.water)
@@ -238,6 +280,7 @@ private fun FlowRateChart(
     BrewChart(
         modelProducer = producer,
         colors = colors,
+        targetColor = if (tX != null && showFlowRate) GeeFlowTheme.colors.water.copy(alpha = 0.5f) else null,
         maxX = maxX,
         maxY = maxY,
         modifier = modifier
@@ -247,7 +290,7 @@ private fun FlowRateChart(
 @Composable
 private fun AccumulatedChart(
     xValues: List<Double>,
-    sortedPoints: List<Brew.Data>,
+    sortedPoints: List<ChartData>,
     showVolume: Boolean,
     showWeight: Boolean,
     maxX: Double,
@@ -255,21 +298,24 @@ private fun AccumulatedChart(
 ) {
     val producer = remember { CartesianChartModelProducer() }
     LaunchedEffect(xValues, sortedPoints, showVolume, showWeight) {
-        if (showVolume || showWeight) {
-            producer.runTransaction {
-                lineSeries {
+        producer.runTransaction {
+            lineSeries {
+                if (xValues.isNotEmpty()) {
                     if (showVolume) series(x = xValues, y = sortedPoints.map { it.volume })
                     if (showWeight) series(x = xValues, y = sortedPoints.map { it.weight })
+                } else {
+                    if (showVolume) series(x = listOf(0.0), y = listOf(0.0))
+                    if (showWeight) series(x = listOf(0.0), y = listOf(0.0))
                 }
             }
         }
     }
 
-    val maxVolumeAndWeight = sortedPoints.maxOf {
+    val maxVolumeAndWeight = sortedPoints.maxOfOrNull {
         val v1 = if (showVolume) it.volume.toDouble() else 0.0
         val v2 = if (showWeight) it.weight.toDouble() else 0.0
         maxOf(v1, v2)
-    }
+    } ?: 0.0
     val maxY = maxOf(40.0, maxVolumeAndWeight)
 
     val colors = buildList {
@@ -280,6 +326,7 @@ private fun AccumulatedChart(
     BrewChart(
         modelProducer = producer,
         colors = colors,
+        targetColor = null,
         maxX = maxX,
         maxY = maxY,
         modifier = modifier
@@ -290,11 +337,12 @@ private fun AccumulatedChart(
 private fun BrewChart(
     modelProducer: CartesianChartModelProducer,
     colors: List<Color>,
+    targetColor: Color? = null,
     maxX: Double,
     maxY: Double,
     modifier: Modifier = Modifier
 ) {
-    if (colors.isEmpty()) return
+    if (colors.isEmpty() && targetColor == null) return
 
     val vicoScrollState = rememberVicoScrollState(scrollEnabled = false)
     val zoomState = rememberVicoZoomState(
@@ -313,7 +361,15 @@ private fun BrewChart(
                             fill = LineFill.single(Fill(color)),
                             areaFill = AreaFill.single(Fill(Brush.verticalGradient(listOf(color.disabled(), Color.Transparent))))
                         )
-                    }.toTypedArray()
+                    }.toTypedArray() + listOfNotNull(
+                        targetColor?.let { color ->
+                            LineCartesianLayer.rememberLine(
+                                fill = LineFill.single(Fill(color)),
+                                stroke = LineCartesianLayer.LineStroke.Dashed(),
+                                areaFill = null
+                            )
+                        }
+                    ).toTypedArray()
                 ),
                 rangeProvider = CartesianLayerRangeProvider.fixed(
                     minX = 0.0,

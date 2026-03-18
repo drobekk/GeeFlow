@@ -66,6 +66,7 @@
     <string name="common_times">times</string>
     <string name="common_brew_boiler">Brew Boiler</string>
     <string name="common_steam_boiler">Steam Boiler</string>
+    <string name="common_avg">(avg)</string>
 
     <!-- UNITS -->
     <string name="unit_bar">bar</string>

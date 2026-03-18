@@ -9,6 +9,7 @@ import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFact
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewModel
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations.DeviceDashboard
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import org.koin.compose.viewmodel.koinViewModel
@@ -33,7 +34,8 @@ fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceNavigati
     entry<DeviceDashboard> {
         val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
         val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
+        val profileListViewModel = koinViewModel<ProfileListViewModel>()
         BindEffect(viewModel.permissionsController)
-        DeviceDashboardScreen(viewModel, navigation)
+        DeviceDashboardScreen(viewModel, profileListViewModel, navigation)
     }
 }

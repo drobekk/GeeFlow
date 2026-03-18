@@ -1,11 +1,13 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
+import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
+
 data class DeviceDashboardViewState(
     val user: User = User(),
     val device: Device = Device(),
     val brew: Brew = Brew(),
-    val brewProfiles: List<Profile> = emptyList(),
     val dialog: Dialog? = null,
+    val showProfileDetails: Boolean = true,
     val visibleCharts: Set<DashboardChartType> = setOf(
         DashboardChartType.Pressure,
         DashboardChartType.FlowRate,
@@ -28,16 +30,8 @@ data class DeviceDashboardViewState(
     data class Brew(
         val name: String = "",
         val time: Float = 0f,
-        val data: Map<Float, Data> = getEmptyChartData()
-    ) {
-        data class Data(
-            val pressure: Float,
-            val weight: Float,
-            val weightPerSecond: Float,
-            val volume: Float,
-            val volumePerSecond: Float
-        )
-    }
+        val data: Map<Float, ChartData> = getEmptyChartData()
+    )
 
     data class Device(
         val id: String = "",
@@ -59,23 +53,13 @@ data class DeviceDashboardViewState(
         }
     }
 
-    data class Profile(
-        val id: String,
-        val number: String,
-        val name: String,
-        val description: String,
-        val brewByWeight: Boolean,
-        val bound: Boolean = false,
-        val selected: Boolean = false
-    )
-
     sealed interface Dialog {
         object BluetoothPermissionMissing : Dialog
     }
 }
 
 internal fun getEmptyChartData() = mapOf(
-    0f to DeviceDashboardViewState.Brew.Data(
+    0f to ChartData(
         pressure = 0.0f,
         weight = 0f,
         weightPerSecond = 0f,

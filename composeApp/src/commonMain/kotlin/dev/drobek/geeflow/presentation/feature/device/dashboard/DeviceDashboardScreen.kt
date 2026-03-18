@@ -36,19 +36,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Details
 import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Profiles
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.FlowControlClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ManualBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
-import dev.drobek.geeflow.presentation.feature.device.dashboard.components.ProfileList
+import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewDetailsBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.TopBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
@@ -60,13 +61,26 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun DeviceDashboardScreen(
     viewModel: DeviceDashboardViewModel,
+    profileListViewModel: ProfileListViewModel,
     navigation: DeviceNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val profileListViewState by profileListViewModel.viewState.collectAsStateWithLifecycle()
 
     DeviceDashboardContent(
         viewState = viewState,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
+        profileListViewState = profileListViewState,
+        onProfileListEvent = {
+            when (it) {
+                is ProfileListEvent.ProfileSelected -> {
+                    viewModel.handleEvent(DeviceDashboardEvent.ProfileSelected(it.id))
+                    profileListViewModel.handleEvent(it)
+                }
+
+                else -> profileListViewModel.handleEvent(it)
+            }
+        }
     )
 
     EventsDispatcher(viewModel.events) {
@@ -90,17 +104,23 @@ internal fun DeviceDashboardScreen(
 @Composable
 private fun DeviceDashboardContent(
     viewState: DeviceDashboardViewState,
-    onEvent: (DeviceDashboardEvent) -> Unit = {}
+    onEvent: (DeviceDashboardEvent) -> Unit = {},
+    profileListViewState: ProfileListViewState,
+    onProfileListEvent: (ProfileListEvent) -> Unit
 ) {
     if (isWidthExpanded()) {
         ExpandedDashboard(
             viewState = viewState,
-            onEvent = onEvent
+            onEvent = onEvent,
+            profileListViewState = profileListViewState,
+            onProfileListEvent = onProfileListEvent
         )
     } else {
         CompactDashboard(
             viewState = viewState,
-            onEvent = onEvent
+            onEvent = onEvent,
+            profileListViewState = profileListViewState,
+            onProfileListEvent = onProfileListEvent
         )
     }
 }
@@ -109,10 +129,13 @@ private fun DeviceDashboardContent(
 private fun ExpandedDashboard(
     viewState: DeviceDashboardViewState,
     onEvent: (DeviceDashboardEvent) -> Unit = {},
+    profileListViewState: ProfileListViewState,
+    onProfileListEvent: (ProfileListEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier.systemBarsPadding()) {
         Column(modifier = Modifier.weight(0.7f).padding(start = 16.dp)) {
+            val selectedProfile = profileListViewState.profiles.find { it.selected }
             TopBar(
                 device = viewState.device,
                 user = viewState.user,
@@ -123,6 +146,7 @@ private fun ExpandedDashboard(
             )
             BrewCharts(
                 brew = viewState.brew,
+                selectedProfile = selectedProfile,
                 visibleCharts = viewState.visibleCharts,
                 modifier = Modifier.weight(0.7f)
             )
@@ -131,12 +155,20 @@ private fun ExpandedDashboard(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
             ) {
-                BrewBar(
-                    brew = viewState.brew,
-                    visibleCharts = viewState.visibleCharts,
-                    onToggle = { onEvent(ToggleChartVisibility(it)) },
-                    modifier = Modifier.weight(1f).padding(bottom = 10.dp)
-                )
+                if (!viewState.device.isBrewing && viewState.showProfileDetails && selectedProfile != null) {
+                    BrewDetailsBar(
+                        profile = selectedProfile,
+                        modifier = Modifier.weight(1f).padding(bottom = 10.dp)
+                    )
+                } else {
+                    BrewBar(
+                        brew = viewState.brew,
+                        isBrewing = viewState.device.isBrewing,
+                        visibleCharts = viewState.visibleCharts,
+                        onToggle = { onEvent(ToggleChartVisibility(it)) },
+                        modifier = Modifier.weight(1f).padding(bottom = 10.dp)
+                    )
+                }
                 HorizontalSpacer(16.dp)
                 BrewButton(
                     isBrewing = viewState.device.isBrewing,
@@ -154,7 +186,8 @@ private fun ExpandedDashboard(
                 .padding(16.dp)
         ) {
             ProfileList(
-                profiles = viewState.brewProfiles,
+                viewState = profileListViewState,
+                onEvent = onProfileListEvent,
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
@@ -167,6 +200,8 @@ private fun ExpandedDashboard(
 private fun CompactDashboard(
     viewState: DeviceDashboardViewState,
     onEvent: (DeviceDashboardEvent) -> Unit = {},
+    profileListViewState: ProfileListViewState,
+    onProfileListEvent: (ProfileListEvent) -> Unit,
 ) {
     val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
     val coroutineScope = rememberCoroutineScope()
@@ -213,26 +248,39 @@ private fun CompactDashboard(
             ) { page ->
                 when (page) {
                     Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
+                        val selectedProfile = profileListViewState.profiles.find { it.selected }
                         BrewCharts(
                             brew = viewState.brew,
                             visibleCharts = viewState.visibleCharts,
+                            selectedProfile = selectedProfile,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .weight(1f)
                                 .padding(start = 24.dp, end = 24.dp)
                         )
-                        BrewBar(
-                            brew = viewState.brew,
-                            visibleCharts = viewState.visibleCharts,
-                            onToggle = { onEvent(ToggleChartVisibility(it)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 24.dp, top = 16.dp, end = 24.dp)
-                        )
+                        if (!viewState.device.isBrewing && viewState.showProfileDetails && selectedProfile != null) {
+                            BrewDetailsBar(
+                                profile = selectedProfile,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 24.dp, top = 16.dp, end = 24.dp)
+                            )
+                        } else {
+                            BrewBar(
+                                brew = viewState.brew,
+                                isBrewing = viewState.device.isBrewing,
+                                visibleCharts = viewState.visibleCharts,
+                                onToggle = { onEvent(ToggleChartVisibility(it)) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 24.dp, top = 16.dp, end = 24.dp)
+                            )
+                        }
                     }
 
                     Profiles.ordinal -> ProfileList(
-                        profiles = viewState.brewProfiles,
+                        viewState = profileListViewState,
+                        onEvent = onProfileListEvent,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 24.dp)
@@ -289,50 +337,9 @@ private fun DeviceDashboardPreview(isDark: Boolean) {
     GeeFlowTheme(isDark) {
         DeviceDashboardContent(
             viewState = state.value,
-            onEvent = { event ->
-                when (event) {
-                    StopBrewClicked -> {
-                        state.value = state.value.copy(
-                            device = state.value.device.copy(brewStatus = Device.BrewStatus.Idle),
-                            brew = state.value.brew.copy(data = emptyMap())
-                        )
-                    }
-
-                    ManualBrewClicked -> {
-                        state.value = getMockDeviceDashboardViewState()
-                    }
-
-                    ConnectionButtonClicked -> {
-                        val currentData = state.value.brew.data
-                        val nextTime = (currentData.keys.maxOrNull() ?: 0f) + 1f
-                        val newDataPoint = Brew.Data(
-                            pressure = 8f + (kotlin.math.sin(nextTime) * 0.5f),
-                            weight = nextTime * 2f,
-                            weightPerSecond = 2f,
-                            volume = nextTime * 2.2f,
-                            volumePerSecond = 2.2f
-                        )
-                        state.value = state.value.copy(
-                            brew = state.value.brew.copy(
-                                data = currentData + (nextTime to newDataPoint),
-                                time = nextTime
-                            )
-                        )
-                    }
-
-                    is ToggleChartVisibility -> {
-                        val current = state.value.visibleCharts
-                        val new = if (current.contains(event.type)) {
-                            current - event.type
-                        } else {
-                            current + event.type
-                        }
-                        state.value = state.value.copy(visibleCharts = new)
-                    }
-
-                    else -> Unit
-                }
-            }
+            profileListViewState = getMockProfileListViewState(),
+            onProfileListEvent = {},
+            onEvent = {}
         )
     }
 }
