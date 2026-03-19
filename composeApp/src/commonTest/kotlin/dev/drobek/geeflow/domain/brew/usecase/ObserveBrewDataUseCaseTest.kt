@@ -2,6 +2,7 @@ package dev.drobek.geeflow.domain.brew.usecase
 
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.data.users.api.UserRepository
+import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.BrewSession
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.user.model.User
@@ -29,6 +30,8 @@ class FakeDeviceController : DeviceController {
     override suspend fun stopCleaning() {}
     override suspend fun startCleaning() {}
     override suspend fun stopManualBrewing() {}
+    override suspend fun startProfileBrewing(profile: BrewProfile) {}
+    override suspend fun bindProfile(profile: BrewProfile) {}
 }
 
 class FakeUserRepository : UserRepository {

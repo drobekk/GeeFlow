@@ -16,6 +16,9 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
     fun getBrewProfilesByUserId(userId: Long) =
         dbQuery.selectByUserId(userId, ::mapToBrewProfile).executeAsList()
 
+    fun getBrewProfileById(id: Long) =
+        dbQuery.selectById(id, ::mapToBrewProfile).executeAsOneOrNull()
+
     fun insertBrewProfile(brewProfile: BrewProfile) {
         dbQuery.insertBrewProfile(
             id = if (brewProfile.id == 0L) null else brewProfile.id,
@@ -32,6 +35,13 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
 
     fun deleteBrewProfile(id: Long) {
         dbQuery.deleteById(id)
+    }
+
+    fun bindProfile(userId: Long, profileId: Long) {
+        dbQuery.transaction {
+            dbQuery.unbindAll(userId)
+            dbQuery.bindProfile(profileId)
+        }
     }
 
     private fun mapToBrewProfile(

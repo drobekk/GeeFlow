@@ -1,5 +1,6 @@
 package dev.drobek.geeflow.data.device.api
 
+import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
 import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
@@ -20,4 +21,6 @@ interface DeviceController {
     suspend fun stopCleaning()
     suspend fun startCleaning()
     suspend fun stopManualBrewing()
+    suspend fun startProfileBrewing(profile: BrewProfile)
+    suspend fun bindProfile(profile: BrewProfile)
 }

@@ -243,7 +243,7 @@ private fun DeviceItem(
         Text(
             text = model.id,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

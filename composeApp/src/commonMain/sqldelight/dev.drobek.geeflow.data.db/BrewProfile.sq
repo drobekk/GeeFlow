@@ -23,8 +23,17 @@ SELECT * FROM brew_profiles;
 selectByUserId:
 SELECT * FROM brew_profiles WHERE userId = ?;
 
+selectById:
+SELECT * FROM brew_profiles WHERE id = ?;
+
 insertBrewProfile:
 INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, bound, mode, finishCondition, autoLinkOpen, steps) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM brew_profiles WHERE id = ?;
+
+unbindAll:
+UPDATE brew_profiles SET bound = 0 WHERE userId = ?;
+
+bindProfile:
+UPDATE brew_profiles SET bound = 1 WHERE id = ?;

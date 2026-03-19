@@ -8,13 +8,14 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.ProfileSelected
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import org.koin.core.annotation.Factory
 
 @Factory
 internal class ProfileListViewModel(
     private val observeUserProfilesUseCase: ObserveUserProfilesUseCase
-) : BaseViewModel<ProfileListViewState, Unit>(ProfileListViewState()) {
+) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
 
     init {
         launch {
@@ -34,9 +35,8 @@ internal class ProfileListViewModel(
     }
 
     private fun setSelectedProfileId(id: String?) {
-        modify {
-            copy(profiles = profiles.map { it.copy(selected = it.id == id) })
-        }
+        modify { copy(profiles = profiles.map { it.copy(selected = it.id == id) }) }
+        emitEvent(SelectProfile(id))
     }
 
     private fun mapToProfile(index: Int, profile: BrewProfile, selectedId: String?): ProfileListViewState.Profile {

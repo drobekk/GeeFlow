@@ -2,6 +2,7 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard
 
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.brew.model.BrewDataPoint
+import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
@@ -47,10 +48,12 @@ internal class DeviceDashboardViewModel(
     private val deviceController: DeviceController,
     private val observeBrewData: ObserveBrewDataUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
-    private val toggleChartVisibility: ToggleChartVisibilityUseCase
+    private val toggleChartVisibility: ToggleChartVisibilityUseCase,
+    private val getBrewProfileUseCase: GetBrewProfileUseCase
 ) : BaseViewModel<DeviceDashboardViewState, DeviceLitViewModelEvent>(DeviceDashboardViewState()) {
 
     private var macAddress: String? = null
+    private var selectedProfileId: String? = null
 
     init {
         val machine = getDevice(args.id)
@@ -84,14 +87,31 @@ internal class DeviceDashboardViewModel(
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
         is ManualBrewClicked -> launch { deviceController.startManualBrewing() }
-        is StopBrewClicked -> launch { deviceController.stopManualBrewing() }
+        is StopBrewClicked -> launch {
+            if (viewState.value.device.brewStatus == Profile) {
+                deviceController.triggerShortPress()
+            } else {
+                deviceController.stopManualBrewing()
+            }
+        }
+
         is FlowControlClicked -> Unit // TODO
-        is BrewClicked -> launch { deviceController.triggerShortPress() }
+        is BrewClicked -> startProfile()
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
-        is ProfileSelected -> onProfileSelected()
+        is ProfileSelected -> onProfileSelected(event.id)
     }
 
-    private fun onProfileSelected() {
+    private fun startProfile() {
+        launch {
+            selectedProfileId
+                ?.toLongOrNull()
+                ?.let { getBrewProfileUseCase(it) }
+                ?.let { profile -> deviceController.startProfileBrewing(profile) }
+        }
+    }
+
+    private fun onProfileSelected(id: String?) {
+        selectedProfileId = id
         modify { copy(showProfileDetails = true, brew = Brew()) }
     }
 

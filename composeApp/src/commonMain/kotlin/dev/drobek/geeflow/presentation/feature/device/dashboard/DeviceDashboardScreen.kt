@@ -35,11 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Details
 import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Profiles
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.FlowControlClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ManualBrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.*
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
@@ -49,6 +45,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.Devic
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
@@ -71,17 +68,14 @@ internal fun DeviceDashboardScreen(
         viewState = viewState,
         onEvent = viewModel::handleEvent,
         profileListViewState = profileListViewState,
-        onProfileListEvent = {
-            when (it) {
-                is ProfileListEvent.ProfileSelected -> {
-                    viewModel.handleEvent(DeviceDashboardEvent.ProfileSelected(it.id))
-                    profileListViewModel.handleEvent(it)
-                }
-
-                else -> profileListViewModel.handleEvent(it)
-            }
-        }
+        onProfileListEvent = profileListViewModel::handleEvent
     )
+
+    EventsDispatcher(profileListViewModel.events) {
+        when (it) {
+            is SelectProfile -> viewModel.handleEvent(ProfileSelected(it.id))
+        }
+    }
 
     EventsDispatcher(viewModel.events) {
         when (it) {

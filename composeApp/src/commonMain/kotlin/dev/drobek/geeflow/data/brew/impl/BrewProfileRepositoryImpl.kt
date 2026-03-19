@@ -33,6 +33,15 @@ class BrewProfileRepositoryImpl(
         return brewsDao.getBrewProfilesByUserId(userId)
     }
 
+    override fun getBrewProfileById(id: Long): BrewProfile? {
+        return brewsDao.getBrewProfileById(id)
+    }
+
+    override fun bindProfile(userId: Long, profileId: Long) {
+        brewsDao.bindProfile(userId, profileId)
+        refresh()
+    }
+
     private fun addDefaultProfiles(userId: Long) {
         defaultBrewProfileProvider.getDefaultProfiles(userId).forEach { defaultProfile ->
             addBrewProfile(defaultProfile)

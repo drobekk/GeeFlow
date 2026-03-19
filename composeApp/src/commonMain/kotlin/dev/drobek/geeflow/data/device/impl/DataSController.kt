@@ -9,6 +9,10 @@ import dev.bluefalcon.BlueFalconDelegate
 import dev.bluefalcon.BluetoothCharacteristic
 import dev.bluefalcon.BluetoothPeripheral
 import dev.drobek.geeflow.data.device.api.DeviceController
+import dev.drobek.geeflow.domain.brew.model.BrewProfile
+import dev.drobek.geeflow.domain.brew.model.Condition
+import dev.drobek.geeflow.domain.brew.model.ProfileMode
+import dev.drobek.geeflow.domain.brew.model.ProfileStep
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
 import dev.drobek.geeflow.domain.device.model.MachineState.BrewStatus
@@ -746,6 +750,266 @@ class DataSController(
         const val WEIGHT_RATE = 38
 
         const val MIN_HEADER_SIZE = 3 + 40 + 2
+    }
+
+    override suspend fun startProfileBrewing(profile: BrewProfile) {
+        val char = writeChar ?: return
+        Logger.withTag(TAG).i { "Starting profile brew: ${profile.name}" }
+
+        // 1. Upload profile data
+        val commands = buildProfileUploadCommands(profile)
+        for (cmd in commands) {
+            val success = writeAndAwaitModbus(
+                char, cmd.payload,
+                expectedFc = if (cmd.payload[1] == 0x10.toByte()) 0x10 else 0x06,
+                expectedRegHi = cmd.regHi,
+                expectedRegLo = cmd.regLo
+            )
+            if (!success) {
+                Logger.withTag(TAG).e { "Failed to upload profile part at register ${cmd.regHi.toInt() shl 8 or cmd.regLo.toInt()}" }
+                return
+            }
+        }
+
+        // 2. Start brewing pulse
+        Logger.withTag(TAG).i { "Profile uploaded, triggering brew pulse" }
+        if (profile.mode == ProfileMode.FreeVariable) {
+            sendModbusPulse(
+                onCommand = "0105009eff00ec14".decodeHex(),
+                offCommand = "0105009e0000ad24".decodeHex(),
+                label = "Profile Brew (Free)",
+                regHi = 0x00,
+                regLo = 0x9E.toByte()
+            )
+        } else {
+            triggerShortPress()
+        }
+    }
+
+    /**
+     * Binds the provided [profile] to the machine's physical button (Shortcut Slot 1).
+     *
+     * This method uploads the profile data and sends a persistent save command
+     * to register 30, making it the default profile for physical button triggers.
+     *
+     * @param profile The [BrewProfile] to be bound.
+     */
+    override suspend fun bindProfile(profile: BrewProfile) {
+        val char = writeChar ?: return
+        Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
+
+        // 1. Upload profile data
+        val commands = buildProfileUploadCommands(profile)
+        for (cmd in commands) {
+            val success = writeAndAwaitModbus(
+                char, cmd.payload,
+                expectedFc = if (cmd.payload[1] == 0x10.toByte()) 0x10 else 0x06,
+                expectedRegHi = cmd.regHi,
+                expectedRegLo = cmd.regLo
+            )
+            if (!success) {
+                Logger.withTag(TAG).e { "Failed to upload profile part for binding" }
+                return
+            }
+        }
+
+        // 2. Send Bind command (Write 1 to register 30)
+        Logger.withTag(TAG).i { "Profile uploaded, sending bind command to register 30" }
+        val bindCmd = buildWriteMultiple(30, listOf(1))
+        writeAndAwaitModbus(
+            char, bindCmd.payload,
+            expectedFc = 0x10,
+            expectedRegHi = bindCmd.regHi,
+            expectedRegLo = bindCmd.regLo
+        )
+    }
+
+    private class ModbusCommand(val payload: ByteArray, val regHi: Byte, val regLo: Byte)
+
+    /**
+     * Translates a [BrewProfile] into a sequence of Modbus register write commands.
+     *
+     * This method handles two distinct mapping logics based on the [BrewProfile.mode]:
+     *
+     * 1. **Free Variable Mode ([ProfileMode.FreeVariable]):**
+     *    The profile is resampled into a high-resolution 128-point curve (0.1s interval).
+     *    The data is split across 8 distinct memory regions (registers 760-1080 and 1500-1564),
+     *    covering pressure, flow, and weight targets.
+     *
+     * 2. **Constant/Variable Modes ([ProfileMode.ConstantPressure], [ProfileMode.VariablePressure]):**
+     *    The profile is sent as a structured header followed by discrete multi-step definitions
+     *    starting from register 2048. Each step includes duration, pressure/flow targets,
+     *    and priority flags.
+     *
+     * @param profile The source profile containing steps and brewing metadata.
+     * @return A list of [ModbusCommand] objects ready to be transmitted to the machine.
+     */
+    private fun buildProfileUploadCommands(profile: BrewProfile): List<ModbusCommand> {
+        val commands = mutableListOf<ModbusCommand>()
+        val isWeight = profile.finishCondition is Condition.Weight
+        val targetValue = when (val cond = profile.finishCondition) {
+            is Condition.Weight -> cond.target
+            is Condition.Volume -> cond.target
+        }
+
+        // Map ProfileMode to Machine's real_mode based on logs (Variable = 2)
+        val realMode = when (profile.mode) {
+            ProfileMode.VariablePressure -> 2
+            ProfileMode.ConstantPressure -> 1
+            ProfileMode.FreeVariable -> 4
+        }
+
+        if (profile.mode == ProfileMode.FreeVariable) {
+            // Mode 3 (Free Variable) logic from ble.txt
+            val points = resampleSteps(profile.steps, 128, 0.1f)
+            
+            val registers = listOf(760, 824, 888, 952, 1016, 1080, 1500, 1564)
+            val dataTypes = listOf("bar", "bar", "rflow", "rflow", "weight", "weight", "flow", "flow")
+
+            for (k in 0 until 8) {
+                val reg = registers[k]
+                val type = dataTypes[k]
+                val isSecondHalf = k % 2 != 0
+                val startIndex = if (isSecondHalf) 64 else 0
+                
+                val values = (0 until 64).map { i ->
+                    val point = points.getOrNull(startIndex + i)
+                    when (type) {
+                        "bar" -> ((point?.pressure ?: 0f) * 10).toInt()
+                        "flow" -> ((point?.flow ?: 0f) * 10).toInt()
+                        "rflow" -> ((point?.flow ?: 0f) * 10).toInt() 
+                        "weight" -> 0 
+                        else -> 0
+                    }
+                }
+                commands.add(buildWriteMultiple(reg, values))
+            }
+
+            commands.add(buildWriteMultiple(79, listOf(if (isWeight) 0 else 1)))
+            commands.add(buildWriteSingle(87, realMode))
+            commands.add(buildWriteSingle(362, 0))
+            commands.add(buildWriteSingle(358, targetValue.toInt()))
+            commands.add(buildWriteSingle(366, if (profile.autoLinkOpen) 1 else 0))
+
+        } else {
+            // Mode 1/2 logic from logs
+            val startReg = 2048 
+            
+            // Header (7 registers)
+            val headerValues = listOf(
+                if (isWeight) 0 else 1, // callswitch (Reg 2048)
+                if (profile.mode == ProfileMode.VariablePressure) 1 else 0, // pressure mode (Reg 2049)
+                1, // direct (Reg 2050)
+                1, // changeswitch (Reg 2051)
+                if (!isWeight) targetValue.toInt() else 0, // total water (Reg 2052)
+                if (isWeight) targetValue.toInt() else 0, // total weight (Reg 2053)
+                if (profile.autoLinkOpen) 1 else 0 // auto link (Reg 2054)
+            )
+            commands.add(buildWriteMultiple(startReg, headerValues))
+
+            // Logic to merge Wait steps into awaitTime of previous steps
+            data class MachineStep(
+                val time: Int,
+                val bar: Float,
+                val flow: Float,
+                var awaitTime: Int = 0,
+                val isFlowPriority: Boolean
+            )
+
+            val machineSteps = mutableListOf<MachineStep>()
+            profile.steps.forEach { step ->
+                when (step) {
+                    is ProfileStep.Wait -> {
+                        machineSteps.lastOrNull()?.let { it.awaitTime = step.time }
+                    }
+                    is ProfileStep.Pressure -> machineSteps.add(MachineStep(step.time, step.pressure, 0f, 0, false))
+                    is ProfileStep.Flow -> machineSteps.add(MachineStep(step.time, 0f, step.flow, 0, true))
+                }
+            }
+
+            var currentReg = startReg + 8
+            machineSteps.forEachIndexed { index, step ->
+                val isLast = index == machineSteps.size - 1
+                val stepValues = listOf(
+                    step.time, // Time (raw seconds from logs)
+                    (step.bar * 10).toInt(),
+                    (step.flow * 10).toInt(),
+                    step.awaitTime,
+                    if (isLast) 1 else 0,
+                    if (step.isFlowPriority) 1 else 0
+                )
+                commands.add(buildWriteMultiple(currentReg, stepValues))
+                currentReg += 9 // Steps are 9 registers apart in logs (2056 -> 2065)
+            }
+            
+            // Set mode (Reg 87)
+            commands.add(buildWriteSingle(87, realMode))
+        }
+
+        return commands
+    }
+
+    private fun buildWriteSingle(reg: Int, value: Int): ModbusCommand {
+        val regHi = (reg ushr 8).toByte()
+        val regLo = (reg and 0xFF).toByte()
+        val header = byteArrayOf(
+            0x01, 0x06,
+            regHi, regLo,
+            (value ushr 8).toByte(), (value and 0xFF).toByte()
+        )
+        return ModbusCommand(header + calculateCRC(header), regHi, regLo)
+    }
+
+    private fun buildWriteMultiple(reg: Int, values: List<Int>): ModbusCommand {
+        val regHi = (reg ushr 8).toByte()
+        val regLo = (reg and 0xFF).toByte()
+        val num = values.size
+        val byteCount = num * 2
+        
+        val header = byteArrayOf(
+            0x01, 0x10,
+            regHi, regLo,
+            (num ushr 8).toByte(), (num and 0xFF).toByte(),
+            byteCount.toByte()
+        )
+        
+        val data = ByteArray(byteCount)
+        values.forEachIndexed { i, v ->
+            data[i * 2] = (v ushr 8).toByte()
+            data[i * 2 + 1] = (v and 0xFF).toByte()
+        }
+        
+        val payload = header + data
+        return ModbusCommand(payload + calculateCRC(payload), regHi, regLo)
+    }
+
+    private data class ResampledPoint(val pressure: Float, val flow: Float)
+
+    private fun resampleSteps(steps: List<ProfileStep>, count: Int, interval: Float): List<ResampledPoint> {
+        val result = mutableListOf<ResampledPoint>()
+        var currentPressure = 0f
+        var currentFlow = 0f
+        
+        val timeline = mutableListOf<ResampledPoint>()
+        steps.forEach { step ->
+            val durationTicks = (step.time / interval).toInt()
+            when (step) {
+                is ProfileStep.Pressure -> currentPressure = step.pressure
+                is ProfileStep.Flow -> currentFlow = step.flow
+                is ProfileStep.Wait -> {
+                    currentPressure = 0f
+                    currentFlow = 0f
+                }
+            }
+            repeat(durationTicks) {
+                timeline.add(ResampledPoint(currentPressure, currentFlow))
+            }
+        }
+        
+        repeat(count) { i ->
+            result.add(timeline.getOrNull(i) ?: ResampledPoint(0f, 0f))
+        }
+        return result
     }
 
     private fun ByteArray.u8(i: Int): Int = this[i].toInt() and 0xFF

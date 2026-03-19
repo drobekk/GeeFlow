@@ -171,7 +171,7 @@ private fun DeviceItem(
                 ) {
                     Icon(
                         painter = rememberVectorPainter(image = Icons.Filled.Star),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(12.dp),
                         contentDescription = null
                     )
@@ -180,7 +180,7 @@ private fun DeviceItem(
             Text(
                 text = device.id,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         DeviceItemMenu(device, onEvent)
