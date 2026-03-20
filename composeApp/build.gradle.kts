@@ -28,6 +28,9 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+        iosTarget.binaries.all {
+            linkerOpts("-lsqlite3", "-lz")
+        }
     }
 
     jvm()
@@ -99,6 +102,7 @@ sqldelight {
             packageName.set("dev.drobek.geeflow")
         }
     }
+    linkSqlite.set(true)
 }
 
 koinCompiler {
