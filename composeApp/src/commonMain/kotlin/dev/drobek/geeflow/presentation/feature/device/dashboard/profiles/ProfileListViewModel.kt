@@ -3,40 +3,61 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard.profiles
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.Condition
 import dev.drobek.geeflow.domain.brew.model.ProfileStep
+import dev.drobek.geeflow.domain.brew.usecase.BindProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.ProfileSelected
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.RemoveProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.viewmodel.BaseViewModel
+import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.generic_error
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.Factory
 
 @Factory
 internal class ProfileListViewModel(
-    private val observeUserProfilesUseCase: ObserveUserProfilesUseCase
+    private val observeUserProfilesUseCase: ObserveUserProfilesUseCase,
+    private val bindProfileUseCase: BindProfileUseCase
 ) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
 
     init {
-        launch {
-            observeUserProfilesUseCase().collect { profiles ->
-                val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
-                modify {
-                    copy(profiles = profiles.mapIndexed { index, profile -> mapToProfile(index, profile, selectedProfileId) })
-                }
-            }
-        }
+        launch { observeUserProfilesUseCase().collect(::profilesChanged) }
     }
 
     fun handleEvent(event: ProfileListEvent) = when (event) {
         is ProfileSelected -> setSelectedProfileId(event.id)
         is HistoryClicked -> Unit // TODO
         is AddProfileClicked -> Unit // TODO
+        is BindProfileClicked -> bindProfile(event.id)
+        is EditProfileClicked -> Unit // TODO
+        is RemoveProfileClicked -> Unit // TODO
+    }
+
+    private fun bindProfile(id: String) = launchCatching(::onError) {
+        id.toLongOrNull()?.let { bindProfileUseCase(it) }
     }
 
     private fun setSelectedProfileId(id: String?) {
         modify { copy(profiles = profiles.map { it.copy(selected = it.id == id) }) }
         emitEvent(SelectProfile(id))
+    }
+
+    private fun onError(throwable: Throwable) {
+        emitEvent { ShowSnackbar(getString(Res.string.generic_error)) }
+    }
+
+    private fun profilesChanged(profiles: List<BrewProfile>) {
+        val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
+        modify {
+            copy(profiles = profiles.mapIndexed { index, profile -> mapToProfile(index, profile, selectedProfileId) })
+        }
+        emitEvent(SelectProfile(selectedProfileId))
     }
 
     private fun mapToProfile(index: Int, profile: BrewProfile, selectedId: String?): ProfileListViewState.Profile {

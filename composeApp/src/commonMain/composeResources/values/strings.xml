@@ -37,6 +37,9 @@
     <!-- Profile List -->
     <string name="profile_list_search">Search</string>
     <string name="profile_list_history">History</string>
+    <string name="profile_list_edit">Edit profile</string>
+    <string name="profile_list_delete">Delete profile</string>
+    <string name="profile_list_bind">Bind profile</string>
 
     <!-- Settings Quick -->
     <string name="settings_quick_title">Quick settings</string>
@@ -74,4 +77,7 @@
     <string name="unit_grams_per_second">g/s</string>
     <string name="unit_milliliters">ml</string>
     <string name="unit_milliliters_per_second">ml/s</string>
+
+    <!-- ERRORS -->
+    <string name="generic_error">Oops, something went wrong. Please try again.</string>
 </resources>

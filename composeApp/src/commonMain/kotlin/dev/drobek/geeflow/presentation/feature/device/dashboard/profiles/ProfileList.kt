@@ -29,12 +29,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.InsertLink
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
@@ -44,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -59,11 +64,17 @@ import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.getMockProfileListViewState
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.GeeFlowSwipeToRevealBox
+import dev.drobek.geeflow.ui.components.SwipeToRevealBoxValue
+import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.profile_list_bind
+import geeflow.composeapp.generated.resources.profile_list_delete
 import geeflow.composeapp.generated.resources.profile_list_search
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -113,7 +124,8 @@ private fun ProfileListContent(
             items(filteredProfiles) {
                 ProfileItem(
                     profile = it,
-                    onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) }
+                    onEvent = onEvent,
+                    modifier = Modifier
                 )
             }
         }
@@ -302,12 +314,89 @@ private fun SearchBar(
 @Composable
 private fun ProfileItem(
     profile: Profile,
+    onEvent: (ProfileListEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val swipeToDismissBoxState = rememberSwipeToRevealBoxState()
+    val scope = rememberCoroutineScope()
+
+    GeeFlowSwipeToRevealBox(
+        state = swipeToDismissBoxState,
+        modifier = modifier.fillMaxSize(),
+        backgroundContent = {
+            ProfileItemRevealContent(
+                profile = profile,
+                modifier = Modifier.fillMaxSize(),
+                onEvent = {
+                    scope.launch { swipeToDismissBoxState.dismiss(SwipeToRevealBoxValue.Settled) }
+                    onEvent(it)
+                }
+            )
+        }
+    ) {
+        ProfileItemContent(
+            profile = profile,
+            onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) }
+        )
+    }
+}
+
+@Composable
+private fun ProfileItemRevealContent(
+    profile: Profile,
+    onEvent: (ProfileListEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.background(MaterialTheme.colorScheme.surface),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        IconButton(
+            onClick = { onEvent(ProfileListEvent.RemoveProfileClicked(profile.id)) },
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            )
+        ) {
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.Delete),
+                contentDescription = stringResource(Res.string.profile_list_delete)
+            )
+        }
+        IconButton(
+            onClick = { onEvent(ProfileListEvent.EditProfileClicked(profile.id)) },
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.Edit),
+                contentDescription = stringResource(Res.string.profile_list_search)
+            )
+        }
+        IconButton(
+            onClick = { onEvent(ProfileListEvent.BindProfileClicked(profile.id)) },
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.tertiary
+            )
+        ) {
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.Link),
+                contentDescription = stringResource(Res.string.profile_list_bind)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileItemContent(
+    profile: Profile,
     onProfileClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = when {
         profile.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
-        else -> Color.Transparent
+        else -> MaterialTheme.colorScheme.surfaceContainer
     }
     val numberColor = when {
         profile.selected -> MaterialTheme.colorScheme.primary
@@ -348,6 +437,8 @@ private fun ProfileItem(
         }
         AnimatedVisibility(
             visible = profile.bound,
+            enter = fadeIn(),
+            exit = fadeOut(),
             modifier = Modifier.padding(start = 8.dp)
         ) {
             Icon(

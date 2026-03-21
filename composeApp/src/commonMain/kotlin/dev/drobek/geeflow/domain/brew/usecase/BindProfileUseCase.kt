@@ -12,16 +12,12 @@ class BindProfileUseCase(
     private val brewProfileRepository: BrewProfileRepository,
     private val deviceController: DeviceController
 ) {
-    suspend operator fun invoke(profileId: Long): Boolean {
-        val user = getSelectedUserUseCase().firstOrNull() ?: return false
-        val profile = brewProfileRepository.getBrewProfileById(profileId) ?: return false
-        
-        return try {
-            deviceController.bindProfile(profile)
-            brewProfileRepository.bindProfile(user.id, profileId)
-            true
-        } catch (e: Exception) {
-            false
-        }
+    @Throws(Exception::class)
+    suspend operator fun invoke(profileId: Long) {
+        val user = getSelectedUserUseCase().firstOrNull() ?: throw Exception("No user selected")
+        val profile = brewProfileRepository.getBrewProfileById(profileId) ?: throw Exception("Profile not found")
+
+        deviceController.bindProfile(profile)
+        brewProfileRepository.bindProfile(user.id, profileId)
     }
 }

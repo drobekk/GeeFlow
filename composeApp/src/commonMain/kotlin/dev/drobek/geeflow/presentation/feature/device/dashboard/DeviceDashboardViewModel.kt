@@ -1,7 +1,7 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
 import dev.drobek.geeflow.data.device.api.DeviceController
-import dev.drobek.geeflow.domain.brew.model.BrewDataPoint
+import dev.drobek.geeflow.domain.brew.model.BrewSession
 import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import dev.drobek.geeflow.domain.device.model.MachineState
@@ -28,6 +28,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
@@ -38,6 +39,9 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations.DeviceDashboard
 import dev.drobek.geeflow.viewmodel.BaseViewModel
+import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.generic_error
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
@@ -50,7 +54,7 @@ internal class DeviceDashboardViewModel(
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val getBrewProfileUseCase: GetBrewProfileUseCase
-) : BaseViewModel<DeviceDashboardViewState, DeviceLitViewModelEvent>(DeviceDashboardViewState()) {
+) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
     private var macAddress: String? = null
     private var selectedProfileId: String? = null
@@ -59,21 +63,9 @@ internal class DeviceDashboardViewModel(
         val machine = getDevice(args.id)
         macAddress = machine?.macAddress
         modify { copy(device = device.copy(id = args.id, name = machine?.name ?: args.id)) }
-        launch {
-            deviceController.machineState.collect { state -> updateMachineStateUi(state) }
-        }
-        launch {
-            getVisibleCharts().collect { charts ->
-                modify { copy(visibleCharts = charts.map { it.toPresentation() }.toSet()) }
-            }
-        }
-        launch {
-            observeBrewData().collect { session ->
-                modify {
-                    copy(brew = brew.copy(data = session.dataPoints.mapValues { (_, point) -> mapToData(point) }))
-                }
-            }
-        }
+        launch { deviceController.machineState.collect { state -> updateMachineStateUi(state) } }
+        launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
+        launch { observeBrewData().collect(::brewSessionDataChanged) }
     }
 
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
@@ -86,27 +78,41 @@ internal class DeviceDashboardViewModel(
         is CleaningClicked -> emitEvent(Navigation.Clean(args.id))
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
-        is ManualBrewClicked -> launch { deviceController.startManualBrewing() }
-        is StopBrewClicked -> launch {
-            if (viewState.value.device.brewStatus == Profile) {
-                deviceController.triggerShortPress()
-            } else {
-                deviceController.stopManualBrewing()
-            }
-        }
-
+        is ManualBrewClicked -> startManualBrewing()
+        is StopBrewClicked -> stopBrewing()
         is FlowControlClicked -> Unit // TODO
         is BrewClicked -> startProfile()
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
         is ProfileSelected -> onProfileSelected(event.id)
     }
 
-    private fun startProfile() {
-        launch {
-            selectedProfileId
-                ?.toLongOrNull()
-                ?.let { getBrewProfileUseCase(it) }
-                ?.let { profile -> deviceController.startProfileBrewing(profile) }
+    private fun toggleConnection() {
+        if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
+            deviceController.disconnect()
+        } else {
+            withBluetoothPermissions {
+                macAddress?.let { deviceController.connect(it) }
+            }
+        }
+    }
+
+    private fun startProfile() = launchCatching(::onError) {
+        selectedProfileId
+            ?.toLongOrNull()
+            ?.let { getBrewProfileUseCase(it) }
+            ?.let { profile -> deviceController.startProfileBrewing(profile) }
+    }
+
+    private fun startManualBrewing() = launchCatching(::onError) {
+        deviceController.startManualBrewing()
+    }
+
+
+    private fun stopBrewing() = launchCatching(::onError) {
+        if (viewState.value.device.brewStatus == Profile) {
+            deviceController.triggerShortPress()
+        } else {
+            deviceController.stopManualBrewing()
         }
     }
 
@@ -139,14 +145,33 @@ internal class DeviceDashboardViewModel(
         )
     }
 
-    private fun toggleConnection() {
-        if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
-            deviceController.disconnect()
-        } else {
-            withBluetoothPermissions {
-                macAddress?.let { deviceController.connect(it) }
+    private fun brewSessionDataChanged(session: BrewSession) = modify {
+        copy(
+            brew = brew.copy(
+                data = session.dataPoints.mapValues { (_, point) ->
+                    ChartData(
+                        pressure = point.pressure,
+                        weight = point.weight,
+                        weightPerSecond = point.weightRate,
+                        volume = point.volume,
+                        volumePerSecond = point.flowRate
+                    )
+                }
+            )
+        )
+    }
+
+    private fun chartsVisibilityChanged(charts: Set<ChartType>) = modify {
+        copy(visibleCharts = charts.map {
+            when (it) {
+                ChartType.PRESSURE -> DashboardChartType.Pressure
+                ChartType.FLOW_RATE -> DashboardChartType.FlowRate
+                ChartType.WEIGHT_RATE -> DashboardChartType.WeightRate
+                ChartType.VOLUME -> DashboardChartType.Volume
+                ChartType.WEIGHT -> DashboardChartType.Weight
+
             }
-        }
+        }.toSet())
     }
 
     private fun withBluetoothPermissions(block: suspend () -> Unit) = launch {
@@ -163,12 +188,8 @@ internal class DeviceDashboardViewModel(
         modify { copy(dialog = Dialog.BluetoothPermissionMissing) }
     }
 
-    private fun ChartType.toPresentation() = when (this) {
-        ChartType.PRESSURE -> DashboardChartType.Pressure
-        ChartType.FLOW_RATE -> DashboardChartType.FlowRate
-        ChartType.WEIGHT_RATE -> DashboardChartType.WeightRate
-        ChartType.VOLUME -> DashboardChartType.Volume
-        ChartType.WEIGHT -> DashboardChartType.Weight
+    private fun onError(throwable: Throwable) {
+        emitEvent { ShowSnackbar(getString(Res.string.generic_error)) }
     }
 
     private fun DashboardChartType.toDomain() = when (this) {
@@ -178,12 +199,4 @@ internal class DeviceDashboardViewModel(
         DashboardChartType.Volume -> ChartType.VOLUME
         DashboardChartType.Weight -> ChartType.WEIGHT
     }
-
-    private fun mapToData(point: BrewDataPoint): ChartData = ChartData(
-        pressure = point.pressure,
-        weight = point.weight,
-        weightPerSecond = point.weightRate,
-        volume = point.volume,
-        volumePerSecond = point.flowRate
-    )
 }
