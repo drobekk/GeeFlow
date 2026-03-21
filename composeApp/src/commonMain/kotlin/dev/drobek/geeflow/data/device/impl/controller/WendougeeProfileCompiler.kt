@@ -10,7 +10,7 @@ data class ModbusCommand(val payload: ByteArray, val expectedFc: Byte, val regHi
 
 class WendougeeProfileCompiler {
 
-    fun buildProfileUploadCommands(profile: BrewProfile): List<ModbusCommand> {
+    fun buildProfileUploadCommands(profile: BrewProfile, isBinding: Boolean = false): List<ModbusCommand> {
         val commands = mutableListOf<ModbusCommand>()
         val isWeight = profile.finishCondition is Condition.Weight
         val targetValue = when (val cond = profile.finishCondition) {
@@ -49,13 +49,14 @@ class WendougeeProfileCompiler {
             }
 
             commands.add(buildWriteMultiple(WendougeeRegisters.FV_FINISH_CONDITION, listOf(if (isWeight) 0 else 1)))
-            commands.add(buildWriteSingle(WendougeeRegisters.FV_PROFILE_MODE, realMode))
+            val modeRegister = if (isBinding) WendougeeRegisters.BOUND_PROFILE_MODE else WendougeeRegisters.FV_PROFILE_MODE
+            commands.add(buildWriteSingle(modeRegister, realMode))
             commands.add(buildWriteSingle(WendougeeRegisters.FV_OFFSET_ZEROING, 0))
             commands.add(buildWriteSingle(WendougeeRegisters.FV_TARGET_VALUE, targetValue.toInt()))
             commands.add(buildWriteSingle(WendougeeRegisters.FV_AUTO_LINK, if (profile.autoLinkOpen) 1 else 0))
 
         } else {
-            val startReg = WendougeeRegisters.CONSTANT_MODE_BASE
+            val startReg = if (isBinding) WendougeeRegisters.CONSTANT_MODE_BOUND_BASE else WendougeeRegisters.CONSTANT_MODE_BASE
 
             val headerValues = listOf(
                 if (isWeight) 0 else 1,
@@ -102,7 +103,8 @@ class WendougeeProfileCompiler {
                 currentReg += 9
             }
 
-            commands.add(buildWriteSingle(WendougeeRegisters.FV_PROFILE_MODE, realMode))
+            val modeRegister = if (isBinding) WendougeeRegisters.BOUND_PROFILE_MODE else WendougeeRegisters.FV_PROFILE_MODE
+            commands.add(buildWriteSingle(modeRegister, realMode))
         }
 
         return commands

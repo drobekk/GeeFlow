@@ -34,7 +34,7 @@ fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceNavigati
     entry<DeviceDashboard> {
         val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
         val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
-        val profileListViewModel = koinViewModel<ProfileListViewModel>()
+        val profileListViewModel = koinViewModel<ProfileListViewModel> { parametersOf(it) }
         BindEffect(viewModel.permissionsController)
         DeviceDashboardScreen(viewModel, profileListViewModel, navigation)
     }

@@ -264,7 +264,14 @@ class WendougeeDataSController(
         }
     }
 
-    override suspend fun triggerShortPress() {
+    override suspend fun stopProfileBrewing() {
+        if (_machineState.value.brewStatus == BrewStatus.Profile) {
+            Logger.withTag(TAG).i { "Stopping profile brew cycle..." }
+            triggerShortPress()
+        }
+    }
+
+    private suspend fun triggerShortPress() {
         sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, 0x96.toByte())
     }
 
@@ -326,7 +333,7 @@ class WendougeeDataSController(
     override suspend fun bindProfile(profile: BrewProfile) {
         Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
 
-        val commands = profileCompiler.buildProfileUploadCommands(profile)
+        val commands = profileCompiler.buildProfileUploadCommands(profile, isBinding = true)
         for (cmd in commands) {
             modbus.writeAndAwaitModbus(
                 cmd.payload,

@@ -4,8 +4,11 @@ import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.Condition
 import dev.drobek.geeflow.domain.brew.model.ProfileStep
 import dev.drobek.geeflow.domain.brew.usecase.BindProfileUseCase
+import dev.drobek.geeflow.domain.brew.usecase.DeleteProfileUseCase
+import dev.drobek.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
@@ -17,17 +20,28 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.Profile
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.generic_error
+import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.InjectedParam
 
 @Factory
 internal class ProfileListViewModel(
+    @InjectedParam private val args: DeviceDestinations.DeviceDashboard,
     private val observeUserProfilesUseCase: ObserveUserProfilesUseCase,
-    private val bindProfileUseCase: BindProfileUseCase
+    private val observeDeviceProfileUseCase: ObserveDeviceProfileUseCase,
+    private val bindProfileUseCase: BindProfileUseCase,
+    private val deleteProfileUseCase: DeleteProfileUseCase
 ) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
 
     init {
-        launch { observeUserProfilesUseCase().collect(::profilesChanged) }
+        launch {
+            combine(
+                flow = observeDeviceProfileUseCase(args.id),
+                flow2 = observeUserProfilesUseCase(),
+                transform = { deviceProfile, userProfiles -> listOfNotNull(deviceProfile) + userProfiles }
+            ).collect(::profilesChanged)
+        }
     }
 
     fun handleEvent(event: ProfileListEvent) = when (event) {
@@ -36,11 +50,15 @@ internal class ProfileListViewModel(
         is AddProfileClicked -> Unit // TODO
         is BindProfileClicked -> bindProfile(event.id)
         is EditProfileClicked -> Unit // TODO
-        is RemoveProfileClicked -> Unit // TODO
+        is RemoveProfileClicked -> removeProfile(event.id)
+    }
+
+    private fun removeProfile(id: String) = launchCatching(::onError) {
+        id.toLongOrNull()?.let { deleteProfileUseCase(it) }
     }
 
     private fun bindProfile(id: String) = launchCatching(::onError) {
-        id.toLongOrNull()?.let { bindProfileUseCase(it) }
+        id.toLongOrNull()?.let { bindProfileUseCase(args.id, it) }
     }
 
     private fun setSelectedProfileId(id: String?) {
@@ -53,14 +71,25 @@ internal class ProfileListViewModel(
     }
 
     private fun profilesChanged(profiles: List<BrewProfile>) {
+        if (profiles.isEmpty()) return
         val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
+        val boundProfileId = profiles.find { it.boundDeviceMac == args.id }?.id?.toString()
         modify {
-            copy(profiles = profiles.mapIndexed { index, profile -> mapToProfile(index, profile, selectedProfileId) })
+            copy(
+                profiles = profiles.mapIndexed { index, profile ->
+                    mapToProfile(
+                        index = index,
+                        profile = profile,
+                        selected = selectedProfileId == profile.id.toString(),
+                        bound = boundProfileId == profile.id.toString()
+                    )
+                }
+            )
         }
         emitEvent(SelectProfile(selectedProfileId))
     }
 
-    private fun mapToProfile(index: Int, profile: BrewProfile, selectedId: String?): ProfileListViewState.Profile {
+    private fun mapToProfile(index: Int, profile: BrewProfile, selected: Boolean, bound: Boolean): ProfileListViewState.Profile {
         val conditionText = when (val cond = profile.finishCondition) {
             is Condition.Weight -> "${cond.target.toInt()}g"
             is Condition.Volume -> "${cond.target.toInt()}ml"
@@ -121,8 +150,8 @@ internal class ProfileListViewModel(
             name = profile.name,
             description = "$conditionText • ${profile.description}",
             brewByWeight = profile.finishCondition is Condition.Weight,
-            bound = profile.bound,
-            selected = profile.id.toString() == selectedId,
+            bound = bound,
+            selected = selected,
             targetData = targetData
         )
     }

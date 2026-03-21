@@ -110,7 +110,7 @@ internal class DeviceDashboardViewModel(
 
     private fun stopBrewing() = launchCatching(::onError) {
         if (viewState.value.device.brewStatus == Profile) {
-            deviceController.triggerShortPress()
+            deviceController.stopProfileBrewing()
         } else {
             deviceController.stopManualBrewing()
         }

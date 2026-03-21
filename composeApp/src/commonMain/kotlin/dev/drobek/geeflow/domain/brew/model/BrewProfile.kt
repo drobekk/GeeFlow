@@ -4,6 +4,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class BrewProfile(
+    val id: Long = 0,
+    val userId: Long,
+    val name: String,
+    val description: String,
+    val boundDeviceMac: String? = null,
+    val mode: ProfileMode = ProfileMode.VariablePressure,
+    val finishCondition: Condition,
+    val autoLinkOpen: Boolean = false,
+    val steps: List<ProfileStep> = emptyList()
+)
+
+@Serializable
 sealed interface ProfileStep {
     val time: Int
 
@@ -40,16 +53,3 @@ enum class ProfileMode(val value: Int) {
     @SerialName("3")
     FreeVariable(3)
 }
-
-@Serializable
-data class BrewProfile(
-    val id: Long = 0,
-    val userId: Long,
-    val name: String,
-    val description: String,
-    val bound: Boolean = false,
-    val mode: ProfileMode = ProfileMode.VariablePressure,
-    val finishCondition: Condition,
-    val autoLinkOpen: Boolean = false,
-    val steps: List<ProfileStep> = emptyList()
-)

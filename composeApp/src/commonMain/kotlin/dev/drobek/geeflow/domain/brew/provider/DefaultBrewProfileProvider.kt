@@ -13,7 +13,6 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Zuppa",
             description = "20g in 60g out",
-            bound = false,
             mode = ProfileMode.VariablePressure,
             finishCondition = Condition.Weight(60f),
             steps = listOf(
@@ -26,7 +25,6 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Disco Italiano",
             description = "Traditional 9 bar extraction",
-            bound = false,
             mode = ProfileMode.VariablePressure,
             finishCondition = Condition.Volume(40f),
             steps = listOf(

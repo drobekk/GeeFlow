@@ -67,6 +67,7 @@ import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowSwipeToRevealBox
 import dev.drobek.geeflow.ui.components.SwipeToRevealBoxValue
 import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState
+import dev.drobek.geeflow.ui.modifier.squareSize
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
@@ -323,6 +324,7 @@ private fun ProfileItem(
     GeeFlowSwipeToRevealBox(
         state = swipeToDismissBoxState,
         modifier = modifier.fillMaxSize(),
+        enableDismissFromStartToEnd = false,
         backgroundContent = {
             ProfileItemRevealContent(
                 profile = profile,
@@ -414,14 +416,30 @@ private fun ProfileItemContent(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = profile.number,
-            style = MaterialTheme.typography.titleSmall,
-            color = numberTextColor,
-            modifier = Modifier
-                .background(numberColor, CircleShape)
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        )
+        AnimatedContent(
+            targetState = profile.bound
+        ) { bound ->
+            if (bound) {
+                Icon(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                        .padding(4.dp),
+                    painter = rememberVectorPainter(Icons.Filled.InsertLink),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onTertiary
+                )
+            } else {
+                Text(
+                    text = profile.number,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = numberTextColor,
+                    modifier = Modifier
+                        .background(numberColor, CircleShape)
+                        .squareSize()
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
         HorizontalSpacer(12.dp)
         Column(Modifier.weight(1f)) {
             Text(
@@ -433,21 +451,6 @@ private fun ProfileItemContent(
                 text = profile.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        AnimatedVisibility(
-            visible = profile.bound,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.padding(start = 8.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.tertiary, CircleShape)
-                    .padding(4.dp),
-                painter = rememberVectorPainter(Icons.Filled.InsertLink),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiary
             )
         }
     }

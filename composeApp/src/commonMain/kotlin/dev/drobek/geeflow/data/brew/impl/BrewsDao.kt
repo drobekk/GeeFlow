@@ -19,13 +19,16 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
     fun getBrewProfileById(id: Long) =
         dbQuery.selectById(id, ::mapToBrewProfile).executeAsOneOrNull()
 
+    fun getBrewProfileByDevice(deviceMac: String) =
+        dbQuery.selectByDevice(deviceMac, ::mapToBrewProfile).executeAsOneOrNull()
+
     fun insertBrewProfile(brewProfile: BrewProfile) {
         dbQuery.insertBrewProfile(
             id = if (brewProfile.id == 0L) null else brewProfile.id,
             userId = brewProfile.userId,
             name = brewProfile.name,
             description = brewProfile.description,
-            bound = brewProfile.bound,
+            boundDeviceMac = brewProfile.boundDeviceMac,
             mode = brewProfile.mode,
             finishCondition = brewProfile.finishCondition,
             autoLinkOpen = brewProfile.autoLinkOpen,
@@ -37,10 +40,10 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         dbQuery.deleteById(id)
     }
 
-    fun bindProfile(userId: Long, profileId: Long) {
+    fun bindProfile(deviceMac: String, profileId: Long) {
         dbQuery.transaction {
-            dbQuery.unbindAll(userId)
-            dbQuery.bindProfile(profileId)
+            dbQuery.unbindDevice(deviceMac)
+            dbQuery.bindProfileToDevice(deviceMac, profileId)
         }
     }
 
@@ -49,7 +52,7 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         userId: Long,
         name: String,
         description: String,
-        bound: Boolean,
+        boundDeviceMac: String?,
         mode: ProfileMode,
         finishCondition: Condition,
         autoLinkOpen: Boolean,
@@ -59,7 +62,7 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         userId = userId,
         name = name,
         description = description,
-        bound = bound,
+        boundDeviceMac = boundDeviceMac,
         mode = mode,
         finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen,

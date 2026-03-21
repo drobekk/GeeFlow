@@ -13,10 +13,12 @@ object WendougeeRegisters {
     
     // Profile Upload: Constant/Variable Modes (Base Register)
     const val CONSTANT_MODE_BASE = 2048
+    const val CONSTANT_MODE_BOUND_BASE = 2560
     
     // Profile Upload: Free Variable Mode Flags
     const val FV_FINISH_CONDITION = 79
     const val FV_PROFILE_MODE = 87
+    const val BOUND_PROFILE_MODE = 88
     const val FV_TARGET_VALUE = 358
     const val FV_OFFSET_ZEROING = 362
     const val FV_AUTO_LINK = 366
