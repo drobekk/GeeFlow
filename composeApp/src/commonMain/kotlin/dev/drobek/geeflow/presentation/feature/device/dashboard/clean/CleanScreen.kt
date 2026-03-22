@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.settings.clean
+package dev.drobek.geeflow.presentation.feature.device.dashboard.clean
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -23,7 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.VerticalSpacer
 import dev.drobek.geeflow.ui.WaveOrientation
@@ -34,22 +34,26 @@ import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_flush
 import geeflow.composeapp.generated.resources.common_seconds
 import geeflow.composeapp.generated.resources.common_times
-import geeflow.composeapp.generated.resources.settings_clean_start
-import geeflow.composeapp.generated.resources.settings_clean_stop
-import geeflow.composeapp.generated.resources.settings_clean_title
+import geeflow.composeapp.generated.resources.device_clean_start
+import geeflow.composeapp.generated.resources.device_clean_stop
+import geeflow.composeapp.generated.resources.device_clean_title
 import geeflow.composeapp.generated.resources.settings_quick_more
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun CleanScreen(
     viewModel: CleanViewModel,
-    navigator: DeviceSettingsNavigation
+    navigator: DeviceDashboardNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     EventsDispatcher(viewModel.events) {
         when (it) {
             is Navigation.Back -> navigator.back()
+            is Navigation.DeviceSettings -> {
+                navigator.back()
+                navigator.showDeviceSettings(it.deviceId)
+            }
         }
     }
 
@@ -73,7 +77,7 @@ private fun CleanContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GeeDialogTopBar(
-            title = stringResource(Res.string.settings_clean_title),
+            title = stringResource(Res.string.device_clean_title),
             onCloseClick = { onEvent(CleanEvent.CloseClicked) }
         )
         VerticalSpacer(16.dp)
@@ -184,9 +188,9 @@ private fun Buttons(
             Text(
                 text = stringResource(
                     if (viewState.isCleaning) {
-                        Res.string.settings_clean_stop
+                        Res.string.device_clean_stop
                     } else {
-                        Res.string.settings_clean_start
+                        Res.string.device_clean_start
                     }
                 )
             )

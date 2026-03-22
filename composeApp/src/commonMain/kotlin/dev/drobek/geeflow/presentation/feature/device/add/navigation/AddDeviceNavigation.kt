@@ -10,7 +10,8 @@ import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceScreen
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModel
 import dev.drobek.geeflow.presentation.feature.device.add.navigation.AddDeviceDestinations.AddDevice
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -23,8 +24,10 @@ sealed interface AddDeviceDestinations : NavKey {
     object AddDevice : AddDeviceDestinations
 }
 
-fun PolymorphicModuleBuilder<NavKey>.registerAddDeviceSerializers() {
-    subclass(AddDevice::class, AddDevice.serializer())
+val serializerModuleAddDevice = SerializersModule {
+    polymorphic(NavKey::class) {
+        subclass(AddDevice::class, AddDevice.serializer())
+    }
 }
 
 fun EntryProviderScope<NavKey>.addDeviceEntries(navigation: AddDeviceNavigation) {

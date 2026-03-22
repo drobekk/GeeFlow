@@ -12,7 +12,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         compileSdk = libs.versions.android.compileSdk
             .get()
             .toInt()
@@ -102,13 +102,12 @@ sqldelight {
             packageName.set("dev.drobek.geeflow")
         }
     }
-    linkSqlite.set(true)
 }
 
 koinCompiler {
     userLogs = true
     debugLogs = false
-    dslSafetyChecks = true
+    compileSafety = true
 }
 
 compose.desktop {

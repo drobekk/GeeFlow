@@ -4,9 +4,11 @@ import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BrewStatus
 import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
+import dev.drobek.geeflow.domain.device.model.SmartScale
 
 class WendougeeFrameParser(
-    private val onStateUpdate: (MachineState.() -> MachineState) -> Unit
+    private val onStateUpdate: (MachineState.() -> MachineState) -> Unit,
+    private val onScaleFound: ((SmartScale) -> Unit)? = null
 ) {
     companion object {
         private const val TAG = "WendougeeFrameParser"
@@ -48,8 +50,26 @@ class WendougeeFrameParser(
 
             if (command == 0x04) {
                 Logger.withTag(TAG).i { "Received Serial Number: $asciiString" }
+            } else if (command == 0x8C || command == 0x81) {
+                // 0x8C = Scale found during search, 0x81 = Scale connected
+                val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
+                if (name.isNotEmpty() && name.length > 2) {
+                    val scale = SmartScale(name, isConnected = command == 0x81)
+                    if (command == 0x81) {
+                        Logger.withTag(TAG).i { "Smart scale connected: $name" }
+                        onStateUpdate { copy(connectedScale = scale) }
+                    } else {
+                        Logger.withTag(TAG).i { "Found Smart Scale: $name" }
+                        onScaleFound?.invoke(scale)
+                    }
+                }
+            } else if (command == 0x8B) {
+                 if (payload.size >= 10 && payload[7] == 0x02.toByte() && payload[8] == 0x00.toByte() && payload[9] == 0x00.toByte()) {
+                     // Disconnect or Search Off ACK
+                     onStateUpdate { copy(connectedScale = null) }
+                 }
             } else if (asciiString.contains("BOOKOO")) {
-                Logger.withTag(TAG).i { "Connected Smart Scale recognized: $asciiString" }
+                Logger.withTag(TAG).i { "Connected Smart Scale recognized (legacy/other): $asciiString" }
             }
         } catch (e: Exception) {
             Logger.withTag(TAG).e(e) { "Error parsing proprietary frame" }

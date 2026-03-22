@@ -3,13 +3,15 @@ package dev.drobek.geeflow.domain.device.model
 enum class DeviceCapability {
     SteamBoiler,
     BrewBoiler,
-    SteamTemp,
-    BrewTemp,
+    HeatingMode,
+    WaterAlarm,
     ManualBrewing,
     ProfileBrewing,
     CleaningMode,
-    HeatingModeControl,
+    CleaningSettings,
     SmartScaleConnectivity,
+    SingleDoseGrinderConnectivity,
+    CommercialGrinderConnectivity,
     PressureProfiling,
     FlowProfiling
 }

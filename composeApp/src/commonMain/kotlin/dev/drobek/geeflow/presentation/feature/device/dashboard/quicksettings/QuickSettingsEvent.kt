@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.settings.quick
+package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
 
 sealed interface QuickSettingsEvent {
     data class SteamBoilerToggled(val enabled: Boolean) : QuickSettingsEvent

@@ -8,7 +8,7 @@ import dev.drobek.geeflow.domain.brew.usecase.DeleteProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
@@ -27,7 +27,7 @@ import org.koin.core.annotation.InjectedParam
 
 @Factory
 internal class ProfileListViewModel(
-    @InjectedParam private val args: DeviceDestinations.DeviceDashboard,
+    @InjectedParam private val args: Dashboard,
     private val observeUserProfilesUseCase: ObserveUserProfilesUseCase,
     private val observeDeviceProfileUseCase: ObserveDeviceProfileUseCase,
     private val bindProfileUseCase: BindProfileUseCase,
@@ -37,7 +37,7 @@ internal class ProfileListViewModel(
     init {
         launch {
             combine(
-                flow = observeDeviceProfileUseCase(args.id),
+                flow = observeDeviceProfileUseCase(args.deviceId),
                 flow2 = observeUserProfilesUseCase(),
                 transform = { deviceProfile, userProfiles -> listOfNotNull(deviceProfile) + userProfiles }
             ).collect(::profilesChanged)
@@ -58,7 +58,7 @@ internal class ProfileListViewModel(
     }
 
     private fun bindProfile(id: String) = launchCatching(::onError) {
-        id.toLongOrNull()?.let { bindProfileUseCase(args.id, it) }
+        id.toLongOrNull()?.let { bindProfileUseCase(args.deviceId, it) }
     }
 
     private fun setSelectedProfileId(id: String?) {
@@ -73,7 +73,7 @@ internal class ProfileListViewModel(
     private fun profilesChanged(profiles: List<BrewProfile>) {
         if (profiles.isEmpty()) return
         val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
-        val boundProfileId = profiles.find { it.boundDeviceMac == args.id }?.id?.toString()
+        val boundProfileId = profiles.find { it.boundDeviceMac == args.deviceId }?.id?.toString()
         modify {
             copy(
                 profiles = profiles.mapIndexed { index, profile ->

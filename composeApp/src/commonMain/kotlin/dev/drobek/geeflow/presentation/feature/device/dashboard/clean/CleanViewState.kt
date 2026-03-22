@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.settings.clean
+package dev.drobek.geeflow.presentation.feature.device.dashboard.clean
 
 data class CleanViewState(
     val isCleaning: Boolean = false,

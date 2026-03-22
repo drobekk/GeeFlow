@@ -1,6 +1,7 @@
 package dev.drobek.geeflow.platform.permissions
 
 import androidx.compose.runtime.Composable
+import org.koin.core.annotation.Factory
 
 expect interface PermissionsController {
     suspend fun providePermission(permission: Permission)

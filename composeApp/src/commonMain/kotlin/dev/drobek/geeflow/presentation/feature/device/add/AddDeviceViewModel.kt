@@ -26,12 +26,13 @@ import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.add_device_screen_qr_parsing_error
 import org.jetbrains.compose.resources.getString
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class AddDeviceViewModel(
     platform: Platform,
-    val permissionsController: PermissionsController,
+    @InjectedParam val permissionsController: PermissionsController,
     private val addDeviceUseCase: AddDeviceUseCase,
     private val parseDeviceQrCodeUseCase: ParseDeviceQrCodeUseCase,
     private val nearbyDevicesController: NearbyDevicesController

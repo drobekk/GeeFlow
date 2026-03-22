@@ -21,6 +21,12 @@
 # EasyQRScan / Compose Multiplatform QRCode
 -keep class org.publicvalue.multiplatform.qrcode.** { *; }
 
+# Keep annotation definitions
+-keep class org.koin.core.annotation.** { *; }
+
+# Keep classes annotated with Koin annotations
+-keep @org.koin.core.annotation.* class * { *; }
+
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 -keepattributes SourceFile,LineNumberTable

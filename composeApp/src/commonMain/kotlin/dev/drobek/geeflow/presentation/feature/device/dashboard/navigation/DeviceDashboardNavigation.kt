@@ -1,41 +1,69 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.navigation
 
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.scene.DialogSceneStrategy
 import dev.drobek.geeflow.navigation.Navigation
 import dev.drobek.geeflow.platform.permissions.BindEffect
 import dev.drobek.geeflow.platform.permissions.PermissionsControllerFactory
 import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFactory
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewModel
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations.DeviceDashboard
+import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanScreen
+import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanViewModel
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Clean
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
+import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsScreen
+import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewModel
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-interface DeviceNavigation : Navigation {
+interface DeviceDashboardNavigation : Navigation {
     fun showDevicesList()
-    fun showQuickSettings(id: String)
-    fun showClean(id: String)
+    fun showQuickSettings(deviceId: String)
+    fun showClean(deviceId: String)
+    fun showDeviceSettings(deviceId: String)
 }
 
-sealed interface DeviceDestinations : NavKey {
+sealed interface DeviceDashboardDestinations : NavKey {
     @Serializable
-    data class DeviceDashboard(val id: String) : DeviceDestinations
+    data class Dashboard(val deviceId: String) : DeviceDashboardDestinations
+
+    @Serializable
+    data class QuickSettings(val deviceId: String) : DeviceDashboardDestinations
+
+    @Serializable
+    data class Clean(val deviceId: String) : DeviceDashboardDestinations
 }
 
-fun PolymorphicModuleBuilder<NavKey>.registerDeviceSerializers() {
-    subclass(DeviceDashboard::class, DeviceDashboard.serializer())
+val serializerModuleDeviceDashboard = SerializersModule {
+    polymorphic(NavKey::class) {
+        subclass(Dashboard::class, Dashboard.serializer())
+        subclass(QuickSettings::class, QuickSettings.serializer())
+        subclass(Clean::class, Clean.serializer())
+    }
 }
 
-fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceNavigation) {
-    entry<DeviceDashboard> {
+fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceDashboardNavigation) {
+    entry<Dashboard> {
         val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
         val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
         val profileListViewModel = koinViewModel<ProfileListViewModel> { parametersOf(it) }
         BindEffect(viewModel.permissionsController)
         DeviceDashboardScreen(viewModel, profileListViewModel, navigation)
+    }
+    entry<QuickSettings>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
+        val viewModel = koinViewModel<QuickSettingsViewModel> { parametersOf(it) }
+        QuickSettingsScreen(viewModel, navigation)
+    }
+    entry<Clean>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
+        val viewModel = koinViewModel<CleanViewModel> { parametersOf(it) }
+        CleanScreen(viewModel, navigation)
     }
 }

@@ -1,44 +1,49 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.navigation
 
-import androidx.compose.ui.window.DialogProperties
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy.Companion.detailPane
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy.Companion.listPane
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.scene.DialogSceneStrategy
 import dev.drobek.geeflow.navigation.Navigation
-import dev.drobek.geeflow.presentation.feature.device.settings.clean.CleanScreen
-import dev.drobek.geeflow.presentation.feature.device.settings.clean.CleanViewModel
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.Clean
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.QuickSettings
-import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsScreen
-import dev.drobek.geeflow.presentation.feature.device.settings.quick.QuickSettingsViewModel
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsScreen
+import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsScreen
+import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewModel
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.DeviceSettings
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 interface DeviceSettingsNavigation : Navigation {
-
+    fun showBrewingSettings(deviceId: String)
 }
 
 sealed interface DeviceSettingsDestinations : NavKey {
     @Serializable
-    data class QuickSettings(val id: String) : DeviceSettingsDestinations
+    data class DeviceSettings(val deviceId: String) : DeviceSettingsDestinations
 
     @Serializable
-    data class Clean(val id: String) : DeviceSettingsDestinations
+    data class BrewingSettings(val deviceId: String) : DeviceSettingsDestinations
 }
 
-fun PolymorphicModuleBuilder<NavKey>.registerDeviceSettingsSerializers() {
-    subclass(QuickSettings::class, QuickSettings.serializer())
-    subclass(Clean::class, Clean.serializer())
-}
-
-fun EntryProviderScope<NavKey>.deviceSettingsEntries(navigation: DeviceSettingsNavigation) {
-    entry<QuickSettings>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
-        val viewModel = koinViewModel<QuickSettingsViewModel>()
-        QuickSettingsScreen(viewModel, navigation)
+val serializerModuleDeviceSettings = SerializersModule {
+    polymorphic(NavKey::class) {
+        subclass(DeviceSettings::class, DeviceSettings.serializer())
+        subclass(BrewingSettings::class, BrewingSettings.serializer())
     }
-    entry<Clean>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
-        val viewModel = koinViewModel<CleanViewModel>()
-        CleanScreen(viewModel, navigation)
+}
+
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun EntryProviderScope<NavKey>.deviceSettingsEntries(navigation: DeviceSettingsNavigation) {
+    entry<DeviceSettings>(metadata = listPane()) {
+        val viewModel = koinViewModel<DeviceSettingsViewModel> { parametersOf(it) }
+        DeviceSettingsScreen(viewModel, navigation)
+    }
+
+    entry<BrewingSettings>(metadata = detailPane()) {
+        BrewingSettingsScreen()
     }
 }

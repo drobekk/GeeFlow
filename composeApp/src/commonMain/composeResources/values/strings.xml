@@ -41,14 +41,24 @@
     <string name="profile_list_delete">Delete profile</string>
     <string name="profile_list_bind">Bind profile</string>
 
-    <!-- Settings Quick -->
+    <!-- Device Settings Main -->
+    <string name="device_settings_title">Machine Settings</string>
+    <string name="device_settings_subtitle">Manage your brewing preferences and device setup</string>
+    <string name="device_settings_brewing">Brewing</string>
+    <string name="device_settings_brewing_description">Boiler and machine controls</string>
+    <string name="device_settings_maintenance">Maintenance</string>
+    <string name="device_settings_maintenance_description">Cleaning and system alerts</string>
+    <string name="device_settings_connectivity">Connectivity</string>
+    <string name="device_settings_connectivity_description">External smart accessories</string>
+
+    <!-- Device Settings Quick -->
     <string name="settings_quick_title">Quick settings</string>
     <string name="settings_quick_more">More settings</string>
 
-    <!-- Settings Clean -->
-    <string name="settings_clean_title">Cleaning</string>
-    <string name="settings_clean_start">Start cleaning</string>
-    <string name="settings_clean_stop">Stop cleaning</string>
+    <!-- Device Clean -->
+    <string name="device_clean_title">Cleaning</string>
+    <string name="device_clean_start">Start cleaning</string>
+    <string name="device_clean_stop">Stop cleaning</string>
 
     <!-- COMMON -->
     <string name="common_user_name">User name</string>

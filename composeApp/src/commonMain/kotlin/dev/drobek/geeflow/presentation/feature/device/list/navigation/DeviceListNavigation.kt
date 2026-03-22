@@ -6,7 +6,8 @@ import dev.drobek.geeflow.navigation.Navigation
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListScreen
 import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceListDestinations.DeviceList
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 
 interface DeviceListNavigation : Navigation {
     fun showAddDevice()
@@ -18,8 +19,10 @@ sealed interface DeviceListDestinations : NavKey {
     object DeviceList : DeviceListDestinations
 }
 
-fun PolymorphicModuleBuilder<NavKey>.registerDeviceListSerializers() {
-    subclass(DeviceList::class, DeviceList.serializer())
+val serializerModuleDeviceList = SerializersModule {
+    polymorphic(NavKey::class) {
+        subclass(DeviceList::class, DeviceList.serializer())
+    }
 }
 
 fun EntryProviderScope<NavKey>.deviceListEntries(navigation: DeviceListNavigation) {

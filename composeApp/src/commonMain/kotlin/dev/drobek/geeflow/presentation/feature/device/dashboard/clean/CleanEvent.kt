@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.settings.clean
+package dev.drobek.geeflow.presentation.feature.device.dashboard.clean
 
 sealed interface CleanEvent {
     data object ToggleCleaningClicked : CleanEvent

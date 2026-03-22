@@ -11,7 +11,8 @@ data class MachineState(
     val weightRate: Float? = null,
     val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
     val brewStatus: BrewStatus = BrewStatus.Idle,
-    val config: Config? = null
+    val config: Config? = null,
+    val connectedScale: SmartScale? = null
 ) {
     data class Config(
         val targetSteamTemp: Float,

@@ -1,36 +1,50 @@
 package dev.drobek.geeflow
 
-import android.util.Log
+import android.app.Application
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import dev.bluefalcon.BlueFalcon
 import dev.bluefalcon.Logger
 import dev.drobek.geeflow.data.db.AndroidDatabaseDriverFactory
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
 import dev.drobek.geeflow.data.users.impl.createAndroidDataStore
-import org.koin.android.ext.koin.androidApplication
-import org.koin.core.module.Module
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
+import co.touchlab.kermit.Logger as KermitLogger
 
-actual val platformModule: Module = module {
-    single<DatabaseDriverFactory> { AndroidDatabaseDriverFactory(get()) }
-    single { createAndroidDataStore(androidApplication()) }
-    single {
-        BlueFalcon(context = androidApplication(), log = object : Logger {
-            override fun error(message: String, cause: Throwable?) {
-                Log.e("BlueFalcon", message, cause)
-            }
+@Module
+@ComponentScan("dev.drobek.geeflow")
+actual class PlatformModule {
+    @Single
+    fun databaseDriverFactory(context: Context): DatabaseDriverFactory =
+        AndroidDatabaseDriverFactory(context)
 
-            override fun warn(message: String, cause: Throwable?) {
-                Log.w("BlueFalcon", message, cause)
-            }
+    @Single
+    fun dataStore(context: Context): DataStore<Preferences> =
+        createAndroidDataStore(context)
 
-            override fun info(message: String, cause: Throwable?) {
-                Log.i("BlueFalcon", message, cause)
-            }
+    @Single
+    fun blueFalcon(context: Context): BlueFalcon =
+        BlueFalcon(
+            context = context as Application,
+            log = object : Logger {
+                override fun error(message: String, cause: Throwable?) {
+                    KermitLogger.withTag("BlueFalcon").e(cause) { message }
+                }
 
-            override fun debug(message: String, cause: Throwable?) {
-                Log.d("BlueFalcon", message, cause)
+                override fun warn(message: String, cause: Throwable?) {
+                    KermitLogger.withTag("BlueFalcon").w(cause) { message }
+                }
+
+                override fun info(message: String, cause: Throwable?) {
+                    KermitLogger.withTag("BlueFalcon").i(cause) { message }
+                }
+
+                override fun debug(message: String, cause: Throwable?) {
+                    KermitLogger.withTag("BlueFalcon").d(cause) { message }
+                }
             }
-        }
         )
-    }
 }

@@ -14,6 +14,9 @@ import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANU
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_LONG
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_SHORT
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_READ_CONFIG_LONG
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_DISCONNECT
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_OFF
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_ON
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_OFF
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_ON
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.decodeHex
@@ -25,6 +28,7 @@ import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
 import dev.drobek.geeflow.domain.device.model.MachineState.BrewStatus
 import dev.drobek.geeflow.domain.device.model.MachineState.ConnectionStatus
 import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
+import dev.drobek.geeflow.domain.device.model.SmartScale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -47,22 +51,34 @@ class WendougeeDataSController(
     private val _machineState = MutableStateFlow(MachineState())
     override val machineState: StateFlow<MachineState> = _machineState.asStateFlow()
 
+    private val _foundScales = MutableStateFlow<List<SmartScale>>(emptyList())
+    override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
+
     override val capabilities: Set<DeviceCapability> = setOf(
         DeviceCapability.SteamBoiler,
         DeviceCapability.BrewBoiler,
-        DeviceCapability.SteamTemp,
-        DeviceCapability.BrewTemp,
+        DeviceCapability.WaterAlarm,
+        DeviceCapability.CleaningSettings,
         DeviceCapability.ManualBrewing,
         DeviceCapability.ProfileBrewing,
         DeviceCapability.CleaningMode,
-        DeviceCapability.HeatingModeControl,
+        DeviceCapability.HeatingMode,
         DeviceCapability.SmartScaleConnectivity,
+        DeviceCapability.SingleDoseGrinderConnectivity,
+        DeviceCapability.CommercialGrinderConnectivity,
         DeviceCapability.PressureProfiling,
         DeviceCapability.FlowProfiling
     )
 
     private val modbus = ModbusBleClient(bleClient, DATA_UUID_SUFFIX, DATA_UUID_SUFFIX)
-    private val frameParser = WendougeeFrameParser { update -> _machineState.update { it.update() } }
+    private val frameParser = WendougeeFrameParser(
+        onStateUpdate = { update -> _machineState.update { it.update() } },
+        onScaleFound = { scale ->
+            _foundScales.update { current ->
+                if (current.none { it.name == scale.name }) current + scale else current
+            }
+        }
+    )
     private val profileCompiler = WendougeeProfileCompiler()
 
     private var pollingJob: Job? = null
@@ -74,7 +90,7 @@ class WendougeeDataSController(
         const val DATA_UUID_SUFFIX = "2b10"
         const val CTRL_UUID_SUFFIX = "2c10"
 
-        private const val POLLING_INTERVAL_MS = 200L
+        private const val POLLING_INTERVAL_MS = 3000L
         private const val BREW_PULSE_MS = 100L
     }
 
@@ -94,9 +110,11 @@ class WendougeeDataSController(
                                 connectionStatus = ConnectionStatus.Disconnected,
                                 pressure = null,
                                 steamBoilerTemp = null,
-                                brewBoilerTemp = null
+                                brewBoilerTemp = null,
+                                connectedScale = null
                             )
                         }
+                        _foundScales.value = emptyList()
                         ConnectionStatus.Disconnected
                     }
 
@@ -345,5 +363,49 @@ class WendougeeDataSController(
 
         Logger.withTag(TAG).i { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
         modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
+    }
+
+    override suspend fun startSmartScaleSearch() {
+        Logger.withTag(TAG).i { "Starting smart scale search..." }
+        _foundScales.value = emptyList() // clear previous search results
+        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_ON)
+    }
+
+    override suspend fun stopSmartScaleSearch() {
+        Logger.withTag(TAG).i { "Stopping smart scale search..." }
+        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_OFF)
+    }
+
+    override suspend fun connectSmartScale(name: String) {
+        Logger.withTag(TAG).i { "Connecting smart scale: $name" }
+        val nameBytes = name.encodeToByteArray()
+        val length = nameBytes.size + 2 // include prefix length
+
+        // Build proprietary frame
+        val buffer = ByteArray(8 + nameBytes.size)
+        buffer[0] = 0xFF.toByte()
+        buffer[1] = 0x55.toByte()
+        buffer[2] = 0xFF.toByte()
+        buffer[3] = 0xFF.toByte()
+        buffer[4] = 0x80.toByte() // connect command
+        buffer[5] = (length ushr 8).toByte()
+        buffer[6] = (length and 0xFF).toByte()
+        buffer[7] = 0x12.toByte() // prefix observed in logs
+        nameBytes.copyInto(buffer, destinationOffset = 8)
+
+        // Calculate checksum over bytes [4, length-1]
+        var sum = 0
+        for (i in 4 until buffer.size) {
+            sum += buffer[i].toInt() and 0xFF
+        }
+        val checksum = ((sum xor 0xFF) + 1) and 0xFF
+
+        val finalPayload = buffer + checksum.toByte()
+        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, finalPayload)
+    }
+
+    override suspend fun disconnectSmartScale() {
+        Logger.withTag(TAG).i { "Disconnecting smart scale..." }
+        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_SCALE_DISCONNECT)
     }
 }

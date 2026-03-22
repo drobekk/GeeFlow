@@ -49,7 +49,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewB
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewDetailsBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.TopBar
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceNavigation
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
@@ -68,7 +68,7 @@ import kotlinx.coroutines.launch
 internal fun DeviceDashboardScreen(
     viewModel: DeviceDashboardViewModel,
     profileListViewModel: ProfileListViewModel,
-    navigation: DeviceNavigation
+    navigation: DeviceDashboardNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()

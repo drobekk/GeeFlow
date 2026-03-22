@@ -37,18 +37,19 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device.BrewStatus.Profile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Dialog
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDestinations.DeviceDashboard
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.generic_error
 import org.jetbrains.compose.resources.getString
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class DeviceDashboardViewModel(
+    @InjectedParam private val args: Dashboard,
+    @InjectedParam val permissionsController: PermissionsController,
     getDevice: GetDeviceUseCase,
-    val permissionsController: PermissionsController,
-    private val args: DeviceDashboard,
     private val deviceController: DeviceController,
     private val observeBrewData: ObserveBrewDataUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
@@ -60,9 +61,9 @@ internal class DeviceDashboardViewModel(
     private var selectedProfileId: String? = null
 
     init {
-        val machine = getDevice(args.id)
+        val machine = getDevice(args.deviceId)
         macAddress = machine?.macAddress
-        modify { copy(device = device.copy(id = args.id, name = machine?.name ?: args.id)) }
+        modify { copy(device = device.copy(id = args.deviceId, name = machine?.name ?: args.deviceId)) }
         launch { deviceController.machineState.collect { state -> updateMachineStateUi(state) } }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
         launch { observeBrewData().collect(::brewSessionDataChanged) }
@@ -72,10 +73,10 @@ internal class DeviceDashboardViewModel(
         is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is ConnectionButtonClicked -> toggleConnection()
         is DeviceClicked -> emitEvent(Navigation.DeviceList)
-        is SettingsClicked -> emitEvent(Navigation.Settings(args.id))
+        is SettingsClicked -> emitEvent(Navigation.Settings(args.deviceId))
         is UserClicked -> Unit
         is ConnectedDevicesClicked -> Unit
-        is CleaningClicked -> emitEvent(Navigation.Clean(args.id))
+        is CleaningClicked -> emitEvent(Navigation.Clean(args.deviceId))
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
         is ManualBrewClicked -> startManualBrewing()
