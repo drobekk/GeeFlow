@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,6 +34,7 @@ import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_go_back
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeeFlowScaffold(
     title: String,
@@ -44,6 +47,7 @@ fun GeeFlowScaffold(
     navIconContentDescription: String? = stringResource(Res.string.common_go_back),
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = contentColorFor(containerColor),
+    scrollBehavior: TopAppBarScrollBehavior? = null,
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = WindowInsets.systemBars,
     content: @Composable (paddingValues: PaddingValues) -> Unit
@@ -53,13 +57,14 @@ fun GeeFlowScaffold(
             title = title,
             subtitle = subtitle,
             navIconPainter = navIconPainter,
+            scrollBehavior = scrollBehavior.takeIf { !isWidthExpanded() },
             navIconContentDescription = navIconContentDescription,
             navIconClick = navIconClick,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .conditional(
                     condition = isWidthExpanded(),
-                    ifTrue = { fillMaxHeight().widthIn(max = 300.dp) },
+                    ifTrue = { widthIn(max = 300.dp) },
                     ifFalse = { fillMaxWidth() }
                 )
         )
@@ -91,6 +96,7 @@ fun GeeFlowScaffold(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeeFlowScaffold(
     topBar: @Composable () -> Unit,
@@ -130,6 +136,7 @@ fun GeeFlowScaffold(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeeFlowScaffoldExpanded(
     topBar: @Composable () -> Unit,
@@ -149,7 +156,9 @@ fun GeeFlowScaffoldExpanded(
     contentColor = contentColor,
     content = { paddingValues ->
         Row {
-            topBar()
+            Box(modifier = Modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.surfaceContainer)) {
+                topBar()
+            }
             WaveDivider(
                 color = MaterialTheme.colorScheme.surfaceContainer,
                 orientation = WaveOrientation.Vertical

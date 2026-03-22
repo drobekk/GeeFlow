@@ -17,16 +17,21 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
@@ -37,6 +42,7 @@ import dev.drobek.geeflow.ui.WaveOrientation
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowTopBar
 import dev.drobek.geeflow.ui.components.WaveDivider
+import dev.drobek.geeflow.ui.components.scrollFade
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -80,38 +86,57 @@ private fun Content(
     viewState: DeviceSettingsViewState,
     onEvent: (DeviceSettingsEvent) -> Unit = {},
 ) {
-    val title = stringResource(Res.string.device_settings_title)
-    val subtitle = stringResource(Res.string.device_settings_subtitle)
-    val navIcon = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack)
-    val padding = compactSpacing()
-
     if (isWidthExpanded()) {
-        Row(
-            modifier = Modifier
-        ) {
+        ExpandedContent(
+            viewState = viewState,
+            onEvent = onEvent
+        )
+    } else {
+        CompactContent(
+            viewState = viewState,
+            onEvent = onEvent
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExpandedContent(
+    viewState: DeviceSettingsViewState,
+    onEvent: (DeviceSettingsEvent) -> Unit
+) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val listState = rememberLazyListState()
+    Row(
+        modifier = Modifier
+    ) {
+        Column(Modifier.weight(1f)) {
+            GeeFlowTopBar(
+                title = stringResource(Res.string.device_settings_title),
+                subtitle = stringResource(Res.string.device_settings_subtitle),
+                navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
+                navIconContentDescription = stringResource(Res.string.common_go_back),
+                navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) },
+                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+                scrollBehavior = scrollBehavior
+            )
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .scrollFade(listState = listState, color = MaterialTheme.colorScheme.surfaceContainer),
                 contentPadding = WindowInsets.navigationBars.asPaddingValues()
             ) {
-                item {
-                    GeeFlowTopBar(
-                        title = title,
-                        subtitle = subtitle,
-                        navIconPainter = navIcon,
-                        navIconContentDescription = stringResource(Res.string.common_go_back),
-                        navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) }
-                    )
-                }
                 items(viewState.items) {
                     SettingsItem(
                         item = it,
                         onEvent = onEvent,
                         modifier = Modifier
                             .padding(
-                                horizontal = padding.contentHorizontal,
+                                horizontal = compactSpacing().contentHorizontal,
                                 vertical = 8.dp
                             )
                             .clip(RoundedCornerShape(16.dp))
@@ -119,41 +144,53 @@ private fun Content(
                     )
                 }
             }
-            WaveDivider(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                orientation = WaveOrientation.Vertical
-            )
         }
-    } else {
-        GeeFlowScaffold(
-            title = title,
-            subtitle = subtitle,
-            navIconPainter = navIcon,
-            navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) },
-            content = {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = it + PaddingValues(
-                        horizontal = GeeFlowTheme.spacing.contentHorizontal,
-                        vertical = GeeFlowTheme.spacing.contentVertical
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(viewState.items) { item ->
-                        SettingsItem(
-                            item = item,
-                            onEvent = onEvent,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                        )
-                    }
-                    item { Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) }
-                }
-            }
+        WaveDivider(
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            orientation = WaveOrientation.Vertical
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompactContent(
+    viewState: DeviceSettingsViewState,
+    onEvent: (DeviceSettingsEvent) -> Unit
+) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    GeeFlowScaffold(
+        title = stringResource(Res.string.device_settings_title),
+        subtitle = stringResource(Res.string.device_settings_subtitle),
+        navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
+        navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) },
+        scrollBehavior = scrollBehavior,
+        content = { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .fillMaxSize(),
+                contentPadding = paddingValues + PaddingValues(
+                    horizontal = GeeFlowTheme.spacing.contentHorizontal,
+                    vertical = GeeFlowTheme.spacing.contentVertical
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(viewState.items) { item ->
+                    SettingsItem(
+                        item = item,
+                        onEvent = onEvent,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                    )
+                }
+                item { Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) }
+            }
+        }
+    )
+}
+
 
 @Composable
 private fun SettingsItem(

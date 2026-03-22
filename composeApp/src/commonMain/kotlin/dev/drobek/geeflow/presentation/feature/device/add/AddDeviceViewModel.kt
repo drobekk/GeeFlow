@@ -51,19 +51,11 @@ internal class AddDeviceViewModel(
         }
 
         is ShowQrCodeScannerClicked -> {
-            nearbyDevicesController.stopScanning()
             modify { copy(method = QrCodeScanner()) }
         }
 
         is QrCodeScanned -> parseQrCode(event.data)
-        is NearbyDeviceClicked -> {
-            val device = nearbyDevicesController.discoveredDevices.value.find { it.macAddress == event.id }
-            device?.let {
-                addDeviceUseCase(macAddress = it.macAddress, name = it.name)
-                emitEvent(DevicesList)
-            }
-        }
-
+        is NearbyDeviceClicked -> onDeviceClicked(event.id)
         is Resumed -> (viewState.value.method as? NearbyDevices)?.let { startScanning() }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
     }
@@ -72,6 +64,14 @@ internal class AddDeviceViewModel(
         withBluetoothPermissions {
             nearbyDevicesController.startScanning()
             showMissingPermissionMessage(false)
+        }
+    }
+
+    private fun onDeviceClicked(id: String) {
+        val device = nearbyDevicesController.discoveredDevices.value.find { it.macAddress == id }
+        device?.let {
+            addDeviceUseCase(macAddress = it.macAddress, name = it.name)
+            emitEvent(DevicesList)
         }
     }
 

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Details
 import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Profiles
@@ -74,6 +75,11 @@ internal fun DeviceDashboardScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarState = remember { SnackbarHostState() }
     val profileListViewState by profileListViewModel.viewState.collectAsStateWithLifecycle()
+
+    LifecycleResumeEffect(viewModel) {
+        viewModel.handleEvent(DeviceDashboardEvent.Resumed)
+        onPauseOrDispose { }
+    }
 
     DeviceDashboardContent(
         viewState = viewState,

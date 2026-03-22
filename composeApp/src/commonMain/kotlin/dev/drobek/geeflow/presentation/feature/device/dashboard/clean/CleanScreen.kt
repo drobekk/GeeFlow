@@ -131,7 +131,7 @@ private fun ProgressItem(
             .waveBackground(
                 targetProgress = targetProgress,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                amplitude = 5f,
+                amplitude = 2.dp,
                 orientation = WaveOrientation.Vertical,
                 progressAnimationDurationMillis = 1000
             )

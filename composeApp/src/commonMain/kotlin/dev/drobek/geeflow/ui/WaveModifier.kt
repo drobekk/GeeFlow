@@ -13,6 +13,8 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -23,7 +25,7 @@ fun Modifier.waveBackground(
     color: Color,
     orientation: WaveOrientation = WaveOrientation.Horizontal,
     waves: Float = 1.2f,
-    amplitude: Float = 15f,
+    amplitude: Dp = 4.dp,
     durationMillis: Int = 3000,
     progressAnimationDurationMillis: Int = 1000,
     reversed: Boolean = false
@@ -62,14 +64,14 @@ fun Modifier.waveBackground(
     this.drawBehind {
         val w = size.width
         val h = size.height
-        
+
         if (progress >= 1f) {
             drawRect(color = color, size = size)
             return@drawBehind
         }
 
         val path = Path()
-        val currentAmplitude = amplitude * amplitudeFactor
+        val currentAmplitude = amplitude.toPx() * amplitudeFactor
 
         if (orientation == WaveOrientation.Horizontal) {
             // Horizontal wave: Fill bottom-to-top (default) or top-to-bottom (reversed)
@@ -78,7 +80,7 @@ fun Modifier.waveBackground(
             } else {
                 h * (1f - progress.coerceIn(0f, 1f))
             }
-            
+
             fun yAt(x: Float): Float = fillLevel + sin((2f * PI.toFloat()) * waves * (x / w) + actualPhase) * currentAmplitude
 
             if (reversed) {
@@ -89,6 +91,7 @@ fun Modifier.waveBackground(
                     path.lineTo(x, yAt(x))
                     x += 4f
                 }
+                path.lineTo(w, yAt(w))
                 path.lineTo(w, 0f)
             } else {
                 path.moveTo(0f, h)
@@ -98,6 +101,7 @@ fun Modifier.waveBackground(
                     path.lineTo(x, yAt(x))
                     x += 4f
                 }
+                path.lineTo(w, yAt(w))
                 path.lineTo(w, h)
             }
             path.close()
@@ -108,7 +112,7 @@ fun Modifier.waveBackground(
             } else {
                 w * progress.coerceIn(0f, 1f)
             }
-            
+
             fun xAt(y: Float): Float = fillLevel + sin((2f * PI.toFloat()) * waves * (y / h) + actualPhase) * currentAmplitude
 
             if (reversed) {
@@ -119,6 +123,7 @@ fun Modifier.waveBackground(
                     path.lineTo(xAt(y), y)
                     y += 4f
                 }
+                path.lineTo(xAt(h), h)
                 path.lineTo(w, h)
             } else {
                 path.moveTo(0f, 0f)
@@ -128,6 +133,7 @@ fun Modifier.waveBackground(
                     path.lineTo(xAt(y), y)
                     y += 4f
                 }
+                path.lineTo(xAt(h), h)
                 path.lineTo(0f, h)
             }
             path.close()

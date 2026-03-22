@@ -31,11 +31,14 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,6 +96,7 @@ fun DeviceListScreen(navigation: DeviceListNavigation) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DevicesListContent(
     viewState: DeviceListViewState,
@@ -102,10 +107,12 @@ private fun DevicesListContent(
     val subtitle = stringResource(Res.string.device_list_screen_subtitle)
     val navIconPainter = if (showBackButton) rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack) else null
     val navIconClick = { onEvent(BackClicked) }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     GeeFlowScaffold(
         title = title,
         subtitle = subtitle,
+        scrollBehavior = scrollBehavior,
         navIconPainter = navIconPainter,
         navIconClick = navIconClick,
         floatingActionButton = { AddButton(onEvent = { onEvent(DeviceListEvent.AddDeviceClicked) }) },
@@ -113,7 +120,8 @@ private fun DevicesListContent(
             DeviceList(
                 devices = viewState.devices,
                 onEvent = onEvent,
-                contentPadding = it
+                contentPadding = it,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             )
         }
     )

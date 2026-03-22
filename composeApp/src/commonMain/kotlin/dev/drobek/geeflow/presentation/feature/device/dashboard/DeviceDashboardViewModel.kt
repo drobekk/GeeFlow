@@ -24,6 +24,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.OpenSystemSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.PermissionDialogResumed
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ProfileSelected
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.Resumed
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
@@ -85,6 +86,7 @@ internal class DeviceDashboardViewModel(
         is BrewClicked -> startProfile()
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
         is ProfileSelected -> onProfileSelected(event.id)
+        is Resumed -> connect()
     }
 
     private fun toggleConnection() {
@@ -92,6 +94,14 @@ internal class DeviceDashboardViewModel(
             deviceController.disconnect()
         } else {
             withBluetoothPermissions {
+                macAddress?.let { deviceController.connect(it) }
+            }
+        }
+    }
+
+    private fun connect() {
+        withBluetoothPermissions {
+            if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Disconnected) {
                 macAddress?.let { deviceController.connect(it) }
             }
         }

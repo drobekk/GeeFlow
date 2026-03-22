@@ -19,6 +19,7 @@ fun WaveDivider(
     modifier: Modifier = Modifier,
     thickness: Dp = 20.dp,
     waves: Float = 1.5f,
+    amplitude: Dp = 4.dp,
     durationMillis: Int = 4000,
     orientation: WaveOrientation = WaveOrientation.Horizontal,
     reversed: Boolean = false
@@ -34,6 +35,7 @@ fun WaveDivider(
             .waveBackground(
                 targetProgress = 0.5f,
                 color = color,
+                amplitude = amplitude,
                 orientation = orientation,
                 waves = waves,
                 durationMillis = durationMillis,

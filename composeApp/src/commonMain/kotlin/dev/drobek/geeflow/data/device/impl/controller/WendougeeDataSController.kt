@@ -90,7 +90,7 @@ class WendougeeDataSController(
         const val DATA_UUID_SUFFIX = "2b10"
         const val CTRL_UUID_SUFFIX = "2c10"
 
-        private const val POLLING_INTERVAL_MS = 3000L
+        private const val POLLING_INTERVAL_MS = 200L
         private const val BREW_PULSE_MS = 100L
     }
 

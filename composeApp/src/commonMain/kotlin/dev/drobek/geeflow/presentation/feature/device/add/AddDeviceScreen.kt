@@ -27,7 +27,11 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -113,11 +118,17 @@ private fun AddDeviceContent(
     onEvent: (AddDeviceEvent) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    val topAppBarState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
+    LaunchedEffect(viewState.method) {
+        if (viewState.method is QrCodeScanner) topAppBarState.heightOffset = 0f
+    }
     GeeFlowScaffold(
         title = stringResource(Res.string.add_device_screen_title),
         subtitle = stringResource(Res.string.add_device_screen_description),
         navIconClick = { onEvent(BackClicked) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        scrollBehavior = scrollBehavior,
         floatingActionButton = {
             if (viewState.method.changeMethodButtonVisible) {
                 FloatingActionButton(
@@ -131,17 +142,20 @@ private fun AddDeviceContent(
             Content(
                 viewState = viewState,
                 onEvent = onEvent,
+                scrollBehavior = scrollBehavior,
                 contentPadding = it
             )
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     viewState: AddDeviceViewState,
     onEvent: (AddDeviceEvent) -> Unit,
-    contentPadding: PaddingValues
+    scrollBehavior: TopAppBarScrollBehavior,
+    contentPadding: PaddingValues,
 ) {
     AnimatedContent(
         modifier = Modifier.fillMaxSize(),
@@ -151,7 +165,8 @@ private fun Content(
             is NearbyDevices -> NearbyDevicesList(
                 model = method,
                 onEvent = onEvent,
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             )
 
             is QrCodeScanner -> Scanner(
@@ -196,10 +211,11 @@ private fun FloatingActionButton(
 private fun NearbyDevicesList(
     model: NearbyDevices,
     onEvent: (AddDeviceEvent) -> Unit,
+    modifier: Modifier = Modifier,
     contentPadding: PaddingValues
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentPadding = contentPadding + PaddingValues(
             horizontal = GeeFlowTheme.spacing.contentHorizontal,
             vertical = GeeFlowTheme.spacing.contentVertical
@@ -252,10 +268,11 @@ private fun DeviceItem(
 private fun Scanner(
     model: QrCodeScanner,
     onEvent: (AddDeviceEvent) -> Unit,
+    modifier: Modifier = Modifier,
     contentPadding: PaddingValues
 ) {
     val shape = RoundedCornerShape(32.dp)
-    val modifier = Modifier
+    val modifier = modifier
         .fillMaxHeight()
         .padding(contentPadding)
         .padding(48.dp)
