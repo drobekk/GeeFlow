@@ -58,7 +58,7 @@ internal class DeviceSettingsViewModel(
     }
 
     private fun buildOptions() = launch {
-        val capabilities = getDeviceCapabilitiesUseCase()
+        val capabilities = getDeviceCapabilitiesUseCase(args.deviceId)
         val items = mutableListOf<Item>()
 
         if (capabilities.hasBrewingCapabilities()) {

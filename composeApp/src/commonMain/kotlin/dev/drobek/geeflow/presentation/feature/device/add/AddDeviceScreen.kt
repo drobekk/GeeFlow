@@ -61,6 +61,7 @@ import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.isPreview
 import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.add_device_demo
 import geeflow.composeapp.generated.resources.add_device_screen_description
 import geeflow.composeapp.generated.resources.add_device_screen_empty
 import geeflow.composeapp.generated.resources.add_device_screen_no_camera_permission
@@ -231,7 +232,10 @@ private fun NearbyDevicesList(
             }
 
             model.devices.isEmpty() -> item {
-                EmptyListMessage(modifier = Modifier.fillParentMaxSize())
+                EmptyListMessage(
+                    onEvent = onEvent,
+                    modifier = Modifier.fillParentMaxSize()
+                )
             }
         }
         items(model.devices) {
@@ -342,15 +346,26 @@ private fun MissingPermissionsMessage(
 
 @Composable
 private fun EmptyListMessage(
+    onEvent: (AddDeviceEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Text(
-        text = stringResource(Res.string.add_device_screen_empty),
+    Column(
         modifier = modifier.fillMaxWidth().wrapContentHeight(),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.labelLarge,
-        textAlign = TextAlign.Center
-    )
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(Res.string.add_device_screen_empty),
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center
+        )
+        VerticalSpacer(16.dp)
+        OutlinedButton(
+            onClick = { onEvent(AddDeviceEvent.AddDemoDeviceClicked) }) {
+            Text(text = stringResource(Res.string.add_device_demo))
+        }
+    }
 }
 
 @Composable
@@ -360,9 +375,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
         viewState = AddDeviceViewState(
             method = NearbyDevices(
                 changeMethodButtonVisible = true, devices = listOf(
-                    AddDeviceViewState.DeviceItem(
-                        id = "B0234556", name = "DATA-S"
-                    )
+
                 )
             )
         )

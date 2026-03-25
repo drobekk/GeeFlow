@@ -1,11 +1,16 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
-import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.brew.model.BrewSession
 import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.usecase.ConnectDeviceUseCase
+import dev.drobek.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
+import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import dev.drobek.geeflow.domain.device.usecase.StartManualBrewingUseCase
+import dev.drobek.geeflow.domain.device.usecase.StartProfileBrewingUseCase
+import dev.drobek.geeflow.domain.device.usecase.StopBrewingUseCase
 import dev.drobek.geeflow.domain.user.ChartType
 import dev.drobek.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import dev.drobek.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
@@ -45,29 +50,34 @@ import geeflow.composeapp.generated.resources.generic_error
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
+import kotlin.math.pow
+import kotlin.math.round
 
 @KoinViewModel
 internal class DeviceDashboardViewModel(
     @InjectedParam private val args: Dashboard,
     @InjectedParam val permissionsController: PermissionsController,
     getDevice: GetDeviceUseCase,
-    private val deviceController: DeviceController,
+    private val observeDeviceState: ObserveDeviceStateUseCase,
+    private val connectDevice: ConnectDeviceUseCase,
+    private val disconnectDevice: DisconnectDeviceUseCase,
+    private val startManualBrewing: StartManualBrewingUseCase,
+    private val startProfileBrewing: StartProfileBrewingUseCase,
+    private val stopBrewing: StopBrewingUseCase,
     private val observeBrewData: ObserveBrewDataUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val getBrewProfileUseCase: GetBrewProfileUseCase
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
-    private var macAddress: String? = null
     private var selectedProfileId: String? = null
 
     init {
         val machine = getDevice(args.deviceId)
-        macAddress = machine?.macAddress
         modify { copy(device = device.copy(id = args.deviceId, name = machine?.name ?: args.deviceId)) }
-        launch { deviceController.machineState.collect { state -> updateMachineStateUi(state) } }
+        launch { observeDeviceState(args.deviceId).collect { state -> updateMachineStateUi(state) } }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
-        launch { observeBrewData().collect(::brewSessionDataChanged) }
+        launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
     }
 
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
@@ -80,8 +90,8 @@ internal class DeviceDashboardViewModel(
         is CleaningClicked -> emitEvent(Navigation.Clean(args.deviceId))
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
-        is ManualBrewClicked -> startManualBrewing()
-        is StopBrewClicked -> stopBrewing()
+        is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
+        is StopBrewClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
         is FlowControlClicked -> Unit // TODO
         is BrewClicked -> startProfile()
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
@@ -91,10 +101,10 @@ internal class DeviceDashboardViewModel(
 
     private fun toggleConnection() {
         if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
-            deviceController.disconnect()
+            disconnectDevice(args.deviceId)
         } else {
             withBluetoothPermissions {
-                macAddress?.let { deviceController.connect(it) }
+                connectDevice(args.deviceId)
             }
         }
     }
@@ -102,7 +112,7 @@ internal class DeviceDashboardViewModel(
     private fun connect() {
         withBluetoothPermissions {
             if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Disconnected) {
-                macAddress?.let { deviceController.connect(it) }
+                connectDevice(args.deviceId)
             }
         }
     }
@@ -111,20 +121,7 @@ internal class DeviceDashboardViewModel(
         selectedProfileId
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
-            ?.let { profile -> deviceController.startProfileBrewing(profile) }
-    }
-
-    private fun startManualBrewing() = launchCatching(::onError) {
-        deviceController.startManualBrewing()
-    }
-
-
-    private fun stopBrewing() = launchCatching(::onError) {
-        if (viewState.value.device.brewStatus == Profile) {
-            deviceController.stopProfileBrewing()
-        } else {
-            deviceController.stopManualBrewing()
-        }
+            ?.let { profile -> startProfileBrewing(args.deviceId, profile) }
     }
 
     private fun onProfileSelected(id: String?) {
@@ -143,9 +140,9 @@ internal class DeviceDashboardViewModel(
         copy(
             showProfileDetails = if (isBrewingNow) false else showProfileDetails,
             device = device.copy(
-                brewBoilerTemp = state.brewBoilerTemp?.toString(),
-                steamBoilerTemp = state.steamBoilerTemp?.toString(),
-                pressure = state.pressure?.toString(),
+                brewBoilerTemp = state.brewBoilerTemp?.roundDecimalsTo(1)?.toString(),
+                steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),
+                pressure = state.pressure?.roundDecimalsTo(1)?.toString(),
                 connectionStatus = when (state.connectionStatus) {
                     MachineState.ConnectionStatus.Disconnected -> Device.ConnectionStatus.Disconnected
                     MachineState.ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
@@ -211,4 +208,9 @@ internal class DeviceDashboardViewModel(
         DashboardChartType.Volume -> ChartType.VOLUME
         DashboardChartType.Weight -> ChartType.WEIGHT
     }
+}
+
+private fun Float.roundDecimalsTo(decimals: Int): Float {
+    val factor = 10f.pow(decimals)
+    return round(this * factor) / factor
 }

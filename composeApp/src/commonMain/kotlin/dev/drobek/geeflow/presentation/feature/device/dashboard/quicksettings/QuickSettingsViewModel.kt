@@ -1,8 +1,11 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
 
-import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
+import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import dev.drobek.geeflow.domain.device.usecase.SetBoilerStateUseCase
+import dev.drobek.geeflow.domain.device.usecase.SetBrewTemperatureUseCase
+import dev.drobek.geeflow.domain.device.usecase.SetSteamTemperatureUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewTempChanged
@@ -18,12 +21,15 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class QuickSettingsViewModel(
     @InjectedParam val arguments: QuickSettings,
-    private val deviceController: DeviceController
+    private val observeDeviceState: ObserveDeviceStateUseCase,
+    private val setBoilerState: SetBoilerStateUseCase,
+    private val setBrewTemperature: SetBrewTemperatureUseCase,
+    private val setSteamTemperature: SetSteamTemperatureUseCase
 ) : BaseViewModel<QuickSettingsViewState, QuickSettingsViewModelEvent>(QuickSettingsViewState()) {
 
     init {
         launch {
-            deviceController.machineState.collect { state ->
+            observeDeviceState(arguments.deviceId).collect { state ->
                 updateMachineState(state)
             }
         }
@@ -49,11 +55,11 @@ internal class QuickSettingsViewModel(
 
     fun handleEvent(event: QuickSettingsEvent) = when (event) {
         is SteamBoilerToggled -> launch {
-            deviceController.setBoilerState(BoilerType.Steam, event.enabled)
+            setBoilerState(arguments.deviceId, BoilerType.Steam, event.enabled)
         }
 
         is BrewBoilerToggled -> launch {
-            deviceController.setBoilerState(BoilerType.Brew, event.enabled)
+            setBoilerState(arguments.deviceId, BoilerType.Brew, event.enabled)
         }
 
         is SteamTempChanged -> modify {
@@ -67,8 +73,8 @@ internal class QuickSettingsViewModel(
         is SaveClicked -> launch {
             val steamTemp = viewState.value.steamBoiler.selectedTemp.toIntOrNull()
             val brewTemp = viewState.value.brewBoiler.selectedTemp.toIntOrNull()
-            steamTemp?.let { deviceController.setSteamTemperature(it) }
-            brewTemp?.let { deviceController.setBrewTemperature(it) }
+            steamTemp?.let { setSteamTemperature(arguments.deviceId, it) }
+            brewTemp?.let { setBrewTemperature(arguments.deviceId, it) }
             emitEvent(Navigation.Back)
         }
 

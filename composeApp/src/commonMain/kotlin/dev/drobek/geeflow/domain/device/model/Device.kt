@@ -6,5 +6,8 @@ import kotlinx.serialization.Serializable
 data class Device(
     val macAddress: String,
     val name: String,
-    val isLastUsed: Boolean = false
+    val isLastUsed: Boolean = false,
+    val manufacturer: String = "",
+    val model: String = "",
+    val version: String = ""
 )

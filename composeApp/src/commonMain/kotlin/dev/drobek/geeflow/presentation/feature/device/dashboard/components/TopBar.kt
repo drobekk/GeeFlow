@@ -1,6 +1,7 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
 import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.AnimatedText
 import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Pressure
@@ -249,7 +251,10 @@ internal fun DeviceTile(
                 contentDescription = null
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.animateContentSize(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             ParameterItem(
                 value = device.brewBoilerTemp,
                 painter = rememberVectorPainter(GeeFlowIcon.Temperature),
@@ -282,7 +287,7 @@ private fun ParameterItem(
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.outline
     )
-    Text(
+    AnimatedText(
         text = value ?: "—",
         color = MaterialTheme.colorScheme.outline,
         style = MaterialTheme.typography.labelLarge

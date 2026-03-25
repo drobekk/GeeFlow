@@ -2,6 +2,7 @@ package dev.drobek.geeflow.presentation.feature.device.add
 
 import dev.drobek.geeflow.data.device.api.NearbyDevicesController
 import dev.drobek.geeflow.domain.device.model.Device
+import dev.drobek.geeflow.domain.device.model.SupportedDevice
 import dev.drobek.geeflow.domain.device.usecase.AddDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.ParseDeviceQrCodeUseCase
 import dev.drobek.geeflow.platform.Platform
@@ -58,6 +59,14 @@ internal class AddDeviceViewModel(
         is NearbyDeviceClicked -> onDeviceClicked(event.id)
         is Resumed -> (viewState.value.method as? NearbyDevices)?.let { startScanning() }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
+        is AddDeviceEvent.AddDemoDeviceClicked -> {
+            addDeviceUseCase(
+                macAddress = "DE:MO:00:00:00:00",
+                name = "GeeFlow Demo",
+                supportedDevice = SupportedDevice.GeeFlowDemo
+            )
+            emitEvent(DevicesList)
+        }
     }
 
     private fun startScanning() {

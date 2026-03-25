@@ -1,6 +1,6 @@
 package dev.drobek.geeflow.domain.brew.usecase
 
-import dev.drobek.geeflow.data.device.api.DeviceController
+import dev.drobek.geeflow.data.device.impl.DeviceControllerProvider
 import dev.drobek.geeflow.domain.brew.model.BrewDataPoint
 import dev.drobek.geeflow.domain.brew.model.BrewSession
 import dev.drobek.geeflow.domain.device.model.MachineState
@@ -17,11 +17,11 @@ import kotlin.time.Instant
 
 @Factory
 class ObserveBrewDataUseCase(
-    private val deviceController: DeviceController,
+    private val provider: DeviceControllerProvider,
     private val getSelectedUserUseCase: GetSelectedUserUseCase
 ) {
-    operator fun invoke(): Flow<BrewSession> {
-        val scanFlow = deviceController.machineState
+    operator fun invoke(deviceId: String): Flow<BrewSession> {
+        val scanFlow = provider.getController(deviceId).machineState
             .scan(Accumulator()) { acc, state ->
                 val status = state.brewStatus
                 val currentlyBrewing = status == MachineState.BrewStatus.Manual || status == MachineState.BrewStatus.Profile

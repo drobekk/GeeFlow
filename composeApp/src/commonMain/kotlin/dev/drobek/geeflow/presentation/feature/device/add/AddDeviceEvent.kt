@@ -8,4 +8,5 @@ internal sealed interface AddDeviceEvent {
     data class NearbyDeviceClicked(val id: String) : AddDeviceEvent
     data object Resumed : AddDeviceEvent
     data object OpenSystemSettingsClicked : AddDeviceEvent
+    data object AddDemoDeviceClicked : AddDeviceEvent
 }

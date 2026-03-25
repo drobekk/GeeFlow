@@ -1,7 +1,8 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.clean
 
-import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.device.usecase.GetCleaningStatusUseCase
+import dev.drobek.geeflow.domain.device.usecase.StartCleaningUseCase
+import dev.drobek.geeflow.domain.device.usecase.StopCleaningUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanEvent.MoreSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanEvent.ToggleCleaningClicked
@@ -13,13 +14,14 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class CleanViewModel(
     @InjectedParam private val arguments: Clean,
-    private val deviceController: DeviceController,
-    private val getCleaningStatus: GetCleaningStatusUseCase
+    private val getCleaningStatus: GetCleaningStatusUseCase,
+    private val startCleaning: StartCleaningUseCase,
+    private val stopCleaning: StopCleaningUseCase
 ) : BaseViewModel<CleanViewState, CleanViewModelEvent>(CleanViewState()) {
 
     init {
         launch {
-            getCleaningStatus().collect { status ->
+            getCleaningStatus(arguments.deviceId).collect { status ->
                 modify {
                     copy(
                         isCleaning = status.inProgress,
@@ -35,9 +37,9 @@ internal class CleanViewModel(
     fun handleEvent(event: CleanEvent) = when (event) {
         ToggleCleaningClicked -> launch {
             if (viewState.value.isCleaning) {
-                deviceController.stopCleaning()
+                stopCleaning(arguments.deviceId)
             } else {
-                deviceController.startCleaning()
+                startCleaning(arguments.deviceId)
             }
         }
 

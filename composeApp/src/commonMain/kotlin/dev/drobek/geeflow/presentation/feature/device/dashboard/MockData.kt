@@ -1,9 +1,9 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
-import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
+import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 
@@ -47,7 +47,7 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
         ),
         brew = Brew(
             name = "Manual Extraction",
-            time = 30f,
+            time = 30,
             data = dataPoints
         )
     )

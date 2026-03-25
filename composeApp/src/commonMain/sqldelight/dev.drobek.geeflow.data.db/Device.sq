@@ -3,7 +3,10 @@ import kotlin.Boolean;
 CREATE TABLE devices (
   macAddress TEXT NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
-  isLastUsed INTEGER AS Boolean NOT NULL DEFAULT 0
+  isLastUsed INTEGER AS Boolean NOT NULL DEFAULT 0,
+  manufacturer TEXT NOT NULL DEFAULT '',
+  model TEXT NOT NULL DEFAULT '',
+  version TEXT NOT NULL DEFAULT ''
 );
 
 selectAll:
@@ -13,7 +16,7 @@ selectByMacAddress:
 SELECT * FROM devices WHERE macAddress = ?;
 
 insertDevice:
-INSERT OR REPLACE INTO devices(macAddress, name, isLastUsed) VALUES (?, ?, ?);
+INSERT OR REPLACE INTO devices(macAddress, name, isLastUsed, manufacturer, model, version) VALUES (?, ?, ?, ?, ?, ?);
 
 resetLastUsed:
 UPDATE devices SET isLastUsed = 0;

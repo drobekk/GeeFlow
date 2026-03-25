@@ -14,6 +14,7 @@
     <string name="add_device_screen_no_camera_permission">Camera permission is missing, please grant it in app settings</string>
     <string name="add_device_screen_qr_parsing_error">Could not parse device data</string>
     <string name="add_device_screen_empty">No devices found.\nTime to wake up your espresso machine.</string>
+    <string name="add_device_demo">Add Demo device</string>
 
     <!-- Devices list screen -->
     <string name="device_list_screen_title">Devices</string>

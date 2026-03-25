@@ -36,6 +36,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.Weight
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.WeightRate
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
+import dev.drobek.geeflow.ui.components.AnimatedText
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
@@ -90,7 +91,7 @@ internal fun BrewBar(
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "${brew.time.toInt()}s",
+                text = "${brew.time}s",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -196,7 +197,7 @@ private fun SummaryItem(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
+                AnimatedText(
                     text = entry.value.format(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
@@ -242,7 +243,7 @@ private fun Double.format() = ((this * 10).toInt() / 10.0).toString()
 
 private val previewBrew = Brew(
     name = "Slayer shot",
-    time = 25f,
+    time = 25,
     data = mapOf(
         1f to ChartData(
             pressure = 9.0f,

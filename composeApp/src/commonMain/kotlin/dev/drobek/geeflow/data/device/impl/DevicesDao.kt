@@ -21,7 +21,10 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
         dbQuery.insertDevice(
             macAddress = device.macAddress,
             name = device.name,
-            isLastUsed = device.isLastUsed
+            isLastUsed = device.isLastUsed,
+            manufacturer = device.manufacturer,
+            model = device.model,
+            version = device.version
         )
     }
 
@@ -41,10 +44,16 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
     private fun mapToDevice(
         macAddress: String,
         name: String,
-        isLastUsed: Boolean
+        isLastUsed: Boolean,
+        manufacturer: String,
+        model: String,
+        version: String
     ): Device = Device(
         macAddress = macAddress,
         name = name,
-        isLastUsed = isLastUsed
+        isLastUsed = isLastUsed,
+        manufacturer = manufacturer,
+        model = model,
+        version = version
     )
 }
