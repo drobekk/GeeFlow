@@ -27,6 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.common_off
+import geeflow.composeapp.generated.resources.common_on
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GeeFlowSwitch(
@@ -52,20 +56,21 @@ fun GeeFlowSwitch(
 
     Row(
         modifier = modifier
+            .width(IntrinsicSize.Min)
             .height(IntrinsicSize.Min)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .alpha(if (enabled) 1f else 0.38f)
     ) {
         Text(
-            text = "OFF",
+            text = stringResource(Res.string.common_off),
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .clip(shape)
                 .clickable(enabled = enabled) { onCheckedChange(false) }
                 .border(2.dp, offBorderColor, shape)
-                .padding(8.dp)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
                 .wrapContentHeight(Alignment.CenterVertically),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = if (!checked) FontWeight.Bold else FontWeight.Normal,
@@ -74,14 +79,14 @@ fun GeeFlowSwitch(
         )
 
         Text(
-            text = "ON",
+            text = stringResource(Res.string.common_on),
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .clip(shape)
                 .clickable(enabled = enabled) { onCheckedChange(true) }
                 .background(onBackgroundColor)
-                .padding(8.dp)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
                 .wrapContentHeight(Alignment.CenterVertically),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal,

@@ -38,6 +38,7 @@ class ObserveBrewDataUseCase(
                     val elapsed = acc.startTime?.let { now - it } ?: Duration.ZERO
                     val elapsedSeconds = elapsed.toDouble(DurationUnit.SECONDS).toFloat()
 
+                    acc.timeInSeconds = elapsedSeconds.toInt()
                     acc.data[elapsedSeconds] = BrewDataPoint(
                         pressure = state.pressure ?: 0f,
                         weight = state.weight ?: 0f,
@@ -55,6 +56,7 @@ class ObserveBrewDataUseCase(
             val isManual = acc.status == MachineState.BrewStatus.Manual
             BrewSession(
                 userId = user?.id ?: 0L,
+                elapsedSeconds = acc.timeInSeconds,
                 profileId = if (isManual) null else null, // TODO Get Profile Id
                 profileName = if (isManual) "M" else null,
                 startTime = acc.startTime,
@@ -69,5 +71,6 @@ class ObserveBrewDataUseCase(
         var isBrewing = false
         var startTime: Instant? = null
         var status: MachineState.BrewStatus = MachineState.BrewStatus.Idle
+        var timeInSeconds: Int = 0
     }
 }

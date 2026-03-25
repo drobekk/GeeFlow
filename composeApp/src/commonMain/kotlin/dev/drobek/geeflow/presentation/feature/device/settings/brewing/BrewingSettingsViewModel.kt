@@ -1,25 +1,25 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
+package dev.drobek.geeflow.presentation.feature.device.settings.brewing
 
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewBoilerToggled
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewTempChanged
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.CloseClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.MoreSettingsClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SaveClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamBoilerToggled
-import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamTempChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.CloseClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.MoreSettingsClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SaveClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamBoilerToggled
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamTempChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-internal class QuickSettingsViewModel(
-    @InjectedParam val arguments: QuickSettings,
+internal class BrewingSettingsViewModel(
+    @InjectedParam val arguments: BrewingSettings,
     private val deviceController: DeviceController
-) : BaseViewModel<QuickSettingsViewState, QuickSettingsViewModelEvent>(QuickSettingsViewState()) {
+) : BaseViewModel<BrewingSettingsViewState, BrewingSettingsViewModelEvent>(BrewingSettingsViewState()) {
 
     init {
         launch {
@@ -47,7 +47,7 @@ internal class QuickSettingsViewModel(
         )
     }
 
-    fun handleEvent(event: QuickSettingsEvent) = when (event) {
+    fun handleEvent(event: BrewingSettingsEvent) = when (event) {
         is SteamBoilerToggled -> launch {
             deviceController.setBoilerState(BoilerType.Steam, event.enabled)
         }
@@ -73,6 +73,9 @@ internal class QuickSettingsViewModel(
         }
 
         is CloseClicked -> emitEvent(Navigation.Back)
-        is MoreSettingsClicked -> emitEvent(Navigation.DeviceSettings(arguments.deviceId))
+        is MoreSettingsClicked -> Unit
+        is BrewingSettingsEvent.PulseHeatingToggled -> Unit
+        is BrewingSettingsEvent.PaddlePressureChanged -> Unit
+        is BrewingSettingsEvent.PaddleTimeChanged -> Unit
     }
 }

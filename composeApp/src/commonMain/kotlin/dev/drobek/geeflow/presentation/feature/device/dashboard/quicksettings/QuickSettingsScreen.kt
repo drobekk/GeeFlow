@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -24,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
+import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewState.Boiler
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.VerticalSpacer
@@ -83,64 +83,53 @@ private fun QuickSettingsContent(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        BrewBoilerControls(viewState, onEvent)
-        SteamBoilerControls(viewState, onEvent)
+        Boiler(
+            boiler = viewState.brewBoiler,
+            label = stringResource(Res.string.common_brew_boiler),
+            onTempChanged = { onEvent(QuickSettingsEvent.BrewTempChanged(it)) },
+            onEnabledChanged = { onEvent(QuickSettingsEvent.BrewBoilerToggled(it)) },
+            modifier = Modifier.weight(1f)
+        )
+        Boiler(
+            boiler = viewState.steamBoiler,
+            label = stringResource(Res.string.common_steam_boiler),
+            onTempChanged = { onEvent(QuickSettingsEvent.SteamTempChanged(it)) },
+            onEnabledChanged = { onEvent(QuickSettingsEvent.SteamBoilerToggled(it)) },
+            modifier = Modifier.weight(1f)
+        )
     }
     VerticalSpacer(24.dp)
     Buttons(onEvent)
 }
 
 @Composable
-private fun RowScope.BrewBoilerControls(
-    viewState: QuickSettingsViewState,
-    onEvent: (QuickSettingsEvent) -> Unit
+private fun Boiler(
+    boiler: Boiler,
+    label: String,
+    onTempChanged: (String) -> Unit,
+    onEnabledChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) = Column(
-    modifier = Modifier.weight(1f),
+    modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
     BoilerHeader(
-        label = stringResource(Res.string.common_brew_boiler),
-        actualTemp = viewState.actualBrewTemp,
+        label = label,
+        actualTemp = boiler.actualTemp,
     )
     VerticalSpacer(16.dp)
     GeeFlowSwitch(
-        checked = viewState.brewBoilerEnabled,
-        onCheckedChange = { onEvent(QuickSettingsEvent.BrewBoilerToggled(it)) },
-        enabled = true
+        checked = boiler.enabled,
+        onCheckedChange = onEnabledChanged,
+        enabled = true,
+        modifier = Modifier.fillMaxWidth()
     )
     VerticalSpacer(8.dp)
     GeeFlowInfinitePicker(
-        items = viewState.brewTempList,
-        selected = viewState.selectedBrewTemp,
-        enabled = viewState.brewBoilerEnabled,
-        onSelectionChanged = { onEvent(QuickSettingsEvent.BrewTempChanged(it)) }
-    )
-}
-
-@Composable
-private fun RowScope.SteamBoilerControls(
-    viewState: QuickSettingsViewState,
-    onEvent: (QuickSettingsEvent) -> Unit
-) = Column(
-    modifier = Modifier.weight(1f),
-    horizontalAlignment = Alignment.CenterHorizontally
-) {
-    BoilerHeader(
-        label = stringResource(Res.string.common_steam_boiler),
-        actualTemp = viewState.actualSteamTemp,
-    )
-    VerticalSpacer(16.dp)
-    GeeFlowSwitch(
-        checked = viewState.steamBoilerEnabled,
-        onCheckedChange = { onEvent(QuickSettingsEvent.SteamBoilerToggled(it)) },
-        enabled = true
-    )
-    VerticalSpacer(8.dp)
-    GeeFlowInfinitePicker(
-        items = viewState.steamTempList,
-        selected = viewState.selectedSteamTemp,
-        enabled = viewState.steamBoilerEnabled,
-        onSelectionChanged = { onEvent(QuickSettingsEvent.SteamTempChanged(it)) }
+        items = boiler.tempList,
+        selected = boiler.selectedTemp,
+        enabled = boiler.enabled,
+        onSelectionChanged = onTempChanged
     )
 }
 
@@ -189,12 +178,16 @@ private fun Buttons(
 private fun QuickSettingsPreviewLight() = GeeFlowTheme(false) {
     QuickSettingsContent(
         viewState = QuickSettingsViewState(
-            steamBoilerEnabled = true,
-            brewBoilerEnabled = false,
-            actualBrewTemp = 93.5f,
-            actualSteamTemp = 125.0f,
-            selectedBrewTemp = "93",
-            selectedSteamTemp = "125"
+            steamBoiler = Boiler(
+                enabled = true,
+                actualTemp = 122.0f,
+                selectedTemp = "125"
+            ),
+            brewBoiler = Boiler(
+                enabled = false,
+                actualTemp = 93.5f,
+                selectedTemp = "93"
+            )
         ),
         onEvent = {}
     )
@@ -205,12 +198,16 @@ private fun QuickSettingsPreviewLight() = GeeFlowTheme(false) {
 private fun QuickSettingsPreviewDark() = GeeFlowTheme(true) {
     QuickSettingsContent(
         viewState = QuickSettingsViewState(
-            steamBoilerEnabled = false,
-            brewBoilerEnabled = true,
-            actualBrewTemp = 93.5f,
-            actualSteamTemp = 25.0f,
-            selectedBrewTemp = "93",
-            selectedSteamTemp = "125"
+            steamBoiler = Boiler(
+                enabled = false,
+                actualTemp = 122.0f,
+                selectedTemp = "125"
+            ),
+            brewBoiler = Boiler(
+                enabled = true,
+                actualTemp = 93.5f,
+                selectedTemp = "93"
+            )
         ),
         onEvent = {}
     )

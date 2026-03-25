@@ -159,13 +159,14 @@ internal class DeviceDashboardViewModel(
     private fun brewSessionDataChanged(session: BrewSession) = modify {
         copy(
             brew = brew.copy(
+                time = session.elapsedSeconds,
                 data = session.dataPoints.mapValues { (_, point) ->
                     ChartData(
                         pressure = point.pressure,
                         weight = point.weight,
                         weightPerSecond = point.weightRate,
                         volume = point.volume,
-                        volumePerSecond = point.flowRate
+                        volumePerSecond = point.flowRate,
                     )
                 }
             )

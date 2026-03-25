@@ -1,6 +1,7 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.main
 
 data class DeviceSettingsViewState(
+    val deviceName: String = "",
     val items: List<Item> = emptyList()
 ) {
     sealed interface Item {

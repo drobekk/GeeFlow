@@ -8,6 +8,7 @@ data class BrewSession(
     val profileName: String? = null,
     val startTime: Instant? = null,
     val inProgress: Boolean = false,
+    val elapsedSeconds: Int = 0,
     val dataPoints: Map<Float, BrewDataPoint> = emptyMap()
 )
 

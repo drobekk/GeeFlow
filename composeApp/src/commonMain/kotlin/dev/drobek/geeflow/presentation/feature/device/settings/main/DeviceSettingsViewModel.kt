@@ -11,6 +11,7 @@ import dev.drobek.geeflow.domain.device.model.DeviceCapability.SmartScaleConnect
 import dev.drobek.geeflow.domain.device.model.DeviceCapability.SteamBoiler
 import dev.drobek.geeflow.domain.device.model.DeviceCapability.WaterAlarm
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceCapabilitiesUseCase
+import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
@@ -30,6 +31,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class DeviceSettingsViewModel(
     @InjectedParam val args: DeviceSettings,
+    getDeviceUseCase: GetDeviceUseCase,
     private val getDeviceCapabilitiesUseCase: GetDeviceCapabilitiesUseCase
 ) : BaseViewModel<DeviceSettingsViewState, DeviceLitViewModelEvent>(DeviceSettingsViewState()) {
 
@@ -42,6 +44,7 @@ internal class DeviceSettingsViewModel(
     private val maintenanceCapabilities = setOf(CleaningMode, CleaningSettings, WaterAlarm)
 
     init {
+        modify { copy(deviceName = getDeviceUseCase(args.deviceId)?.name.orEmpty()) }
         buildOptions()
     }
 

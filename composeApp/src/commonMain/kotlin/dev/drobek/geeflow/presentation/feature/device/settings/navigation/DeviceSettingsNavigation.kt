@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.navigation.Navigation
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsScreen
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsScreen
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
@@ -19,6 +20,7 @@ import org.koin.core.parameter.parametersOf
 
 interface DeviceSettingsNavigation : Navigation {
     fun showBrewingSettings(deviceId: String)
+    fun backFromSettings()
 }
 
 sealed interface DeviceSettingsDestinations : NavKey {
@@ -44,6 +46,7 @@ fun EntryProviderScope<NavKey>.deviceSettingsEntries(navigation: DeviceSettingsN
     }
 
     entry<BrewingSettings>(metadata = detailPane()) {
-        BrewingSettingsScreen()
+        val viewModel = koinViewModel<BrewingSettingsViewModel> { parametersOf(it) }
+        BrewingSettingsScreen(viewModel, navigation)
     }
 }

@@ -29,5 +29,5 @@ actual fun getThemeProvider() = object : ThemeProvider {
 
 @Composable
 actual fun calculateWindowSizeClass(): WindowSizeClass {
-    return currentWindowAdaptiveInfo().windowSizeClass
+    return currentWindowAdaptiveInfo(true).windowSizeClass
 }

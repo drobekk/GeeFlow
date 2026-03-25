@@ -56,7 +56,6 @@ import geeflow.composeapp.generated.resources.device_settings_connectivity_descr
 import geeflow.composeapp.generated.resources.device_settings_maintenance
 import geeflow.composeapp.generated.resources.device_settings_maintenance_description
 import geeflow.composeapp.generated.resources.device_settings_subtitle
-import geeflow.composeapp.generated.resources.device_settings_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -65,7 +64,6 @@ internal fun DeviceSettingsScreen(
     navigation: DeviceSettingsNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-
     Content(
         viewState = viewState,
         onEvent = viewModel::handleEvent
@@ -73,7 +71,7 @@ internal fun DeviceSettingsScreen(
 
     EventsDispatcher(viewModel.events) {
         when (it) {
-            is Navigation.Back -> navigation.back()
+            is Navigation.Back -> navigation.backFromSettings()
             is Navigation.BrewingSettings -> navigation.showBrewingSettings(it.deviceId)
             is Navigation.ConnectivitySettings -> navigation.showBrewingSettings(it.deviceId) // TODO
             is Navigation.MaintenanceSettings -> navigation.showBrewingSettings(it.deviceId) // TODO
@@ -107,12 +105,10 @@ private fun ExpandedContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
-    Row(
-        modifier = Modifier
-    ) {
+    Row(Modifier.fillMaxSize()) {
         Column(Modifier.weight(1f)) {
             GeeFlowTopBar(
-                title = stringResource(Res.string.device_settings_title),
+                title = viewState.deviceName,
                 subtitle = stringResource(Res.string.device_settings_subtitle),
                 navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
                 navIconContentDescription = stringResource(Res.string.common_go_back),
@@ -160,7 +156,7 @@ private fun CompactContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowScaffold(
-        title = stringResource(Res.string.device_settings_title),
+        title = viewState.deviceName,
         subtitle = stringResource(Res.string.device_settings_subtitle),
         navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
         navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) },
@@ -219,6 +215,7 @@ private fun SettingsItem(
 
 @Composable
 private fun previewViewState() = DeviceSettingsViewState(
+    deviceName = "Data-S",
     items = listOf(
         Item.Brewing(
             stringResource(Res.string.device_settings_brewing),

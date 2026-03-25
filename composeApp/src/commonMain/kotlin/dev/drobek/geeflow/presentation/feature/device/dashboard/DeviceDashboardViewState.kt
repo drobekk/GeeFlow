@@ -29,7 +29,7 @@ data class DeviceDashboardViewState(
 
     data class Brew(
         val name: String = "",
-        val time: Float = 0f,
+        val time: Int = 0,
         val data: Map<Float, ChartData> = getEmptyChartData()
     )
 
