@@ -7,14 +7,18 @@ object WendougeeRegisters {
     const val STEAM_TEMPERATURE = 0x0008
     const val BREW_TEMPERATURE = 0x0009
     const val HEATING_MODE = 0x0016
-    
+
+    // Manual Brew Settings
+    const val MANUAL_BREW_TIME = 0x0011
+    const val MANUAL_BREW_PRESSURE = 0x0013
+
     // Profiles & Binding
     const val BIND_PROFILE = 30
-    
+
     // Profile Upload: Constant/Variable Modes (Base Register)
     const val CONSTANT_MODE_BASE = 2048
     const val CONSTANT_MODE_BOUND_BASE = 2560
-    
+
     // Profile Upload: Free Variable Mode Flags
     const val FV_FINISH_CONDITION = 79
     const val FV_PROFILE_MODE = 87

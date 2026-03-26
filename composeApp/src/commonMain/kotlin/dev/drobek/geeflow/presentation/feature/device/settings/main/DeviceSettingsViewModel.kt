@@ -13,8 +13,12 @@ import dev.drobek.geeflow.domain.device.model.DeviceCapability.WaterAlarm
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceCapabilitiesUseCase
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.BackClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.Expanded
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
+import dev.drobek.geeflow.presentation.feature.device.settings.main.Navigation.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.main.Navigation.ConnectivitySettings
+import dev.drobek.geeflow.presentation.feature.device.settings.main.Navigation.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.DeviceSettings
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
@@ -50,11 +54,14 @@ internal class DeviceSettingsViewModel(
 
     fun handleEvent(event: DeviceSettingsEvent) = when (event) {
         is BackClicked -> emitEvent(Navigation.Back)
-        is ItemClicked -> when (event.item) {
-            is Item.Brewing -> emitEvent(Navigation.BrewingSettings(args.deviceId))
-            is Item.Maintenance -> emitEvent(Navigation.MaintenanceSettings(args.deviceId))
-            is Item.Connectivity -> emitEvent(Navigation.ConnectivitySettings(args.deviceId))
-        }
+        is ItemClicked -> onItemClicked(event.item)
+        is Expanded -> viewState.value.items.firstOrNull()?.let(::onItemClicked)
+    }
+
+    private fun onItemClicked(item: Item) = when (item) {
+        is Item.Brewing -> emitEvent(BrewingSettings(args.deviceId))
+        is Item.Maintenance -> emitEvent(MaintenanceSettings(args.deviceId))
+        is Item.Connectivity -> emitEvent(ConnectivitySettings(args.deviceId))
     }
 
     private fun buildOptions() = launch {

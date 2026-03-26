@@ -1,20 +1,30 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.brewing
 
+import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
-import dev.drobek.geeflow.domain.device.usecase.SetBoilerStateUseCase
-import dev.drobek.geeflow.domain.device.usecase.SetBrewTemperatureUseCase
-import dev.drobek.geeflow.domain.device.usecase.SetSteamTemperatureUseCase
+import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
+import dev.drobek.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
+import dev.drobek.geeflow.domain.device.usecase.SetPulseHeatingModeUseCase
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.ApplyClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.CloseClicked
-import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.MoreSettingsClicked
-import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SaveClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.PaddlePressureChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.PaddleTimeChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.PulseHeatingToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamTempChanged
+import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
 import dev.drobek.geeflow.viewmodel.BaseViewModel
+import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.common_settings_applied
+import geeflow.composeapp.generated.resources.error_generic
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.withIndex
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
@@ -22,66 +32,139 @@ import org.koin.core.annotation.KoinViewModel
 internal class BrewingSettingsViewModel(
     @InjectedParam val arguments: BrewingSettings,
     private val observeDeviceState: ObserveDeviceStateUseCase,
-    private val setBoilerState: SetBoilerStateUseCase,
-    private val setBrewTemperature: SetBrewTemperatureUseCase,
-    private val setSteamTemperature: SetSteamTemperatureUseCase
+    private val setBoilerSettings: SetBoilerSettingsUseCase,
+    private val setPulseHeatingMode: SetPulseHeatingModeUseCase,
+    private val setManualBrewSettings: SetManualBrewSettingsUseCase
 ) : BaseViewModel<BrewingSettingsViewState, BrewingSettingsViewModelEvent>(BrewingSettingsViewState()) {
 
+    private var deviceSnapshot: DeviceSnapshot? = null
+
+    private var saveJob: Job? = null
+
     init {
+        loadMachineState()
+    }
+
+    private fun loadMachineState() {
         launch {
-            observeDeviceState(arguments.deviceId).collect { state ->
-                updateMachineState(state)
-            }
+            observeDeviceState(arguments.deviceId)
+                .withIndex()
+                .collect {
+                    if (it.index == 0) {
+                        updateViewState(it.value)
+                    } else {
+                        modify {
+                            copy(
+                                brewBoiler = brewBoiler.copy(actualTemp = it.value.brewBoilerTemp ?: 0f),
+                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f)
+                            )
+                        }
+                    }
+                }
         }
     }
 
-    private fun updateMachineState(state: MachineState) = modify {
+    private fun updateViewState(state: MachineState) {
         val config = state.config
-        copy(
-            steamBoiler = steamBoiler.copy(
-                enabled = config?.steamBoilerEnabled ?: false,
-                actualTemp = state.steamBoilerTemp ?: 0f,
-                selectedTemp = if (steamBoiler.selectedTemp == "0") config?.targetSteamTemp?.toInt()?.toString()
-                    ?: "0" else steamBoiler.selectedTemp
-            ),
-            brewBoiler = brewBoiler.copy(
-                enabled = config?.brewBoilerEnabled ?: false,
-                actualTemp = state.brewBoilerTemp ?: 0f,
-                selectedTemp = if (brewBoiler.selectedTemp == "0") config?.targetBrewTemp?.toInt()?.toString()
-                    ?: "0" else brewBoiler.selectedTemp
+        modify {
+            copy(
+                steamBoiler = steamBoiler.copy(
+                    enabled = config?.steamBoilerEnabled ?: false,
+                    actualTemp = state.steamBoilerTemp ?: 0f,
+                    selectedTemp = config?.targetSteamTemp?.toInt()?.toString() ?: "0"
+                ),
+                brewBoiler = brewBoiler.copy(
+                    enabled = config?.brewBoilerEnabled ?: false,
+                    actualTemp = state.brewBoilerTemp ?: 0f,
+                    selectedTemp = config?.targetBrewTemp?.toInt()?.toString() ?: "0"
+                ),
+                pulseHeatingEnabled = config?.heatingMode == MachineState.HeatingMode.Pulse,
+                paddle = paddle.copy(
+                    pressure = config?.manualBrewPressure?.toString() ?: "0.0",
+                    time = config?.manualBrewTimeSec?.toInt()?.toString() ?: "0"
+                )
             )
-        )
+        }
+        deviceSnapshot = snapshotFromState(viewState.value)
     }
 
     fun handleEvent(event: BrewingSettingsEvent) = when (event) {
-        is SteamBoilerToggled -> launch {
-            setBoilerState(arguments.deviceId, BoilerType.Steam, event.enabled)
-        }
-
-        is BrewBoilerToggled -> launch {
-            setBoilerState(arguments.deviceId, BoilerType.Brew, event.enabled)
-        }
-
-        is SteamTempChanged -> modify {
-            copy(steamBoiler = steamBoiler.copy(selectedTemp = event.temp))
-        }
-
-        is BrewTempChanged -> modify {
-            copy(brewBoiler = brewBoiler.copy(selectedTemp = event.temp))
-        }
-
-        is SaveClicked -> launch {
-            val steamTemp = viewState.value.steamBoiler.selectedTemp.toIntOrNull()
-            val brewTemp = viewState.value.brewBoiler.selectedTemp.toIntOrNull()
-            steamTemp?.let { setSteamTemperature(arguments.deviceId, it) }
-            brewTemp?.let { setBrewTemperature(arguments.deviceId, it) }
-            emitEvent(Navigation.Back)
-        }
-
+        is SteamBoilerToggled -> modify { copy(steamBoiler = steamBoiler.copy(enabled = event.enabled)).withApplyVisible() }
+        is BrewBoilerToggled -> modify { copy(brewBoiler = brewBoiler.copy(enabled = event.enabled)).withApplyVisible() }
+        is SteamTempChanged -> modify { copy(steamBoiler = steamBoiler.copy(selectedTemp = event.temp)).withApplyVisible() }
+        is BrewTempChanged -> modify { copy(brewBoiler = brewBoiler.copy(selectedTemp = event.temp)).withApplyVisible() }
+        is PulseHeatingToggled -> modify { copy(pulseHeatingEnabled = event.enabled).withApplyVisible() }
+        is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
+        is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
+        is ApplyClicked -> saveSettings()
         is CloseClicked -> emitEvent(Navigation.Back)
-        is MoreSettingsClicked -> Unit
-        is BrewingSettingsEvent.PulseHeatingToggled -> Unit
-        is BrewingSettingsEvent.PaddlePressureChanged -> Unit
-        is BrewingSettingsEvent.PaddleTimeChanged -> Unit
     }
+
+    private fun saveSettings() = with(viewState.value) {
+        saveJob?.cancel()
+        saveJob = launchCatching(
+            onError = (::showError),
+            block = {
+                modify { copy(applyButtonLoading = true) }
+                setBoilerSettings(
+                    deviceId = arguments.deviceId,
+                    boilerType = BoilerType.Steam,
+                    enabled = steamBoiler.enabled,
+                    temp = steamBoiler.selectedTemp.toInt()
+                )
+                setBoilerSettings(
+                    deviceId = arguments.deviceId,
+                    boilerType = BoilerType.Brew,
+                    enabled = brewBoiler.enabled,
+                    temp = brewBoiler.selectedTemp.toInt()
+                )
+                setPulseHeatingMode(arguments.deviceId, pulseHeatingEnabled)
+                setManualBrewSettings(
+                    deviceId = arguments.deviceId,
+                    pressure = paddle.pressure.toFloat(),
+                    timeSec = paddle.time.toFloat()
+                )
+                deviceSnapshot = snapshotFromState(viewState.value)
+                modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
+                emitEvent { ShowSnackbar(getString(Res.string.common_settings_applied)) }
+            }
+        )
+    }
+
+    private fun showError(throwable: Throwable) {
+        Logger.e(throwable) { "Error while saving brewing settings" }
+        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
+    }
+
+    private fun snapshotFromState(state: BrewingSettingsViewState) = DeviceSnapshot(
+        brewBoilerEnabled = state.brewBoiler.enabled,
+        brewTemp = state.brewBoiler.selectedTemp,
+        steamBoilerEnabled = state.steamBoiler.enabled,
+        steamTemp = state.steamBoiler.selectedTemp,
+        pulseHeatingEnabled = state.pulseHeatingEnabled,
+        paddlePressure = state.paddle.pressure,
+        paddleTime = state.paddle.time,
+    )
+
+    private fun BrewingSettingsViewState.withApplyVisible(): BrewingSettingsViewState {
+        val snapshot = deviceSnapshot ?: return this
+        val changed = brewBoiler.enabled != snapshot.brewBoilerEnabled ||
+                brewBoiler.selectedTemp != snapshot.brewTemp ||
+                steamBoiler.enabled != snapshot.steamBoilerEnabled ||
+                steamBoiler.selectedTemp != snapshot.steamTemp ||
+                pulseHeatingEnabled != snapshot.pulseHeatingEnabled ||
+                paddle.pressure != snapshot.paddlePressure ||
+                paddle.time != snapshot.paddleTime
+        return copy(applyButtonVisible = changed)
+    }
+
+    private data class DeviceSnapshot(
+        val brewBoilerEnabled: Boolean,
+        val brewTemp: String,
+        val steamBoilerEnabled: Boolean,
+        val steamTemp: String,
+        val pulseHeatingEnabled: Boolean,
+        val paddlePressure: String,
+        val paddleTime: String,
+    )
 }

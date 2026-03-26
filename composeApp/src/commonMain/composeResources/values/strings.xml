@@ -75,6 +75,7 @@
     <string name="common_open_settings">Open Settings</string>
     <string name="common_go_back">Go back</string>
     <string name="common_confirm">Confirm</string>
+    <string name="common_apply">Apply</string>
     <string name="common_close">Close</string>
     <string name="common_more">More</string>
     <string name="common_remove">Remove</string>
@@ -91,6 +92,7 @@
     <string name="common_off">OFF</string>
     <string name="common_pressure">Pressure</string>
     <string name="common_time">Time</string>
+    <string name="common_settings_applied">Settings applied</string>
 
     <!-- UNITS -->
     <string name="unit_bar">bar</string>
@@ -100,5 +102,7 @@
     <string name="unit_milliliters_per_second">ml/s</string>
 
     <!-- ERRORS -->
-    <string name="generic_error">Oops, something went wrong. Please try again.</string>
+    <string name="error_generic">Oops, something went wrong. Please try again.</string>
+    <string name="error_brew_temp_set">Could not set brew boiler temperature</string>
+    <string name="error_steam_temp_set">Could not set steam boiler temperature</string>
 </resources>

@@ -19,7 +19,7 @@ import geeflow.composeapp.generated.resources.common_close
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun GeeDialogTopBar(
+fun GeeFlowDialogTopBar(
     title: String,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier

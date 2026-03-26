@@ -200,6 +200,20 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
         }
     }
 
+    override suspend fun setManualBrewPressure(pressure: Float) {
+        _machineState.update { state ->
+            val config = state.config ?: return
+            state.copy(config = config.copy(manualBrewPressure = pressure))
+        }
+    }
+
+    override suspend fun setManualBrewTime(timeSec: Float) {
+        _machineState.update { state ->
+            val config = state.config ?: return
+            state.copy(config = config.copy(manualBrewTimeSec = timeSec))
+        }
+    }
+
     override suspend fun bindProfile(profile: BrewProfile) = Unit
     override suspend fun startSmartScaleSearch() = Unit
     override suspend fun stopSmartScaleSearch() = Unit

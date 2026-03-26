@@ -25,6 +25,8 @@ interface DeviceController {
     suspend fun startCleaning()
     suspend fun stopCleaning()
     suspend fun setHeatingMode(heatingMode: HeatingMode)
+    suspend fun setManualBrewPressure(pressure: Float)
+    suspend fun setManualBrewTime(timeSec: Float)
     suspend fun startProfileBrewing(profile: BrewProfile)
     suspend fun bindProfile(profile: BrewProfile)
 

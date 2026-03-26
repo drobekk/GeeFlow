@@ -27,7 +27,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.Devic
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.VerticalSpacer
 import dev.drobek.geeflow.ui.WaveOrientation
-import dev.drobek.geeflow.ui.components.GeeDialogTopBar
+import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.waveBackground
 import geeflow.composeapp.generated.resources.Res
@@ -76,7 +76,7 @@ private fun CleanContent(
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GeeDialogTopBar(
+        GeeFlowDialogTopBar(
             title = stringResource(Res.string.device_clean_title),
             onCloseClick = { onEvent(CleanEvent.CloseClicked) }
         )

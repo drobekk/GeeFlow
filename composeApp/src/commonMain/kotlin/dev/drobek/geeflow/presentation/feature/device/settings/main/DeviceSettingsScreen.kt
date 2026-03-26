@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,8 +36,11 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.BackClicked
+import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.Expanded
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.WaveOrientation
@@ -64,8 +69,15 @@ internal fun DeviceSettingsScreen(
     navigation: DeviceSettingsNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+
+    val selectedIndex = when (navigation.getCurrentDestination()) {
+        is BrewingSettings -> viewState.items.indexOfFirst { it is Item.Brewing }
+        else -> null
+    }.takeIf { it != null && it >= 0 }
+
     Content(
         viewState = viewState,
+        selectedIndex = selectedIndex,
         onEvent = viewModel::handleEvent
     )
 
@@ -82,11 +94,16 @@ internal fun DeviceSettingsScreen(
 @Composable
 private fun Content(
     viewState: DeviceSettingsViewState,
+    selectedIndex: Int? = null,
     onEvent: (DeviceSettingsEvent) -> Unit = {},
 ) {
     if (isWidthExpanded()) {
+        LaunchedEffect(viewState.items.isNotEmpty(), selectedIndex) {
+            if (viewState.items.isNotEmpty() && selectedIndex == null) onEvent(Expanded)
+        }
         ExpandedContent(
             viewState = viewState,
+            selectedIndex = selectedIndex,
             onEvent = onEvent
         )
     } else {
@@ -101,6 +118,7 @@ private fun Content(
 @Composable
 private fun ExpandedContent(
     viewState: DeviceSettingsViewState,
+    selectedIndex: Int?,
     onEvent: (DeviceSettingsEvent) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -112,7 +130,7 @@ private fun ExpandedContent(
                 subtitle = stringResource(Res.string.device_settings_subtitle),
                 navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
                 navIconContentDescription = stringResource(Res.string.common_go_back),
-                navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) },
+                navIconClick = { onEvent(BackClicked) },
                 modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
                 scrollBehavior = scrollBehavior
             )
@@ -126,9 +144,9 @@ private fun ExpandedContent(
                     .scrollFade(listState = listState, color = MaterialTheme.colorScheme.surfaceContainer),
                 contentPadding = WindowInsets.navigationBars.asPaddingValues()
             ) {
-                items(viewState.items) {
+                itemsIndexed(viewState.items) { index, item ->
                     SettingsItem(
-                        item = it,
+                        item = item,
                         onEvent = onEvent,
                         modifier = Modifier
                             .padding(
@@ -136,7 +154,13 @@ private fun ExpandedContent(
                                 vertical = 8.dp
                             )
                             .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.background)
+                            .background(
+                                if (index == selectedIndex) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.background
+                                }
+                            )
                     )
                 }
             }
@@ -159,7 +183,7 @@ private fun CompactContent(
         title = viewState.deviceName,
         subtitle = stringResource(Res.string.device_settings_subtitle),
         navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
-        navIconClick = { onEvent(DeviceSettingsEvent.BackClicked) },
+        navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
         content = { paddingValues ->
             LazyColumn(
@@ -186,7 +210,6 @@ private fun CompactContent(
         }
     )
 }
-
 
 @Composable
 private fun SettingsItem(

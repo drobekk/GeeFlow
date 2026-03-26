@@ -2,6 +2,7 @@ package dev.drobek.geeflow.presentation.feature.device.list
 
 import androidx.lifecycle.viewModelScope
 import dev.drobek.geeflow.domain.device.usecase.DeleteDeviceUseCase
+import dev.drobek.geeflow.domain.device.usecase.DisconnectCurrentDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.GetDevicesUseCase
 import dev.drobek.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import dev.drobek.geeflow.domain.user.usecase.SetFavoriteDeviceUseCase
@@ -19,6 +20,7 @@ import org.koin.core.annotation.KoinViewModel
 internal class DeviceListViewModel(
     getDevicesUseCase: GetDevicesUseCase,
     private val deleteDeviceUseCase: DeleteDeviceUseCase,
+    private val disconnectCurrentDevice: DisconnectCurrentDeviceUseCase,
     private val setFavoriteDeviceUseCase: SetFavoriteDeviceUseCase,
     getSelectedUserUseCase: GetSelectedUserUseCase
 ) : BaseViewModel<DeviceListViewState, DeviceLitViewModelEvent>(DeviceListViewState()) {
@@ -51,7 +53,10 @@ internal class DeviceListViewModel(
     fun handleEvent(event: DeviceListEvent) = when (event) {
         is AddDeviceClicked -> emitEvent(Navigation.AddDevice)
         is BackClicked -> emitEvent(Navigation.Back)
-        is DeviceClicked -> emitEvent(Navigation.DeviceDetails(event.device.id))
+        is DeviceClicked -> {
+            disconnectCurrentDevice()
+            emitEvent(Navigation.DeviceDetails(event.device.id))
+        }
         is DeviceRemoveClicked -> deleteDeviceUseCase(event.device.id)
         is DeviceSetAsDefaultClicked -> {
             viewState.value.user?.let { user ->

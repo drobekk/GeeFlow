@@ -46,7 +46,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
-import geeflow.composeapp.generated.resources.generic_error
+import geeflow.composeapp.generated.resources.error_generic
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -198,7 +198,7 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun onError(throwable: Throwable) {
-        emitEvent { ShowSnackbar(getString(Res.string.generic_error)) }
+        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
     }
 
     private fun DashboardChartType.toDomain() = when (this) {

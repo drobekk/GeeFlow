@@ -4,7 +4,9 @@ data class BrewingSettingsViewState(
     val brewBoiler: Boiler = Boiler(tempList = (0..110).map { it.toString() }),
     val steamBoiler: Boiler = Boiler(tempList = (0..140).map { it.toString() }),
     val pulseHeatingEnabled: Boolean = false,
-    val paddle: Paddle = Paddle()
+    val paddle: Paddle = Paddle(),
+    val applyButtonLoading: Boolean = false,
+    val applyButtonVisible: Boolean = false
 ) {
     data class Boiler(
         val enabled: Boolean = false,

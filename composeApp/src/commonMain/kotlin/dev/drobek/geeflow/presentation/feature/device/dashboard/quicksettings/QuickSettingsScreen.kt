@@ -1,21 +1,29 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -27,7 +35,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.Qu
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.VerticalSpacer
-import dev.drobek.geeflow.ui.components.GeeDialogTopBar
+import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -37,6 +45,7 @@ import geeflow.composeapp.generated.resources.common_confirm
 import geeflow.composeapp.generated.resources.common_steam_boiler
 import geeflow.composeapp.generated.resources.settings_quick_more
 import geeflow.composeapp.generated.resources.settings_quick_title
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -45,6 +54,8 @@ internal fun QuickSettingsScreen(
     navigator: DeviceDashboardNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     EventsDispatcher(viewModel.events) {
         when (it) {
@@ -53,13 +64,26 @@ internal fun QuickSettingsScreen(
                 navigator.back()
                 navigator.showDeviceSettings(it.deviceId)
             }
+
+            is QuickSettingsViewModelEvent.ShowSnackbar -> coroutineScope.launch {
+                snackbarHostState.showSnackbar(it.message)
+            }
         }
     }
 
-    QuickSettingsContent(
-        viewState = viewState,
-        onEvent = viewModel::handleEvent
-    )
+    Box(modifier = Modifier.fillMaxWidth()) {
+        QuickSettingsContent(
+            viewState = viewState,
+            onEvent = viewModel::handleEvent
+        )
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        )
+    }
 }
 
 @Composable
@@ -74,7 +98,7 @@ private fun QuickSettingsContent(
         .fillMaxWidth(),
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
-    GeeDialogTopBar(
+    GeeFlowDialogTopBar(
         title = stringResource(Res.string.settings_quick_title),
         onCloseClick = { onEvent(QuickSettingsEvent.CloseClicked) }
     )
@@ -99,7 +123,7 @@ private fun QuickSettingsContent(
         )
     }
     VerticalSpacer(24.dp)
-    Buttons(onEvent)
+    Buttons(viewState.applying, onEvent)
 }
 
 @Composable
@@ -158,6 +182,7 @@ private fun BoilerHeader(
 
 @Composable
 private fun Buttons(
+    applying: Boolean,
     onEvent: (QuickSettingsEvent) -> Unit
 ) = Row(
     modifier = Modifier.fillMaxWidth(),
@@ -168,8 +193,19 @@ private fun Buttons(
         content = { Text(stringResource(Res.string.settings_quick_more)) }
     )
     Button(
-        onClick = { onEvent(QuickSettingsEvent.SaveClicked) },
-        content = { Text(stringResource(Res.string.common_confirm)) }
+        onClick = { if (!applying) onEvent(QuickSettingsEvent.ConfirmClicked) },
+        content = {
+            AnimatedContent(applying) {
+                if (it) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(stringResource(Res.string.common_confirm))
+                }
+            }
+        }
     )
 }
 
@@ -207,7 +243,8 @@ private fun QuickSettingsPreviewDark() = GeeFlowTheme(true) {
                 enabled = true,
                 actualTemp = 93.5f,
                 selectedTemp = "93"
-            )
+            ),
+            applying = true
         ),
         onEvent = {}
     )

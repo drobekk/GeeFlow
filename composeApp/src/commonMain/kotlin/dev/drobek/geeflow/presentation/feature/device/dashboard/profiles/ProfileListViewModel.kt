@@ -19,7 +19,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.Profile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
-import geeflow.composeapp.generated.resources.generic_error
+import geeflow.composeapp.generated.resources.error_generic
 import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.Factory
@@ -67,7 +67,7 @@ internal class ProfileListViewModel(
     }
 
     private fun onError(throwable: Throwable) {
-        emitEvent { ShowSnackbar(getString(Res.string.generic_error)) }
+        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
     }
 
     private fun profilesChanged(profiles: List<BrewProfile>) {

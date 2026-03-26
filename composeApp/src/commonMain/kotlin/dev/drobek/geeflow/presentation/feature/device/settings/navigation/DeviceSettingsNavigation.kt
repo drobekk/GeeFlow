@@ -20,6 +20,7 @@ import org.koin.core.parameter.parametersOf
 
 interface DeviceSettingsNavigation : Navigation {
     fun showBrewingSettings(deviceId: String)
+    fun getCurrentDestination(): NavKey?
     fun backFromSettings()
 }
 

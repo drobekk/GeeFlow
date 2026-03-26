@@ -14,12 +14,21 @@ class DeviceControllerProvider(
     private val wendougeeDataSController: WendougeeDataSController,
     private val demoDeviceController: DemoDeviceController
 ) {
+    private var currentDeviceId: String? = null
+
     fun getController(deviceId: String): DeviceController {
+        currentDeviceId = deviceId
         val device = deviceRepository.getDeviceByMacAddress(deviceId)
         return when (device?.supportedDevice) {
             SupportedDevice.WendougeeDataS -> wendougeeDataSController
             SupportedDevice.GeeFlowDemo -> demoDeviceController
             null -> wendougeeDataSController
         }
+    }
+
+    fun disconnectCurrent() {
+        val id = currentDeviceId ?: return
+        getController(id).disconnect()
+        currentDeviceId = null
     }
 }

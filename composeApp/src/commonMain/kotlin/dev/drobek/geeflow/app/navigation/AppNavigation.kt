@@ -68,4 +68,6 @@ class AppNavigation(
         backStack.removeLastOrNull()
         backStack.removeAll { it is DeviceSettingsDestinations }
     }
+
+    override fun getCurrentDestination(): NavKey? = backStack.lastOrNull()
 }

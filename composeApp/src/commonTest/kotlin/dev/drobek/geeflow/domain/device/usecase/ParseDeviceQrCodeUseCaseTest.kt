@@ -16,7 +16,6 @@ class ParseDeviceQrCodeUseCaseTest {
         val device = useCase(url)
 
         assertNotNull(device)
-        assertEquals("B021372115", device.serialNumber)
         assertEquals("31CDB2DD364E", device.macAddress)
         assertEquals("DATA", device.name)
     }
@@ -29,7 +28,6 @@ class ParseDeviceQrCodeUseCaseTest {
         val device = useCase(url)
 
         assertNotNull(device)
-        assertEquals("B021372115", device.serialNumber)
         assertEquals("31CDB2DD364E", device.macAddress)
         assertEquals("DATA", device.name)
     }

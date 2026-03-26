@@ -222,19 +222,28 @@ class WendougeeDataSController(
     }
 
     override suspend fun setBoilerState(boilerType: BoilerType, enabled: Boolean) {
-        val targetRegister =
-            if (boilerType == BoilerType.Steam) WendougeeRegisters.STEAM_BOILER_STATE else WendougeeRegisters.BREW_BOILER_STATE
+        val currentConfig = _machineState.value.config
+        val isAlreadySet = when (boilerType) {
+            BoilerType.Steam -> currentConfig?.steamBoilerEnabled == enabled
+            BoilerType.Brew -> currentConfig?.brewBoilerEnabled == enabled
+        }
+        if (isAlreadySet) return
+
+        val targetRegister = when (boilerType) {
+            BoilerType.Steam -> WendougeeRegisters.STEAM_BOILER_STATE
+            BoilerType.Brew -> WendougeeRegisters.BREW_BOILER_STATE
+        }
         val stateValue = if (enabled) 0x00 else 0x01
 
         modbus.writeSingleRegister(targetRegister, stateValue)
 
         Logger.withTag(TAG).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
         _machineState.update { currentState ->
-            val currentConfig = currentState.config ?: return@update currentState
+            val config = currentState.config ?: return@update currentState
             val newConfig = if (boilerType == BoilerType.Steam) {
-                currentConfig.copy(steamBoilerEnabled = enabled)
+                config.copy(steamBoilerEnabled = enabled)
             } else {
-                currentConfig.copy(brewBoilerEnabled = enabled)
+                config.copy(brewBoilerEnabled = enabled)
             }
             currentState.copy(config = newConfig)
         }
@@ -246,11 +255,13 @@ class WendougeeDataSController(
             return
         }
 
+        if (_machineState.value.config?.targetSteamTemp?.toInt() == temp) return
+
         modbus.writeSingleRegister(WendougeeRegisters.STEAM_TEMPERATURE, temp)
         Logger.withTag(TAG).i { "Steam temperature set to $temp°C confirmed" }
         _machineState.update { currentState ->
-            val currentConfig = currentState.config ?: return@update currentState
-            currentState.copy(config = currentConfig.copy(targetSteamTemp = temp.toFloat()))
+            val config = currentState.config ?: return@update currentState
+            currentState.copy(config = config.copy(targetSteamTemp = temp.toFloat()))
         }
     }
 
@@ -259,12 +270,13 @@ class WendougeeDataSController(
             Logger.withTag(TAG).e { "Brew temperature $temp out of range!" }
             return
         }
+        if (_machineState.value.config?.targetBrewTemp?.toInt() == temp) return
 
         modbus.writeSingleRegister(WendougeeRegisters.BREW_TEMPERATURE, temp)
         Logger.withTag(TAG).i { "Brew temperature set to $temp°C confirmed" }
         _machineState.update { currentState ->
-            val currentConfig = currentState.config ?: return@update currentState
-            currentState.copy(config = currentConfig.copy(targetBrewTemp = temp.toFloat()))
+            val config = currentState.config ?: return@update currentState
+            currentState.copy(config = config.copy(targetBrewTemp = temp.toFloat()))
         }
     }
 
@@ -308,10 +320,34 @@ class WendougeeDataSController(
     }
 
     override suspend fun setHeatingMode(heatingMode: HeatingMode) {
+        if (_machineState.value.config?.heatingMode == heatingMode) return
+
         val modeValue = if (heatingMode == HeatingMode.FullSpeed) 0x01 else 0x00
         modbus.writeSingleRegister(WendougeeRegisters.HEATING_MODE, modeValue)
         Logger.withTag(TAG).i { "Heating mode set to $heatingMode confirmed" }
         _machineState.update { it.copy(config = it.config?.copy(heatingMode = heatingMode)) }
+    }
+
+    override suspend fun setManualBrewPressure(pressure: Float) {
+        if (_machineState.value.config?.manualBrewPressure == pressure) return
+
+        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_PRESSURE, listOf((pressure * 10).toInt()))
+        Logger.withTag(TAG).i { "Manual brew pressure set to $pressure bar confirmed" }
+        _machineState.update { state ->
+            val config = state.config ?: return@update state
+            state.copy(config = config.copy(manualBrewPressure = pressure))
+        }
+    }
+
+    override suspend fun setManualBrewTime(timeSec: Float) {
+        if (_machineState.value.config?.manualBrewTimeSec == timeSec) return
+
+        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_TIME, listOf((timeSec * 10).toInt()))
+        Logger.withTag(TAG).i { "Manual brew time set to $timeSec s confirmed" }
+        _machineState.update { state ->
+            val config = state.config ?: return@update state
+            state.copy(config = config.copy(manualBrewTimeSec = timeSec))
+        }
     }
 
     private suspend fun sendModbusPulse(onCommand: ByteArray, offCommand: ByteArray, label: String, regHi: Byte, regLo: Byte) {
