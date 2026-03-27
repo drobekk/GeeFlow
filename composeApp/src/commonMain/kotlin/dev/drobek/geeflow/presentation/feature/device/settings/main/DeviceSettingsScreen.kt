@@ -222,7 +222,7 @@ private fun CompactContent(
 private fun SettingsItem(
     item: Item,
     onEvent: (DeviceSettingsEvent) -> Unit,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     modifier: Modifier = Modifier
 ) {

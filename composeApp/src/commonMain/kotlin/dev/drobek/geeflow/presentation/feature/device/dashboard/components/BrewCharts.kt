@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
@@ -36,11 +37,15 @@ import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer.Line
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer.LineProvider
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.DashedShape
 import com.patrykandpatrick.vico.compose.common.Fill
+import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.DashboardChartType.FlowRate
@@ -97,6 +102,8 @@ internal fun BrewChartsSection(
     val maxTargetFlowX = targetFlow.keys.maxOrNull() ?: 0.0
     val maxX = maxOf(maxBrewX, maxTargetPressureX, maxTargetFlowX, 20.0)
 
+    val syncState = rememberBrewSyncState()
+
     val showPressure = visibleCharts.contains(Pressure)
     val showFlowRate = visibleCharts.contains(FlowRate)
     val showWeightRate = visibleCharts.contains(WeightRate)
@@ -117,6 +124,8 @@ internal fun BrewChartsSection(
             sortedPoints = sortedPoints,
             targetSeries = targetPressure.ifEmpty { null },
             maxX = maxX,
+            syncState = syncState,
+            chartId = 0,
             modifier = Modifier.fillMaxSize().then(chartModifier)
         )
     }
@@ -129,6 +138,8 @@ internal fun BrewChartsSection(
             showFlowRate = showFlowRate,
             showWeightRate = showWeightRate,
             maxX = maxX,
+            syncState = syncState,
+            chartId = 1,
             modifier = Modifier.fillMaxSize().then(chartModifier)
         )
     }
@@ -140,6 +151,8 @@ internal fun BrewChartsSection(
             showVolume = showVolume,
             showWeight = showWeight,
             maxX = maxX,
+            syncState = syncState,
+            chartId = 2,
             modifier = Modifier.fillMaxSize().then(chartModifier)
         )
     }
@@ -190,6 +203,8 @@ private fun PressureChart(
     sortedPoints: List<ChartData>,
     targetSeries: Map<Double, Double>?,
     maxX: Double,
+    syncState: BrewSyncState,
+    chartId: Int,
     modifier: Modifier = Modifier
 ) {
     val producer = remember { CartesianChartModelProducer() }
@@ -219,12 +234,23 @@ private fun PressureChart(
     val maxTarget = targetSeries?.values?.maxOrNull() ?: 0.0
     val maxY = maxOf(12.0, maxPressure, maxTarget)
 
+    val units = buildList {
+        add("bar")
+        if (tX != null) add("bar")
+    }
+    val marker = rememberBrewChartMarker(units)
+    val listener = rememberBrewMarkerVisibilityListener(syncState, chartId)
+    val syncMarkerX = if (syncState.activeChartId != chartId) syncState.markerX else null
+
     BrewChart(
         modelProducer = producer,
         colors = listOf(MaterialTheme.colorScheme.error),
         targetColor = if (tX != null) MaterialTheme.colorScheme.error.copy(alpha = 0.5f) else null,
         maxX = maxX,
         maxY = maxY,
+        marker = marker,
+        markerVisibilityListener = listener,
+        syncMarkerX = syncMarkerX,
         modifier = modifier
     )
 }
@@ -237,6 +263,8 @@ private fun FlowRateChart(
     showFlowRate: Boolean,
     showWeightRate: Boolean,
     maxX: Double,
+    syncState: BrewSyncState,
+    chartId: Int,
     modifier: Modifier = Modifier
 ) {
     val producer = remember { CartesianChartModelProducer() }
@@ -277,12 +305,24 @@ private fun FlowRateChart(
         if (showWeightRate) add(MaterialTheme.colorScheme.onSurface)
     }
 
+    val units = buildList {
+        if (showFlowRate) add("ml/s")
+        if (showWeightRate) add("g/s")
+        if (tX != null && showFlowRate) add("ml/s")
+    }
+    val marker = rememberBrewChartMarker(units)
+    val listener = rememberBrewMarkerVisibilityListener(syncState, chartId)
+    val syncMarkerX = if (syncState.activeChartId != chartId) syncState.markerX else null
+
     BrewChart(
         modelProducer = producer,
         colors = colors,
         targetColor = if (tX != null && showFlowRate) GeeFlowTheme.colors.water.copy(alpha = 0.5f) else null,
         maxX = maxX,
         maxY = maxY,
+        marker = marker,
+        markerVisibilityListener = listener,
+        syncMarkerX = syncMarkerX,
         modifier = modifier
     )
 }
@@ -294,6 +334,8 @@ private fun AccumulatedChart(
     showVolume: Boolean,
     showWeight: Boolean,
     maxX: Double,
+    syncState: BrewSyncState,
+    chartId: Int,
     modifier: Modifier = Modifier
 ) {
     val producer = remember { CartesianChartModelProducer() }
@@ -323,12 +365,23 @@ private fun AccumulatedChart(
         if (showWeight) add(MaterialTheme.colorScheme.onSurface)
     }
 
+    val units = buildList {
+        if (showVolume) add("ml")
+        if (showWeight) add("g")
+    }
+    val marker = rememberBrewChartMarker(units)
+    val listener = rememberBrewMarkerVisibilityListener(syncState, chartId)
+    val syncMarkerX = if (syncState.activeChartId != chartId) syncState.markerX else null
+
     BrewChart(
         modelProducer = producer,
         colors = colors,
         targetColor = null,
         maxX = maxX,
         maxY = maxY,
+        marker = marker,
+        markerVisibilityListener = listener,
+        syncMarkerX = syncMarkerX,
         modifier = modifier
     )
 }
@@ -340,6 +393,9 @@ private fun BrewChart(
     targetColor: Color? = null,
     maxX: Double,
     maxY: Double,
+    marker: CartesianMarker,
+    markerVisibilityListener: CartesianMarkerVisibilityListener,
+    syncMarkerX: Double?,
     modifier: Modifier = Modifier
 ) {
     if (colors.isEmpty() && targetColor == null) return
@@ -351,6 +407,8 @@ private fun BrewChart(
         minZoom = Zoom.Content,
         maxZoom = Zoom.Content,
     )
+    val persistentMarkers: (CartesianChart.PersistentMarkerScope.(ExtraStore) -> Unit)? =
+        syncMarkerX?.let { x -> { marker at x } }
     CartesianChartHost(
         zoomState = zoomState,
         chart = rememberCartesianChart(
@@ -379,6 +437,10 @@ private fun BrewChart(
                 )
             ),
             getXStep = { (maxX / 20).coerceAtLeast(0.1) },
+            marker = marker,
+            markerVisibilityListener = markerVisibilityListener,
+            markerController = CartesianMarkerController.rememberShowOnPress(consumeMoveEvents = true),
+            persistentMarkers = persistentMarkers,
             startAxis = VerticalAxis.rememberStart(
                 tick = null,
                 label = rememberAxisLabelComponent(

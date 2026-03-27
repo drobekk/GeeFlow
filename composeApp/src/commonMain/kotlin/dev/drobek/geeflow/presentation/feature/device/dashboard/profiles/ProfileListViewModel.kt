@@ -95,13 +95,14 @@ internal class ProfileListViewModel(
             is Condition.Volume -> "${cond.target.toInt()}ml"
         }
 
-        val targetData = mutableMapOf<Float, ChartData>()
+        data class StepEvent(val time: Float, val pressure: Float, val flow: Float)
+
+        val events = mutableListOf<StepEvent>()
         var currentTime = 0f
         var currentPressure = 0f
         var currentFlow = 0f
 
         for (step in profile.steps) {
-            val duration = step.time.toFloat()
             val nextPressure = when (step) {
                 is ProfileStep.Pressure -> step.pressure
                 is ProfileStep.Wait -> 0f
@@ -112,36 +113,25 @@ internal class ProfileListViewModel(
                 is ProfileStep.Wait -> 0f
                 else -> currentFlow
             }
-
-            if (currentTime == 0f) {
-                targetData[0f] = ChartData(
-                    pressure = nextPressure,
-                    weight = 0f,
-                    weightPerSecond = 0f,
-                    volume = 0f,
-                    volumePerSecond = nextFlow
-                )
-            } else if (currentPressure != nextPressure || currentFlow != nextFlow) {
-                targetData[currentTime + 0.001f] = ChartData(
-                    pressure = nextPressure,
-                    weight = 0f,
-                    weightPerSecond = 0f,
-                    volume = 0f,
-                    volumePerSecond = nextFlow
-                )
-            }
-
+            events.add(StepEvent(currentTime, nextPressure, nextFlow))
             currentPressure = nextPressure
             currentFlow = nextFlow
-            currentTime += duration
+            currentTime += step.time.toFloat()
+        }
 
-            targetData[currentTime] = ChartData(
-                pressure = currentPressure,
-                weight = 0f,
-                weightPerSecond = 0f,
-                volume = 0f,
-                volumePerSecond = currentFlow
-            )
+        val totalTicks = (currentTime * 10).toInt()
+        val targetData = buildMap<Float, ChartData>(totalTicks + 1) {
+            for (tick in 0..totalTicks) {
+                val t = tick / 10f
+                val event = events.lastOrNull { it.time <= t } ?: events.first()
+                put(t, ChartData(
+                    pressure = event.pressure,
+                    weight = 0f,
+                    weightPerSecond = 0f,
+                    volume = 0f,
+                    volumePerSecond = event.flow
+                ))
+            }
         }
 
         return ProfileListViewState.Profile(

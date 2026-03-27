@@ -70,7 +70,7 @@ fun BrewButton(
 ) {
     val firstColor by animateColorAsState(
         if (isBrewing) {
-            MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+            MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
         } else {
             MaterialTheme.colorScheme.surfaceContainerHigh
         }

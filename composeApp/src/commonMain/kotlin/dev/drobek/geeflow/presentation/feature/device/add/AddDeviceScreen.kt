@@ -275,7 +275,7 @@ private fun Scanner(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues
 ) {
-    val shape = RoundedCornerShape(32.dp)
+    val shape = MaterialTheme.shapes.extraLarge
     val modifier = modifier
         .fillMaxHeight()
         .padding(contentPadding)

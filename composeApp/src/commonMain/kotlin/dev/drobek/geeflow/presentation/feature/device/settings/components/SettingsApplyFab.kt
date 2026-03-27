@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,7 +51,10 @@ internal fun SettingsApplyFab(
             label = "Apply button"
         ) { isLoading ->
             if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.padding(horizontal = 24.dp).size(24.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.padding(horizontal = 24.dp).size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             } else {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(
