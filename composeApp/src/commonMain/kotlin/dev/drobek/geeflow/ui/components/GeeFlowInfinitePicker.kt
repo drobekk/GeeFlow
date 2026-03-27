@@ -1,5 +1,6 @@
 package dev.drobek.geeflow.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollable
@@ -36,6 +37,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -81,8 +83,8 @@ fun GeeFlowInfinitePicker(
             }
         }
     }
-
     var isEditing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val isDragged by listState.interactionSource.collectIsDraggedAsState()
     LaunchedEffect(isDragged) {
@@ -124,6 +126,10 @@ fun GeeFlowInfinitePicker(
                         modifier = Modifier
                             .height(itemHeight)
                             .fillMaxWidth()
+                            .clickable(enabled = enabled && !isEditing, indication = null, interactionSource = null) {
+                                scope.launch { listState.scrollToItem((index - 1).coerceAtLeast(0)) }
+                                onSelectionChanged(item)
+                            }
                             .padding(horizontal = 32.dp, vertical = 8.dp)
                             .wrapContentHeight(Alignment.CenterVertically)
                     )
@@ -169,6 +175,7 @@ fun GeeFlowInfinitePicker(
                             style = MaterialTheme.typography.bodyLarge,
                             color = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .wrapContentHeight(Alignment.CenterVertically)
@@ -262,7 +269,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
             selected = "110",
             onSelectionChanged = {},
             keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-            hint = "Wpisz"
+            hint = "Enter"
         )
     }
 }
@@ -276,7 +283,7 @@ private fun PreviewDark() = GeeFlowTheme(true) {
             selected = "110",
             onSelectionChanged = {},
             keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-            hint = "Wpisz"
+            hint = "Enter"
         )
     }
 }

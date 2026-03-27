@@ -214,6 +214,20 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
         }
     }
 
+    override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
+        _machineState.update { state ->
+            val config = state.config ?: return
+            state.copy(config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count))
+        }
+    }
+
+    override suspend fun setWaterAlarm(enabled: Boolean) {
+        _machineState.update { state ->
+            val config = state.config ?: return
+            state.copy(config = config.copy(waterAlarm = enabled))
+        }
+    }
+
     override suspend fun bindProfile(profile: BrewProfile) = Unit
     override suspend fun startSmartScaleSearch() = Unit
     override suspend fun stopSmartScaleSearch() = Unit

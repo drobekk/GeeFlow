@@ -68,7 +68,7 @@ fun GeeFlowSwitch(
                 .weight(1f)
                 .fillMaxHeight()
                 .clip(shape)
-                .clickable(enabled = enabled) { onCheckedChange(false) }
+                .clickable(enabled = enabled) { onCheckedChange(!checked) }
                 .border(2.dp, offBorderColor, shape)
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .wrapContentHeight(Alignment.CenterVertically),
@@ -84,7 +84,7 @@ fun GeeFlowSwitch(
                 .weight(1f)
                 .fillMaxHeight()
                 .clip(shape)
-                .clickable(enabled = enabled) { onCheckedChange(true) }
+                .clickable(enabled = enabled) { onCheckedChange(!checked) }
                 .background(onBackgroundColor)
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .wrapContentHeight(Alignment.CenterVertically),

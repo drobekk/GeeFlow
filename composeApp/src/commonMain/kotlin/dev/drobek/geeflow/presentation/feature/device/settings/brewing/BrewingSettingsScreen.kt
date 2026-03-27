@@ -1,11 +1,5 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.brewing
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,18 +8,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -34,13 +23,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,6 +40,9 @@ import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSe
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamTempChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewState.Boiler
+import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
+import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
+import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.HorizontalSpacer
@@ -66,7 +55,6 @@ import dev.drobek.geeflow.ui.isWidthLarge
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
-import geeflow.composeapp.generated.resources.common_apply
 import geeflow.composeapp.generated.resources.common_brew_boiler
 import geeflow.composeapp.generated.resources.common_pressure
 import geeflow.composeapp.generated.resources.common_steam_boiler
@@ -124,10 +112,10 @@ private fun BrewSettingsContent(
             navIconClick = { onEvent(CloseClicked) },
             snackbarHost = { SnackbarHost(snackbarHostState) },
             floatingActionButton = {
-                FloatingActionButton(
-                    applying = viewState.applyButtonLoading,
+                SettingsApplyFab(
+                    loading = viewState.applyButtonLoading,
                     visible = viewState.applyButtonVisible,
-                    onEvent = onEvent
+                    onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) }
                 )
             },
             scrollBehavior = scrollBehavior,
@@ -139,7 +127,7 @@ private fun BrewSettingsContent(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .padding(it)
-                        .padding(bottom = FabPadding)
+                        .padding(bottom = SettingsApplyFabPadding)
                 )
             },
             modifier = Modifier
@@ -166,7 +154,7 @@ private fun ExpandedContent(
                         vertical = GeeFlowTheme.spacing.contentVertical
                     )
                     .systemBarsPadding()
-                    .padding(bottom = FabPadding)
+                    .padding(bottom = SettingsApplyFabPadding)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     BoilerSection(
@@ -190,14 +178,14 @@ private fun ExpandedContent(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .systemBarsPadding()
-                    .padding(bottom = FabPadding)
+                    .padding(bottom = SettingsApplyFabPadding)
             )
         }
-        FloatingActionButton(
-            applying = viewState.applyButtonLoading,
+        SettingsApplyFab(
+            loading = viewState.applyButtonLoading,
             visible = viewState.applyButtonVisible,
-            onEvent = onEvent,
-            modifier = Modifier.align(Alignment.BottomEnd)
+            onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
+            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding()
         )
         SnackbarHost(
             hostState = snackbarHostState,
@@ -255,9 +243,11 @@ private fun BoilerSection(
         )
     }
     VerticalSpacer(24.dp)
-    PulseHeating(
-        pulseHeatingEnabled = viewState.pulseHeatingEnabled,
-        onEvent = onEvent,
+    SettingsToggleRow(
+        title = stringResource(Res.string.device_settings_brewing_pulse_heating),
+        subtitle = stringResource(Res.string.device_settings_brewing_pulse_heating_description),
+        checked = viewState.pulseHeatingEnabled,
+        onCheckedChanged = { onEvent(PulseHeatingToggled(it)) },
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -321,36 +311,6 @@ private fun SectionTitle(
 )
 
 @Composable
-private fun PulseHeating(
-    pulseHeatingEnabled: Boolean,
-    onEvent: (BrewingSettingsEvent) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            Text(
-                text = stringResource(Res.string.device_settings_brewing_pulse_heating),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            VerticalSpacer(4.dp)
-            Text(
-                text = stringResource(Res.string.device_settings_brewing_pulse_heating_description),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        HorizontalSpacer(16.dp)
-        GeeFlowSwitch(
-            checked = pulseHeatingEnabled,
-            onCheckedChange = { onEvent(PulseHeatingToggled(it)) },
-            enabled = true,
-            modifier = Modifier
-        )
-    }
-}
-
-@Composable
 private fun Boiler(
     boiler: Boiler,
     label: String,
@@ -406,57 +366,12 @@ private fun BoilerHeader(
 }
 
 @Composable
-private fun FloatingActionButton(
-    applying: Boolean,
-    visible: Boolean,
-    onEvent: (BrewingSettingsEvent) -> Unit,
-    modifier: Modifier = Modifier
-) = AnimatedVisibility(
-    visible = visible,
-    enter = slideInVertically { it } + fadeIn(),
-    exit = slideOutVertically { it } + fadeOut(),
-    modifier = modifier
-) {
-    FloatingActionButton(
-        modifier = Modifier.padding(
-            horizontal = GeeFlowTheme.spacing.fabHorizontal,
-            vertical = GeeFlowTheme.spacing.fabVertical
-        ),
-        onClick = { if (!applying) onEvent(BrewingSettingsEvent.ApplyClicked) },
-    ) {
-        AnimatedContent(
-            targetState = applying,
-            label = "Apply button",
-        ) { applying ->
-            if (applying) {
-                CircularProgressIndicator(modifier = Modifier.padding(horizontal = 24.dp).size(24.dp))
-            } else {
-                Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = rememberVectorPainter(Icons.Filled.Check),
-                        contentDescription = null,
-                    )
-                    HorizontalSpacer(8.dp)
-                    Text(text = stringResource(Res.string.common_apply))
-                }
-            }
-        }
-    }
-}
-
-private val FabPadding = 88.dp
-
-@Composable
-private fun previewViewState() = BrewingSettingsViewState(applyButtonLoading = false)
+private fun previewViewState() = BrewingSettingsViewState(applyButtonVisible = true)
 
 @Composable
 @GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
-    var applyButtonVisible by remember { mutableStateOf(false) }
-    val viewState = previewViewState()
-    BrewSettingsContent(viewState.copy(applyButtonVisible = applyButtonVisible), onEvent = {
-        applyButtonVisible = !applyButtonVisible
-    })
+    BrewSettingsContent(previewViewState())
 }
 
 @Composable

@@ -10,8 +10,11 @@ import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSe
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsScreen
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewModel
+import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsScreen
+import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.DeviceSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -20,6 +23,7 @@ import org.koin.core.parameter.parametersOf
 
 interface DeviceSettingsNavigation : Navigation {
     fun showBrewingSettings(deviceId: String)
+    fun showMaintenanceSettings(deviceId: String)
     fun getCurrentDestination(): NavKey?
     fun backFromSettings()
 }
@@ -30,12 +34,16 @@ sealed interface DeviceSettingsDestinations : NavKey {
 
     @Serializable
     data class BrewingSettings(val deviceId: String) : DeviceSettingsDestinations
+
+    @Serializable
+    data class MaintenanceSettings(val deviceId: String) : DeviceSettingsDestinations
 }
 
 val serializerModuleDeviceSettings = SerializersModule {
     polymorphic(NavKey::class) {
         subclass(DeviceSettings::class, DeviceSettings.serializer())
         subclass(BrewingSettings::class, BrewingSettings.serializer())
+        subclass(MaintenanceSettings::class, MaintenanceSettings.serializer())
     }
 }
 
@@ -49,5 +57,10 @@ fun EntryProviderScope<NavKey>.deviceSettingsEntries(navigation: DeviceSettingsN
     entry<BrewingSettings>(metadata = detailPane()) {
         val viewModel = koinViewModel<BrewingSettingsViewModel> { parametersOf(it) }
         BrewingSettingsScreen(viewModel, navigation)
+    }
+
+    entry<MaintenanceSettings>(metadata = detailPane()) {
+        val viewModel = koinViewModel<MaintenanceSettingsViewModel> { parametersOf(it) }
+        MaintenanceSettingsScreen(viewModel, navigation)
     }
 }

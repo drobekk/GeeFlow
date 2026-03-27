@@ -10,8 +10,8 @@ import dev.drobek.geeflow.platform.permissions.PermissionsControllerFactory
 import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFactory
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewModel
-import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanScreen
-import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleanViewModel
+import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleaningScreen
+import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleaningViewModel
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Clean
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
@@ -63,7 +63,7 @@ fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceDashboar
         QuickSettingsScreen(viewModel, navigation)
     }
     entry<Clean>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
-        val viewModel = koinViewModel<CleanViewModel> { parametersOf(it) }
-        CleanScreen(viewModel, navigation)
+        val viewModel = koinViewModel<CleaningViewModel> { parametersOf(it) }
+        CleaningScreen(viewModel, navigation)
     }
 }

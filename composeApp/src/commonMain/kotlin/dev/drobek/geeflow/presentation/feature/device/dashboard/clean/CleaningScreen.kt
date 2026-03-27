@@ -31,7 +31,9 @@ import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.waveBackground
 import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.common_cycle
 import geeflow.composeapp.generated.resources.common_flush
+import geeflow.composeapp.generated.resources.common_rest
 import geeflow.composeapp.generated.resources.common_seconds
 import geeflow.composeapp.generated.resources.common_times
 import geeflow.composeapp.generated.resources.device_clean_start
@@ -41,8 +43,8 @@ import geeflow.composeapp.generated.resources.settings_quick_more
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun CleanScreen(
-    viewModel: CleanViewModel,
+internal fun CleaningScreen(
+    viewModel: CleaningViewModel,
     navigator: DeviceDashboardNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
@@ -57,16 +59,16 @@ internal fun CleanScreen(
         }
     }
 
-    CleanContent(
+    CleaningContent(
         viewState = viewState,
         onEvent = viewModel::handleEvent
     )
 }
 
 @Composable
-private fun CleanContent(
-    viewState: CleanViewState,
-    onEvent: (CleanEvent) -> Unit
+private fun CleaningContent(
+    viewState: CleaningViewState,
+    onEvent: (CleaningEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -78,7 +80,7 @@ private fun CleanContent(
     ) {
         GeeFlowDialogTopBar(
             title = stringResource(Res.string.device_clean_title),
-            onCloseClick = { onEvent(CleanEvent.CloseClicked) }
+            onCloseClick = { onEvent(CleaningEvent.CloseClicked) }
         )
         VerticalSpacer(16.dp)
         Row(
@@ -94,14 +96,14 @@ private fun CleanContent(
                 modifier = Modifier.weight(1f)
             )
             ProgressItem(
-                label = "Rest",
+                label = stringResource(Res.string.common_rest),
                 current = viewState.restProgress.current,
                 target = viewState.restProgress.target,
                 unit = stringResource(Res.string.common_seconds),
                 modifier = Modifier.weight(1f)
             )
             ProgressItem(
-                label = "Cycle",
+                label = stringResource(Res.string.common_cycle),
                 current = viewState.cycleProgress.current,
                 target = viewState.cycleProgress.target,
                 unit = stringResource(Res.string.common_times),
@@ -133,7 +135,7 @@ private fun ProgressItem(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                 amplitude = 2.dp,
                 orientation = WaveOrientation.Vertical,
-                progressAnimationDurationMillis = 1000
+                progressAnimationDurationMillis = 1100
             )
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -159,8 +161,8 @@ private fun ProgressItem(
 
 @Composable
 private fun Buttons(
-    viewState: CleanViewState,
-    onEvent: (CleanEvent) -> Unit
+    viewState: CleaningViewState,
+    onEvent: (CleaningEvent) -> Unit
 ) {
     val buttonColor by animateColorAsState(
         if (viewState.isCleaning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary
@@ -175,11 +177,11 @@ private fun Buttons(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         TextButton(
-            onClick = { onEvent(CleanEvent.MoreSettingsClicked) },
+            onClick = { onEvent(CleaningEvent.MoreSettingsClicked) },
             content = { Text(stringResource(Res.string.settings_quick_more)) }
         )
         Button(
-            onClick = { onEvent(CleanEvent.ToggleCleaningClicked) },
+            onClick = { onEvent(CleaningEvent.ToggleCleaningClicked) },
             colors = ButtonDefaults.buttonColors(
                 containerColor = buttonColor,
                 contentColor = textColor
@@ -200,13 +202,13 @@ private fun Buttons(
 
 @Composable
 @Preview
-private fun CleanPreviewIdle() = GeeFlowTheme(false) {
-    CleanContent(
-        viewState = CleanViewState(
+private fun CleaningPreviewIdle() = GeeFlowTheme(false) {
+    CleaningContent(
+        viewState = CleaningViewState(
             isCleaning = true,
-            flushProgress = CleanViewState.Progress(0, 5),
-            restProgress = CleanViewState.Progress(0, 5),
-            cycleProgress = CleanViewState.Progress(0, 3)
+            flushProgress = CleaningViewState.Progress(0, 5),
+            restProgress = CleaningViewState.Progress(0, 5),
+            cycleProgress = CleaningViewState.Progress(0, 3)
         ),
         onEvent = {}
     )
@@ -214,13 +216,13 @@ private fun CleanPreviewIdle() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun CleanPreviewActive() = GeeFlowTheme(true) {
-    CleanContent(
-        viewState = CleanViewState(
+private fun CleaningPreviewActive() = GeeFlowTheme(true) {
+    CleaningContent(
+        viewState = CleaningViewState(
             isCleaning = false,
-            flushProgress = CleanViewState.Progress(3, 5),
-            restProgress = CleanViewState.Progress(0, 5),
-            cycleProgress = CleanViewState.Progress(1, 3)
+            flushProgress = CleaningViewState.Progress(3, 5),
+            restProgress = CleaningViewState.Progress(0, 5),
+            cycleProgress = CleaningViewState.Progress(1, 3)
         ),
         onEvent = {}
     )

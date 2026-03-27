@@ -1,6 +1,6 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.clean
 
-data class CleanViewState(
+data class CleaningViewState(
     val isCleaning: Boolean = false,
     val flushProgress: Progress = Progress(0, 0),
     val restProgress: Progress = Progress(0, 0),

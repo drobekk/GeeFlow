@@ -52,6 +52,12 @@
     <string name="device_settings_connectivity">Connectivity</string>
     <string name="device_settings_connectivity_description">External smart accessories</string>
 
+    <!-- Device Settings Maintenance -->
+    <string name="device_settings_maintenance_cleaning">Cleaning</string>
+    <string name="device_settings_maintenance_alarms">Alarms</string>
+    <string name="device_settings_maintenance_water_alarm">Water shortage alarm</string>
+    <string name="device_settings_maintenance_water_alarm_description">Low water level warning</string>
+
     <!-- Device Settings Brewing -->
     <string name="device_settings_brewing_boiler">Boiler</string>
     <string name="device_settings_brewing_paddle">Paddle long press (M)</string>
@@ -83,6 +89,8 @@
     <string name="common_settings">Settings</string>
     <string name="common_stop">Stop</string>
     <string name="common_flush">Flush</string>
+    <string name="common_rest">Rest</string>
+    <string name="common_cycle">Cycle</string>
     <string name="common_seconds">seconds</string>
     <string name="common_times">times</string>
     <string name="common_brew_boiler">Brew Boiler</string>

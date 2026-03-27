@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,7 @@ import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettin
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.WaveOrientation
@@ -72,6 +74,7 @@ internal fun DeviceSettingsScreen(
 
     val selectedIndex = when (navigation.getCurrentDestination()) {
         is BrewingSettings -> viewState.items.indexOfFirst { it is Item.Brewing }
+        is MaintenanceSettings -> viewState.items.indexOfFirst { it is Item.Maintenance }
         else -> null
     }.takeIf { it != null && it >= 0 }
 
@@ -86,7 +89,7 @@ internal fun DeviceSettingsScreen(
             is Navigation.Back -> navigation.backFromSettings()
             is Navigation.BrewingSettings -> navigation.showBrewingSettings(it.deviceId)
             is Navigation.ConnectivitySettings -> navigation.showBrewingSettings(it.deviceId) // TODO
-            is Navigation.MaintenanceSettings -> navigation.showBrewingSettings(it.deviceId) // TODO
+            is Navigation.MaintenanceSettings -> navigation.showMaintenanceSettings(it.deviceId)
         }
     }
 }
@@ -145,22 +148,26 @@ private fun ExpandedContent(
                 contentPadding = WindowInsets.navigationBars.asPaddingValues()
             ) {
                 itemsIndexed(viewState.items) { index, item ->
+                    val selected = index == selectedIndex
                     SettingsItem(
                         item = item,
                         onEvent = onEvent,
+                        backgroundColor = if (selected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.background
+                        },
+                        contentColor = if (selected) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                         modifier = Modifier
                             .padding(
                                 horizontal = compactSpacing().contentHorizontal,
                                 vertical = 8.dp
                             )
                             .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                if (index == selectedIndex) {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.background
-                                }
-                            )
                     )
                 }
             }
@@ -215,10 +222,13 @@ private fun CompactContent(
 private fun SettingsItem(
     item: Item,
     onEvent: (DeviceSettingsEvent) -> Unit,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
+            .background(backgroundColor)
             .fillMaxWidth()
             .clickable(onClick = { onEvent(ItemClicked(item)) })
             .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -226,12 +236,12 @@ private fun SettingsItem(
         Text(
             text = item.name,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = contentColor
         )
         Text(
             text = item.description,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = contentColor
         )
     }
 }

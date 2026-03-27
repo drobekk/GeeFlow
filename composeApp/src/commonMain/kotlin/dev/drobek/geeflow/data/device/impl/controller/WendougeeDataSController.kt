@@ -350,6 +350,27 @@ class WendougeeDataSController(
         }
     }
 
+    override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
+        modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_TIME, listOf((timeSec * 10).toInt()))
+        modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_STANDBY_TIME, listOf((standbySec * 10).toInt()))
+        modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_COUNT, listOf(count))
+        Logger.withTag(TAG).i { "Cleaning settings: time=${timeSec}s standby=${standbySec}s count=$count" }
+        _machineState.update { state ->
+            val config = state.config ?: return@update state
+            state.copy(config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count))
+        }
+    }
+
+    override suspend fun setWaterAlarm(enabled: Boolean) {
+        if (_machineState.value.config?.waterAlarm == enabled) return
+        modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
+        Logger.withTag(TAG).i { "Water alarm set to $enabled" }
+        _machineState.update { state ->
+            val config = state.config ?: return@update state
+            state.copy(config = config.copy(waterAlarm = enabled))
+        }
+    }
+
     private suspend fun sendModbusPulse(onCommand: ByteArray, offCommand: ByteArray, label: String, regHi: Byte, regLo: Byte) {
         modbus.writeAndAwaitModbus(onCommand, 0x05, regHi, regLo)
         delay(BREW_PULSE_MS)

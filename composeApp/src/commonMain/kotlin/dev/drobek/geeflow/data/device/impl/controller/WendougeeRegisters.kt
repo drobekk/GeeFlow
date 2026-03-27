@@ -12,6 +12,12 @@ object WendougeeRegisters {
     const val MANUAL_BREW_TIME = 0x0011
     const val MANUAL_BREW_PRESSURE = 0x0013
 
+    // Maintenance
+    const val CLEANING_TIME = 0x0000
+    const val CLEANING_STANDBY_TIME = 0x0001
+    const val CLEANING_COUNT = 0x0002
+    const val WATER_ALARM = 0x018C
+
     // Profiles & Binding
     const val BIND_PROFILE = 30
 

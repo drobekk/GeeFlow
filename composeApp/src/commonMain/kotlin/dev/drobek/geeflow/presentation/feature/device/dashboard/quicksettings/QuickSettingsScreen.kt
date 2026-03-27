@@ -66,6 +66,7 @@ internal fun QuickSettingsScreen(
             }
 
             is QuickSettingsViewModelEvent.ShowSnackbar -> coroutineScope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
                 snackbarHostState.showSnackbar(it.message)
             }
         }

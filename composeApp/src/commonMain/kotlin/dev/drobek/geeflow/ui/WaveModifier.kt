@@ -32,7 +32,7 @@ fun Modifier.waveBackground(
 ): Modifier = composed {
     val progress by animateFloatAsState(
         targetValue = targetProgress,
-        animationSpec = tween(durationMillis = progressAnimationDurationMillis),
+        animationSpec = tween(durationMillis = progressAnimationDurationMillis, easing = LinearEasing),
         label = "WaveProgressAnimation"
     )
 
