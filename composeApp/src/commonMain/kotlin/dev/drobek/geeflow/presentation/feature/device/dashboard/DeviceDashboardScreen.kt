@@ -48,7 +48,6 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
-import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewDetailsBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.TopBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
@@ -174,20 +173,13 @@ private fun ExpandedDashboard(
                     verticalAlignment = Alignment.Bottom,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
                 ) {
-                    if (!viewState.device.isBrewing && viewState.showProfileDetails && selectedProfile != null) {
-                        BrewDetailsBar(
-                            profile = selectedProfile,
-                            modifier = Modifier.weight(1f).padding(bottom = 10.dp)
-                        )
-                    } else {
-                        BrewBar(
-                            brew = viewState.brew,
-                            isBrewing = viewState.device.isBrewing,
-                            visibleCharts = viewState.visibleCharts,
-                            onToggle = { onEvent(ToggleChartVisibility(it)) },
-                            modifier = Modifier.weight(1f).padding(bottom = 10.dp)
-                        )
-                    }
+                    BrewBar(
+                        brew = viewState.brew,
+                        isBrewing = viewState.device.isBrewing,
+                        visibleCharts = viewState.visibleCharts,
+                        onToggle = { onEvent(ToggleChartVisibility(it)) },
+                        modifier = Modifier.weight(1f).padding(bottom = 10.dp)
+                    )
                     HorizontalSpacer(16.dp)
                     BrewButton(
                         isBrewing = viewState.device.isBrewing,
@@ -286,24 +278,15 @@ private fun CompactDashboard(
                                 .weight(1f)
                                 .padding(start = 24.dp, end = 24.dp)
                         )
-                        if (!viewState.device.isBrewing && viewState.showProfileDetails && selectedProfile != null) {
-                            BrewDetailsBar(
-                                profile = selectedProfile,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 24.dp, top = 16.dp, end = 24.dp)
-                            )
-                        } else {
-                            BrewBar(
-                                brew = viewState.brew,
-                                isBrewing = viewState.device.isBrewing,
-                                visibleCharts = viewState.visibleCharts,
-                                onToggle = { onEvent(ToggleChartVisibility(it)) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 24.dp, top = 16.dp, end = 24.dp)
-                            )
-                        }
+                        BrewBar(
+                            brew = viewState.brew,
+                            isBrewing = viewState.device.isBrewing,
+                            visibleCharts = viewState.visibleCharts,
+                            onToggle = { onEvent(ToggleChartVisibility(it)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 24.dp, top = 16.dp, end = 24.dp)
+                        )
                     }
 
                     Profiles.ordinal -> ProfileList(

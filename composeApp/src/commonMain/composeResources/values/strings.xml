@@ -70,8 +70,8 @@
 
     <!-- Device Clean -->
     <string name="device_clean_title">Cleaning</string>
-    <string name="device_clean_start">Start cleaning</string>
-    <string name="device_clean_stop">Stop cleaning</string>
+    <string name="device_clean_start">Start</string>
+    <string name="device_clean_stop">Stop</string>
 
     <!-- COMMON -->
     <string name="common_user_name">User name</string>
@@ -92,6 +92,7 @@
     <string name="common_rest">Rest</string>
     <string name="common_cycle">Cycle</string>
     <string name="common_seconds">seconds</string>
+    <string name="common_sec">sec</string>
     <string name="common_times">times</string>
     <string name="common_brew_boiler">Brew Boiler</string>
     <string name="common_steam_boiler">Steam Boiler</string>

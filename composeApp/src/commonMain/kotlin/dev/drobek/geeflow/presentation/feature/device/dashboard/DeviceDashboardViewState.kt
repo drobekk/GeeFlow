@@ -7,7 +7,6 @@ data class DeviceDashboardViewState(
     val device: Device = Device(),
     val brew: Brew = Brew(),
     val dialog: Dialog? = null,
-    val showProfileDetails: Boolean = true,
     val visibleCharts: Set<DashboardChartType> = setOf(
         DashboardChartType.Pressure,
         DashboardChartType.FlowRate,

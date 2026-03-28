@@ -32,11 +32,12 @@ fun Modifier.waveBackground(
 ): Modifier = composed {
     val progress by animateFloatAsState(
         targetValue = targetProgress,
-        animationSpec = tween(durationMillis = progressAnimationDurationMillis, easing = LinearEasing),
+        animationSpec = tween(
+            durationMillis = if (targetProgress == 0f) 300 else progressAnimationDurationMillis,
+            easing = LinearEasing
+        ),
         label = "WaveProgressAnimation"
     )
-
-    if (progress <= 0f) return@composed this
 
     val infiniteTransition = rememberInfiniteTransition(label = "waveTransition")
 
@@ -62,6 +63,8 @@ fun Modifier.waveBackground(
     )
 
     this.drawBehind {
+        if (progress <= 0f) return@drawBehind
+
         val w = size.width
         val h = size.height
 

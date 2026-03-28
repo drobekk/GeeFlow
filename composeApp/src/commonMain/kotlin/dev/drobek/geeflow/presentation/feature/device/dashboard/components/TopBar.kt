@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent
@@ -86,7 +88,7 @@ internal fun TopBar(
         )
         HorizontalSpacer(8.dp)
         DeviceTile(device, onEvent)
-        HorizontalSpacer(24.dp)
+        HorizontalSpacer(8.dp)
         ActionBar(
             connectionStatus = device.connectionStatus,
             onEvent = onEvent,
@@ -286,10 +288,15 @@ private fun ParameterItem(
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.outline
     )
+
+    val textMeasurer = rememberTextMeasurer()
+    val size = textMeasurer.measure("100.0", MaterialTheme.typography.labelLarge)
+
     Text(
-        text = value ?: "—",
+        text = value ?: "  —",
         color = MaterialTheme.colorScheme.outline,
-        style = MaterialTheme.typography.labelLarge
+        style = MaterialTheme.typography.labelLarge,
+        modifier = Modifier.widthIn(min = size.size.width.dp)
     )
 }
 

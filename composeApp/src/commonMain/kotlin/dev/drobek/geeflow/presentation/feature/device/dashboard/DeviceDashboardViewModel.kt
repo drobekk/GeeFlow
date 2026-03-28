@@ -126,7 +126,10 @@ internal class DeviceDashboardViewModel(
 
     private fun onProfileSelected(id: String?) {
         selectedProfileId = id
-        modify { copy(showProfileDetails = true, brew = Brew()) }
+        selectedProfileId
+            ?.toLongOrNull()
+            ?.let { getBrewProfileUseCase(it) }
+            ?.let { modify { copy( brew = Brew(it.name)) } }
     }
 
     private fun updateMachineStateUi(state: MachineState) = modify {
@@ -135,10 +138,7 @@ internal class DeviceDashboardViewModel(
             MachineState.BrewStatus.Profile -> Profile
             else -> Idle
         }
-        val isBrewingNow = newBrewStatus != Idle
-
         copy(
-            showProfileDetails = if (isBrewingNow) false else showProfileDetails,
             device = device.copy(
                 brewBoilerTemp = state.brewBoilerTemp?.roundDecimalsTo(1)?.toString(),
                 steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),

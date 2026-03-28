@@ -34,7 +34,7 @@ import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_cycle
 import geeflow.composeapp.generated.resources.common_flush
 import geeflow.composeapp.generated.resources.common_rest
-import geeflow.composeapp.generated.resources.common_seconds
+import geeflow.composeapp.generated.resources.common_sec
 import geeflow.composeapp.generated.resources.common_times
 import geeflow.composeapp.generated.resources.device_clean_start
 import geeflow.composeapp.generated.resources.device_clean_stop
@@ -85,21 +85,21 @@ private fun CleaningContent(
         VerticalSpacer(16.dp)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ProgressItem(
                 label = stringResource(Res.string.common_flush),
                 current = viewState.flushProgress.current,
                 target = viewState.flushProgress.target,
-                unit = stringResource(Res.string.common_seconds),
+                unit = stringResource(Res.string.common_sec),
                 modifier = Modifier.weight(1f)
             )
             ProgressItem(
                 label = stringResource(Res.string.common_rest),
                 current = viewState.restProgress.current,
                 target = viewState.restProgress.target,
-                unit = stringResource(Res.string.common_seconds),
+                unit = stringResource(Res.string.common_sec),
                 modifier = Modifier.weight(1f)
             )
             ProgressItem(
@@ -135,7 +135,7 @@ private fun ProgressItem(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                 amplitude = 2.dp,
                 orientation = WaveOrientation.Vertical,
-                progressAnimationDurationMillis = 1100
+                progressAnimationDurationMillis = 1000
             )
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
