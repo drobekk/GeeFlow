@@ -53,7 +53,7 @@ internal fun SettingsApplyFab(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.padding(horizontal = 24.dp).size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             } else {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {

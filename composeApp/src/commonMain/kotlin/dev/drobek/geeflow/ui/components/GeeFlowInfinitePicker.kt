@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -199,6 +200,7 @@ private fun PickerSearchField(
     val scope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+    var wasFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -239,6 +241,10 @@ private fun PickerSearchField(
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
+            .onFocusChanged {
+                if (it.isFocused) wasFocused = true
+                else if (wasFocused) onDismiss()
+            }
             .padding(horizontal = 16.dp),
         decorationBox = { innerTextField ->
             Box(

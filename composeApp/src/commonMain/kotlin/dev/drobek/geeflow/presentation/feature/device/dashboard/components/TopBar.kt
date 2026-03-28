@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -290,13 +291,15 @@ private fun ParameterItem(
     )
 
     val textMeasurer = rememberTextMeasurer()
-    val size = textMeasurer.measure("100.0", MaterialTheme.typography.labelLarge)
+    val textWidth = LocalDensity.current.run {
+        textMeasurer.measure(text = "100.0", style = MaterialTheme.typography.labelLarge).size.width.toDp()
+    }
 
     Text(
         text = value ?: "  —",
         color = MaterialTheme.colorScheme.outline,
         style = MaterialTheme.typography.labelLarge,
-        modifier = Modifier.widthIn(min = size.size.width.dp)
+        modifier = Modifier.widthIn(min = textWidth)
     )
 }
 

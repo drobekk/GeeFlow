@@ -3,6 +3,8 @@ package dev.drobek.geeflow.data.device.impl.controller
 import dev.drobek.geeflow.app.AppCoroutineScope
 import dev.drobek.geeflow.data.device.api.DeviceController
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
+import dev.drobek.geeflow.domain.brew.model.Condition
+import dev.drobek.geeflow.domain.brew.model.ProfileStep
 import dev.drobek.geeflow.domain.device.model.DeviceCapability
 import dev.drobek.geeflow.domain.device.model.MachineState
 import dev.drobek.geeflow.domain.device.model.SmartScale
@@ -75,24 +77,31 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     override suspend fun startManualBrewing() {
         _machineState.update { it.copy(brewStatus = MachineState.BrewStatus.Manual, pressure = 0f, weight = 0f, volume = 0f) }
         scope.launch {
+            val tickMs = 100L
+            val dtSec = tickMs / 1000f
             val durationMs = ((_machineState.value.config?.manualBrewTimeSec ?: 5f) * 1000).toInt().milliseconds
             val startTime = Clock.System.now()
             var pressure = 0f
+            var elapsedMs = 0L
             while (_machineState.value.brewStatus == MachineState.BrewStatus.Manual) {
-                delay(100)
+                delay(tickMs)
+                elapsedMs += tickMs
                 if (Clock.System.now() - startTime >= durationMs) {
                     stopManualBrewing()
                     break
                 }
                 pressure = (pressure + 0.3f).coerceAtMost(9f)
                 val flowing = pressure > 2f
+                val flowRate = if (flowing) ((pressure - 2f) / 7f * 6f).coerceIn(0f, 6f) else 0f
+                val weightRate = flowRate * 0.9f
                 _machineState.update { state ->
                     state.copy(
                         pressure = pressure,
-                        weight = (state.weight ?: 0f) + if (flowing) 0.05f else 0f,
-                        volume = (state.volume ?: 0f) + if (flowing) 0.06f else 0f,
-                        flowRate = if (flowing) ((pressure - 2f) / 7f * 6f).coerceIn(0f, 6f) else 0f,
-                        weightRate = if (flowing) ((pressure - 2f) / 7f * 5f).coerceIn(0f, 5f) else 0f
+                        flowRate = flowRate,
+                        weightRate = weightRate,
+                        volume = (state.volume ?: 0f) + flowRate * dtSec,
+                        weight = (state.weight ?: 0f) + weightRate * dtSec,
+                        time = (elapsedMs / 100).toInt()
                     )
                 }
             }
@@ -128,25 +137,88 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     override suspend fun startProfileBrewing(profile: BrewProfile) {
         _machineState.update { it.copy(brewStatus = MachineState.BrewStatus.Profile, pressure = 0f, weight = 0f, volume = 0f) }
         scope.launch {
-            var pressure = 0f
+            val tickMs = 100L
+            val dtSec = tickMs / 1000f
+            var elapsedMs = 0L
+
             while (_machineState.value.brewStatus == MachineState.BrewStatus.Profile) {
-                delay(100)
-                pressure = (pressure + 0.3f).coerceAtMost(9f)
-                val flowing = pressure > 2f
+                delay(tickMs)
+                elapsedMs += tickMs
+                val elapsedSec = elapsedMs / 1000f
+
+                // Find current step based on elapsed time
+                var stepStartSec = 0f
+                var currentStep: ProfileStep? = null
+                for (step in profile.steps) {
+                    val stepEndSec = stepStartSec + step.time
+                    if (elapsedSec < stepEndSec) {
+                        currentStep = step
+                        break
+                    }
+                    stepStartSec += step.time
+                }
+
+                // All steps completed
+                if (currentStep == null) {
+                    stopProfileBrewing()
+                    break
+                }
+
+                val targetPressure: Float
+                val targetFlow: Float
+                when (currentStep) {
+                    is ProfileStep.Pressure -> {
+                        targetPressure = currentStep.pressure
+                        targetFlow = ((currentStep.pressure - 2f) / 7f * 6f).coerceIn(0f, 6f)
+                    }
+
+                    is ProfileStep.Flow -> {
+                        targetFlow = currentStep.flow
+                        targetPressure = (currentStep.flow / 6f * 7f + 2f).coerceIn(0f, 9f)
+                    }
+
+                    is ProfileStep.Wait -> {
+                        targetPressure = 0f
+                        targetFlow = 0f
+                    }
+                }
+
                 _machineState.update { state ->
-                    state.copy(
-                        pressure = pressure,
-                        weight = (state.weight ?: 0f) + if (flowing) 0.05f else 0f,
-                        volume = (state.volume ?: 0f) + if (flowing) 0.06f else 0f,
-                        flowRate = if (flowing) ((pressure - 2f) / 7f * 6f).coerceIn(0f, 6f) else 0f,
-                        weightRate = if (flowing) ((pressure - 2f) / 7f * 5f).coerceIn(0f, 6f) else 0f
-                    )
+                    val newVolume = (state.volume ?: 0f) + targetFlow * dtSec
+                    val newWeight = (state.weight ?: 0f) + targetFlow * 0.9f * dtSec
+
+                    val finished = when (val cond = profile.finishCondition) {
+                        is Condition.Weight -> newWeight >= cond.target
+                        is Condition.Volume -> newVolume >= cond.target
+                    }
+
+                    if (finished) {
+                        state.copy(
+                            brewStatus = MachineState.BrewStatus.Idle,
+                            pressure = 0f,
+                            weight = null,
+                            volume = null,
+                            flowRate = null,
+                            weightRate = null,
+                            time = null
+                        )
+                    } else {
+                        state.copy(
+                            pressure = targetPressure,
+                            flowRate = targetFlow,
+                            weightRate = targetFlow * 0.9f,
+                            volume = newVolume,
+                            weight = newWeight,
+                            time = (elapsedMs / 100).toInt()
+                        )
+                    }
                 }
             }
         }
     }
 
     override suspend fun startCleaning() {
+        delay(100)
         _machineState.update { it.copy(brewStatus = MachineState.BrewStatus.Cleaning, time = 1) }
         scope.launch {
             val config = _machineState.value.config ?: return@launch
@@ -168,6 +240,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setBoilerState(boilerType: MachineState.BoilerType, enabled: Boolean) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(
@@ -180,6 +253,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setBrewTemperature(temp: Int) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(targetBrewTemp = temp.toFloat()))
@@ -187,6 +261,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setSteamTemperature(temp: Int) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(targetSteamTemp = temp.toFloat()))
@@ -194,6 +269,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setHeatingMode(heatingMode: MachineState.HeatingMode) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(heatingMode = heatingMode))
@@ -201,6 +277,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setManualBrewPressure(pressure: Float) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(manualBrewPressure = pressure))
@@ -208,6 +285,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setManualBrewTime(timeSec: Float) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(manualBrewTimeSec = timeSec))
@@ -215,6 +293,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count))
@@ -222,6 +301,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun setWaterAlarm(enabled: Boolean) {
+        delay(100)
         _machineState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(waterAlarm = enabled))
