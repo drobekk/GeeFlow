@@ -1,7 +1,7 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.maintenance
 
 import co.touchlab.kermit.Logger
-import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.model.DeviceState
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetCleaningSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetWaterAlarmUseCase
@@ -56,7 +56,7 @@ internal class MaintenanceSettingsViewModel(
         }
     }
 
-    private fun updateViewState(state: MachineState) {
+    private fun updateViewState(state: DeviceState) {
         val config = state.config
         modify {
             copy(

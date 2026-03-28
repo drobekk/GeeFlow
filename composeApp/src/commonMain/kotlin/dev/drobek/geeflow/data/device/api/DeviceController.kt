@@ -2,14 +2,14 @@ package dev.drobek.geeflow.data.device.api
 
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.device.model.DeviceCapability
-import dev.drobek.geeflow.domain.device.model.MachineState
-import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
-import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
+import dev.drobek.geeflow.domain.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
+import dev.drobek.geeflow.domain.device.model.DeviceState.HeatingMode
 import dev.drobek.geeflow.domain.device.model.SmartScale
 import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceController {
-    val machineState: StateFlow<MachineState>
+    val deviceState: StateFlow<DeviceState>
     val capabilities: Set<DeviceCapability>
     val foundScales: StateFlow<List<SmartScale>>
 

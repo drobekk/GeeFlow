@@ -10,6 +10,7 @@ import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
 import dev.drobek.geeflow.platform.permissions.PermissionsController
+import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.AddDemoDeviceClicked
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.NearbyDeviceClicked
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceEvent.OpenSystemSettingsClicked
@@ -59,10 +60,10 @@ internal class AddDeviceViewModel(
         is NearbyDeviceClicked -> onDeviceClicked(event.id)
         is Resumed -> (viewState.value.method as? NearbyDevices)?.let { startScanning() }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
-        is AddDeviceEvent.AddDemoDeviceClicked -> {
+        is AddDemoDeviceClicked -> {
             addDeviceUseCase(
                 macAddress = "DE:MO:00:00:00:00",
-                name = "GeeFlow Demo",
+                name = "Demo",
                 supportedDevice = SupportedDevice.GeeFlowDemo
             )
             emitEvent(DevicesList)

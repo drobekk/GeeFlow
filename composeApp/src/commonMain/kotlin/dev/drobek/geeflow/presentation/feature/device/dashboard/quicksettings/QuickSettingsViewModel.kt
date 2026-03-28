@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
 
 import co.touchlab.kermit.Logger
-import dev.drobek.geeflow.domain.device.model.MachineState
-import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
+import dev.drobek.geeflow.domain.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
@@ -55,7 +55,7 @@ internal class QuickSettingsViewModel(
         }
     }
 
-    private fun updateMachineState(state: MachineState) = modify {
+    private fun updateMachineState(state: DeviceState) = modify {
         val config = state.config
         copy(
             steamBoiler = steamBoiler.copy(

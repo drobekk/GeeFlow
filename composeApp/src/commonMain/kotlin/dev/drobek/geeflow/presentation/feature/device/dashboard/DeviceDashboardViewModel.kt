@@ -1,9 +1,11 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard
 
+import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.domain.brew.model.BrewSession
 import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
-import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.model.isDemo
 import dev.drobek.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
@@ -29,8 +31,8 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.OpenSystemSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.PermissionDialogResumed
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ProfileSelected
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.QuickSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.Resumed
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
@@ -46,12 +48,14 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.error_connect_device
 import geeflow.composeapp.generated.resources.error_generic
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import kotlin.math.pow
 import kotlin.math.round
+import dev.drobek.geeflow.domain.device.model.Device as Machine
 
 @KoinViewModel
 internal class DeviceDashboardViewModel(
@@ -71,9 +75,10 @@ internal class DeviceDashboardViewModel(
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
     private var selectedProfileId: String? = null
+    private var machine: Machine? = null
 
     init {
-        val machine = getDevice(args.deviceId)
+        machine = getDevice(args.deviceId)
         modify { copy(device = device.copy(id = args.deviceId, name = machine?.name ?: args.deviceId)) }
         launch { observeDeviceState(args.deviceId).collect { state -> updateMachineStateUi(state) } }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
@@ -84,10 +89,10 @@ internal class DeviceDashboardViewModel(
         is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is ConnectionButtonClicked -> toggleConnection()
         is DeviceClicked -> emitEvent(Navigation.DeviceList)
-        is SettingsClicked -> emitEvent(Navigation.Settings(args.deviceId))
+        is QuickSettingsClicked -> withDeviceConnected { emitEvent(Navigation.QuickSettings(args.deviceId)) }
         is UserClicked -> Unit
         is ConnectedDevicesClicked -> Unit
-        is CleaningClicked -> emitEvent(Navigation.Clean(args.deviceId))
+        is CleaningClicked -> withDeviceConnected { emitEvent(Navigation.Clean(args.deviceId)) }
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
         is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
@@ -129,13 +134,13 @@ internal class DeviceDashboardViewModel(
         selectedProfileId
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
-            ?.let { modify { copy( brew = Brew(it.name)) } }
+            ?.let { modify { copy(brew = Brew(it.name)) } }
     }
 
-    private fun updateMachineStateUi(state: MachineState) = modify {
+    private fun updateMachineStateUi(state: DeviceState) = modify {
         val newBrewStatus = when (state.brewStatus) {
-            MachineState.BrewStatus.Manual -> Manual
-            MachineState.BrewStatus.Profile -> Profile
+            DeviceState.BrewStatus.Manual -> Manual
+            DeviceState.BrewStatus.Profile -> Profile
             else -> Idle
         }
         copy(
@@ -144,9 +149,9 @@ internal class DeviceDashboardViewModel(
                 steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),
                 pressure = state.pressure?.roundDecimalsTo(1)?.toString(),
                 connectionStatus = when (state.connectionStatus) {
-                    MachineState.ConnectionStatus.Disconnected -> Device.ConnectionStatus.Disconnected
-                    MachineState.ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
-                    MachineState.ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
+                    DeviceState.ConnectionStatus.Disconnected -> Device.ConnectionStatus.Disconnected
+                    DeviceState.ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
+                    DeviceState.ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
                 },
                 brewStatus = newBrewStatus
             )
@@ -185,11 +190,21 @@ internal class DeviceDashboardViewModel(
 
     private fun withBluetoothPermissions(block: suspend () -> Unit) = launch {
         try {
-            permissionsController.providePermission(PermissionBluetoothScan)
-            permissionsController.providePermission(PermissionBluetoothConnect)
+            if (machine?.isDemo == false) {
+                permissionsController.providePermission(PermissionBluetoothScan)
+                permissionsController.providePermission(PermissionBluetoothConnect)
+            }
             block()
         } catch (_: DeniedException) {
             showBluetoothPermissionMissingDialog()
+        }
+    }
+
+    private fun withDeviceConnected(block: () -> Unit) {
+        if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
+            block()
+        } else {
+            emitEvent { ShowSnackbar(getString(Res.string.error_connect_device)) }
         }
     }
 
@@ -198,6 +213,7 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun onError(throwable: Throwable) {
+        Logger.e(throwable = throwable) { "Unknown error in DeviceDashboardViewModel" }
         emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
     }
 

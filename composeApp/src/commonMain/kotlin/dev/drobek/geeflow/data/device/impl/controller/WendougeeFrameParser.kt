@@ -1,13 +1,13 @@
 package dev.drobek.geeflow.data.device.impl.controller
 
 import co.touchlab.kermit.Logger
-import dev.drobek.geeflow.domain.device.model.MachineState
-import dev.drobek.geeflow.domain.device.model.MachineState.BrewStatus
-import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
+import dev.drobek.geeflow.domain.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.model.DeviceState.BrewStatus
+import dev.drobek.geeflow.domain.device.model.DeviceState.HeatingMode
 import dev.drobek.geeflow.domain.device.model.SmartScale
 
 class WendougeeFrameParser(
-    private val onStateUpdate: (MachineState.() -> MachineState) -> Unit,
+    private val onStateUpdate: (DeviceState.() -> DeviceState) -> Unit,
     private val onScaleFound: ((SmartScale) -> Unit)? = null
 ) {
     companion object {
@@ -100,7 +100,7 @@ class WendougeeFrameParser(
 
             onStateUpdate {
                 copy(
-                    config = MachineState.Config(
+                    config = DeviceState.Config(
                         targetSteamTemp = targetSteam,
                         targetBrewTemp = targetBrew,
                         steamBoilerEnabled = isSteamBoilerEnabled,

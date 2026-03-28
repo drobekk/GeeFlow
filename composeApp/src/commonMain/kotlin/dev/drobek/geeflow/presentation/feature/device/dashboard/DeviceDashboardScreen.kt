@@ -99,7 +99,7 @@ internal fun DeviceDashboardScreen(
         when (it) {
             is Navigation.Back -> navigation.back()
             is Navigation.DeviceList -> navigation.showDevicesList()
-            is Navigation.Settings -> navigation.showQuickSettings(it.id)
+            is Navigation.QuickSettings -> navigation.showQuickSettings(it.id)
             is Navigation.Clean -> navigation.showClean(it.id)
             is DeviceDashboardViewModelEvent.ShowSnackbar -> coroutineScope.launch { snackbarState.showSnackbar(it.message) }
         }

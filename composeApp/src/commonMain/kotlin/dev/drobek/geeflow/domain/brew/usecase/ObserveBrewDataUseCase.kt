@@ -3,7 +3,7 @@ package dev.drobek.geeflow.domain.brew.usecase
 import dev.drobek.geeflow.data.device.impl.DeviceControllerProvider
 import dev.drobek.geeflow.domain.brew.model.BrewDataPoint
 import dev.drobek.geeflow.domain.brew.model.BrewSession
-import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.model.DeviceState
 import dev.drobek.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -22,10 +22,10 @@ class ObserveBrewDataUseCase(
     private val getSelectedUserUseCase: GetSelectedUserUseCase
 ) {
     operator fun invoke(deviceId: String): Flow<BrewSession> {
-        val scanFlow = provider.getController(deviceId).machineState
+        val scanFlow = provider.getController(deviceId).deviceState
             .scan(Accumulator()) { acc, state ->
                 val status = state.brewStatus
-                val currentlyBrewing = status == MachineState.BrewStatus.Manual || status == MachineState.BrewStatus.Profile
+                val currentlyBrewing = status == DeviceState.BrewStatus.Manual || status == DeviceState.BrewStatus.Profile
 
                 if (currentlyBrewing) {
                     val now = Clock.System.now()
@@ -68,14 +68,14 @@ class ObserveBrewDataUseCase(
                     }
                     acc.lastTick = currentTick
                     acc.lastPoint = currentPoint
-                } else if (status == MachineState.BrewStatus.Idle) {
+                } else if (status == DeviceState.BrewStatus.Idle) {
                     acc.isBrewing = false
                 }
                 acc
             }
 
         return combine(scanFlow, getSelectedUserUseCase()) { acc, user ->
-            val isManual = acc.status == MachineState.BrewStatus.Manual
+            val isManual = acc.status == DeviceState.BrewStatus.Manual
             BrewSession(
                 userId = user?.id ?: 0L,
                 elapsedSeconds = acc.timeInSeconds,
@@ -92,7 +92,7 @@ class ObserveBrewDataUseCase(
         val data = mutableMapOf<Float, BrewDataPoint>()
         var isBrewing = false
         var startTime: Instant? = null
-        var status: MachineState.BrewStatus = MachineState.BrewStatus.Idle
+        var status: DeviceState.BrewStatus = DeviceState.BrewStatus.Idle
         var timeInSeconds: Int = 0
         var lastTick: Int = -1
         var lastPoint: BrewDataPoint? = null

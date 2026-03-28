@@ -49,7 +49,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardE
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.DeviceClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.SettingsClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.QuickSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
@@ -135,7 +135,7 @@ private fun ActionBar(
             ActionBarButton(
                 painter = rememberVectorPainter(Icons.Filled.Tune),
                 contentDescription = stringResource(Res.string.common_settings),
-                onClick = { onEvent(SettingsClicked) },
+                onClick = { onEvent(QuickSettingsClicked) },
                 modifier = Modifier.clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
             )
         }

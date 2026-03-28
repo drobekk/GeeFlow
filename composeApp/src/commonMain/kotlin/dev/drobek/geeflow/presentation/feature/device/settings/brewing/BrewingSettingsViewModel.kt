@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.brewing
 
 import co.touchlab.kermit.Logger
-import dev.drobek.geeflow.domain.device.model.MachineState
-import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
+import dev.drobek.geeflow.domain.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
@@ -64,7 +64,7 @@ internal class BrewingSettingsViewModel(
         }
     }
 
-    private fun updateViewState(state: MachineState) {
+    private fun updateViewState(state: DeviceState) {
         val config = state.config
         modify {
             copy(
@@ -78,7 +78,7 @@ internal class BrewingSettingsViewModel(
                     actualTemp = state.brewBoilerTemp ?: 0f,
                     selectedTemp = config?.targetBrewTemp?.toInt()?.toString() ?: "0"
                 ),
-                pulseHeatingEnabled = config?.heatingMode == MachineState.HeatingMode.Pulse,
+                pulseHeatingEnabled = config?.heatingMode == DeviceState.HeatingMode.Pulse,
                 paddle = paddle.copy(
                     pressure = config?.manualBrewPressure?.toString() ?: "0.0",
                     time = config?.manualBrewTimeSec?.toInt()?.toString() ?: "0"

@@ -23,11 +23,11 @@ import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.decodeHe
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.ProfileMode
 import dev.drobek.geeflow.domain.device.model.DeviceCapability
-import dev.drobek.geeflow.domain.device.model.MachineState
-import dev.drobek.geeflow.domain.device.model.MachineState.BoilerType
-import dev.drobek.geeflow.domain.device.model.MachineState.BrewStatus
-import dev.drobek.geeflow.domain.device.model.MachineState.ConnectionStatus
-import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
+import dev.drobek.geeflow.domain.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
+import dev.drobek.geeflow.domain.device.model.DeviceState.BrewStatus
+import dev.drobek.geeflow.domain.device.model.DeviceState.ConnectionStatus
+import dev.drobek.geeflow.domain.device.model.DeviceState.HeatingMode
 import dev.drobek.geeflow.domain.device.model.SmartScale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -48,8 +48,8 @@ class WendougeeDataSController(
     private val bleClient: BleClient
 ) : DeviceController {
 
-    private val _machineState = MutableStateFlow(MachineState())
-    override val machineState: StateFlow<MachineState> = _machineState.asStateFlow()
+    private val _deviceState = MutableStateFlow(DeviceState())
+    override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()
 
     private val _foundScales = MutableStateFlow<List<SmartScale>>(emptyList())
     override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
@@ -72,7 +72,7 @@ class WendougeeDataSController(
 
     private val modbus = ModbusBleClient(bleClient, DATA_UUID_SUFFIX, DATA_UUID_SUFFIX)
     private val frameParser = WendougeeFrameParser(
-        onStateUpdate = { update -> _machineState.update { it.update() } },
+        onStateUpdate = { update -> _deviceState.update { it.update() } },
         onScaleFound = { scale ->
             _foundScales.update { current ->
                 if (current.none { it.name == scale.name }) current + scale else current
@@ -105,7 +105,7 @@ class WendougeeDataSController(
                 val status = when (state) {
                     BleClient.ConnectionState.Disconnected -> {
                         pollingJob?.cancel()
-                        _machineState.update {
+                        _deviceState.update {
                             it.copy(
                                 connectionStatus = ConnectionStatus.Disconnected,
                                 pressure = null,
@@ -124,7 +124,7 @@ class WendougeeDataSController(
                         ConnectionStatus.Connected
                     }
                 }
-                _machineState.update { it.copy(connectionStatus = status) }
+                _deviceState.update { it.copy(connectionStatus = status) }
             }
         }
     }
@@ -222,7 +222,7 @@ class WendougeeDataSController(
     }
 
     override suspend fun setBoilerState(boilerType: BoilerType, enabled: Boolean) {
-        val currentConfig = _machineState.value.config
+        val currentConfig = _deviceState.value.config
         val isAlreadySet = when (boilerType) {
             BoilerType.Steam -> currentConfig?.steamBoilerEnabled == enabled
             BoilerType.Brew -> currentConfig?.brewBoilerEnabled == enabled
@@ -238,7 +238,7 @@ class WendougeeDataSController(
         modbus.writeSingleRegister(targetRegister, stateValue)
 
         Logger.withTag(TAG).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
-        _machineState.update { currentState ->
+        _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
             val newConfig = if (boilerType == BoilerType.Steam) {
                 config.copy(steamBoilerEnabled = enabled)
@@ -255,11 +255,11 @@ class WendougeeDataSController(
             return
         }
 
-        if (_machineState.value.config?.targetSteamTemp?.toInt() == temp) return
+        if (_deviceState.value.config?.targetSteamTemp?.toInt() == temp) return
 
         modbus.writeSingleRegister(WendougeeRegisters.STEAM_TEMPERATURE, temp)
         Logger.withTag(TAG).i { "Steam temperature set to $temp°C confirmed" }
-        _machineState.update { currentState ->
+        _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
             currentState.copy(config = config.copy(targetSteamTemp = temp.toFloat()))
         }
@@ -270,32 +270,32 @@ class WendougeeDataSController(
             Logger.withTag(TAG).e { "Brew temperature $temp out of range!" }
             return
         }
-        if (_machineState.value.config?.targetBrewTemp?.toInt() == temp) return
+        if (_deviceState.value.config?.targetBrewTemp?.toInt() == temp) return
 
         modbus.writeSingleRegister(WendougeeRegisters.BREW_TEMPERATURE, temp)
         Logger.withTag(TAG).i { "Brew temperature set to $temp°C confirmed" }
-        _machineState.update { currentState ->
+        _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
             currentState.copy(config = config.copy(targetBrewTemp = temp.toFloat()))
         }
     }
 
     override suspend fun startManualBrewing() {
-        if (_machineState.value.brewStatus == BrewStatus.Idle) {
+        if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting manual brew cycle..." }
             sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, 0x9A.toByte())
         }
     }
 
     override suspend fun stopManualBrewing() {
-        if (_machineState.value.brewStatus == BrewStatus.Manual) {
+        if (_deviceState.value.brewStatus == BrewStatus.Manual) {
             Logger.withTag(TAG).i { "Stopping manual brew cycle..." }
             sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew Stop", 0x00, 0x9A.toByte())
         }
     }
 
     override suspend fun stopProfileBrewing() {
-        if (_machineState.value.brewStatus == BrewStatus.Profile) {
+        if (_deviceState.value.brewStatus == BrewStatus.Profile) {
             Logger.withTag(TAG).i { "Stopping profile brew cycle..." }
             triggerShortPress()
         }
@@ -306,45 +306,45 @@ class WendougeeDataSController(
     }
 
     override suspend fun startCleaning() {
-        if (_machineState.value.brewStatus == BrewStatus.Idle) {
+        if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Sending start signal for cleaning..." }
             sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Cleaning Procedure", 0x00, 0x9B.toByte())
         }
     }
 
     override suspend fun stopCleaning() {
-        if (_machineState.value.brewStatus == BrewStatus.Cleaning) {
+        if (_deviceState.value.brewStatus == BrewStatus.Cleaning) {
             Logger.withTag(TAG).i { "Sending stop signal for cleaning..." }
             sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Stop Cleaning", 0x00, 0x9B.toByte())
         }
     }
 
     override suspend fun setHeatingMode(heatingMode: HeatingMode) {
-        if (_machineState.value.config?.heatingMode == heatingMode) return
+        if (_deviceState.value.config?.heatingMode == heatingMode) return
 
         val modeValue = if (heatingMode == HeatingMode.FullSpeed) 0x01 else 0x00
         modbus.writeSingleRegister(WendougeeRegisters.HEATING_MODE, modeValue)
         Logger.withTag(TAG).i { "Heating mode set to $heatingMode confirmed" }
-        _machineState.update { it.copy(config = it.config?.copy(heatingMode = heatingMode)) }
+        _deviceState.update { it.copy(config = it.config?.copy(heatingMode = heatingMode)) }
     }
 
     override suspend fun setManualBrewPressure(pressure: Float) {
-        if (_machineState.value.config?.manualBrewPressure == pressure) return
+        if (_deviceState.value.config?.manualBrewPressure == pressure) return
 
         modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_PRESSURE, listOf((pressure * 10).toInt()))
         Logger.withTag(TAG).i { "Manual brew pressure set to $pressure bar confirmed" }
-        _machineState.update { state ->
+        _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(manualBrewPressure = pressure))
         }
     }
 
     override suspend fun setManualBrewTime(timeSec: Float) {
-        if (_machineState.value.config?.manualBrewTimeSec == timeSec) return
+        if (_deviceState.value.config?.manualBrewTimeSec == timeSec) return
 
         modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_TIME, listOf((timeSec * 10).toInt()))
         Logger.withTag(TAG).i { "Manual brew time set to $timeSec s confirmed" }
-        _machineState.update { state ->
+        _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(manualBrewTimeSec = timeSec))
         }
@@ -355,17 +355,17 @@ class WendougeeDataSController(
         modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_STANDBY_TIME, listOf((standbySec * 10).toInt()))
         modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_COUNT, listOf(count))
         Logger.withTag(TAG).i { "Cleaning settings: time=${timeSec}s standby=${standbySec}s count=$count" }
-        _machineState.update { state ->
+        _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count))
         }
     }
 
     override suspend fun setWaterAlarm(enabled: Boolean) {
-        if (_machineState.value.config?.waterAlarm == enabled) return
+        if (_deviceState.value.config?.waterAlarm == enabled) return
         modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
         Logger.withTag(TAG).i { "Water alarm set to $enabled" }
-        _machineState.update { state ->
+        _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(waterAlarm = enabled))
         }

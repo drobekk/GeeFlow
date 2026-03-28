@@ -1,6 +1,6 @@
 package dev.drobek.geeflow.domain.device.model
 
-data class MachineState(
+data class DeviceState(
     val steamBoilerTemp: Float? = null,
     val brewBoilerTemp: Float? = null,
     val pressure: Float? = null,

@@ -1,7 +1,7 @@
 package dev.drobek.geeflow.domain.device.usecase
 
 import dev.drobek.geeflow.data.device.impl.DeviceControllerProvider
-import dev.drobek.geeflow.domain.device.model.MachineState
+import dev.drobek.geeflow.domain.device.model.DeviceState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
@@ -23,11 +23,11 @@ class GetCleaningStatusUseCase(
     private val provider: DeviceControllerProvider
 ) {
     operator fun invoke(deviceId: String): Flow<CleaningStatus> =
-        provider.getController(deviceId).machineState.map { state ->
+        provider.getController(deviceId).deviceState.map { state ->
             val config = state.config
             val time = state.time ?: 0
 
-            if (state.brewStatus != MachineState.BrewStatus.Cleaning || config == null) {
+            if (state.brewStatus != DeviceState.BrewStatus.Cleaning || config == null) {
                 val flushTarget = config?.cleaningTimeSec?.toInt() ?: 0
                 val restTarget = config?.cleaningStandbySec?.toInt() ?: 0
                 val cycleTarget = config?.cleaningCount ?: 0

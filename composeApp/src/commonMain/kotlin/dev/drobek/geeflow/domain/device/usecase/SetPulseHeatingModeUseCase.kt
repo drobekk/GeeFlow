@@ -1,7 +1,7 @@
 package dev.drobek.geeflow.domain.device.usecase
 
 import dev.drobek.geeflow.data.device.impl.DeviceControllerProvider
-import dev.drobek.geeflow.domain.device.model.MachineState.HeatingMode
+import dev.drobek.geeflow.domain.device.model.DeviceState.HeatingMode
 import org.koin.core.annotation.Factory
 
 @Factory

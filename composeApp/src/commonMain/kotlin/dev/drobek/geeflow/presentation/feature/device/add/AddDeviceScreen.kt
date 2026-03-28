@@ -221,7 +221,8 @@ private fun NearbyDevicesList(
             horizontal = GeeFlowTheme.spacing.contentHorizontal,
             vertical = GeeFlowTheme.spacing.contentVertical
         ),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when {
             model.showMissingPermissionMessage -> item {
@@ -240,6 +241,9 @@ private fun NearbyDevicesList(
         }
         items(model.devices) {
             DeviceItem(it, onEvent)
+        }
+        if (model.devices.isNotEmpty()) {
+            item { AddDemoDeviceButton(onEvent) }
         }
     }
 }
@@ -341,6 +345,8 @@ private fun MissingPermissionsMessage(
             onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) }) {
             Text(text = stringResource(Res.string.common_open_settings))
         }
+        VerticalSpacer(16.dp)
+        AddDemoDeviceButton(onEvent)
     }
 }
 
@@ -361,12 +367,18 @@ private fun EmptyListMessage(
             textAlign = TextAlign.Center
         )
         VerticalSpacer(16.dp)
-        OutlinedButton(
-            onClick = { onEvent(AddDeviceEvent.AddDemoDeviceClicked) }) {
-            Text(text = stringResource(Res.string.add_device_demo))
-        }
+        AddDemoDeviceButton(onEvent)
     }
 }
+
+@Composable
+private fun AddDemoDeviceButton(
+    onEvent: (AddDeviceEvent) -> Unit
+) = OutlinedButton(
+    modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
+    onClick = { onEvent(AddDeviceEvent.AddDemoDeviceClicked) },
+    content = { Text(text = stringResource(Res.string.add_device_demo)) }
+)
 
 @Composable
 @GeeFlowScreenPreview
