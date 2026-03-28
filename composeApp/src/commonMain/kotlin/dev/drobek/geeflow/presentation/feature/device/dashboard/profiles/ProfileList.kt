@@ -356,6 +356,7 @@ private fun ProfileItemRevealContent(
     ) {
         IconButton(
             onClick = { onEvent(ProfileListEvent.RemoveProfileClicked(profile.id)) },
+            enabled = !profile.bound,
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = MaterialTheme.colorScheme.error
             )

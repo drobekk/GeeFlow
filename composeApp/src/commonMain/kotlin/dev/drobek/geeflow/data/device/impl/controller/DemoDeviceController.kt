@@ -52,6 +52,7 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
                     connectionStatus = DeviceState.ConnectionStatus.Connected,
                     brewBoilerTemp = 93f,
                     steamBoilerTemp = 125f,
+                    pressure = 0.0f,
                     config = DeviceState.Config(
                         targetBrewTemp = 93f,
                         targetSteamTemp = 125f,

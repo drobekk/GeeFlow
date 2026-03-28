@@ -9,5 +9,6 @@ data class Device(
     val isLastUsed: Boolean = false,
     val manufacturer: String = "",
     val model: String = "",
-    val version: String = ""
+    val version: String = "",
+    val boundProfileId: Long? = null
 )

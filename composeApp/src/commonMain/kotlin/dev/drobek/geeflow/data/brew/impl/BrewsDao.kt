@@ -19,16 +19,12 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
     fun getBrewProfileById(id: Long) =
         dbQuery.selectById(id, ::mapToBrewProfile).executeAsOneOrNull()
 
-    fun getBrewProfileByDevice(deviceMac: String) =
-        dbQuery.selectByDevice(deviceMac, ::mapToBrewProfile).executeAsOneOrNull()
-
     fun insertBrewProfile(brewProfile: BrewProfile) {
         dbQuery.insertBrewProfile(
             id = if (brewProfile.id == 0L) null else brewProfile.id,
             userId = brewProfile.userId,
             name = brewProfile.name,
             description = brewProfile.description,
-            boundDeviceMac = brewProfile.boundDeviceMac,
             mode = brewProfile.mode,
             finishCondition = brewProfile.finishCondition,
             autoLinkOpen = brewProfile.autoLinkOpen,
@@ -40,19 +36,11 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         dbQuery.deleteById(id)
     }
 
-    fun bindProfile(deviceMac: String, profileId: Long) {
-        dbQuery.transaction {
-            dbQuery.unbindDevice(deviceMac)
-            dbQuery.bindProfileToDevice(deviceMac, profileId)
-        }
-    }
-
     private fun mapToBrewProfile(
         id: Long,
         userId: Long,
         name: String,
         description: String,
-        boundDeviceMac: String?,
         mode: ProfileMode,
         finishCondition: Condition,
         autoLinkOpen: Boolean,
@@ -62,7 +50,6 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         userId = userId,
         name = name,
         description = description,
-        boundDeviceMac = boundDeviceMac,
         mode = mode,
         finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen,

@@ -26,11 +26,27 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
             model = device.model,
             version = device.version
         )
+        dbQuery.updateDeviceInfo(
+            name = device.name,
+            isLastUsed = device.isLastUsed,
+            manufacturer = device.manufacturer,
+            model = device.model,
+            version = device.version,
+            macAddress = device.macAddress
+        )
     }
 
     fun updateLastUsed(macAddress: String) {
         dbQuery.resetLastUsed()
         dbQuery.setLastUsed(macAddress)
+    }
+
+    fun bindProfile(deviceMac: String, profileId: Long) {
+        dbQuery.bindProfile(profileId, deviceMac)
+    }
+
+    fun unbindProfile(deviceMac: String) {
+        dbQuery.unbindProfile(deviceMac)
     }
 
     fun deleteDevice(macAddress: String) {
@@ -47,13 +63,15 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
         isLastUsed: Boolean,
         manufacturer: String,
         model: String,
-        version: String
+        version: String,
+        boundProfileId: Long?
     ): Device = Device(
         macAddress = macAddress,
         name = name,
         isLastUsed = isLastUsed,
         manufacturer = manufacturer,
         model = model,
-        version = version
+        version = version,
+        boundProfileId = boundProfileId
     )
 }

@@ -9,7 +9,6 @@ CREATE TABLE brew_profiles (
   userId INTEGER NOT NULL,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
-  boundDeviceMac TEXT DEFAULT NULL,
   mode TEXT AS ProfileMode NOT NULL DEFAULT 'VariablePressure',
   finishCondition TEXT AS Condition NOT NULL,
   autoLinkOpen INTEGER AS Boolean NOT NULL DEFAULT 0,
@@ -21,22 +20,13 @@ selectAll:
 SELECT * FROM brew_profiles;
 
 selectByUserId:
-SELECT * FROM brew_profiles WHERE userId = ? AND boundDeviceMac IS NULL;
+SELECT * FROM brew_profiles WHERE userId = ?;
 
 selectById:
 SELECT * FROM brew_profiles WHERE id = ?;
 
-selectByDevice:
-SELECT * FROM brew_profiles WHERE boundDeviceMac = ?;
-
 insertBrewProfile:
-INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, boundDeviceMac, mode, finishCondition, autoLinkOpen, steps) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, mode, finishCondition, autoLinkOpen, steps) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM brew_profiles WHERE id = ?;
-
-unbindDevice:
-UPDATE brew_profiles SET boundDeviceMac = NULL WHERE boundDeviceMac = ?;
-
-bindProfileToDevice:
-UPDATE brew_profiles SET boundDeviceMac = ? WHERE id = ?;

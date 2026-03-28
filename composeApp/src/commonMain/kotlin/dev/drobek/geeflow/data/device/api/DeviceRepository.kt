@@ -10,5 +10,6 @@ interface DeviceRepository {
     fun getDeviceByMacAddress(macAddress: String): Device?
     fun removeDeviceByMacAddress(macAddress: String)
     fun setLastUsedDevice(macAddress: String)
+    fun bindProfile(deviceMac: String, profileId: Long)
     fun clearAll()
 }

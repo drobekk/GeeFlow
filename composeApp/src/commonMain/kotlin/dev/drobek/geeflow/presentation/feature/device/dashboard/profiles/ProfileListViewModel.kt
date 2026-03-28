@@ -1,5 +1,6 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.profiles
 
+import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.Condition
 import dev.drobek.geeflow.domain.brew.model.ProfileStep
@@ -37,10 +38,13 @@ internal class ProfileListViewModel(
     init {
         launch {
             combine(
-                flow = observeDeviceProfileUseCase(args.deviceId),
-                flow2 = observeUserProfilesUseCase(),
-                transform = { deviceProfile, userProfiles -> listOfNotNull(deviceProfile) + userProfiles }
-            ).collect(::profilesChanged)
+                observeDeviceProfileUseCase(args.deviceId),
+                observeUserProfilesUseCase()
+            ) { deviceProfile, userProfiles ->
+                deviceProfile to (listOfNotNull(deviceProfile) + userProfiles.filter { it.id != deviceProfile?.id })
+            }.collect { (deviceProfile, profiles) ->
+                profilesChanged(profiles, deviceProfile?.id?.toString())
+            }
         }
     }
 
@@ -67,13 +71,13 @@ internal class ProfileListViewModel(
     }
 
     private fun onError(throwable: Throwable) {
+        Logger.e(throwable = throwable) { "Unknown error in ProfileListViewModel" }
         emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
     }
 
-    private fun profilesChanged(profiles: List<BrewProfile>) {
+    private fun profilesChanged(profiles: List<BrewProfile>, boundProfileId: String?) {
         if (profiles.isEmpty()) return
         val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
-        val boundProfileId = profiles.find { it.boundDeviceMac == args.deviceId }?.id?.toString()
         modify {
             copy(
                 profiles = profiles.mapIndexed { index, profile ->

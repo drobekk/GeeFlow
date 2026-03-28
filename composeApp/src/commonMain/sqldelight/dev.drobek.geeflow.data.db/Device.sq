@@ -6,7 +6,8 @@ CREATE TABLE devices (
   isLastUsed INTEGER AS Boolean NOT NULL DEFAULT 0,
   manufacturer TEXT NOT NULL DEFAULT '',
   model TEXT NOT NULL DEFAULT '',
-  version TEXT NOT NULL DEFAULT ''
+  version TEXT NOT NULL DEFAULT '',
+  boundProfileId INTEGER DEFAULT NULL
 );
 
 selectAll:
@@ -16,13 +17,23 @@ selectByMacAddress:
 SELECT * FROM devices WHERE macAddress = ?;
 
 insertDevice:
-INSERT OR REPLACE INTO devices(macAddress, name, isLastUsed, manufacturer, model, version) VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR IGNORE INTO devices(macAddress, name, isLastUsed, manufacturer, model, version)
+VALUES (?, ?, ?, ?, ?, ?);
+
+updateDeviceInfo:
+UPDATE devices SET name = ?, isLastUsed = ?, manufacturer = ?, model = ?, version = ? WHERE macAddress = ?;
 
 resetLastUsed:
 UPDATE devices SET isLastUsed = 0;
 
 setLastUsed:
 UPDATE devices SET isLastUsed = 1 WHERE macAddress = ?;
+
+bindProfile:
+UPDATE devices SET boundProfileId = ? WHERE macAddress = ?;
+
+unbindProfile:
+UPDATE devices SET boundProfileId = NULL WHERE macAddress = ?;
 
 deleteByMacAddress:
 DELETE FROM devices WHERE macAddress = ?;

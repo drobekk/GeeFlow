@@ -92,7 +92,7 @@ internal fun BrewCharts(
     val chartModifier = Modifier
         .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(12.dp))
         .fillMaxWidth()
-        .padding(16.dp)
+        .padding(start = 8.dp, top = 16.dp, end = 16.dp, bottom = 8.dp)
 
     val sortedEntries = brew.data.entries.sortedBy { it.key }
     val xValues = sortedEntries.map { it.key.toDouble() }
@@ -128,7 +128,7 @@ internal fun BrewCharts(
 
     val sortedPressureTarget = targetPressure.entries.sortedBy { it.key }.takeIf { it.isNotEmpty() }
     val sortedFlowTarget = targetFlow.entries.sortedBy { it.key }.takeIf { it.isNotEmpty() }
-    
+
     val unitBar = stringResource(Res.string.unit_bar)
     val unitGrams = stringResource(Res.string.unit_grams)
     val unitGramsPerSecond = stringResource(Res.string.unit_grams_per_second)

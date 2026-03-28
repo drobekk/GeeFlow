@@ -38,6 +38,11 @@ class DeviceRepositoryImpl(
         refresh()
     }
 
+    override fun bindProfile(deviceMac: String, profileId: Long) {
+        devicesDao.bindProfile(deviceMac, profileId)
+        refresh()
+    }
+
     override fun clearAll() {
         devicesDao.clearAll()
         refresh()

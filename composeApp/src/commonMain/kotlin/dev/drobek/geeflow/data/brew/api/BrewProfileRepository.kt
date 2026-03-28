@@ -1,7 +1,6 @@
 package dev.drobek.geeflow.data.brew.api
 
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface BrewProfileRepository {
@@ -9,7 +8,5 @@ interface BrewProfileRepository {
     fun addBrewProfile(brewProfile: BrewProfile)
     fun getBrewProfilesForUser(userId: Long): List<BrewProfile>
     fun getBrewProfileById(id: Long): BrewProfile?
-    fun bindProfile(deviceMac: String, profileId: Long)
     fun removeBrewProfile(id: Long)
-    fun observeBrewProfileForDevice(deviceMac: String): Flow<BrewProfile?>
 }

@@ -9,7 +9,6 @@ data class BrewProfile(
     val userId: Long,
     val name: String,
     val description: String,
-    val boundDeviceMac: String? = null,
     val mode: ProfileMode = ProfileMode.VariablePressure,
     val finishCondition: Condition,
     val autoLinkOpen: Boolean = false,
