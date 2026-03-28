@@ -12,7 +12,9 @@ data class DeviceState(
     val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
     val brewStatus: BrewStatus = BrewStatus.Idle,
     val config: Config? = null,
-    val connectedScale: SmartScale? = null
+    val smartScale: SmartScale? = null,
+    val smartScaleEnabled: Boolean = false,
+    val smartScaleSearchActive: Boolean = false
 ) {
     data class Config(
         val targetSteamTemp: Float,

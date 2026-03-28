@@ -12,6 +12,7 @@ import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceList
 import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceListNavigation
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.ConnectivitySettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.DeviceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
@@ -63,6 +64,10 @@ class AppNavigation(
 
     override fun showMaintenanceSettings(deviceId: String) {
         backStack.add(MaintenanceSettings(deviceId))
+    }
+
+    override fun showConnectivitySettings(deviceId: String) {
+        backStack.add(ConnectivitySettings(deviceId))
     }
 
     override fun showDeviceSettings(deviceId: String) {

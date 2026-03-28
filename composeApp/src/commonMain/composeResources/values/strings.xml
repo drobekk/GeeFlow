@@ -58,6 +58,14 @@
     <string name="device_settings_maintenance_water_alarm">Water shortage alarm</string>
     <string name="device_settings_maintenance_water_alarm_description">Low water level warning</string>
 
+    <!-- Device Settings Connectivity -->
+    <string name="device_settings_connectivity_smart_scale">Smart Scale</string>
+    <string name="device_settings_connectivity_smart_scale_description">Automatically stop brewing when target weight is reached</string>
+    <string name="device_settings_connectivity_smart_scale_info">Connect a smart scale to automatically stop brewing when the desired weight is reached.</string>
+    <string name="device_settings_connectivity_searching">Searching for compatible devices…</string>
+    <string name="device_settings_connectivity_not_found">Not seeing your device?</string>
+    <string name="device_settings_connectivity_rescan">Scan now</string>
+
     <!-- Device Settings Brewing -->
     <string name="device_settings_brewing_boiler">Boiler</string>
     <string name="device_settings_brewing_paddle">Paddle long press (M)</string>
@@ -103,6 +111,7 @@
     <string name="common_time">Time</string>
     <string name="common_settings_applied">Settings applied</string>
     <string name="common_connect">Connect</string>
+    <string name="common_disconnect">Disconnect</string>
 
     <!-- UNITS -->
     <string name="unit_bar">bar</string>

@@ -11,6 +11,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -70,6 +72,7 @@ import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState
 import dev.drobek.geeflow.ui.modifier.squareSize
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.disabled
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.profile_list_bind
 import geeflow.composeapp.generated.resources.profile_list_delete
@@ -125,6 +128,7 @@ private fun ProfileListContent(
             items(filteredProfiles) {
                 ProfileItem(
                     profile = it,
+                    smartScaleConnected = viewState.smartScaleConnected,
                     onEvent = onEvent,
                     modifier = Modifier
                 )
@@ -315,6 +319,7 @@ private fun SearchBar(
 @Composable
 private fun ProfileItem(
     profile: Profile,
+    smartScaleConnected: Boolean,
     onEvent: (ProfileListEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -338,6 +343,7 @@ private fun ProfileItem(
     ) {
         ProfileItemContent(
             profile = profile,
+            smartScaleConnected = smartScaleConnected,
             onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) }
         )
     }
@@ -394,6 +400,7 @@ private fun ProfileItemRevealContent(
 @Composable
 private fun ProfileItemContent(
     profile: Profile,
+    smartScaleConnected: Boolean,
     onProfileClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -423,11 +430,11 @@ private fun ProfileItemContent(
             if (bound) {
                 Icon(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
                         .padding(4.dp),
                     painter = rememberVectorPainter(Icons.Filled.InsertLink),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onTertiary
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
                 Text(
@@ -443,11 +450,25 @@ private fun ProfileItemContent(
         }
         HorizontalSpacer(12.dp)
         Column(Modifier.weight(1f)) {
-            Text(
-                text = profile.name,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = spacedBy(4.dp)
+            ) {
+                Text(
+                    text = profile.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f, false)
+                )
+                if (profile.brewByWeight) {
+                    val backgroundColor = if (smartScaleConnected) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.tertiary.disabled()
+                    }
+                    Box(modifier = Modifier.background(backgroundColor, CircleShape).size(8.dp))
+                }
+            }
             Text(
                 text = profile.description,
                 style = MaterialTheme.typography.bodyMedium,

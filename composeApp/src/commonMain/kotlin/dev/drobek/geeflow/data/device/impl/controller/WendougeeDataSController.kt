@@ -8,17 +8,19 @@ import dev.drobek.geeflow.data.device.ble.BleClient
 import dev.drobek.geeflow.data.device.ble.ModbusBleClient
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_OFF
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_ON
-import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_INIT_HANDSHAKE
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_OFF
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_ON
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_LONG
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_SHORT
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_READ_CONFIG_LONG
-import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_DISCONNECT
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_LIST_REQUEST
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_OFF
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_ON
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_QUERY
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATUS_REQUEST
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_OFF
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_ON
+import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_START_STREAMING
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.decodeHex
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.ProfileMode
@@ -70,33 +72,51 @@ class WendougeeDataSController(
         DeviceCapability.FlowProfiling
     )
 
+    var logPolling: Boolean = false
+
     private val modbus = ModbusBleClient(bleClient, DATA_UUID_SUFFIX, DATA_UUID_SUFFIX)
     private val frameParser = WendougeeFrameParser(
         onStateUpdate = { update -> _deviceState.update { it.update() } },
         onScaleFound = { scale ->
             _foundScales.update { current ->
-                if (current.none { it.name == scale.name }) current + scale else current
+                if (current.any { it.name == scale.name }) current.map { if (it.name == scale.name) scale else it }
+                else current + scale
             }
-        }
+        },
+        onHeartbeat = { onHeartbeatReceived() },
+        shouldLogPolling = { logPolling }
     )
     private val profileCompiler = WendougeeProfileCompiler()
 
     private var pollingJob: Job? = null
     private var connectionStateJob: Job? = null
+    private var heartbeatTimeoutJob: Job? = null
 
     companion object {
         private const val TAG = "WendougeeController"
+        private const val BLE_TRACE_TAG = "WendougeeBle"
 
         const val DATA_UUID_SUFFIX = "2b10"
         const val CTRL_UUID_SUFFIX = "2c10"
 
         private const val POLLING_INTERVAL_MS = 200L
         private const val BREW_PULSE_MS = 100L
+        private const val HEARTBEAT_TIMEOUT_MS = 10_000L
     }
 
     init {
         observeConnectionState()
         observeIncomingData()
+    }
+
+    private fun onHeartbeatReceived() {
+        if (!_deviceState.value.smartScaleEnabled) return
+        _deviceState.update { it.copy(smartScaleSearchActive = true) }
+        heartbeatTimeoutJob?.cancel()
+        heartbeatTimeoutJob = scope.launch {
+            delay(HEARTBEAT_TIMEOUT_MS)
+            _deviceState.update { it.copy(smartScaleSearchActive = false) }
+        }
     }
 
     private fun observeConnectionState() {
@@ -105,13 +125,15 @@ class WendougeeDataSController(
                 val status = when (state) {
                     BleClient.ConnectionState.Disconnected -> {
                         pollingJob?.cancel()
+                        heartbeatTimeoutJob?.cancel()
                         _deviceState.update {
                             it.copy(
                                 connectionStatus = ConnectionStatus.Disconnected,
                                 pressure = null,
                                 steamBoilerTemp = null,
                                 brewBoilerTemp = null,
-                                connectedScale = null
+                                smartScale = null,
+                                smartScaleSearchActive = false
                             )
                         }
                         _foundScales.value = emptyList()
@@ -131,9 +153,10 @@ class WendougeeDataSController(
 
     private fun observeIncomingData() {
         scope.launch {
-            bleClient.incomingData.collect { (_, data) ->
+            bleClient.incomingData.collect { (uuid, data) ->
                 if (data.isNotEmpty()) {
-                    frameParser.handleIncomingFrame(data)
+                    val channel = if (uuid.contains(CTRL_UUID_SUFFIX)) "CTRL" else "DATA"
+                    frameParser.handleIncomingFrame(data, channel)
                 }
             }
         }
@@ -141,7 +164,7 @@ class WendougeeDataSController(
 
     private fun startDeviceInitialization() {
         if (pollingJob?.isActive == true) return
-        Logger.withTag(TAG).i { "Starting device initialization sequence" }
+        Logger.withTag(TAG).i { "Connected — starting initialization" }
 
         pollingJob = scope.launch {
             Logger.withTag(TAG).d { "Negotiating MTU (512)" }
@@ -173,15 +196,29 @@ class WendougeeDataSController(
 
             delay(300)
 
-            Logger.withTag(TAG).d { "Sending proprietary INIT handshake" }
-            bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_INIT_HANDSHAKE)
+            Logger.withTag(TAG).d { "Requesting static configuration" }
+            write(DATA_UUID_SUFFIX, CMD_READ_CONFIG_LONG)
 
             delay(300)
 
-            Logger.withTag(TAG).d { "Requesting static configuration" }
-            bleClient.writeCharacteristic(DATA_UUID_SUFFIX, CMD_READ_CONFIG_LONG)
+            Logger.withTag(TAG).d { "Querying scale search state" }
+            write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_QUERY)
 
-            delay(500)
+            delay(400)
+
+            Logger.withTag(TAG).d { "Starting data stream" }
+            write(CTRL_UUID_SUFFIX, CMD_START_STREAMING)
+
+            if (_deviceState.value.smartScaleEnabled) {
+                delay(100)
+                Logger.withTag(TAG).d { "Querying scale connection status" }
+                write(CTRL_UUID_SUFFIX, CMD_SCALE_STATUS_REQUEST)
+                delay(200)
+                Logger.withTag(TAG).d { "Requesting scale list" }
+                write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
+            }
+
+            delay(300)
 
             while (isActive) {
                 pollData()
@@ -198,7 +235,7 @@ class WendougeeDataSController(
                 timeoutMs = 400
             )
         } catch (exception: Exception) {
-            Logger.withTag(TAG).e(exception) { "Poll Long missed (timeout or error)" }
+            Logger.withTag(TAG).w(throwable = exception) { "Poll Long missed (timeout or error)" }
         }
         delay(30)
         try {
@@ -208,16 +245,18 @@ class WendougeeDataSController(
                 timeoutMs = 400
             )
         } catch (exception: Exception) {
-            Logger.withTag(TAG).e(exception) { "Poll Short missed (timeout or error)" }
+            Logger.withTag(TAG).w(throwable = exception) { "Poll Short missed (timeout or error)" }
         }
         delay(20)
     }
 
     override fun connect(macAddress: String) {
+        Logger.withTag(TAG).i { "Connecting to $macAddress" }
         bleClient.connect(macAddress)
     }
 
     override fun disconnect() {
+        Logger.withTag(TAG).i { "Disconnecting" }
         bleClient.disconnect()
     }
 
@@ -332,7 +371,7 @@ class WendougeeDataSController(
         if (_deviceState.value.config?.manualBrewPressure == pressure) return
 
         modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_PRESSURE, listOf((pressure * 10).toInt()))
-        Logger.withTag(TAG).i { "Manual brew pressure set to $pressure bar confirmed" }
+        Logger.withTag(TAG).d { "Manual brew pressure set to $pressure bar confirmed" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(manualBrewPressure = pressure))
@@ -343,7 +382,7 @@ class WendougeeDataSController(
         if (_deviceState.value.config?.manualBrewTimeSec == timeSec) return
 
         modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_TIME, listOf((timeSec * 10).toInt()))
-        Logger.withTag(TAG).i { "Manual brew time set to $timeSec s confirmed" }
+        Logger.withTag(TAG).d { "Manual brew time set to $timeSec s confirmed" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(manualBrewTimeSec = timeSec))
@@ -364,7 +403,7 @@ class WendougeeDataSController(
     override suspend fun setWaterAlarm(enabled: Boolean) {
         if (_deviceState.value.config?.waterAlarm == enabled) return
         modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
-        Logger.withTag(TAG).i { "Water alarm set to $enabled" }
+        Logger.withTag(TAG).d { "Water alarm set to $enabled" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(config = config.copy(waterAlarm = enabled))
@@ -375,7 +414,7 @@ class WendougeeDataSController(
         modbus.writeAndAwaitModbus(onCommand, 0x05, regHi, regLo)
         delay(BREW_PULSE_MS)
         modbus.writeAndAwaitModbus(offCommand, 0x05, regHi, regLo)
-        Logger.withTag(TAG).i { "$label pulse completed and confirmed" }
+        Logger.withTag(TAG).d { "$label pulse completed and confirmed" }
     }
 
     override suspend fun startProfileBrewing(profile: BrewProfile) {
@@ -391,7 +430,7 @@ class WendougeeDataSController(
             )
         }
 
-        Logger.withTag(TAG).i { "Profile uploaded, triggering brew pulse" }
+        Logger.withTag(TAG).d { "Profile uploaded, triggering brew pulse" }
         if (profile.mode == ProfileMode.FreeVariable) {
             sendModbusPulse(
                 onCommand = "0105009eff00ec14".decodeHex(),
@@ -418,51 +457,64 @@ class WendougeeDataSController(
             )
         }
 
-        Logger.withTag(TAG).i { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
+        Logger.withTag(TAG).d { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
         modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
     }
 
-    override suspend fun startSmartScaleSearch() {
-        Logger.withTag(TAG).i { "Starting smart scale search..." }
-        _foundScales.value = emptyList() // clear previous search results
-        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_ON)
+    override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
+        Logger.withTag(TAG).i { "Smart scale connectivity: $enabled" }
+        _deviceState.update { it.copy(smartScaleEnabled = enabled) }
+        if (enabled) {
+            _foundScales.value = emptyList()
+            write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_ON)
+            delay(200)
+            write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
+        } else {
+            write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_OFF)
+        }
     }
 
-    override suspend fun stopSmartScaleSearch() {
-        Logger.withTag(TAG).i { "Stopping smart scale search..." }
-        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_OFF)
+    override suspend fun requestSmartScaleList() {
+        Logger.withTag(TAG).d { "Requesting smart scale list..." }
+        write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
     }
 
     override suspend fun connectSmartScale(name: String) {
         Logger.withTag(TAG).i { "Connecting smart scale: $name" }
-        val nameBytes = name.encodeToByteArray()
-        val length = nameBytes.size + 2 // include prefix length
+        write(CTRL_UUID_SUFFIX, buildScaleFrame(0x80, name))
+    }
 
-        // Build proprietary frame
-        val buffer = ByteArray(8 + nameBytes.size)
+    override suspend fun disconnectSmartScale() {
+        val name = _deviceState.value.smartScale?.name ?: run {
+            Logger.withTag(TAG).w { "Disconnect called but no scale is connected" }
+            return
+        }
+        Logger.withTag(TAG).i { "Disconnecting smart scale: $name" }
+        write(CTRL_UUID_SUFFIX, buildScaleFrame(0x87, name))
+    }
+
+    private suspend fun write(uuid: String, data: ByteArray) {
+        val channel = if (uuid.contains(CTRL_UUID_SUFFIX)) "CTRL" else "DATA"
+        Logger.withTag(BLE_TRACE_TAG).v { "→ [$channel] ${data.toHexTrace()} (${data.size}B)" }
+        bleClient.writeCharacteristic(uuid, data)
+    }
+
+    private fun ByteArray.toHexTrace() = joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }
+
+    private fun buildScaleFrame(cmd: Int, name: String): ByteArray {
+        val nameBytes = name.encodeToByteArray()
+        val len = nameBytes.size
+        val buffer = ByteArray(7 + len)
         buffer[0] = 0xFF.toByte()
         buffer[1] = 0x55.toByte()
         buffer[2] = 0xFF.toByte()
         buffer[3] = 0xFF.toByte()
-        buffer[4] = 0x80.toByte() // connect command
-        buffer[5] = (length ushr 8).toByte()
-        buffer[6] = (length and 0xFF).toByte()
-        buffer[7] = 0x12.toByte() // prefix observed in logs
-        nameBytes.copyInto(buffer, destinationOffset = 8)
-
-        // Calculate checksum over bytes [4, length-1]
+        buffer[4] = cmd.toByte()
+        buffer[5] = (len ushr 8).toByte()
+        buffer[6] = (len and 0xFF).toByte()
+        nameBytes.copyInto(buffer, destinationOffset = 7)
         var sum = 0
-        for (i in 4 until buffer.size) {
-            sum += buffer[i].toInt() and 0xFF
-        }
-        val checksum = ((sum xor 0xFF) + 1) and 0xFF
-
-        val finalPayload = buffer + checksum.toByte()
-        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, finalPayload)
-    }
-
-    override suspend fun disconnectSmartScale() {
-        Logger.withTag(TAG).i { "Disconnecting smart scale..." }
-        bleClient.writeCharacteristic(CTRL_UUID_SUFFIX, CMD_SCALE_DISCONNECT)
+        for (i in 4 until buffer.size) sum += buffer[i].toInt() and 0xFF
+        return buffer + ((sum + 0x53) and 0xFF).toByte()
     }
 }

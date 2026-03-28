@@ -8,6 +8,7 @@ import dev.drobek.geeflow.domain.brew.usecase.BindProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.DeleteProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
+import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
@@ -31,6 +32,7 @@ internal class ProfileListViewModel(
     @InjectedParam private val args: Dashboard,
     private val observeUserProfilesUseCase: ObserveUserProfilesUseCase,
     private val observeDeviceProfileUseCase: ObserveDeviceProfileUseCase,
+    private val observeDeviceStateUseCase: ObserveDeviceStateUseCase,
     private val bindProfileUseCase: BindProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase
 ) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
@@ -44,6 +46,11 @@ internal class ProfileListViewModel(
                 deviceProfile to (listOfNotNull(deviceProfile) + userProfiles.filter { it.id != deviceProfile?.id })
             }.collect { (deviceProfile, profiles) ->
                 profilesChanged(profiles, deviceProfile?.id?.toString())
+            }
+        }
+        launch {
+            observeDeviceStateUseCase(args.deviceId).collect {
+                modify { copy(smartScaleConnected = it.smartScale?.isConnected == true) }
             }
         }
     }
@@ -124,17 +131,20 @@ internal class ProfileListViewModel(
         }
 
         val totalTicks = (currentTime * 10).toInt()
-        val targetData = buildMap<Float, ChartData>(totalTicks + 1) {
+        val targetData = buildMap(totalTicks + 1) {
             for (tick in 0..totalTicks) {
                 val t = tick / 10f
                 val event = events.lastOrNull { it.time <= t } ?: events.first()
-                put(t, ChartData(
-                    pressure = event.pressure,
-                    weight = 0f,
-                    weightPerSecond = 0f,
-                    volume = 0f,
-                    volumePerSecond = event.flow
-                ))
+                put(
+                    key = t,
+                    value = ChartData(
+                        pressure = event.pressure,
+                        weight = 0f,
+                        weightPerSecond = 0f,
+                        volume = 0f,
+                        volumePerSecond = event.flow
+                    )
+                )
             }
         }
 

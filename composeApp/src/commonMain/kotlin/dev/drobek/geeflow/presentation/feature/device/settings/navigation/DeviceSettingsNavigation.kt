@@ -8,11 +8,14 @@ import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.navigation.Navigation
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsScreen
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModel
+import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsScreen
+import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsScreen
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsScreen
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.ConnectivitySettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.DeviceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
 import kotlinx.serialization.Serializable
@@ -24,6 +27,7 @@ import org.koin.core.parameter.parametersOf
 interface DeviceSettingsNavigation : Navigation {
     fun showBrewingSettings(deviceId: String)
     fun showMaintenanceSettings(deviceId: String)
+    fun showConnectivitySettings(deviceId: String)
     fun getCurrentDestination(): NavKey?
     fun backFromSettings()
 }
@@ -37,6 +41,9 @@ sealed interface DeviceSettingsDestinations : NavKey {
 
     @Serializable
     data class MaintenanceSettings(val deviceId: String) : DeviceSettingsDestinations
+
+    @Serializable
+    data class ConnectivitySettings(val deviceId: String) : DeviceSettingsDestinations
 }
 
 val serializerModuleDeviceSettings = SerializersModule {
@@ -44,6 +51,7 @@ val serializerModuleDeviceSettings = SerializersModule {
         subclass(DeviceSettings::class, DeviceSettings.serializer())
         subclass(BrewingSettings::class, BrewingSettings.serializer())
         subclass(MaintenanceSettings::class, MaintenanceSettings.serializer())
+        subclass(ConnectivitySettings::class, ConnectivitySettings.serializer())
     }
 }
 
@@ -62,5 +70,10 @@ fun EntryProviderScope<NavKey>.deviceSettingsEntries(navigation: DeviceSettingsN
     entry<MaintenanceSettings>(metadata = detailPane()) {
         val viewModel = koinViewModel<MaintenanceSettingsViewModel> { parametersOf(it) }
         MaintenanceSettingsScreen(viewModel, navigation)
+    }
+
+    entry<ConnectivitySettings>(metadata = detailPane()) {
+        val viewModel = koinViewModel<ConnectivitySettingsViewModel> { parametersOf(it) }
+        ConnectivitySettingsScreen(viewModel, navigation)
     }
 }

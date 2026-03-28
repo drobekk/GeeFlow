@@ -54,6 +54,7 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
 }
 
 fun getMockProfileListViewState() = ProfileListViewState(
+    smartScaleConnected = true,
     profiles = listOf(
         Profile(
             id = "1",

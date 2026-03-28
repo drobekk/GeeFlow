@@ -91,7 +91,7 @@ internal class DeviceDashboardViewModel(
         is DeviceClicked -> emitEvent(Navigation.DeviceList)
         is QuickSettingsClicked -> withDeviceConnected { emitEvent(Navigation.QuickSettings(args.deviceId)) }
         is UserClicked -> Unit
-        is ConnectedDevicesClicked -> Unit
+        is ConnectedDevicesClicked -> withDeviceConnected { emitEvent(Navigation.ConnectivitySettings(args.deviceId)) }
         is CleaningClicked -> withDeviceConnected { emitEvent(Navigation.Clean(args.deviceId)) }
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
@@ -153,7 +153,8 @@ internal class DeviceDashboardViewModel(
                     DeviceState.ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
                     DeviceState.ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
                 },
-                brewStatus = newBrewStatus
+                brewStatus = newBrewStatus,
+                smartScaleConnected = state.smartScale?.isConnected == true
             )
         )
     }

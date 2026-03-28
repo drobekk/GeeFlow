@@ -9,8 +9,9 @@ object WendougeeCommands {
             .toByteArray()
     }
 
-    val CMD_INIT_HANDSHAKE = "ff55ffff9a000104f2".decodeHex()
     val CMD_READ_CONFIG_LONG = "0103000000258411".decodeHex()
+    val CMD_START_STREAMING = "ff55ffff070001015c".decodeHex()
+    val CMD_SCALE_SEARCH_QUERY = "ff55ffff9a0000ed".decodeHex()
 
     val CMD_POLLING_LONG = "0103057C001484D1".decodeHex()
     val CMD_POLLING_SHORT = "010100B600079C2E".decodeHex()
@@ -24,7 +25,8 @@ object WendougeeCommands {
     val CMD_CLEANING_ON = "0105009bff00fdd5".decodeHex()
     val CMD_CLEANING_OFF = "0105009b0000bc25".decodeHex()
 
-    val CMD_SCALE_SEARCH_ON = "ff55ffff82000101d7".decodeHex()
-    val CMD_SCALE_SEARCH_OFF = "ff55ffff8b0000de".decodeHex()
-    val CMD_SCALE_DISCONNECT = "ff55ffff8b000100df".decodeHex()
+    val CMD_SCALE_SEARCH_ON = "ff55ffff9a000104f2".decodeHex()
+    val CMD_SCALE_SEARCH_OFF = "ff55ffff9a000100ee".decodeHex()
+    val CMD_SCALE_LIST_REQUEST = "ff55ffff8c000100e0".decodeHex()
+    val CMD_SCALE_STATUS_REQUEST = "ff55ffff8b000100df".decodeHex()
 }

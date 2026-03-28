@@ -310,8 +310,49 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
     }
 
     override suspend fun bindProfile(profile: BrewProfile) = Unit
-    override suspend fun startSmartScaleSearch() = Unit
-    override suspend fun stopSmartScaleSearch() = Unit
-    override suspend fun connectSmartScale(name: String) = Unit
-    override suspend fun disconnectSmartScale() = Unit
+
+    override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
+        _deviceState.update { it.copy(smartScaleEnabled = enabled) }
+        if (enabled) {
+            _foundScales.value = emptyList()
+            simulateScaleSearch()
+        } else {
+            _deviceState.update { it.copy(smartScaleSearchActive = false, smartScale = null) }
+            _foundScales.value = emptyList()
+        }
+    }
+
+    override suspend fun requestSmartScaleList() {
+        if (!_deviceState.value.smartScaleEnabled) return
+        simulateScaleSearch()
+    }
+
+    private fun simulateScaleSearch() {
+        scope.launch {
+            _deviceState.update { it.copy(smartScaleSearchActive = true) }
+            delay(2000)
+            if (!_deviceState.value.smartScaleEnabled) return@launch
+            _foundScales.value = listOf(
+                SmartScale("Bookoo Themis Ultra", isConnected = false),
+                SmartScale("Acaia Lunar", isConnected = false)
+            )
+            delay(8000)
+            if (_deviceState.value.smartScaleEnabled) {
+                _deviceState.update { it.copy(smartScaleSearchActive = false) }
+            }
+        }
+    }
+
+    override suspend fun connectSmartScale(name: String) {
+        delay(1500)
+        val scale = SmartScale(name, isConnected = true)
+        _foundScales.update { scales -> scales.map { if (it.name == name) scale else it } }
+        _deviceState.update { it.copy(smartScale = scale) }
+    }
+
+    override suspend fun disconnectSmartScale() {
+        val name = _deviceState.value.smartScale?.name ?: return
+        _foundScales.update { scales -> scales.map { if (it.name == name) it.copy(isConnected = false) else it } }
+        _deviceState.update { it.copy(smartScale = null) }
+    }
 }

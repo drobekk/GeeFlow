@@ -42,6 +42,7 @@ import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettin
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.ConnectivitySettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
@@ -75,6 +76,7 @@ internal fun DeviceSettingsScreen(
     val selectedIndex = when (navigation.getCurrentDestination()) {
         is BrewingSettings -> viewState.items.indexOfFirst { it is Item.Brewing }
         is MaintenanceSettings -> viewState.items.indexOfFirst { it is Item.Maintenance }
+        is ConnectivitySettings -> viewState.items.indexOfFirst { it is Item.Connectivity }
         else -> null
     }.takeIf { it != null && it >= 0 }
 
@@ -88,7 +90,7 @@ internal fun DeviceSettingsScreen(
         when (it) {
             is Navigation.Back -> navigation.backFromSettings()
             is Navigation.BrewingSettings -> navigation.showBrewingSettings(it.deviceId)
-            is Navigation.ConnectivitySettings -> navigation.showBrewingSettings(it.deviceId) // TODO
+            is Navigation.ConnectivitySettings -> navigation.showConnectivitySettings(it.deviceId)
             is Navigation.MaintenanceSettings -> navigation.showMaintenanceSettings(it.deviceId)
         }
     }

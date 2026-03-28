@@ -9,4 +9,5 @@ sealed interface Navigation : DeviceDashboardViewModelEvent {
     data object DeviceList : Navigation
     data class Clean(val id: String) : Navigation
     data class QuickSettings(val id: String) : Navigation
+    data class ConnectivitySettings(val id: String) : Navigation
 }

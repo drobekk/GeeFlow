@@ -29,6 +29,7 @@ interface DeviceDashboardNavigation : Navigation {
     fun showQuickSettings(deviceId: String)
     fun showClean(deviceId: String)
     fun showDeviceSettings(deviceId: String)
+    fun showConnectivitySettings(deviceId: String)
 }
 
 sealed interface DeviceDashboardDestinations : NavKey {

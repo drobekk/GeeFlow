@@ -32,8 +32,8 @@ interface DeviceController {
     suspend fun startProfileBrewing(profile: BrewProfile)
     suspend fun bindProfile(profile: BrewProfile)
 
-    suspend fun startSmartScaleSearch()
-    suspend fun stopSmartScaleSearch()
+    suspend fun setSmartScaleConnectivity(enabled: Boolean)
+    suspend fun requestSmartScaleList()
     suspend fun connectSmartScale(name: String)
     suspend fun disconnectSmartScale()
 }

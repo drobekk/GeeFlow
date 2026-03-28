@@ -8,13 +8,20 @@ import dev.drobek.geeflow.domain.device.model.SmartScale
 
 class WendougeeFrameParser(
     private val onStateUpdate: (DeviceState.() -> DeviceState) -> Unit,
-    private val onScaleFound: ((SmartScale) -> Unit)? = null
+    private val onScaleFound: ((SmartScale) -> Unit)? = null,
+    private val onHeartbeat: (() -> Unit)? = null,
+    private val shouldLogPolling: () -> Boolean = { false }
 ) {
     companion object {
-        private const val TAG = "WendougeeFrameParser"
+        private const val TAG = "WendougeeController"
+        private const val BLE_TRACE_TAG = "WendougeeBle"
     }
 
-    fun handleIncomingFrame(data: ByteArray) {
+    fun handleIncomingFrame(data: ByteArray, channel: String) {
+        val isPolling = data.isPollingFrame()
+        if (!isPolling || shouldLogPolling()) {
+            Logger.withTag(BLE_TRACE_TAG).v { "← [$channel] ${data.toHexString()} (${data.size}B)" }
+        }
         // Proprietary Wendougee frame prefix (FF 55 FF FF) used for non-Modbus messages like Serial Number or Smart Scale
         if (data.size >= 4 && data[0] == 0xFF.toByte() && data[1] == 0x55.toByte() && data[2] == 0xFF.toByte() && data[3] == 0xFF.toByte()) {
             parseProprietaryFrame(data)
@@ -48,28 +55,83 @@ class WendougeeFrameParser(
             val safeEndIndex = minOf(7 + length, payload.size)
             val asciiString = payload.decodeToString(startIndex = 7, endIndex = safeEndIndex)
 
-            if (command == 0x04) {
-                Logger.withTag(TAG).i { "Received Serial Number: $asciiString" }
-            } else if (command == 0x8C || command == 0x81) {
-                // 0x8C = Scale found during search, 0x81 = Scale connected
-                val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
-                if (name.isNotEmpty() && name.length > 2) {
-                    val scale = SmartScale(name, isConnected = command == 0x81)
-                    if (command == 0x81) {
-                        Logger.withTag(TAG).i { "Smart scale connected: $name" }
-                        onStateUpdate { copy(connectedScale = scale) }
-                    } else {
-                        Logger.withTag(TAG).i { "Found Smart Scale: $name" }
-                        onScaleFound?.invoke(scale)
+            when (command) {
+                ProprietaryFrame.HEARTBEAT -> onHeartbeat?.invoke()
+                ProprietaryFrame.STATUS_RESPONSE -> {
+                    // Status response: [slot_index, connection_status, name(len-2 bytes)]
+                    // connection_status=1 means scale is actively BLE-connected
+                    if (length >= 2 && payload.size >= 9) {
+                        val slotIndex = payload[7].toInt() and 0xFF
+                        val connectionStatus = payload[8].toInt() and 0xFF
+                        val nameLen = length - 2
+                        if (connectionStatus == 1 && nameLen > 0 && payload.size >= 9 + nameLen) {
+                            val name = payload.decodeToString(startIndex = 9, endIndex = 9 + nameLen).trim()
+                            if (name.length > 2) {
+                                Logger.withTag(TAG).i { "Scale status [slot $slotIndex]: $name (connected)" }
+                                val scale = SmartScale(name, isConnected = true)
+                                onScaleFound?.invoke(scale)
+                                onStateUpdate { copy(smartScale = scale) }
+                            }
+                        }
                     }
                 }
-            } else if (command == 0x8B) {
-                 if (payload.size >= 10 && payload[7] == 0x02.toByte() && payload[8] == 0x00.toByte() && payload[9] == 0x00.toByte()) {
-                     // Disconnect or Search Off ACK
-                     onStateUpdate { copy(connectedScale = null) }
-                 }
-            } else if (asciiString.contains("BOOKOO")) {
-                Logger.withTag(TAG).i { "Connected Smart Scale recognized (legacy/other): $asciiString" }
+                ProprietaryFrame.SCALE_SEARCH_ECHO -> {
+                    if (length >= 1) {
+                        val active = payload[7].toInt() and 0xFF == 0x04
+                        Logger.withTag(TAG).i { "Scale search state (echo): ${if (active) "ON" else "OFF"}" }
+                        onStateUpdate { copy(smartScaleEnabled = active) }
+                    }
+                }
+                ProprietaryFrame.SERIAL_NUMBER -> Logger.withTag(TAG).d { "Serial number: $asciiString" }
+                ProprietaryFrame.SCALE_FOUND -> {
+                    // Scale found during active BLE scan
+                    val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
+                    if (name.isNotEmpty() && name.length > 2) {
+                        Logger.withTag(TAG).i { "Smart scale found: $name" }
+                        onScaleFound?.invoke(SmartScale(name, isConnected = false))
+                    }
+                }
+                ProprietaryFrame.SCALE_LIST_RESPONSE -> {
+                    // List response: [slot_index, name_len, name_bytes]
+                    // Slot contains remembered scales — connection state comes from 0x80
+                    if (length >= 2 && payload.size >= 9) {
+                        val slotIndex = payload[7].toInt() and 0xFF
+                        val nameLen = payload[8].toInt() and 0xFF
+                        if (nameLen > 0 && payload.size >= 9 + nameLen) {
+                            val name = payload.decodeToString(startIndex = 9, endIndex = 9 + nameLen).trim()
+                            if (name.length > 2) {
+                                Logger.withTag(TAG).i { "Scale list [slot $slotIndex]: $name" }
+                                onScaleFound?.invoke(SmartScale(name, isConnected = false))
+                            }
+                        }
+                    }
+                }
+                ProprietaryFrame.SCALE_ACTIVE -> {
+                    // Scale is actively BLE-connected to the machine
+                    val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
+                    if (name.isNotEmpty() && name.length > 2) {
+                        Logger.withTag(TAG).i { "Smart scale connected: $name" }
+                        val scale = SmartScale(name, isConnected = true)
+                        onScaleFound?.invoke(scale)
+                        onStateUpdate { copy(smartScale = scale) }
+                    }
+                }
+                ProprietaryFrame.SCALE_CONNECTED -> {
+                    // Scale is in the machine's active slot (remembered, not necessarily connected)
+                    val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
+                    if (name.isNotEmpty() && name.length > 2) {
+                        Logger.withTag(TAG).i { "Smart scale in active slot: $name" }
+                        onScaleFound?.invoke(SmartScale(name, isConnected = false))
+                    }
+                }
+                ProprietaryFrame.SCALE_DISCONNECTED -> {
+                    val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
+                    Logger.withTag(TAG).i { "Smart scale disconnected: $name" }
+                    if (name.isNotEmpty() && name.length > 2) {
+                        onScaleFound?.invoke(SmartScale(name, isConnected = false))
+                    }
+                    onStateUpdate { copy(smartScale = null) }
+                }
             }
         } catch (e: Exception) {
             Logger.withTag(TAG).e(e) { "Error parsing proprietary frame" }
@@ -97,6 +159,15 @@ class WendougeeFrameParser(
 
             val isFullSpeedHeating = dataU16be(ConfigFrame.HEATING_MODE) == 1
             val waterAlarm = dataU16be(ConfigFrame.WATER_ALARM) == 1
+
+            Logger.withTag(TAG).i {
+                "Config: brew=${targetBrew.toInt()}°C steam=${targetSteam.toInt()}°C" +
+                " | boilers: brew=${if (isBrewBoilerEnabled) "ON" else "OFF"} steam=${if (isSteamBoilerEnabled) "ON" else "OFF"}" +
+                " | heating=${if (isFullSpeedHeating) "FullSpeed" else "Pulse"}" +
+                " | manual=${manualBrewTimeSec}s@${manualBrewPressure}bar" +
+                " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×${cleaningCount}" +
+                " | waterAlarm=${waterAlarm}"
+            }
 
             onStateUpdate {
                 copy(
@@ -147,10 +218,16 @@ class WendougeeFrameParser(
             val steamActual = dataU16be(TelemetryFrame.STEAM_TEMP) / 10f
             val brewActual = dataU16be(TelemetryFrame.BREW_TEMP) / 10f
             val weightRate = dataU16be(TelemetryFrame.WEIGHT_RATE) / 10f
-
             val volume = dataU16be(TelemetryFrame.VOLUME).toFloat()
             val flowRate = dataU16be(TelemetryFrame.FLOW_RATE).toFloat()
             val time = dataU16be(TelemetryFrame.TIME)
+
+            if (shouldLogPolling()) {
+                Logger.withTag(TAG).i {
+                    "Brew: ${brewActual}°C | Steam: ${steamActual}°C | Pressure: ${pressure}bar" +
+                    " | Weight: ${weight}g (${weightRate}g/s) | Volume: ${volume}ml (${flowRate}ml/s) | Time: ${time}s"
+                }
+            }
 
             onStateUpdate {
                 copy(
@@ -167,6 +244,18 @@ class WendougeeFrameParser(
         } catch (e: Exception) {
             Logger.withTag(TAG).e(e) { "Modbus telemetry parser error" }
         }
+    }
+
+    private object ProprietaryFrame {
+        const val HEARTBEAT = 0x83
+        const val STATUS_RESPONSE = 0x8B
+        const val SCALE_SEARCH_ECHO = 0x9A
+        const val SERIAL_NUMBER = 0x04
+        const val SCALE_FOUND = 0x81
+        const val SCALE_LIST_RESPONSE = 0x8C
+        const val SCALE_ACTIVE = 0x80
+        const val SCALE_CONNECTED = 0x86
+        const val SCALE_DISCONNECTED = 0x88
     }
 
     private object ConfigFrame {
@@ -191,15 +280,26 @@ class WendougeeFrameParser(
         const val STEAM_TEMP = 8
         const val BREW_TEMP = 10
         const val PRESSURE = 12
-
         const val VOLUME = 14
         const val WEIGHT = 16
-
         const val FLOW_RATE = 36
         const val WEIGHT_RATE = 38
-
         const val MIN_HEADER_SIZE = 3 + 40 + 2
     }
+
+    private fun ByteArray.isPollingFrame(): Boolean {
+        if (size < 3) return false
+        if (this[0] == 0x01.toByte()) {
+            return this[1] == 0x01.toByte() || (this[1] == 0x03.toByte() && this[2] == 0x28.toByte())
+        }
+        if (size >= 5 && this[0] == 0xFF.toByte() && this[1] == 0x55.toByte()) {
+            val cmd = this[4].toInt() and 0xFF
+            return cmd == ProprietaryFrame.HEARTBEAT
+        }
+        return false
+    }
+
+    private fun ByteArray.toHexString() = joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }
 
     private fun ByteArray.u8(i: Int): Int = this[i].toInt() and 0xFF
     private fun ByteArray.u16be(i: Int): Int = (u8(i) shl 8) or u8(i + 1)

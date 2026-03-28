@@ -39,7 +39,8 @@ data class DeviceDashboardViewState(
         val steamBoilerTemp: String? = null,
         val pressure: String? = null,
         val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
-        val brewStatus: BrewStatus = BrewStatus.Idle
+        val brewStatus: BrewStatus = BrewStatus.Idle,
+        val smartScaleConnected: Boolean = false
     ) {
         val isBrewing = brewStatus != BrewStatus.Idle
 

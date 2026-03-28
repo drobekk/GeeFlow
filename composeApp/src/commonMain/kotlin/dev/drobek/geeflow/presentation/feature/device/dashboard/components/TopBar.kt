@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -91,6 +92,7 @@ internal fun TopBar(
         DeviceTile(device, onEvent)
         HorizontalSpacer(8.dp)
         ActionBar(
+            smartScaleConnected = device.smartScaleConnected,
             connectionStatus = device.connectionStatus,
             onEvent = onEvent,
             modifier = Modifier.weight(1f, false)
@@ -100,6 +102,7 @@ internal fun TopBar(
 
 @Composable
 private fun ActionBar(
+    smartScaleConnected: Boolean,
     connectionStatus: Device.ConnectionStatus,
     onEvent: (DeviceDashboardEvent) -> Unit,
     modifier: Modifier = Modifier
@@ -126,9 +129,8 @@ private fun ActionBar(
                 modifier = Modifier.clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
-            ActionBarButton(
-                painter = rememberVectorPainter(Icons.Filled.DeviceHub),
-                contentDescription = stringResource(Res.string.device_dashboard_connected_devices),
+            ConnectivityButton(
+                smartScaleConnected = smartScaleConnected,
                 onClick = { onEvent(ConnectedDevicesClicked) }
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
@@ -162,6 +164,44 @@ private fun ActionBarButton(
         contentDescription = contentDescription,
         tint = MaterialTheme.colorScheme.onSurfaceVariant
     )
+}
+
+@Composable
+private fun ConnectivityButton(
+    smartScaleConnected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) = Box(
+    modifier = modifier
+        .clickable(onClick = onClick)
+        .background(MaterialTheme.colorScheme.surfaceContainer)
+        .height(48.dp)
+        .padding(horizontal = 16.dp),
+    contentAlignment = Alignment.Center
+) {
+    Icon(
+        painter = rememberVectorPainter(Icons.Filled.DeviceHub),
+        modifier = Modifier.size(20.dp),
+        contentDescription = stringResource(Res.string.device_dashboard_connected_devices),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Row(
+        modifier = Modifier
+            .padding(bottom = 6.dp)
+            .align(Alignment.BottomCenter),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        val smartScaleColor = if (smartScaleConnected) {
+            MaterialTheme.colorScheme.tertiary
+        } else {
+            MaterialTheme.colorScheme.background
+        }
+        Box(modifier = Modifier.background(smartScaleColor, CircleShape).size(4.dp))
+        // TODO Grinder connectivity
+        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background, CircleShape).size(4.dp))
+        // TODO Commercial Grinder connectivity
+        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background, CircleShape).size(4.dp))
+    }
 }
 
 @Composable
@@ -309,10 +349,11 @@ private fun PreviewLight() = GeeFlowTheme(false) {
     TopBar(
         device = Device(
             name = "Decent DE1",
-            brewBoilerTemp = "93°C",
-            steamBoilerTemp = "125°C",
-            pressure = "9.0 bar",
-            connectionStatus = Device.ConnectionStatus.Connected
+            brewBoilerTemp = "93°",
+            steamBoilerTemp = "125°",
+            pressure = "9.0",
+            connectionStatus = Device.ConnectionStatus.Connected,
+            smartScaleConnected = true
         ),
         user = User(name = "Kamil"),
         modifier = Modifier.padding(16.dp)
@@ -325,10 +366,10 @@ private fun PreviewDark() = GeeFlowTheme(true) {
     TopBar(
         device = Device(
             name = "Wendougee Data-S",
-            brewBoilerTemp = "93°C",
-            steamBoilerTemp = "125°C",
-            pressure = "9.0 bar",
-            connectionStatus = Device.ConnectionStatus.Connected
+            brewBoilerTemp = "93°",
+            steamBoilerTemp = "125°",
+            pressure = "9.0",
+            connectionStatus = Device.ConnectionStatus.Connected,
         ),
         user = User(name = "Chuck")
     )
