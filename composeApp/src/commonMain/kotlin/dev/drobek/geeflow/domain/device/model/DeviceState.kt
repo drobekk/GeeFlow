@@ -14,7 +14,8 @@ data class DeviceState(
     val config: Config? = null,
     val smartScale: SmartScale? = null,
     val smartScaleEnabled: Boolean = false,
-    val smartScaleSearchActive: Boolean = false
+    val smartScaleSearchActive: Boolean = false,
+    val waterLevelAlarm: Boolean = false
 ) {
     data class Config(
         val targetSteamTemp: Float,
@@ -27,7 +28,7 @@ data class DeviceState(
         val cleaningStandbySec: Float,
         val cleaningCount: Int,
         val heatingMode: HeatingMode,
-        val waterAlarm: Boolean
+        val waterAlarmEnabled: Boolean
     )
 
     enum class ConnectionStatus {

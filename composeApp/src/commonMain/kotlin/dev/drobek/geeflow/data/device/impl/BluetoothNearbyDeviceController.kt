@@ -75,6 +75,15 @@ class BluetoothNearbyDeviceController(
     override fun didDisconnect(bluetoothPeripheral: BluetoothPeripheral) {}
     override fun didDiscoverServices(bluetoothPeripheral: BluetoothPeripheral) {}
     override fun didDiscoverCharacteristics(bluetoothPeripheral: BluetoothPeripheral) {}
-    override fun didUpdateNotificationStateFor(p: BluetoothPeripheral, c: BluetoothCharacteristic) {}
-    override fun didCharacteristcValueChanged(p: BluetoothPeripheral, c: BluetoothCharacteristic) {}
+    override fun didUpdateNotificationStateFor(
+        bluetoothPeripheral: BluetoothPeripheral,
+        bluetoothCharacteristic: BluetoothCharacteristic
+    ) {
+    }
+
+    override fun didCharacteristcValueChanged(
+        bluetoothPeripheral: BluetoothPeripheral,
+        bluetoothCharacteristic: BluetoothCharacteristic
+    ) {
+    }
 }

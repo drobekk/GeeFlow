@@ -40,6 +40,7 @@ class WendougeeFrameParser(
                     parseConfigFrame(data)
                 }
             }
+
             0x01 -> parseShortStatusFrame(data)
         }
     }
@@ -75,6 +76,7 @@ class WendougeeFrameParser(
                         }
                     }
                 }
+
                 ProprietaryFrame.SCALE_SEARCH_ECHO -> {
                     if (length >= 1) {
                         val active = payload[7].toInt() and 0xFF == 0x04
@@ -82,6 +84,7 @@ class WendougeeFrameParser(
                         onStateUpdate { copy(smartScaleEnabled = active) }
                     }
                 }
+
                 ProprietaryFrame.SERIAL_NUMBER -> Logger.withTag(TAG).d { "Serial number: $asciiString" }
                 ProprietaryFrame.SCALE_FOUND -> {
                     // Scale found during active BLE scan
@@ -91,6 +94,7 @@ class WendougeeFrameParser(
                         onScaleFound?.invoke(SmartScale(name, isConnected = false))
                     }
                 }
+
                 ProprietaryFrame.SCALE_LIST_RESPONSE -> {
                     // List response: [slot_index, name_len, name_bytes]
                     // Slot contains remembered scales — connection state comes from 0x80
@@ -106,6 +110,7 @@ class WendougeeFrameParser(
                         }
                     }
                 }
+
                 ProprietaryFrame.SCALE_ACTIVE -> {
                     // Scale is actively BLE-connected to the machine
                     val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
@@ -116,6 +121,7 @@ class WendougeeFrameParser(
                         onStateUpdate { copy(smartScale = scale) }
                     }
                 }
+
                 ProprietaryFrame.SCALE_CONNECTED -> {
                     // Scale is in the machine's active slot (remembered, not necessarily connected)
                     val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
@@ -124,6 +130,7 @@ class WendougeeFrameParser(
                         onScaleFound?.invoke(SmartScale(name, isConnected = false))
                     }
                 }
+
                 ProprietaryFrame.SCALE_DISCONNECTED -> {
                     val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
                     Logger.withTag(TAG).i { "Smart scale disconnected: $name" }
@@ -162,11 +169,11 @@ class WendougeeFrameParser(
 
             Logger.withTag(TAG).i {
                 "Config: brew=${targetBrew.toInt()}°C steam=${targetSteam.toInt()}°C" +
-                " | boilers: brew=${if (isBrewBoilerEnabled) "ON" else "OFF"} steam=${if (isSteamBoilerEnabled) "ON" else "OFF"}" +
-                " | heating=${if (isFullSpeedHeating) "FullSpeed" else "Pulse"}" +
-                " | manual=${manualBrewTimeSec}s@${manualBrewPressure}bar" +
-                " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×${cleaningCount}" +
-                " | waterAlarm=${waterAlarm}"
+                        " | boilers: brew=${if (isBrewBoilerEnabled) "ON" else "OFF"} steam=${if (isSteamBoilerEnabled) "ON" else "OFF"}" +
+                        " | heating=${if (isFullSpeedHeating) "FullSpeed" else "Pulse"}" +
+                        " | manual=${manualBrewTimeSec}s@${manualBrewPressure}bar" +
+                        " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×${cleaningCount}" +
+                        " | waterAlarm=${waterAlarm}"
             }
 
             onStateUpdate {
@@ -182,7 +189,7 @@ class WendougeeFrameParser(
                         cleaningTimeSec = cleaningTimeSec,
                         cleaningStandbySec = cleaningStandbySec,
                         cleaningCount = cleaningCount,
-                        waterAlarm = waterAlarm
+                        waterAlarmEnabled = waterAlarm
                     )
                 )
             }
@@ -221,11 +228,13 @@ class WendougeeFrameParser(
             val volume = dataU16be(TelemetryFrame.VOLUME).toFloat()
             val flowRate = dataU16be(TelemetryFrame.FLOW_RATE).toFloat()
             val time = dataU16be(TelemetryFrame.TIME)
+            val waterLevelAlarm = dataU16be(TelemetryFrame.WATER_LEVEL_ALARM) != 0
 
             if (shouldLogPolling()) {
                 Logger.withTag(TAG).i {
                     "Brew: ${brewActual}°C | Steam: ${steamActual}°C | Pressure: ${pressure}bar" +
-                    " | Weight: ${weight}g (${weightRate}g/s) | Volume: ${volume}ml (${flowRate}ml/s) | Time: ${time}s"
+                            " | Weight: ${weight}g (${weightRate}g/s) | Volume: ${volume}ml (${flowRate}ml/s) | " +
+                            "Time: ${time}s | Water alarm: $waterLevelAlarm"
                 }
             }
 
@@ -238,7 +247,8 @@ class WendougeeFrameParser(
                     volume = volume,
                     flowRate = flowRate,
                     weight = weight,
-                    weightRate = weightRate
+                    weightRate = weightRate,
+                    waterLevelAlarm = waterLevelAlarm
                 )
             }
         } catch (e: Exception) {
@@ -277,6 +287,7 @@ class WendougeeFrameParser(
     private object TelemetryFrame {
         const val DATA_START = 3
         const val TIME = 2
+        const val WATER_LEVEL_ALARM = 4
         const val STEAM_TEMP = 8
         const val BREW_TEMP = 10
         const val PRESSURE = 12

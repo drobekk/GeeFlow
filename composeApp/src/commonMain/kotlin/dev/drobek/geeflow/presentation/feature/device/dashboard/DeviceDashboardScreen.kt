@@ -91,7 +91,10 @@ internal fun DeviceDashboardScreen(
     EventsDispatcher(profileListViewModel.events) {
         when (it) {
             is SelectProfile -> viewModel.handleEvent(ProfileSelected(it.id))
-            is ShowSnackbar -> coroutineScope.launch { snackbarState.showSnackbar(it.message) }
+            is ShowSnackbar -> coroutineScope.launch {
+                snackbarState.currentSnackbarData?.dismiss()
+                snackbarState.showSnackbar(it.message)
+            }
         }
     }
 
@@ -100,13 +103,16 @@ internal fun DeviceDashboardScreen(
             is Navigation.Back -> navigation.back()
             is Navigation.DeviceList -> navigation.showDevicesList()
             is Navigation.QuickSettings -> navigation.showQuickSettings(it.id)
-            is Navigation.Clean -> navigation.showClean(it.id)
+            is Navigation.QuickMaintenance -> navigation.showQuickMaintenance(it.id)
             is Navigation.ConnectivitySettings -> {
                 navigation.showDeviceSettings(it.id)
                 navigation.showConnectivitySettings(it.id)
             }
 
-            is DeviceDashboardViewModelEvent.ShowSnackbar -> coroutineScope.launch { snackbarState.showSnackbar(it.message) }
+            is DeviceDashboardViewModelEvent.ShowSnackbar -> coroutineScope.launch {
+                snackbarState.currentSnackbarData?.dismiss()
+                snackbarState.showSnackbar(it.message)
+            }
         }
     }
 

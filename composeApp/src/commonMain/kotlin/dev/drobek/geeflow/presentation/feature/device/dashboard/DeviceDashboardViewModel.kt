@@ -20,6 +20,7 @@ import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
 import dev.drobek.geeflow.platform.permissions.PermissionsController
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.AlarmClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.CleaningClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
@@ -92,7 +93,7 @@ internal class DeviceDashboardViewModel(
         is QuickSettingsClicked -> withDeviceConnected { emitEvent(Navigation.QuickSettings(args.deviceId)) }
         is UserClicked -> Unit
         is ConnectedDevicesClicked -> withDeviceConnected { emitEvent(Navigation.ConnectivitySettings(args.deviceId)) }
-        is CleaningClicked -> withDeviceConnected { emitEvent(Navigation.Clean(args.deviceId)) }
+        is CleaningClicked -> withDeviceConnected { emitEvent(Navigation.QuickMaintenance(args.deviceId)) }
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
         is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
@@ -102,6 +103,7 @@ internal class DeviceDashboardViewModel(
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
         is ProfileSelected -> onProfileSelected(event.id)
         is Resumed -> connect()
+        is AlarmClicked -> emitEvent(Navigation.QuickMaintenance(args.deviceId))
     }
 
     private fun toggleConnection() {
@@ -137,26 +139,34 @@ internal class DeviceDashboardViewModel(
             ?.let { modify { copy(brew = Brew(it.name)) } }
     }
 
-    private fun updateMachineStateUi(state: DeviceState) = modify {
-        val newBrewStatus = when (state.brewStatus) {
-            DeviceState.BrewStatus.Manual -> Manual
-            DeviceState.BrewStatus.Profile -> Profile
-            else -> Idle
+    private fun updateMachineStateUi(state: DeviceState) {
+        val wasConnected = viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected
+        val isNowConnected = state.connectionStatus == DeviceState.ConnectionStatus.Connected
+        if (!wasConnected && isNowConnected && state.waterLevelAlarm) {
+            emitEvent(Navigation.QuickMaintenance(args.deviceId))
         }
-        copy(
-            device = device.copy(
-                brewBoilerTemp = state.brewBoilerTemp?.roundDecimalsTo(1)?.toString(),
-                steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),
-                pressure = state.pressure?.roundDecimalsTo(1)?.toString(),
-                connectionStatus = when (state.connectionStatus) {
-                    DeviceState.ConnectionStatus.Disconnected -> Device.ConnectionStatus.Disconnected
-                    DeviceState.ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
-                    DeviceState.ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
-                },
-                brewStatus = newBrewStatus,
-                smartScaleConnected = state.smartScale?.isConnected == true
+        modify {
+            val newBrewStatus = when (state.brewStatus) {
+                DeviceState.BrewStatus.Manual -> Manual
+                DeviceState.BrewStatus.Profile -> Profile
+                else -> Idle
+            }
+            copy(
+                device = device.copy(
+                    brewBoilerTemp = state.brewBoilerTemp?.roundDecimalsTo(1)?.toString(),
+                    steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),
+                    pressure = state.pressure?.roundDecimalsTo(1)?.toString(),
+                    connectionStatus = when (state.connectionStatus) {
+                        DeviceState.ConnectionStatus.Disconnected -> Device.ConnectionStatus.Disconnected
+                        DeviceState.ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
+                        DeviceState.ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
+                    },
+                    brewStatus = newBrewStatus,
+                    smartScaleConnected = state.smartScale?.isConnected == true,
+                    alarm = state.waterLevelAlarm
+                )
             )
-        )
+        }
     }
 
     private fun brewSessionDataChanged(session: BrewSession) = modify {

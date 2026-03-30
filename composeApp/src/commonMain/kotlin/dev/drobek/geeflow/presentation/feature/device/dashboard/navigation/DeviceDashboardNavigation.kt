@@ -10,12 +10,12 @@ import dev.drobek.geeflow.platform.permissions.PermissionsControllerFactory
 import dev.drobek.geeflow.platform.permissions.rememberPermissionsControllerFactory
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewModel
-import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleaningScreen
-import dev.drobek.geeflow.presentation.feature.device.dashboard.clean.CleaningViewModel
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Clean
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickMaintenance
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
+import dev.drobek.geeflow.presentation.feature.device.dashboard.quickmaintenance.QuickMaintenanceScreen
+import dev.drobek.geeflow.presentation.feature.device.dashboard.quickmaintenance.QuickMaintenanceViewModel
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsScreen
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewModel
 import kotlinx.serialization.Serializable
@@ -27,8 +27,9 @@ import org.koin.core.parameter.parametersOf
 interface DeviceDashboardNavigation : Navigation {
     fun showDevicesList()
     fun showQuickSettings(deviceId: String)
-    fun showClean(deviceId: String)
+    fun showQuickMaintenance(deviceId: String)
     fun showDeviceSettings(deviceId: String)
+    fun showMaintenanceSettings(deviceId: String)
     fun showConnectivitySettings(deviceId: String)
 }
 
@@ -40,14 +41,14 @@ sealed interface DeviceDashboardDestinations : NavKey {
     data class QuickSettings(val deviceId: String) : DeviceDashboardDestinations
 
     @Serializable
-    data class Clean(val deviceId: String) : DeviceDashboardDestinations
+    data class QuickMaintenance(val deviceId: String) : DeviceDashboardDestinations
 }
 
 val serializerModuleDeviceDashboard = SerializersModule {
     polymorphic(NavKey::class) {
         subclass(Dashboard::class, Dashboard.serializer())
         subclass(QuickSettings::class, QuickSettings.serializer())
-        subclass(Clean::class, Clean.serializer())
+        subclass(QuickMaintenance::class, QuickMaintenance.serializer())
     }
 }
 
@@ -63,8 +64,8 @@ fun EntryProviderScope<NavKey>.deviceDashboardEntries(navigation: DeviceDashboar
         val viewModel = koinViewModel<QuickSettingsViewModel> { parametersOf(it) }
         QuickSettingsScreen(viewModel, navigation)
     }
-    entry<Clean>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
-        val viewModel = koinViewModel<CleaningViewModel> { parametersOf(it) }
-        CleaningScreen(viewModel, navigation)
+    entry<QuickMaintenance>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
+        val viewModel = koinViewModel<QuickMaintenanceViewModel> { parametersOf(it) }
+        QuickMaintenanceScreen(viewModel, navigation)
     }
 }

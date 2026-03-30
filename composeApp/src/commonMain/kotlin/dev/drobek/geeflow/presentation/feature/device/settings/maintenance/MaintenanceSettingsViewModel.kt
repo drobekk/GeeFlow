@@ -65,7 +65,7 @@ internal class MaintenanceSettingsViewModel(
                     restSec = config?.cleaningStandbySec?.toInt()?.toString() ?: "1",
                     count = config?.cleaningCount?.toString() ?: "1"
                 ),
-                waterAlarm = config?.waterAlarm ?: false
+                waterAlarm = config?.waterAlarmEnabled ?: false
             )
         }
         deviceSnapshot = snapshotFromState(viewState.value)

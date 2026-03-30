@@ -4,7 +4,7 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.presentation.feature.device.add.navigation.AddDeviceDestinations.AddDevice
 import dev.drobek.geeflow.presentation.feature.device.add.navigation.AddDeviceNavigation
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Clean
+import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickMaintenance
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
@@ -54,8 +54,8 @@ class AppNavigation(
         backStack.add(QuickSettings(deviceId))
     }
 
-    override fun showClean(deviceId: String) {
-        backStack.add(Clean(deviceId))
+    override fun showQuickMaintenance(deviceId: String) {
+        backStack.add(QuickMaintenance(deviceId))
     }
 
     override fun showBrewingSettings(deviceId: String) {

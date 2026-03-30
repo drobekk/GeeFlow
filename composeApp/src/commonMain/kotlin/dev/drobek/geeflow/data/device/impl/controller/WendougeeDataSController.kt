@@ -401,12 +401,12 @@ class WendougeeDataSController(
     }
 
     override suspend fun setWaterAlarm(enabled: Boolean) {
-        if (_deviceState.value.config?.waterAlarm == enabled) return
+        if (_deviceState.value.config?.waterAlarmEnabled == enabled) return
         modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
         Logger.withTag(TAG).d { "Water alarm set to $enabled" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
-            state.copy(config = config.copy(waterAlarm = enabled))
+            state.copy(config = config.copy(waterAlarmEnabled = enabled))
         }
     }
 

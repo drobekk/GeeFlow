@@ -1,7 +1,13 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +31,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BluetoothAudio
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BluetoothDisabled
-import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,9 +42,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
@@ -46,7 +56,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.CleaningClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.AlarmClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectedDevicesClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ConnectionButtonClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.DeviceClicked
@@ -56,6 +66,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardV
 import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
 import dev.drobek.geeflow.ui.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
+import dev.drobek.geeflow.ui.icons.DeviceHub
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Pressure
 import dev.drobek.geeflow.ui.icons.Steam
@@ -64,6 +75,7 @@ import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_settings
+import geeflow.composeapp.generated.resources.device_dashboard_alarm
 import geeflow.composeapp.generated.resources.device_dashboard_clean
 import geeflow.composeapp.generated.resources.device_dashboard_connected
 import geeflow.composeapp.generated.resources.device_dashboard_connected_devices
@@ -92,8 +104,7 @@ internal fun TopBar(
         DeviceTile(device, onEvent)
         HorizontalSpacer(8.dp)
         ActionBar(
-            smartScaleConnected = device.smartScaleConnected,
-            connectionStatus = device.connectionStatus,
+            device = device,
             onEvent = onEvent,
             modifier = Modifier.weight(1f, false)
         )
@@ -102,8 +113,7 @@ internal fun TopBar(
 
 @Composable
 private fun ActionBar(
-    smartScaleConnected: Boolean,
-    connectionStatus: Device.ConnectionStatus,
+    device: Device,
     onEvent: (DeviceDashboardEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -113,7 +123,7 @@ private fun ActionBar(
     ) {
         Box(Modifier.weight(1f)) {
             ConnectionStatusButton(
-                connectionStatus = connectionStatus,
+                connectionStatus = device.connectionStatus,
                 onEvent = onEvent,
                 modifier = Modifier.fillMaxHeight()
             )
@@ -122,21 +132,18 @@ private fun ActionBar(
         Row(
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
-            ActionBarButton(
-                painter = rememberVectorPainter(Icons.Filled.AutoAwesome),
-                contentDescription = stringResource(Res.string.device_dashboard_clean),
-                onClick = { onEvent(CleaningClicked) },
+            AlarmButton(
+                visible = device.alarm,
+                onClick = { onEvent(AlarmClicked) },
                 modifier = Modifier.clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             ConnectivityButton(
-                smartScaleConnected = smartScaleConnected,
+                smartScaleConnected = device.smartScaleConnected,
                 onClick = { onEvent(ConnectedDevicesClicked) }
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
-            ActionBarButton(
-                painter = rememberVectorPainter(Icons.Filled.Tune),
-                contentDescription = stringResource(Res.string.common_settings),
+            SettingsButton(
                 onClick = { onEvent(QuickSettingsClicked) },
                 modifier = Modifier.clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
             )
@@ -145,9 +152,49 @@ private fun ActionBar(
 }
 
 @Composable
-private fun ActionBarButton(
-    painter: Painter,
-    contentDescription: String,
+private fun AlarmButton(
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) = Box(
+    modifier = modifier
+        .clickable(onClick = onClick)
+        .background(MaterialTheme.colorScheme.surfaceContainer)
+        .height(48.dp)
+        .padding(horizontal = 16.dp),
+    contentAlignment = Alignment.Center
+) {
+    AnimatedContent(targetState = visible) {
+        if (it) {
+            val animation = rememberInfiniteTransition("warningSizeAnimation")
+            val scale by animation.animateFloat(
+                initialValue = 1f,
+                targetValue = 1.2f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(500),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "scale"
+            )
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.Error),
+                contentDescription = stringResource(Res.string.device_dashboard_alarm),
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp).scale(scale)
+            )
+        } else {
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.AutoAwesome),
+                contentDescription = stringResource(Res.string.device_dashboard_clean),
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) = Box(
@@ -159,9 +206,9 @@ private fun ActionBarButton(
     contentAlignment = Alignment.Center
 ) {
     Icon(
-        painter = painter,
+        painter = rememberVectorPainter(Icons.Filled.Tune),
+        contentDescription = stringResource(Res.string.common_settings),
         modifier = Modifier.size(20.dp),
-        contentDescription = contentDescription,
         tint = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
@@ -179,29 +226,20 @@ private fun ConnectivityButton(
         .padding(horizontal = 16.dp),
     contentAlignment = Alignment.Center
 ) {
+    if (smartScaleConnected) {
+        Box(
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                .size(4.dp)
+        )
+    }
     Icon(
-        painter = rememberVectorPainter(Icons.Filled.DeviceHub),
+        painter = rememberVectorPainter(GeeFlowIcon.DeviceHub),
         modifier = Modifier.size(20.dp),
         contentDescription = stringResource(Res.string.device_dashboard_connected_devices),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    Row(
-        modifier = Modifier
-            .padding(bottom = 6.dp)
-            .align(Alignment.BottomCenter),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        val smartScaleColor = if (smartScaleConnected) {
-            MaterialTheme.colorScheme.tertiary
-        } else {
-            MaterialTheme.colorScheme.background
-        }
-        Box(modifier = Modifier.background(smartScaleColor, CircleShape).size(4.dp))
-        // TODO Grinder connectivity
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background, CircleShape).size(4.dp))
-        // TODO Commercial Grinder connectivity
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background, CircleShape).size(4.dp))
-    }
 }
 
 @Composable
@@ -346,17 +384,22 @@ private fun ParameterItem(
 @Composable
 @GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
+    var alarmOn by remember { mutableStateOf(false) }
     TopBar(
         device = Device(
-            name = "Decent DE1",
+            name = "Wendougee Data-S",
             brewBoilerTemp = "93°",
             steamBoilerTemp = "125°",
             pressure = "9.0",
             connectionStatus = Device.ConnectionStatus.Connected,
-            smartScaleConnected = true
+            smartScaleConnected = true,
+            alarm = alarmOn
         ),
         user = User(name = "Kamil"),
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(16.dp),
+        onEvent = {
+            alarmOn = !alarmOn
+        }
     )
 }
 
@@ -370,6 +413,8 @@ private fun PreviewDark() = GeeFlowTheme(true) {
             steamBoilerTemp = "125°",
             pressure = "9.0",
             connectionStatus = Device.ConnectionStatus.Connected,
+            smartScaleConnected = true,
+            alarm = true
         ),
         user = User(name = "Chuck")
     )

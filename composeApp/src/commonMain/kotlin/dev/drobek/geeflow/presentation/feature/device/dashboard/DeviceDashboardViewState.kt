@@ -40,7 +40,8 @@ data class DeviceDashboardViewState(
         val pressure: String? = null,
         val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
         val brewStatus: BrewStatus = BrewStatus.Idle,
-        val smartScaleConnected: Boolean = false
+        val smartScaleConnected: Boolean = false,
+        val alarm: Boolean = false
     ) {
         val isBrewing = brewStatus != BrewStatus.Idle
 

@@ -18,5 +18,6 @@ sealed interface DeviceDashboardEvent {
     data object PermissionDialogResumed : DeviceDashboardEvent
     data object OpenSystemSettingsClicked : DeviceDashboardEvent
     data object Resumed : DeviceDashboardEvent
+    data object AlarmClicked : DeviceDashboardEvent
     data class ProfileSelected(val id: String?) : DeviceDashboardEvent
 }

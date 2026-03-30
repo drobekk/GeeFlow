@@ -53,18 +53,22 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
                     brewBoilerTemp = 93f,
                     steamBoilerTemp = 125f,
                     pressure = 0.0f,
+                    smartScale = it.smartScale,
+                    smartScaleEnabled = it.smartScaleEnabled,
+                    smartScaleSearchActive = it.smartScaleSearchActive,
+                    waterLevelAlarm = it.waterLevelAlarm,
                     config = DeviceState.Config(
-                        targetBrewTemp = 93f,
-                        targetSteamTemp = 125f,
-                        brewBoilerEnabled = true,
-                        steamBoilerEnabled = true,
-                        manualBrewTimeSec = 5f,
-                        manualBrewPressure = 9f,
-                        cleaningTimeSec = 5f,
-                        cleaningStandbySec = 5f,
-                        cleaningCount = 3,
-                        heatingMode = DeviceState.HeatingMode.FullSpeed,
-                        waterAlarm = false
+                        targetBrewTemp = it.config?.targetBrewTemp ?: 93f,
+                        targetSteamTemp = it.config?.targetSteamTemp ?: 125f,
+                        brewBoilerEnabled = it.config?.brewBoilerEnabled ?: true,
+                        steamBoilerEnabled = it.config?.steamBoilerEnabled ?: true,
+                        manualBrewTimeSec = it.config?.manualBrewTimeSec ?: 5f,
+                        manualBrewPressure = it.config?.manualBrewPressure ?: 9f,
+                        cleaningTimeSec = it.config?.cleaningTimeSec ?: 5f,
+                        cleaningStandbySec = it.config?.cleaningStandbySec ?: 5f,
+                        cleaningCount = it.config?.cleaningCount ?: 3,
+                        heatingMode = it.config?.heatingMode ?: DeviceState.HeatingMode.FullSpeed,
+                        waterAlarmEnabled = it.config?.waterAlarmEnabled ?: false
                     )
                 )
             }
@@ -305,7 +309,10 @@ class DemoDeviceController(private val scope: AppCoroutineScope) : DeviceControl
         delay(100)
         _deviceState.update { state ->
             val config = state.config ?: return
-            state.copy(config = config.copy(waterAlarm = enabled))
+            state.copy(
+                config = config.copy(waterAlarmEnabled = enabled),
+                waterLevelAlarm = enabled
+            )
         }
     }
 

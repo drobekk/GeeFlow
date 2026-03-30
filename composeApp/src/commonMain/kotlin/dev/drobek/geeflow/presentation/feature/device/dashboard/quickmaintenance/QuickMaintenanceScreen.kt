@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard.clean
+package dev.drobek.geeflow.presentation.feature.device.dashboard.quickmaintenance
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -31,20 +31,22 @@ import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.waveBackground
 import geeflow.composeapp.generated.resources.Res
+import geeflow.composeapp.generated.resources.common_close
 import geeflow.composeapp.generated.resources.common_cycle
 import geeflow.composeapp.generated.resources.common_flush
 import geeflow.composeapp.generated.resources.common_rest
 import geeflow.composeapp.generated.resources.common_sec
 import geeflow.composeapp.generated.resources.common_times
-import geeflow.composeapp.generated.resources.device_clean_start
-import geeflow.composeapp.generated.resources.device_clean_stop
-import geeflow.composeapp.generated.resources.device_clean_title
+import geeflow.composeapp.generated.resources.device_water_alarm_error
+import geeflow.composeapp.generated.resources.quick_maintenance_start
+import geeflow.composeapp.generated.resources.quick_maintenance_stop
+import geeflow.composeapp.generated.resources.quick_maintenance_title
 import geeflow.composeapp.generated.resources.settings_quick_more
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun CleaningScreen(
-    viewModel: CleaningViewModel,
+internal fun QuickMaintenanceScreen(
+    viewModel: QuickMaintenanceViewModel,
     navigator: DeviceDashboardNavigation
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
@@ -52,23 +54,24 @@ internal fun CleaningScreen(
     EventsDispatcher(viewModel.events) {
         when (it) {
             is Navigation.Back -> navigator.back()
-            is Navigation.DeviceSettings -> {
+            is Navigation.MaintenanceSettings -> {
                 navigator.back()
                 navigator.showDeviceSettings(it.deviceId)
+                navigator.showMaintenanceSettings(it.deviceId)
             }
         }
     }
 
-    CleaningContent(
+    QuickMaintenanceContent(
         viewState = viewState,
         onEvent = viewModel::handleEvent
     )
 }
 
 @Composable
-private fun CleaningContent(
-    viewState: CleaningViewState,
-    onEvent: (CleaningEvent) -> Unit
+private fun QuickMaintenanceContent(
+    viewState: QuickMaintenanceViewState,
+    onEvent: (QuickMaintenanceEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -79,40 +82,61 @@ private fun CleaningContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GeeFlowDialogTopBar(
-            title = stringResource(Res.string.device_clean_title),
-            onCloseClick = { onEvent(CleaningEvent.CloseClicked) }
+            title = stringResource(Res.string.quick_maintenance_title),
+            onCloseClick = { onEvent(QuickMaintenanceEvent.CloseClicked) }
         )
         VerticalSpacer(16.dp)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ProgressItem(
-                label = stringResource(Res.string.common_flush),
-                current = viewState.flushProgress.current,
-                target = viewState.flushProgress.target,
-                unit = stringResource(Res.string.common_sec),
-                modifier = Modifier.weight(1f)
-            )
-            ProgressItem(
-                label = stringResource(Res.string.common_rest),
-                current = viewState.restProgress.current,
-                target = viewState.restProgress.target,
-                unit = stringResource(Res.string.common_sec),
-                modifier = Modifier.weight(1f)
-            )
-            ProgressItem(
-                label = stringResource(Res.string.common_cycle),
-                current = viewState.cycleProgress.current,
-                target = viewState.cycleProgress.target,
-                unit = stringResource(Res.string.common_times),
-                modifier = Modifier.weight(1f)
-            )
+        if (viewState.waterLevelAlarm) {
+            WaterAlarmContent()
+        } else {
+            CleaningProgressContent(viewState)
         }
-
         VerticalSpacer(32.dp)
         Buttons(viewState, onEvent)
+    }
+}
+
+@Composable
+private fun WaterAlarmContent() {
+    Text(
+        text = stringResource(Res.string.device_water_alarm_error),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onErrorContainer,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    )
+}
+
+@Composable
+private fun CleaningProgressContent(viewState: QuickMaintenanceViewState) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ProgressItem(
+            label = stringResource(Res.string.common_flush),
+            current = viewState.flushProgress.current,
+            target = viewState.flushProgress.target,
+            unit = stringResource(Res.string.common_sec),
+            modifier = Modifier.weight(1f)
+        )
+        ProgressItem(
+            label = stringResource(Res.string.common_rest),
+            current = viewState.restProgress.current,
+            target = viewState.restProgress.target,
+            unit = stringResource(Res.string.common_sec),
+            modifier = Modifier.weight(1f)
+        )
+        ProgressItem(
+            label = stringResource(Res.string.common_cycle),
+            current = viewState.cycleProgress.current,
+            target = viewState.cycleProgress.target,
+            unit = stringResource(Res.string.common_times),
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -161,54 +185,49 @@ private fun ProgressItem(
 
 @Composable
 private fun Buttons(
-    viewState: CleaningViewState,
-    onEvent: (CleaningEvent) -> Unit
+    viewState: QuickMaintenanceViewState,
+    onEvent: (QuickMaintenanceEvent) -> Unit
+) = Row(
+    modifier = Modifier.fillMaxWidth(),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
 ) {
-    val buttonColor by animateColorAsState(
-        if (viewState.isCleaning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary
+    TextButton(
+        onClick = { onEvent(QuickMaintenanceEvent.MoreSettingsClicked) },
+        content = { Text(stringResource(Res.string.settings_quick_more)) }
     )
-    val textColor by animateColorAsState(
-        if (viewState.isCleaning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimary
-    )
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        TextButton(
-            onClick = { onEvent(CleaningEvent.MoreSettingsClicked) },
-            content = { Text(stringResource(Res.string.settings_quick_more)) }
+    if (viewState.waterLevelAlarm) {
+        Button(onClick = { onEvent(QuickMaintenanceEvent.CloseClicked) }) {
+            Text(stringResource(Res.string.common_close))
+        }
+    } else {
+        val buttonColor by animateColorAsState(
+            if (viewState.isCleaning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary
+        )
+        val textColor by animateColorAsState(
+            if (viewState.isCleaning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimary
         )
         Button(
-            onClick = { onEvent(CleaningEvent.ToggleCleaningClicked) },
+            onClick = { onEvent(QuickMaintenanceEvent.ToggleCleaningClicked) },
             colors = ButtonDefaults.buttonColors(
                 containerColor = buttonColor,
                 contentColor = textColor
             )
         ) {
-            Text(
-                text = stringResource(
-                    if (viewState.isCleaning) {
-                        Res.string.device_clean_stop
-                    } else {
-                        Res.string.device_clean_start
-                    }
-                )
-            )
+            Text(stringResource(if (viewState.isCleaning) Res.string.quick_maintenance_stop else Res.string.quick_maintenance_start))
         }
     }
 }
 
 @Composable
 @Preview
-private fun CleaningPreviewIdle() = GeeFlowTheme(false) {
-    CleaningContent(
-        viewState = CleaningViewState(
+private fun PreviewCleaning() = GeeFlowTheme(false) {
+    QuickMaintenanceContent(
+        viewState = QuickMaintenanceViewState(
             isCleaning = true,
-            flushProgress = CleaningViewState.Progress(0, 5),
-            restProgress = CleaningViewState.Progress(0, 5),
-            cycleProgress = CleaningViewState.Progress(0, 3)
+            flushProgress = QuickMaintenanceViewState.Progress(3, 5),
+            restProgress = QuickMaintenanceViewState.Progress(0, 5),
+            cycleProgress = QuickMaintenanceViewState.Progress(1, 3)
         ),
         onEvent = {}
     )
@@ -216,14 +235,9 @@ private fun CleaningPreviewIdle() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun CleaningPreviewActive() = GeeFlowTheme(true) {
-    CleaningContent(
-        viewState = CleaningViewState(
-            isCleaning = false,
-            flushProgress = CleaningViewState.Progress(3, 5),
-            restProgress = CleaningViewState.Progress(0, 5),
-            cycleProgress = CleaningViewState.Progress(1, 3)
-        ),
+private fun PreviewWaterAlarm() = GeeFlowTheme(true) {
+    QuickMaintenanceContent(
+        viewState = QuickMaintenanceViewState(waterLevelAlarm = true),
         onEvent = {}
     )
 }
