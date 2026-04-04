@@ -27,12 +27,13 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.VerticalSpacer
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowIconButton
 import dev.drobek.geeflow.ui.components.GeeFlowOutlinedTextField
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
-import dev.drobek.geeflow.ui.conditional
+import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.isWidthExpanded
@@ -48,21 +49,14 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun IntroScreen(introNavigation: IntroNavigation) {
+fun IntroScreen(navigator: Navigator) {
     val viewModel = koinViewModel<IntroViewModel>()
 
     IntroScreenContent(
         onEvent = viewModel::handleEvent
     )
 
-    EventsDispatcher(viewModel.events) {
-        when (it) {
-            is Navigation.AddDevice -> {
-                introNavigation.clearBackStack()
-                introNavigation.showAddDevice()
-            }
-        }
-    }
+    NavigatorEffect(navigator, viewModel.navEvent)
 }
 
 @Composable

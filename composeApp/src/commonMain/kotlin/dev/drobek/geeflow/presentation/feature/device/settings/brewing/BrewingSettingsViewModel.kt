@@ -7,6 +7,7 @@ import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetPulseHeatingModeUseCase
+import dev.drobek.geeflow.navigation.NavEvent
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.ApplyClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
@@ -17,8 +18,10 @@ import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSe
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamTempChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
-import dev.drobek.geeflow.viewmodel.BaseViewModel
+import dev.drobek.geeflow.presentation.feature.device.settings.BrewingSettings
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_settings_applied
 import geeflow.composeapp.generated.resources.error_generic
@@ -97,7 +100,7 @@ internal class BrewingSettingsViewModel(
         is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
         is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
         is ApplyClicked -> saveSettings()
-        is CloseClicked -> emitEvent(Navigation.Back)
+        is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun saveSettings() = with(viewState.value) {
@@ -126,14 +129,14 @@ internal class BrewingSettingsViewModel(
                 )
                 deviceSnapshot = snapshotFromState(viewState.value)
                 modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
-                emitEvent { ShowSnackbar(getString(Res.string.common_settings_applied)) }
+                emitEvent(ShowSnackbar(getString(Res.string.common_settings_applied)))
             }
         )
     }
 
     private fun showError(throwable: Throwable) {
         Logger.e(throwable) { "Error while saving brewing settings" }
-        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
+        launch { emitEvent(ShowSnackbar(getString(Res.string.error_generic))) }
     }
 
     private fun snapshotFromState(state: BrewingSettingsViewState) = DeviceSnapshot(

@@ -7,14 +7,17 @@ import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveFoundScalesUseCase
 import dev.drobek.geeflow.domain.device.usecase.RequestSmartScaleListUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetSmartScaleConnectivityUseCase
+import dev.drobek.geeflow.navigation.NavEvent
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ScaleConnectionClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SmartScaleToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleConnectionStatus
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleViewItem
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.ConnectivitySettings
-import dev.drobek.geeflow.viewmodel.BaseViewModel
+import dev.drobek.geeflow.presentation.feature.device.settings.ConnectivitySettings
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -42,22 +45,22 @@ internal class ConnectivitySettingsViewModel(
                 observeDeviceState(arguments.deviceId),
                 observeFoundScales(arguments.deviceId)
             ) { state, scales -> state to scales }
-            .collect { (state, scales) ->
-                val connectedName = state.smartScale?.name
-                if (connectingScaleName != null && connectedName == connectingScaleName) {
-                    connectingScaleName = null
+                .collect { (state, scales) ->
+                    val connectedName = state.smartScale?.name
+                    if (connectingScaleName != null && connectedName == connectingScaleName) {
+                        connectingScaleName = null
+                    }
+                    if (!state.smartScaleEnabled) connectingScaleName = null
+                    modify {
+                        copy(
+                            smartScaleEnabled = state.smartScaleEnabled,
+                            isSearching = state.smartScaleSearchActive,
+                            scales = if (state.smartScaleEnabled) {
+                                scales.map { it.toViewItem(connectingScaleName, connectedName) }
+                            } else emptyList()
+                        )
+                    }
                 }
-                if (!state.smartScaleEnabled) connectingScaleName = null
-                modify {
-                    copy(
-                        smartScaleEnabled = state.smartScaleEnabled,
-                        isSearching = state.smartScaleSearchActive,
-                        scales = if (state.smartScaleEnabled) {
-                            scales.map { it.toViewItem(connectingScaleName, connectedName) }
-                        } else emptyList()
-                    )
-                }
-            }
         }
     }
 
@@ -65,7 +68,7 @@ internal class ConnectivitySettingsViewModel(
         is SmartScaleToggled -> launchCatching { setSmartScaleConnectivity(arguments.deviceId, event.enabled) }
         is ScaleConnectionClicked -> onScaleConnectionClicked(event.scaleName)
         is RescanClicked -> launchCatching { requestSmartScaleList(arguments.deviceId) }
-        is CloseClicked -> emitEvent(Navigation.Back)
+        is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun onScaleConnectionClicked(scaleName: String) {
@@ -74,6 +77,7 @@ internal class ConnectivitySettingsViewModel(
             ScaleConnectionStatus.Connected -> launchCatching {
                 disconnectSmartScale(arguments.deviceId)
             }
+
             ScaleConnectionStatus.Disconnected -> {
                 connectingScaleName = scaleName
                 modify {
@@ -85,6 +89,7 @@ internal class ConnectivitySettingsViewModel(
                 }
                 launchCatching { connectSmartScale(arguments.deviceId, scaleName) }
             }
+
             ScaleConnectionStatus.Connecting -> Unit
         }
     }

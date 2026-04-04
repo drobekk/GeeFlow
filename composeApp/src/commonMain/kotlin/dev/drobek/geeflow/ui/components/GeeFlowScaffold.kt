@@ -27,8 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.WaveOrientation
-import dev.drobek.geeflow.ui.conditional
+import dev.drobek.geeflow.ui.modifier.WaveOrientation
+import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.isWidthExpanded
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_go_back

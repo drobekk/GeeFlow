@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard
+package dev.drobek.geeflow.presentation.feature.device.dashboard.main
 
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 

@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.ui
+package dev.drobek.geeflow.ui.modifier
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode

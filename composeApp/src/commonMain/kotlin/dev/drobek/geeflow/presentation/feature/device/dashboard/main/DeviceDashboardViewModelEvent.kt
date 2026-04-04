@@ -1,0 +1,6 @@
+package dev.drobek.geeflow.presentation.feature.device.dashboard.main
+
+sealed interface DeviceDashboardViewModelEvent {
+    data class ShowSnackbar(val message: String) : DeviceDashboardViewModelEvent
+}
+

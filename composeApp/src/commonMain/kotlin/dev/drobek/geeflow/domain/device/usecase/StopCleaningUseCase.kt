@@ -5,5 +5,8 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class StopCleaningUseCase(private val provider: DeviceControllerProvider) {
-    suspend operator fun invoke(deviceId: String) = provider.getController(deviceId).stopCleaning()
+    suspend operator fun invoke(deviceId: String) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        stopCleaning()
+    }
 }

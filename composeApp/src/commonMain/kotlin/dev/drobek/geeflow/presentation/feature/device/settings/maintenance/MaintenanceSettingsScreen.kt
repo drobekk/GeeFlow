@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
@@ -36,12 +38,10 @@ import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.Maint
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningTimeChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.WaterAlarmToggled
-import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModelEvent.Navigation
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.HorizontalSpacer
-import dev.drobek.geeflow.ui.VerticalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.isWidthExpanded
@@ -66,7 +66,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun MaintenanceSettingsScreen(
     viewModel: MaintenanceSettingsViewModel,
-    navigation: DeviceSettingsNavigation
+    navigator: Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -78,9 +78,10 @@ internal fun MaintenanceSettingsScreen(
         onEvent = viewModel::handleEvent
     )
 
+    NavigatorEffect(navigator, viewModel.navEvent)
+
     EventsDispatcher(viewModel.events) {
         when (it) {
-            is Navigation.Back -> navigation.back()
             is ShowSnackbar -> coroutineScope.launch {
                 snackbarHostState.currentSnackbarData?.dismiss()
                 snackbarHostState.showSnackbar(it.message)

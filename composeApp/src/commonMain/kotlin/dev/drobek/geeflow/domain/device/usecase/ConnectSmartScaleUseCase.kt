@@ -5,6 +5,8 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class ConnectSmartScaleUseCase(private val provider: DeviceControllerProvider) {
-    suspend operator fun invoke(deviceId: String, name: String) =
-        provider.getController(deviceId).connectSmartScale(name)
+    suspend operator fun invoke(deviceId: String, name: String) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        connectSmartScale(name)
+    }
 }

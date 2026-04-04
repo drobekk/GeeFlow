@@ -6,8 +6,8 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class SetPulseHeatingModeUseCase(private val provider: DeviceControllerProvider) {
-    suspend operator fun invoke(deviceId: String, enabled: Boolean) =
-        provider.getController(deviceId).setHeatingMode(
-            if (enabled) HeatingMode.Pulse else HeatingMode.FullSpeed
-        )
+    suspend operator fun invoke(deviceId: String, enabled: Boolean) = with( provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        setHeatingMode(if (enabled) HeatingMode.Pulse else HeatingMode.FullSpeed)
+    }
 }

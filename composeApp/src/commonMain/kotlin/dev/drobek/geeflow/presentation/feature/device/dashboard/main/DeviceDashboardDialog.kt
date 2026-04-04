@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard
+package dev.drobek.geeflow.presentation.feature.device.dashboard.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -11,9 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Dialog
-import dev.drobek.geeflow.ui.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowDialog
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_open_settings
@@ -23,14 +22,14 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DeviceDashboardDialog(
-    model: Dialog,
+    model: DeviceDashboardViewState.Dialog,
     onEvent: (DeviceDashboardEvent) -> Unit,
 ) {
     GeeFlowDialog(
         onDismissRequest = { onEvent(DeviceDashboardEvent.DialogDismissed) }
     ) {
         when (model) {
-            Dialog.BluetoothPermissionMissing -> BluetoothPermissionMissingDialog(onEvent)
+            DeviceDashboardViewState.Dialog.BluetoothPermissionMissing -> BluetoothPermissionMissingDialog(onEvent)
         }
     }
 }
@@ -60,7 +59,7 @@ private fun BluetoothPermissionMissingDialog(onEvent: (DeviceDashboardEvent) -> 
 @Preview
 private fun Preview() = GeeFlowTheme {
     DeviceDashboardDialog(
-        model = Dialog.BluetoothPermissionMissing,
+        model = DeviceDashboardViewState.Dialog.BluetoothPermissionMissing,
         onEvent = {}
     )
 }

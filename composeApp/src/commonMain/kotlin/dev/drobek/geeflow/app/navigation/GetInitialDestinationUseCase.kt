@@ -3,9 +3,9 @@ package dev.drobek.geeflow.app.navigation
 import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.domain.device.usecase.GetDevicesUseCase
 import dev.drobek.geeflow.domain.user.usecase.GetUsersUseCase
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations
-import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceListDestinations
-import dev.drobek.geeflow.presentation.feature.intro.IntroDestinations
+import dev.drobek.geeflow.navigation.destination.DeviceDashboard
+import dev.drobek.geeflow.navigation.destination.DeviceList
+import dev.drobek.geeflow.navigation.destination.Intro
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -21,11 +21,11 @@ class GetInitialDestinationUseCase(
             devices.isNotEmpty() -> {
                 val selectedUser = users.find { it.isSelected }
                 val deviceId = selectedUser?.favoriteDeviceMacAddress ?: devices.first().macAddress
-                DeviceDashboardDestinations.Dashboard(deviceId)
+                DeviceDashboard(deviceId)
             }
 
-            users.isNotEmpty() -> DeviceListDestinations.DeviceList
-            else -> IntroDestinations.CreateUser
+            users.isNotEmpty() -> DeviceList
+            else -> Intro
         }
     }
 }

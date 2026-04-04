@@ -31,6 +31,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.CloseClicked
@@ -43,10 +44,9 @@ import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSe
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
 import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.HorizontalSpacer
-import dev.drobek.geeflow.ui.VerticalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
@@ -71,7 +71,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun BrewingSettingsScreen(
     viewModel: BrewingSettingsViewModel,
-    navigation: DeviceSettingsNavigation
+    navigator: dev.drobek.geeflow.navigation.Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -83,9 +83,10 @@ internal fun BrewingSettingsScreen(
         onEvent = viewModel::handleEvent
     )
 
+    NavigatorEffect(navigator, viewModel.navEvent)
+
     EventsDispatcher(viewModel.events) {
         when (it) {
-            is Navigation.Back -> navigation.back()
             is ShowSnackbar -> coroutineScope.launch { snackbarHostState.showSnackbar(it.message) }
         }
     }

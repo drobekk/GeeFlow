@@ -23,4 +23,3 @@ class AppModule
 class AppCoroutineScope : CoroutineScope {
     override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Default
 }
-

@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.WaveOrientation
-import dev.drobek.geeflow.ui.waveBackground
+import dev.drobek.geeflow.ui.modifier.WaveOrientation
+import dev.drobek.geeflow.ui.modifier.waveBackground
 
 @Composable
 fun WaveDivider(

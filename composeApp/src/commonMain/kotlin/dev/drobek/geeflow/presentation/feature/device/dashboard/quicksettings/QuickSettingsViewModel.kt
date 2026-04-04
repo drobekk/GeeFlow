@@ -5,7 +5,9 @@ import dev.drobek.geeflow.domain.device.model.DeviceState
 import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.QuickSettings
+import dev.drobek.geeflow.navigation.NavEvent
+import dev.drobek.geeflow.navigation.destination.DeviceSettings
+import dev.drobek.geeflow.presentation.feature.device.dashboard.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewTempChanged
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.CloseClicked
@@ -14,7 +16,9 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.Qu
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamTempChanged
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.viewmodel.BaseViewModel
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.error_generic
 import kotlinx.coroutines.Job
@@ -77,8 +81,11 @@ internal class QuickSettingsViewModel(
         is SteamTempChanged -> modify { copy(steamBoiler = steamBoiler.copy(selectedTemp = event.temp)) }
         is BrewTempChanged -> modify { copy(brewBoiler = brewBoiler.copy(selectedTemp = event.temp)) }
         is ConfirmClicked -> saveSettings()
-        is CloseClicked -> emitEvent(Navigation.Back)
-        is MoreSettingsClicked -> emitEvent(Navigation.DeviceSettings(arguments.deviceId))
+        is CloseClicked -> navigate(NavEvent.Back)
+        is MoreSettingsClicked -> {
+            navigate(NavEvent.Back)
+            navigate(NavEvent.To(DeviceSettings(arguments.deviceId)))
+        }
     }
 
     private fun saveSettings() {
@@ -100,13 +107,13 @@ internal class QuickSettingsViewModel(
                     temp = viewState.value.brewBoiler.selectedTemp.toInt()
                 )
                 modify { copy(applying = false) }
-                emitEvent(Navigation.Back)
+                navigate(NavEvent.Back)
             }
         )
     }
 
     private fun showError(throwable: Throwable) {
         Logger.e(throwable) { "Error while updating quick settings" }
-        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
+        launch { emitEvent(ShowSnackbar(getString(Res.string.error_generic))) }
     }
 }

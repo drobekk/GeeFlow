@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
@@ -49,9 +50,7 @@ import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.Conn
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SmartScaleToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleConnectionStatus
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleViewItem
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
-import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
@@ -73,7 +72,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ConnectivitySettingsScreen(
     viewModel: ConnectivitySettingsViewModel,
-    navigation: DeviceSettingsNavigation
+    navigator: dev.drobek.geeflow.navigation.Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
@@ -82,11 +81,7 @@ internal fun ConnectivitySettingsScreen(
         onEvent = viewModel::handleEvent
     )
 
-    EventsDispatcher(viewModel.events) {
-        when (it) {
-            is Navigation.Back -> navigation.back()
-        }
-    }
+    NavigatorEffect(navigator, viewModel.navEvent)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

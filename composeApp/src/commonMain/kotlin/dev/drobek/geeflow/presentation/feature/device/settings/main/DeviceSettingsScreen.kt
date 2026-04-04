@@ -28,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,21 +36,20 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
+import dev.drobek.geeflow.presentation.feature.device.settings.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.ConnectivitySettings
+import dev.drobek.geeflow.presentation.feature.device.settings.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.BackClicked
-import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.Expanded
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.BrewingSettings
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.ConnectivitySettings
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsNavigation
-import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.WaveOrientation
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowTopBar
 import dev.drobek.geeflow.ui.components.WaveDivider
 import dev.drobek.geeflow.ui.components.scrollFade
 import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.modifier.WaveOrientation
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.compactSpacing
@@ -69,31 +67,23 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun DeviceSettingsScreen(
     viewModel: DeviceSettingsViewModel,
-    navigation: DeviceSettingsNavigation
+    navigator: Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-
-    val selectedIndex = when (navigation.getCurrentDestination()) {
+    val selectedIndex = when (navigator.getCurrentDestination()) {
         is BrewingSettings -> viewState.items.indexOfFirst { it is Item.Brewing }
         is MaintenanceSettings -> viewState.items.indexOfFirst { it is Item.Maintenance }
         is ConnectivitySettings -> viewState.items.indexOfFirst { it is Item.Connectivity }
         else -> null
     }.takeIf { it != null && it >= 0 }
 
+    NavigatorEffect(navigator, viewModel.navEvent)
+
     Content(
         viewState = viewState,
         selectedIndex = selectedIndex,
         onEvent = viewModel::handleEvent
     )
-
-    EventsDispatcher(viewModel.events) {
-        when (it) {
-            is Navigation.Back -> navigation.backFromSettings()
-            is Navigation.BrewingSettings -> navigation.showBrewingSettings(it.deviceId)
-            is Navigation.ConnectivitySettings -> navigation.showConnectivitySettings(it.deviceId)
-            is Navigation.MaintenanceSettings -> navigation.showMaintenanceSettings(it.deviceId)
-        }
-    }
 }
 
 @Composable
@@ -103,9 +93,6 @@ private fun Content(
     onEvent: (DeviceSettingsEvent) -> Unit = {},
 ) {
     if (isWidthExpanded()) {
-        LaunchedEffect(viewState.items.isNotEmpty(), selectedIndex) {
-            if (viewState.items.isNotEmpty() && selectedIndex == null) onEvent(Expanded)
-        }
         ExpandedContent(
             viewState = viewState,
             selectedIndex = selectedIndex,

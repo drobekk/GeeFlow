@@ -33,11 +33,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewState.Boiler
 import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.HorizontalSpacer
-import dev.drobek.geeflow.ui.VerticalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
@@ -54,20 +55,16 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun QuickSettingsScreen(
     viewModel: QuickSettingsViewModel,
-    navigator: DeviceDashboardNavigation
+    navigator: Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    NavigatorEffect(navigator, viewModel.navEvent)
+
     EventsDispatcher(viewModel.events) {
         when (it) {
-            is Navigation.Back -> navigator.back()
-            is Navigation.DeviceSettings -> {
-                navigator.back()
-                navigator.showDeviceSettings(it.deviceId)
-            }
-
             is QuickSettingsViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarHostState.currentSnackbarData?.dismiss()
                 snackbarHostState.showSnackbar(it.message)

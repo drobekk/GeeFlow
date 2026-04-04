@@ -45,6 +45,7 @@
 
     <!-- Device Settings Main -->
     <string name="device_settings_title">Machine Settings</string>
+    <string name="device_settings_placeholder">Select an item to view details</string>
     <string name="device_settings_subtitle">Manage your brewing preferences and device setup</string>
     <string name="device_settings_brewing">Brewing</string>
     <string name="device_settings_brewing_description">Boiler parameters and buttons binding</string>
@@ -127,4 +128,5 @@
     <string name="error_brew_temp_set">Could not set brew boiler temperature</string>
     <string name="error_steam_temp_set">Could not set steam boiler temperature</string>
     <string name="error_connect_device">Device is not connected</string>
+    <string name="error_scale_not_connected">Smart scale is not connected</string>
 </resources>

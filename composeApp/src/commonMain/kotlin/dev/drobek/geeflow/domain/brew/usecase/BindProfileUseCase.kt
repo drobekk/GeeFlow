@@ -3,6 +3,7 @@ package dev.drobek.geeflow.domain.brew.usecase
 import dev.drobek.geeflow.data.brew.api.BrewProfileRepository
 import dev.drobek.geeflow.data.device.api.DeviceRepository
 import dev.drobek.geeflow.data.device.impl.DeviceControllerProvider
+import dev.drobek.geeflow.domain.device.usecase.requireConnected
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -12,9 +13,10 @@ class BindProfileUseCase(
     private val provider: DeviceControllerProvider
 ) {
     @Throws(Exception::class)
-    suspend operator fun invoke(deviceId: String, profileId: Long) {
+    suspend operator fun invoke(deviceId: String, profileId: Long) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
         val profile = brewProfileRepository.getBrewProfileById(profileId) ?: throw Exception("Profile not found")
-        provider.getController(deviceId).bindProfile(profile)
+        bindProfile(profile)
         deviceRepository.bindProfile(deviceId, profileId)
     }
 }

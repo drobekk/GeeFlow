@@ -23,13 +23,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
-import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.VerticalSpacer
-import dev.drobek.geeflow.ui.WaveOrientation
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
+import dev.drobek.geeflow.ui.components.VerticalSpacer
+import dev.drobek.geeflow.ui.modifier.WaveOrientation
 import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.waveBackground
+import dev.drobek.geeflow.ui.modifier.waveBackground
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_close
 import geeflow.composeapp.generated.resources.common_cycle
@@ -47,20 +47,11 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun QuickMaintenanceScreen(
     viewModel: QuickMaintenanceViewModel,
-    navigator: DeviceDashboardNavigation
+    navigator: Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
-    EventsDispatcher(viewModel.events) {
-        when (it) {
-            is Navigation.Back -> navigator.back()
-            is Navigation.MaintenanceSettings -> {
-                navigator.back()
-                navigator.showDeviceSettings(it.deviceId)
-                navigator.showMaintenanceSettings(it.deviceId)
-            }
-        }
-    }
+    NavigatorEffect(navigator, viewModel.navEvent)
 
     QuickMaintenanceContent(
         viewState = viewState,

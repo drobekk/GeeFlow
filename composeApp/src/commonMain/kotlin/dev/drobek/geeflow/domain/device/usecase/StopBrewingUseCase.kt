@@ -6,12 +6,12 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class StopBrewingUseCase(private val provider: DeviceControllerProvider) {
-    suspend operator fun invoke(deviceId: String) {
-        val controller = provider.getController(deviceId)
-        if (controller.deviceState.value.brewStatus == DeviceState.BrewStatus.Profile) {
-            controller.stopProfileBrewing()
+    suspend operator fun invoke(deviceId: String) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        if (deviceState.value.brewStatus == DeviceState.BrewStatus.Profile) {
+            stopProfileBrewing()
         } else {
-            controller.stopManualBrewing()
+            stopManualBrewing()
         }
     }
 }

@@ -5,5 +5,8 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class StartManualBrewingUseCase(private val provider: DeviceControllerProvider) {
-    suspend operator fun invoke(deviceId: String) = provider.getController(deviceId).startManualBrewing()
+    suspend operator fun invoke(deviceId: String) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        startManualBrewing()
+    }
 }

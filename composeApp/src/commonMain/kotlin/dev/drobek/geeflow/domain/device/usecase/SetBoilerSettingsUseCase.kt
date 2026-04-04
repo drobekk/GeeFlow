@@ -6,12 +6,17 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class SetBoilerSettingsUseCase(private val provider: DeviceControllerProvider) {
-    suspend operator fun invoke(deviceId: String, boilerType: BoilerType, enabled: Boolean, temp: Int) {
-        val controller = provider.getController(deviceId)
-        controller.setBoilerState(boilerType, enabled)
+    suspend operator fun invoke(
+        deviceId: String,
+        boilerType: BoilerType,
+        enabled: Boolean,
+        temp: Int
+    ) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        setBoilerState(boilerType, enabled)
         when (boilerType) {
-            BoilerType.Brew -> controller.setBrewTemperature(temp)
-            BoilerType.Steam -> controller.setSteamTemperature(temp)
+            BoilerType.Brew -> setBrewTemperature(temp)
+            BoilerType.Steam -> setSteamTemperature(temp)
         }
     }
 }

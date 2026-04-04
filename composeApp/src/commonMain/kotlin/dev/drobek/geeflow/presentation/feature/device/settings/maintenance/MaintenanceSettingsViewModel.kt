@@ -1,20 +1,22 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.maintenance
 
 import co.touchlab.kermit.Logger
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.domain.device.model.DeviceState
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetCleaningSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetWaterAlarmUseCase
+import dev.drobek.geeflow.navigation.NavEvent
+import dev.drobek.geeflow.presentation.feature.device.settings.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.ApplyClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningCountChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningRestChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningTimeChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.WaterAlarmToggled
-import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModelEvent.Navigation
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.MaintenanceSettings
-import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_settings_applied
 import geeflow.composeapp.generated.resources.error_generic
@@ -77,7 +79,7 @@ internal class MaintenanceSettingsViewModel(
         is CleaningCountChanged -> modify { copy(cleaning = cleaning.copy(count = event.count)).withApplyVisible() }
         is WaterAlarmToggled -> modify { copy(waterAlarm = event.enabled).withApplyVisible() }
         is ApplyClicked -> saveSettings()
-        is CloseClicked -> emitEvent(Navigation.Back)
+        is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun saveSettings() {
@@ -97,14 +99,14 @@ internal class MaintenanceSettingsViewModel(
                 }
                 deviceSnapshot = snapshotFromState(viewState.value)
                 modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
-                emitEvent { ShowSnackbar(getString(Res.string.common_settings_applied)) }
+                emitEvent(ShowSnackbar(getString(Res.string.common_settings_applied)))
             }
         )
     }
 
     private fun showError(throwable: Throwable) {
         Logger.e(throwable) { "Error while saving maintenance settings" }
-        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
+        launch { emitEvent(ShowSnackbar(getString(Res.string.error_generic))) }
     }
 
     private fun snapshotFromState(state: MaintenanceSettingsViewState) = DeviceSnapshot(

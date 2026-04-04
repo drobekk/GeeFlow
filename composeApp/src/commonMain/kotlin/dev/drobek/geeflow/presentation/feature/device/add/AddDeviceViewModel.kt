@@ -1,10 +1,14 @@
 package dev.drobek.geeflow.presentation.feature.device.add
 
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.data.device.api.NearbyDevicesController
 import dev.drobek.geeflow.domain.device.model.Device
 import dev.drobek.geeflow.domain.device.model.SupportedDevice
 import dev.drobek.geeflow.domain.device.usecase.AddDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.ParseDeviceQrCodeUseCase
+import dev.drobek.geeflow.navigation.NavEvent
+import dev.drobek.geeflow.navigation.destination.DeviceList
 import dev.drobek.geeflow.platform.Platform
 import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
@@ -22,9 +26,6 @@ import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModelEven
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.DeviceItem
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.NearbyDevices
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.QrCodeScanner
-import dev.drobek.geeflow.presentation.feature.device.add.Navigation.Back
-import dev.drobek.geeflow.presentation.feature.device.add.Navigation.DevicesList
-import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.add_device_screen_qr_parsing_error
 import org.jetbrains.compose.resources.getString
@@ -46,7 +47,7 @@ internal class AddDeviceViewModel(
     }
 
     fun handleEvent(event: AddDeviceEvent) = when (event) {
-        is BackClicked -> emitEvent(Back)
+        is BackClicked -> navigate(NavEvent.Back)
         is ShowNearbyDevicesClicked -> {
             startScanning()
             modify { copy(method = NearbyDevices()) }
@@ -66,7 +67,8 @@ internal class AddDeviceViewModel(
                 name = "Demo",
                 supportedDevice = SupportedDevice.GeeFlowDemo
             )
-            emitEvent(DevicesList)
+            navigate(NavEvent.ClearBackStack)
+            navigate(NavEvent.To(DeviceList))
         }
     }
 
@@ -81,7 +83,8 @@ internal class AddDeviceViewModel(
         val device = nearbyDevicesController.discoveredDevices.value.find { it.macAddress == id }
         device?.let {
             addDeviceUseCase(macAddress = it.macAddress, name = it.name)
-            emitEvent(DevicesList)
+            navigate(NavEvent.ClearBackStack)
+            navigate(NavEvent.To(DeviceList))
         }
     }
 
@@ -112,7 +115,8 @@ internal class AddDeviceViewModel(
         val device = parseDeviceQrCodeUseCase(data)
         if (device != null) {
             addDeviceUseCase(macAddress = device.macAddress, name = device.name)
-            emitEvent(DevicesList)
+            navigate(NavEvent.ClearBackStack)
+            navigate(NavEvent.To(DeviceList))
         } else {
             launch {
                 emitEvent(ShowSnackbar(getString(Res.string.add_device_screen_qr_parsing_error)))

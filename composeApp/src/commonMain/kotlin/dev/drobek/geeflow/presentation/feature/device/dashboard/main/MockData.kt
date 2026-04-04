@@ -1,11 +1,13 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard
+package dev.drobek.geeflow.presentation.feature.device.dashboard.main
 
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Brew
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.Device
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardViewState.User
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.User
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
+import kotlin.math.cos
+import kotlin.math.sin
 
 fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
     val dataPoints = mutableMapOf<Float, ChartData>()
@@ -15,12 +17,12 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
         val seconds = i / 10f
         val pressure = when {
             seconds < 3f -> seconds * 2f // Pre-infusion ramp
-            seconds < 25f -> 9f + (kotlin.math.sin(seconds) * 0.2f) // Main extraction at ~9 bar
+            seconds < 25f -> 9f + (sin(seconds) * 0.2f) // Main extraction at ~9 bar
             else -> 9f - (seconds - 25f) * 1.5f // Tapering off
         }.coerceAtLeast(0f)
 
-        val flowRate = if (seconds < 3f) 0.5f else 2.2f + (kotlin.math.cos(seconds) * 0.1f)
-        val weightRate = if (seconds < 5f) 0f else 2.8f + (kotlin.math.sin(seconds) * 0.7f)
+        val flowRate = if (seconds < 3f) 0.5f else 2.2f + (cos(seconds) * 0.1f)
+        val weightRate = if (seconds < 5f) 0f else 2.8f + (sin(seconds) * 0.7f)
 
         val volume = seconds * 1.8f
         val weight = if (seconds < 5f) 0f else (seconds - 5f) * 2.1f

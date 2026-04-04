@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.ui
+package dev.drobek.geeflow.ui.modifier
 
 import androidx.compose.ui.Modifier
 

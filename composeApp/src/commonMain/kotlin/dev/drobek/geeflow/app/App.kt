@@ -15,21 +15,13 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.drobek.geeflow.app.navigation.AppNavigation
+import dev.drobek.geeflow.app.navigation.AppNavigator
 import dev.drobek.geeflow.app.navigation.GetInitialDestinationUseCase
-import dev.drobek.geeflow.presentation.feature.device.add.navigation.addDeviceEntries
-import dev.drobek.geeflow.presentation.feature.device.add.navigation.serializerModuleAddDevice
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.deviceDashboardEntries
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.serializerModuleDeviceDashboard
-import dev.drobek.geeflow.presentation.feature.device.list.navigation.deviceListEntries
-import dev.drobek.geeflow.presentation.feature.device.list.navigation.serializerModuleDeviceList
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.deviceSettingsEntries
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.serializerModuleDeviceSettings
-import dev.drobek.geeflow.presentation.feature.intro.introEntries
-import dev.drobek.geeflow.presentation.feature.intro.serializerModuleIntro
+import dev.drobek.geeflow.navigation.NavFeature
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import kotlinx.serialization.modules.plus
 import org.koin.compose.KoinApplication
+import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.plugin.module.dsl.koinConfiguration
 
@@ -46,14 +38,10 @@ fun App(closeApp: () -> Unit) {
 @Composable
 private fun RootNavigation(closeApp: () -> Unit) {
     val getInitialDestinationUseCase = koinInject<GetInitialDestinationUseCase>()
+    val navFeatures: List<NavFeature> = getKoin().getAll<NavFeature>()
     val initialDestination = remember { getInitialDestinationUseCase() }
-    val backStack = rememberNavBackStack(savedStateConfig, initialDestination)
-    val navigator = remember {
-        AppNavigation(
-            finish = { closeApp() },
-            backStack = backStack
-        )
-    }
+    val backStack = rememberNavBackStack(navFeatures.savedStateConfig(), initialDestination)
+    val navigator = remember { AppNavigator(finish = { closeApp() }, backStack = backStack) }
     val dialogSceneStrategy = remember { DialogSceneStrategy<NavKey>() }
     val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
 
@@ -67,19 +55,15 @@ private fun RootNavigation(closeApp: () -> Unit) {
         backStack = backStack,
         predictivePopTransitionSpec = { fadeIn() togetherWith fadeOut() },
         entryProvider = entryProvider {
-            introEntries(navigator)
-            addDeviceEntries(navigator)
-            deviceDashboardEntries(navigator)
-            deviceSettingsEntries(navigator)
-            deviceListEntries(navigator)
+            navFeatures.forEach {
+                with(it) { provideEntries(navigator) }
+            }
         }
     )
 }
 
-private val savedStateConfig = SavedStateConfiguration {
-    serializersModule = serializerModuleAddDevice +
-            serializerModuleDeviceDashboard +
-            serializerModuleIntro +
-            serializerModuleDeviceList +
-            serializerModuleDeviceSettings
+private fun List<NavFeature>.savedStateConfig() = SavedStateConfiguration {
+    serializersModule = this@savedStateConfig
+        .map { it.serializerModule }
+        .reduce { acc, module -> acc + module }
 }

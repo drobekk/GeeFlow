@@ -1,5 +1,7 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.main
 
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.domain.device.model.DeviceCapability
 import dev.drobek.geeflow.domain.device.model.DeviceCapability.BrewBoiler
 import dev.drobek.geeflow.domain.device.model.DeviceCapability.CleaningMode
@@ -12,15 +14,14 @@ import dev.drobek.geeflow.domain.device.model.DeviceCapability.SteamBoiler
 import dev.drobek.geeflow.domain.device.model.DeviceCapability.WaterAlarm
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceCapabilitiesUseCase
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
+import dev.drobek.geeflow.navigation.destination.DeviceSettings
+import dev.drobek.geeflow.navigation.destination.DeviceSettings.EntryPoint
+import dev.drobek.geeflow.presentation.feature.device.settings.BrewingSettings
+import dev.drobek.geeflow.presentation.feature.device.settings.ConnectivitySettings
+import dev.drobek.geeflow.presentation.feature.device.settings.MaintenanceSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.BackClicked
-import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.Expanded
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
-import dev.drobek.geeflow.presentation.feature.device.settings.main.Navigation.BrewingSettings
-import dev.drobek.geeflow.presentation.feature.device.settings.main.Navigation.ConnectivitySettings
-import dev.drobek.geeflow.presentation.feature.device.settings.main.Navigation.MaintenanceSettings
-import dev.drobek.geeflow.presentation.feature.device.settings.navigation.DeviceSettingsDestinations.DeviceSettings
-import dev.drobek.geeflow.viewmodel.BaseViewModel
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.device_settings_brewing
 import geeflow.composeapp.generated.resources.device_settings_brewing_description
@@ -50,18 +51,26 @@ internal class DeviceSettingsViewModel(
     init {
         modify { copy(deviceName = getDeviceUseCase(args.deviceId)?.name.orEmpty()) }
         buildOptions()
+
+        when (args.entryPoint) {
+            EntryPoint.Connectivity -> navigateTo(ConnectivitySettings(args.deviceId))
+            EntryPoint.Maintenance -> navigateTo(MaintenanceSettings(args.deviceId))
+            null -> Unit
+        }
     }
 
     fun handleEvent(event: DeviceSettingsEvent) = when (event) {
-        is BackClicked -> emitEvent(Navigation.Back)
+        is BackClicked -> popTo(args, true)
         is ItemClicked -> onItemClicked(event.item)
-        is Expanded -> viewState.value.items.firstOrNull()?.let(::onItemClicked)
     }
 
-    private fun onItemClicked(item: Item) = when (item) {
-        is Item.Brewing -> emitEvent(BrewingSettings(args.deviceId))
-        is Item.Maintenance -> emitEvent(MaintenanceSettings(args.deviceId))
-        is Item.Connectivity -> emitEvent(ConnectivitySettings(args.deviceId))
+    private fun onItemClicked(item: Item) {
+        popTo(args, false)
+        when (item) {
+            is Item.Brewing -> navigateTo(BrewingSettings(args.deviceId))
+            is Item.Maintenance -> navigateTo(MaintenanceSettings(args.deviceId))
+            is Item.Connectivity -> navigateTo(ConnectivitySettings(args.deviceId))
+        }
     }
 
     private fun buildOptions() = launch {

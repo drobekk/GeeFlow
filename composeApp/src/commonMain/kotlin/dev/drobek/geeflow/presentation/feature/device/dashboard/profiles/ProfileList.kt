@@ -63,9 +63,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.presentation.feature.device.dashboard.getMockProfileListViewState
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
-import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowSwipeToRevealBox
 import dev.drobek.geeflow.ui.components.SwipeToRevealBoxValue
 import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState

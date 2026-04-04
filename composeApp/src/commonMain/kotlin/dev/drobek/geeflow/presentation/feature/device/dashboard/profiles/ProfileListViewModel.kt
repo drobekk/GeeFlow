@@ -9,8 +9,9 @@ import dev.drobek.geeflow.domain.brew.usecase.DeleteProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import dev.drobek.geeflow.domain.exception.toUserMessage
+import dev.drobek.geeflow.navigation.destination.DeviceDashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardDestinations.Dashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
@@ -19,17 +20,16 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.Profile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.RemoveProfileClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.viewmodel.BaseViewModel
-import geeflow.composeapp.generated.resources.Res
-import geeflow.composeapp.generated.resources.error_generic
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import kotlinx.coroutines.flow.combine
-import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.InjectedParam
 
 @Factory
 internal class ProfileListViewModel(
-    @InjectedParam private val args: Dashboard,
+    @InjectedParam private val args: DeviceDashboard,
     private val observeUserProfilesUseCase: ObserveUserProfilesUseCase,
     private val observeDeviceProfileUseCase: ObserveDeviceProfileUseCase,
     private val observeDeviceStateUseCase: ObserveDeviceStateUseCase,
@@ -79,7 +79,7 @@ internal class ProfileListViewModel(
 
     private fun onError(throwable: Throwable) {
         Logger.e(throwable = throwable) { "Unknown error in ProfileListViewModel" }
-        emitEvent { ShowSnackbar(getString(Res.string.error_generic)) }
+        launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
     }
 
     private fun profilesChanged(profiles: List<BrewProfile>, boundProfileId: String?) {

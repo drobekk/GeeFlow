@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard
+package dev.drobek.geeflow.presentation.feature.device.dashboard.main
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
@@ -37,19 +37,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Details
-import dev.drobek.geeflow.presentation.feature.device.dashboard.CompactDashboardPage.Profiles
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.BrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.FlowControlClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ManualBrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ProfileSelected
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.StopBrewClicked
-import dev.drobek.geeflow.presentation.feature.device.dashboard.DeviceDashboardEvent.ToggleChartVisibility
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import dev.drobek.geeflow.presentation.feature.device.dashboard.components.TopBar
-import dev.drobek.geeflow.presentation.feature.device.dashboard.navigation.DeviceDashboardNavigation
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
@@ -57,7 +50,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.Profile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -68,7 +61,7 @@ import kotlinx.coroutines.launch
 internal fun DeviceDashboardScreen(
     viewModel: DeviceDashboardViewModel,
     profileListViewModel: ProfileListViewModel,
-    navigation: DeviceDashboardNavigation
+    navigator: Navigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -90,7 +83,7 @@ internal fun DeviceDashboardScreen(
 
     EventsDispatcher(profileListViewModel.events) {
         when (it) {
-            is SelectProfile -> viewModel.handleEvent(ProfileSelected(it.id))
+            is SelectProfile -> viewModel.handleEvent(DeviceDashboardEvent.ProfileSelected(it.id))
             is ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
                 snackbarState.showSnackbar(it.message)
@@ -98,16 +91,10 @@ internal fun DeviceDashboardScreen(
         }
     }
 
+    NavigatorEffect(navigator, viewModel.navEvent)
+
     EventsDispatcher(viewModel.events) {
         when (it) {
-            is Navigation.Back -> navigation.back()
-            is Navigation.DeviceList -> navigation.showDevicesList()
-            is Navigation.QuickSettings -> navigation.showQuickSettings(it.id)
-            is Navigation.QuickMaintenance -> navigation.showQuickMaintenance(it.id)
-            is Navigation.ConnectivitySettings -> {
-                navigation.showDeviceSettings(it.id)
-                navigation.showConnectivitySettings(it.id)
-            }
 
             is DeviceDashboardViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
@@ -188,16 +175,16 @@ private fun ExpandedDashboard(
                         brew = viewState.brew,
                         isBrewing = viewState.device.isBrewing,
                         visibleCharts = viewState.visibleCharts,
-                        onToggle = { onEvent(ToggleChartVisibility(it)) },
+                        onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
                         modifier = Modifier.weight(1f).padding(bottom = 10.dp)
                     )
                     HorizontalSpacer(16.dp)
                     BrewButton(
                         isBrewing = viewState.device.isBrewing,
-                        onStopClick = { onEvent(StopBrewClicked) },
-                        onManualClick = { onEvent(ManualBrewClicked) },
-                        onFlowClick = { onEvent(BrewClicked) },
-                        onManualFlowClick = { onEvent(FlowControlClicked) }
+                        onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
+                        onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
+                        onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
+                        onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) }
                     )
                 }
             }
@@ -253,10 +240,10 @@ private fun CompactDashboard(
         bottomBar = {
             BrewButton(
                 isBrewing = viewState.device.isBrewing,
-                onStopClick = { onEvent(StopBrewClicked) },
-                onManualClick = { onEvent(ManualBrewClicked) },
-                onFlowClick = { onEvent(BrewClicked) },
-                onManualFlowClick = { onEvent(FlowControlClicked) },
+                onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
+                onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
+                onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
+                onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp)
@@ -278,7 +265,7 @@ private fun CompactDashboard(
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
+                    CompactDashboardPage.Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
                         val selectedProfile = profileListViewState.profiles.find { it.selected }
                         BrewCharts(
                             brew = viewState.brew,
@@ -293,14 +280,14 @@ private fun CompactDashboard(
                             brew = viewState.brew,
                             isBrewing = viewState.device.isBrewing,
                             visibleCharts = viewState.visibleCharts,
-                            onToggle = { onEvent(ToggleChartVisibility(it)) },
+                            onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(start = 24.dp, top = 16.dp, end = 24.dp)
                         )
                     }
 
-                    Profiles.ordinal -> ProfileList(
+                    CompactDashboardPage.Profiles.ordinal -> ProfileList(
                         viewState = profileListViewState,
                         onEvent = onProfileListEvent,
                         modifier = Modifier
@@ -331,8 +318,8 @@ private fun TabRow(
         )
         Text(
             text = when (page) {
-                Details -> "Details"
-                Profiles -> "Profiles"
+                CompactDashboardPage.Details -> "Details"
+                CompactDashboardPage.Profiles -> "Profiles"
             },
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))

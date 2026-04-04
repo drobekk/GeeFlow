@@ -45,10 +45,10 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowLogoShape
 import dev.drobek.geeflow.ui.components.WaveDivider
-import dev.drobek.geeflow.ui.conditional
+import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.FlowControl
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon

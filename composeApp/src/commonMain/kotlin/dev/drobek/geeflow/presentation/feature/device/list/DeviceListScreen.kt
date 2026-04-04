@@ -52,12 +52,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.drobek.geeflow.navigation.Navigator
+import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceClicked
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRemoveClicked
 import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceSetAsDefaultClicked
-import dev.drobek.geeflow.presentation.feature.device.list.navigation.DeviceListNavigation
-import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -74,26 +74,17 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DeviceListScreen(navigation: DeviceListNavigation) {
+fun DeviceListScreen(navigator: Navigator) {
     val viewModel = koinViewModel<DeviceListViewModel>()
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     DevicesListContent(
         viewState = viewState,
-        showBackButton = !navigation.isAtRoot,
+        showBackButton = !navigator.isAtRoot,
         onEvent = viewModel::handleEvent
     )
 
-    EventsDispatcher(viewModel.events) {
-        when (it) {
-            is Navigation.AddDevice -> navigation.showAddDevice()
-            is Navigation.Back -> navigation.back()
-            is Navigation.DeviceDetails -> {
-                navigation.clearBackStack()
-                navigation.showDeviceDashboard(it.id)
-            }
-        }
-    }
+    NavigatorEffect(navigator, viewModel.navEvent)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

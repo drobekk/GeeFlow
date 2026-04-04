@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.ui
+package dev.drobek.geeflow.ui.components
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope

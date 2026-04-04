@@ -21,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_apply
