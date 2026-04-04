@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -62,11 +63,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType.Companion.LongPress
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
-import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowSwipeToRevealBox
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.SwipeToRevealBoxValue
 import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState
 import dev.drobek.geeflow.ui.modifier.squareSize
@@ -80,6 +83,8 @@ import geeflow.composeapp.generated.resources.profile_list_search
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -115,6 +120,15 @@ private fun ProfileListContent(
         }
     }
 
+    val haptic = LocalHapticFeedback.current
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(
+        lazyListState = lazyListState,
+        onMove = { from, to ->
+            onEvent(ProfileListEvent.Reordered(from.index, to.index))
+        }
+    )
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -122,16 +136,29 @@ private fun ProfileListContent(
             .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
     ) {
         LazyColumn(
+            state = lazyListState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp)
         ) {
-            items(filteredProfiles) {
-                ProfileItem(
-                    profile = it,
-                    smartScaleConnected = viewState.smartScaleConnected,
-                    onEvent = onEvent,
-                    modifier = Modifier
-                )
+            items(filteredProfiles, key = { it.id }) { profile ->
+                ReorderableItem(
+                    state = reorderableState,
+                    enabled = !profile.bound,
+                    key = profile.id
+                ) { isDragging ->
+                    val cornerRadius by animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                    ProfileItem(
+                        profile = profile,
+                        smartScaleConnected = viewState.smartScaleConnected,
+                        onEvent = onEvent,
+                        isDragging = isDragging,
+                        modifier = Modifier
+                            .animateItem()
+                            .clip(RoundedCornerShape(cornerRadius))
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .draggableHandle(!profile.bound, onDragStarted = { haptic.performHapticFeedback(LongPress) })
+                    )
+                }
             }
         }
         BottomBar(
@@ -321,6 +348,7 @@ private fun ProfileItem(
     profile: Profile,
     smartScaleConnected: Boolean,
     onEvent: (ProfileListEvent) -> Unit,
+    isDragging: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val swipeToDismissBoxState = rememberSwipeToRevealBoxState()
@@ -330,13 +358,16 @@ private fun ProfileItem(
         state = swipeToDismissBoxState,
         modifier = modifier.fillMaxSize(),
         enableDismissFromStartToEnd = false,
+        gesturesEnabled = !isDragging,
         backgroundContent = {
             ProfileItemRevealContent(
                 profile = profile,
                 modifier = Modifier.fillMaxSize(),
                 onEvent = {
-                    scope.launch { swipeToDismissBoxState.dismiss(SwipeToRevealBoxValue.Settled) }
-                    onEvent(it)
+                    scope.launch {
+                        swipeToDismissBoxState.dismiss(SwipeToRevealBoxValue.Settled)
+                        onEvent(it)
+                    }
                 }
             )
         }

@@ -1,6 +1,9 @@
 package dev.drobek.geeflow.presentation.feature.device.settings.brewing
 
 import co.touchlab.kermit.Logger
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.domain.device.model.DeviceState
 import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
@@ -8,6 +11,7 @@ import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetPulseHeatingModeUseCase
 import dev.drobek.geeflow.navigation.NavEvent
+import dev.drobek.geeflow.presentation.feature.device.settings.BrewingSettings
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.ApplyClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
@@ -18,10 +22,6 @@ import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSe
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.SteamTempChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.presentation.feature.device.settings.BrewingSettings
-import dev.drobek.geeflow.core.presentation.BaseViewModel
-import dev.drobek.geeflow.core.presentation.launch
-import dev.drobek.geeflow.core.presentation.launchCatching
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_settings_applied
 import geeflow.composeapp.generated.resources.error_generic
@@ -100,7 +100,10 @@ internal class BrewingSettingsViewModel(
         is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
         is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
         is ApplyClicked -> saveSettings()
-        is CloseClicked -> navigate(NavEvent.Back)
+        is CloseClicked -> {
+            popTo(arguments, true)
+            navigate(NavEvent.Back)
+        }
     }
 
     private fun saveSettings() = with(viewState.value) {

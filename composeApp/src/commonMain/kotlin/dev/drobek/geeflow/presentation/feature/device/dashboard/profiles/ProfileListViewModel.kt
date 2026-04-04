@@ -1,6 +1,9 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.profiles
 
 import co.touchlab.kermit.Logger
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.domain.brew.model.BrewProfile
 import dev.drobek.geeflow.domain.brew.model.Condition
 import dev.drobek.geeflow.domain.brew.model.ProfileStep
@@ -8,6 +11,7 @@ import dev.drobek.geeflow.domain.brew.usecase.BindProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.DeleteProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
+import dev.drobek.geeflow.domain.brew.usecase.UpdateBrewProfilesPositionsUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.exception.toUserMessage
 import dev.drobek.geeflow.navigation.destination.DeviceDashboard
@@ -18,11 +22,9 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.Profile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.ProfileSelected
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.RemoveProfileClicked
+import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.Reordered
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.core.presentation.BaseViewModel
-import dev.drobek.geeflow.core.presentation.launch
-import dev.drobek.geeflow.core.presentation.launchCatching
 import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.InjectedParam
@@ -34,8 +36,11 @@ internal class ProfileListViewModel(
     private val observeDeviceProfileUseCase: ObserveDeviceProfileUseCase,
     private val observeDeviceStateUseCase: ObserveDeviceStateUseCase,
     private val bindProfileUseCase: BindProfileUseCase,
-    private val deleteProfileUseCase: DeleteProfileUseCase
+    private val deleteProfileUseCase: DeleteProfileUseCase,
+    private val updateBrewProfilesPositionsUseCase: UpdateBrewProfilesPositionsUseCase
 ) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
+
+    private var currentDomainProfiles: List<BrewProfile> = emptyList()
 
     init {
         launch {
@@ -62,6 +67,24 @@ internal class ProfileListViewModel(
         is BindProfileClicked -> bindProfile(event.id)
         is EditProfileClicked -> Unit // TODO
         is RemoveProfileClicked -> removeProfile(event.id)
+        is Reordered -> reorderProfiles(event.from, event.to)
+    }
+
+    private fun reorderProfiles(from: Int, to: Int) {
+        val profiles = viewState.value.profiles.toMutableList()
+        if (profiles[from].bound || profiles[to].bound) return
+
+        val profile = profiles.removeAt(from)
+        profiles.add(to, profile)
+        modify { copy(profiles = profiles) }
+
+        val reorderedDomainProfiles = profiles
+            .mapNotNull { profile -> currentDomainProfiles.find { it.id.toString() == profile.id } }
+            .mapIndexed { index, brewProfile -> brewProfile.copy(position = index) }
+
+        launch {
+            updateBrewProfilesPositionsUseCase(reorderedDomainProfiles)
+        }
     }
 
     private fun removeProfile(id: String) = launchCatching(::onError) {
@@ -83,6 +106,7 @@ internal class ProfileListViewModel(
     }
 
     private fun profilesChanged(profiles: List<BrewProfile>, boundProfileId: String?) {
+        currentDomainProfiles = profiles
         if (profiles.isEmpty()) return
         val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
         modify {

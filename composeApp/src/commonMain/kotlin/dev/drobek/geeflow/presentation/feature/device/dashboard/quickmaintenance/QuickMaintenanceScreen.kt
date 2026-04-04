@@ -25,23 +25,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
+import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.modifier.WaveOrientation
-import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.modifier.waveBackground
+import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_close
 import geeflow.composeapp.generated.resources.common_cycle
 import geeflow.composeapp.generated.resources.common_flush
 import geeflow.composeapp.generated.resources.common_rest
 import geeflow.composeapp.generated.resources.common_sec
+import geeflow.composeapp.generated.resources.common_settings
 import geeflow.composeapp.generated.resources.common_times
 import geeflow.composeapp.generated.resources.device_water_alarm_error
 import geeflow.composeapp.generated.resources.quick_maintenance_start
 import geeflow.composeapp.generated.resources.quick_maintenance_stop
 import geeflow.composeapp.generated.resources.quick_maintenance_title
-import geeflow.composeapp.generated.resources.settings_quick_more
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -185,7 +185,7 @@ private fun Buttons(
 ) {
     TextButton(
         onClick = { onEvent(QuickMaintenanceEvent.MoreSettingsClicked) },
-        content = { Text(stringResource(Res.string.settings_quick_more)) }
+        content = { Text(stringResource(Res.string.common_settings)) }
     )
     if (viewState.waterLevelAlarm) {
         Button(onClick = { onEvent(QuickMaintenanceEvent.CloseClicked) }) {

@@ -12,7 +12,8 @@ data class BrewProfile(
     val mode: ProfileMode = ProfileMode.VariablePressure,
     val finishCondition: Condition,
     val autoLinkOpen: Boolean = false,
-    val steps: List<ProfileStep> = emptyList()
+    val steps: List<ProfileStep> = emptyList(),
+    val position: Int = 0
 )
 
 @Serializable

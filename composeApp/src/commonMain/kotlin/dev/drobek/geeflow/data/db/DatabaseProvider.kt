@@ -24,6 +24,11 @@ private val profileModeAdapter = object : ColumnAdapter<ProfileMode, String> {
     override fun encode(value: ProfileMode): String = value.name
 }
 
+private val positionAdapter = object : ColumnAdapter<Int, Long> {
+    override fun decode(databaseValue: Long): Int = databaseValue.toInt()
+    override fun encode(value: Int): Long = value.toLong()
+}
+
 @Singleton
 class DatabaseProvider(databaseDriverFactory: DatabaseDriverFactory) {
     val database = AppDatabase(
@@ -31,7 +36,8 @@ class DatabaseProvider(databaseDriverFactory: DatabaseDriverFactory) {
         brew_profilesAdapter = Brew_profiles.Adapter(
             modeAdapter = profileModeAdapter,
             finishConditionAdapter = conditionAdapter,
-            stepsAdapter = stepsAdapter
+            stepsAdapter = stepsAdapter,
+            positionAdapter = positionAdapter
         )
     )
 }

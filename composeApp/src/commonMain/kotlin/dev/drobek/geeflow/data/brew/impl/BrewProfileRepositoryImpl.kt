@@ -48,6 +48,13 @@ class BrewProfileRepositoryImpl(
         refresh()
     }
 
+    override fun updateBrewProfilesPositions(profiles: List<BrewProfile>) {
+        profiles.forEach { profile ->
+            brewsDao.insertBrewProfile(profile)
+        }
+        refresh()
+    }
+
     private fun refresh() {
         _brewProfiles.value = brewsDao.getAllBrewProfiles()
     }

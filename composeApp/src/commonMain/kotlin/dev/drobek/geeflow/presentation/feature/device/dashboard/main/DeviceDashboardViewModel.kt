@@ -112,7 +112,10 @@ internal class DeviceDashboardViewModel(
         selectedProfileId
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
-            ?.let { profile -> startProfileBrewing(args.deviceId, profile) }
+            ?.let { profile ->
+                startProfileBrewing(args.deviceId, profile)
+                emitEvent(DeviceDashboardViewModelEvent.SwitchToDetails)
+            }
     }
 
     private fun onProfileSelected(id: String?) {

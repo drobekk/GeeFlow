@@ -19,7 +19,8 @@ class DefaultBrewProfileProvider {
                 ProfileStep.Flow(time = 5, flow = 6f),
                 ProfileStep.Wait(time = 2),
                 ProfileStep.Flow(time = 13, flow = 6f)
-            )
+            ),
+            position = 0
         ),
         BrewProfile(
             userId = userId,
@@ -29,7 +30,8 @@ class DefaultBrewProfileProvider {
             finishCondition = Condition.Volume(40f),
             steps = listOf(
                 ProfileStep.Pressure(time = 30, pressure = 9f)
-            )
+            ),
+            position = 1
         )
     )
 }

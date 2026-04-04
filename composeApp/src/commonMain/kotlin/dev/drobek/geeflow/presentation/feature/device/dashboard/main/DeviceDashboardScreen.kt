@@ -67,6 +67,7 @@ internal fun DeviceDashboardScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarState = remember { SnackbarHostState() }
     val profileListViewState by profileListViewModel.viewState.collectAsStateWithLifecycle()
+    val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
 
     LifecycleResumeEffect(viewModel) {
         viewModel.handleEvent(DeviceDashboardEvent.Resumed)
@@ -78,7 +79,8 @@ internal fun DeviceDashboardScreen(
         onEvent = viewModel::handleEvent,
         profileListViewState = profileListViewState,
         snackbarState = snackbarState,
-        onProfileListEvent = profileListViewModel::handleEvent
+        onProfileListEvent = profileListViewModel::handleEvent,
+        pagerState = pagerState
     )
 
     EventsDispatcher(profileListViewModel.events) {
@@ -95,6 +97,9 @@ internal fun DeviceDashboardScreen(
 
     EventsDispatcher(viewModel.events) {
         when (it) {
+            is DeviceDashboardViewModelEvent.SwitchToDetails -> coroutineScope.launch {
+                pagerState.animateScrollToPage(CompactDashboardPage.Details.ordinal)
+            }
 
             is DeviceDashboardViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
@@ -118,7 +123,8 @@ private fun DeviceDashboardContent(
     onEvent: (DeviceDashboardEvent) -> Unit = {},
     profileListViewState: ProfileListViewState,
     snackbarState: SnackbarHostState = SnackbarHostState(),
-    onProfileListEvent: (ProfileListEvent) -> Unit
+    onProfileListEvent: (ProfileListEvent) -> Unit,
+    pagerState: androidx.compose.foundation.pager.PagerState
 ) {
     if (isWidthExpanded()) {
         ExpandedDashboard(
@@ -134,7 +140,8 @@ private fun DeviceDashboardContent(
             snackbarState = snackbarState,
             onEvent = onEvent,
             profileListViewState = profileListViewState,
-            onProfileListEvent = onProfileListEvent
+            onProfileListEvent = onProfileListEvent,
+            pagerState = pagerState
         )
     }
 }
@@ -219,8 +226,8 @@ private fun CompactDashboard(
     snackbarState: SnackbarHostState,
     onEvent: (DeviceDashboardEvent) -> Unit = {},
     onProfileListEvent: (ProfileListEvent) -> Unit,
+    pagerState: androidx.compose.foundation.pager.PagerState
 ) {
-    val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         modifier = Modifier
@@ -343,11 +350,13 @@ private enum class CompactDashboardPage {
 @Composable
 private fun DeviceDashboardPreview(isDark: Boolean) {
     val state = remember { mutableStateOf(getMockDeviceDashboardViewState()) }
+    val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
     GeeFlowTheme(isDark) {
         DeviceDashboardContent(
             viewState = state.value,
             profileListViewState = getMockProfileListViewState(),
             onProfileListEvent = {},
+            pagerState = pagerState
         )
     }
 }

@@ -28,7 +28,8 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
             mode = brewProfile.mode,
             finishCondition = brewProfile.finishCondition,
             autoLinkOpen = brewProfile.autoLinkOpen,
-            steps = brewProfile.steps
+            steps = brewProfile.steps,
+            position = brewProfile.position
         )
     }
 
@@ -44,7 +45,8 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         mode: ProfileMode,
         finishCondition: Condition,
         autoLinkOpen: Boolean,
-        steps: List<ProfileStep>
+        steps: List<ProfileStep>,
+        position: Int
     ): BrewProfile = BrewProfile(
         id = id,
         userId = userId,
@@ -53,6 +55,7 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         mode = mode,
         finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen,
-        steps = steps
+        steps = steps,
+        position = position
     )
 }

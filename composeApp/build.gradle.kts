@@ -63,6 +63,7 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.vico.compose)
             implementation(libs.vico.compose.m3)
+            implementation(libs.reorderable)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

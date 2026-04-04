@@ -31,8 +31,10 @@ kotlinx-serialization = "1.10.0"
 moko = "0.20.1"
 vico = "3.0.3"
 datastore = "1.2.1"
+reorderable = "3.0.0"
 
 [libraries]
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }

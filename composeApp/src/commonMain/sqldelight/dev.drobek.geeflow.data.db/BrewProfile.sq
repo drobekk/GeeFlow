@@ -3,6 +3,7 @@ import dev.drobek.geeflow.domain.brew.model.ProfileMode;
 import dev.drobek.geeflow.domain.brew.model.ProfileStep;
 import kotlin.collections.List;
 import kotlin.Boolean;
+import kotlin.Int;
 
 CREATE TABLE brew_profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,20 +14,21 @@ CREATE TABLE brew_profiles (
   finishCondition TEXT AS Condition NOT NULL,
   autoLinkOpen INTEGER AS Boolean NOT NULL DEFAULT 0,
   steps TEXT AS List<ProfileStep> NOT NULL,
+  position INTEGER AS Int NOT NULL DEFAULT 0,
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
 selectAll:
-SELECT * FROM brew_profiles;
+SELECT * FROM brew_profiles ORDER BY position ASC;
 
 selectByUserId:
-SELECT * FROM brew_profiles WHERE userId = ?;
+SELECT * FROM brew_profiles WHERE userId = ? ORDER BY position ASC;
 
 selectById:
 SELECT * FROM brew_profiles WHERE id = ?;
 
 insertBrewProfile:
-INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, mode, finishCondition, autoLinkOpen, steps) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, mode, finishCondition, autoLinkOpen, steps, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM brew_profiles WHERE id = ?;

@@ -8,6 +8,8 @@ data class DeviceSettings(val deviceId: String, val entryPoint: EntryPoint? = nu
     @Serializable
     sealed interface EntryPoint {
         @Serializable
+        object Brewing : EntryPoint
+        @Serializable
         object Maintenance : EntryPoint
         @Serializable
         object Connectivity : EntryPoint

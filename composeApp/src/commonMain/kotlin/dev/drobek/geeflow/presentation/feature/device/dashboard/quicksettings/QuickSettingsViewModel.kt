@@ -1,12 +1,16 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
 
 import co.touchlab.kermit.Logger
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.domain.device.model.DeviceState
 import dev.drobek.geeflow.domain.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.navigation.NavEvent
 import dev.drobek.geeflow.navigation.destination.DeviceSettings
+import dev.drobek.geeflow.navigation.destination.DeviceSettings.EntryPoint
 import dev.drobek.geeflow.presentation.feature.device.dashboard.QuickSettings
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewTempChanged
@@ -16,9 +20,6 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.Qu
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamBoilerToggled
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamTempChanged
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewModelEvent.ShowSnackbar
-import dev.drobek.geeflow.core.presentation.BaseViewModel
-import dev.drobek.geeflow.core.presentation.launch
-import dev.drobek.geeflow.core.presentation.launchCatching
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.error_generic
 import kotlinx.coroutines.Job
@@ -84,7 +85,7 @@ internal class QuickSettingsViewModel(
         is CloseClicked -> navigate(NavEvent.Back)
         is MoreSettingsClicked -> {
             navigate(NavEvent.Back)
-            navigate(NavEvent.To(DeviceSettings(arguments.deviceId)))
+            navigate(NavEvent.To(DeviceSettings(arguments.deviceId, EntryPoint.Brewing)))
         }
     }
 

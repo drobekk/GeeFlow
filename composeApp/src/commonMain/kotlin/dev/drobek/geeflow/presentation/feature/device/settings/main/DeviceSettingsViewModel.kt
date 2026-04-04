@@ -53,6 +53,7 @@ internal class DeviceSettingsViewModel(
         buildOptions()
 
         when (args.entryPoint) {
+            EntryPoint.Brewing -> navigateTo(BrewingSettings(args.deviceId))
             EntryPoint.Connectivity -> navigateTo(ConnectivitySettings(args.deviceId))
             EntryPoint.Maintenance -> navigateTo(MaintenanceSettings(args.deviceId))
             null -> Unit
