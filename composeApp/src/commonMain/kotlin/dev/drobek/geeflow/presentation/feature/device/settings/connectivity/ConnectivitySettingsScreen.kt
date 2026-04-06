@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material3.ButtonDefaults
@@ -50,8 +49,8 @@ import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.Conn
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SmartScaleToggled
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleConnectionStatus
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleViewItem
-import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -196,7 +195,7 @@ private fun ScaleItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -250,7 +249,7 @@ private fun ScaleConnectionButton(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = MaterialTheme.shapes.large
     ) {
         if (connectionStatus == ScaleConnectionStatus.Connecting) {
             CircularProgressIndicator(

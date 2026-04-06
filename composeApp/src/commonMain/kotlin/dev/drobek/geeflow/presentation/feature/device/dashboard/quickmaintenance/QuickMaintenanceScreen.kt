@@ -66,7 +66,7 @@ private fun QuickMaintenanceContent(
 ) {
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.background, RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.background, MaterialTheme.shapes.large)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 16.dp)
             .fillMaxWidth(),
@@ -95,7 +95,7 @@ private fun WaterAlarmContent() {
         color = MaterialTheme.colorScheme.onErrorContainer,
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.medium)
             .padding(16.dp)
     )
 }
@@ -143,7 +143,7 @@ private fun ProgressItem(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .waveBackground(
                 targetProgress = targetProgress,

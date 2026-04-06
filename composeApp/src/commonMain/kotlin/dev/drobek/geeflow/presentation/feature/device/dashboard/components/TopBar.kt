@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -64,8 +64,8 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashb
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.User
-import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.icons.DeviceHub
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Pressure
@@ -129,13 +129,19 @@ private fun ActionBar(
             )
         }
         HorizontalSpacer(16.dp)
+        val cornerSize = MaterialTheme.shapes.large.copy(topEnd = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
         Row(
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
             AlarmButton(
                 visible = device.alarm,
                 onClick = { onEvent(AlarmClicked) },
-                modifier = Modifier.clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                modifier = Modifier.clip(
+                    MaterialTheme.shapes.large.copy(
+                        topEnd = CornerSize(0.dp),
+                        bottomEnd = CornerSize(0.dp)
+                    )
+                )
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             ConnectivityButton(
@@ -145,7 +151,12 @@ private fun ActionBar(
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             SettingsButton(
                 onClick = { onEvent(QuickSettingsClicked) },
-                modifier = Modifier.clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                modifier = Modifier.clip(
+                    MaterialTheme.shapes.large.copy(
+                        topStart = CornerSize(0.dp),
+                        bottomStart = CornerSize(0.dp)
+                    )
+                )
             )
         }
     }
@@ -277,7 +288,7 @@ private fun ConnectionStatusButton(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = MaterialTheme.shapes.large
     ) {
         if (connectionStatus == Device.ConnectionStatus.Connecting) {
             CircularProgressIndicator(
@@ -316,7 +327,7 @@ internal fun DeviceTile(
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(MaterialTheme.shapes.medium)
             .clickable(onClick = { onEvent(DeviceClicked) })
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {

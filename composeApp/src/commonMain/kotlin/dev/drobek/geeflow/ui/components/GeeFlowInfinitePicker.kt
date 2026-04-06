@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -103,7 +102,7 @@ fun GeeFlowInfinitePicker(
 
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainer,
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.large,
         modifier = modifier.height(totalHeight)
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -139,7 +138,7 @@ fun GeeFlowInfinitePicker(
 
             Surface(
                 color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(itemHeight)

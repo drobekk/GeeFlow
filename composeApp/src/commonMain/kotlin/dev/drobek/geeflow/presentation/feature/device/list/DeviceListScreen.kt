@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -147,7 +146,7 @@ private fun DeviceItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(onClick = { onEvent(DeviceClicked(device)) })
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
@@ -202,7 +201,7 @@ private fun DeviceItemMenu(device: DeviceListViewState.Device, onEvent: (DeviceL
         DropdownMenu(
             expanded = isMenuVisible,
             onDismissRequest = { isMenuVisible = false },
-            shape = RoundedCornerShape(16.dp)
+            shape = MaterialTheme.shapes.large
         ) {
             DropdownMenuItem(
                 text = { Text(text = stringResource(Res.string.device_list_screen_set_as_default)) },

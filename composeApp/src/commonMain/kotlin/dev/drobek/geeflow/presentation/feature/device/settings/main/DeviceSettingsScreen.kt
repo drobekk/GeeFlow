@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -156,7 +155,7 @@ private fun ExpandedContent(
                                 horizontal = compactSpacing().contentHorizontal,
                                 vertical = 8.dp
                             )
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(MaterialTheme.shapes.large)
                     )
                 }
             }
@@ -197,7 +196,7 @@ private fun CompactContent(
                         item = item,
                         onEvent = onEvent,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(MaterialTheme.shapes.large)
                             .background(MaterialTheme.colorScheme.surfaceContainerLow)
                     )
                 }

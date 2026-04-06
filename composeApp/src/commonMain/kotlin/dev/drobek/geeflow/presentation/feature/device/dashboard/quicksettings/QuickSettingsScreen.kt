@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,11 +36,11 @@ import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewState.Boiler
 import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.components.HorizontalSpacer
-import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
 import geeflow.composeapp.generated.resources.common_brew_boiler
@@ -93,7 +92,7 @@ private fun QuickSettingsContent(
     onEvent: (QuickSettingsEvent) -> Unit
 ) = Column(
     modifier = Modifier
-        .background(MaterialTheme.colorScheme.background, RoundedCornerShape(16.dp))
+        .background(MaterialTheme.colorScheme.background, MaterialTheme.shapes.large)
         .verticalScroll(rememberScrollState())
         .padding(horizontal = 24.dp, vertical = 16.dp)
         .fillMaxWidth(),

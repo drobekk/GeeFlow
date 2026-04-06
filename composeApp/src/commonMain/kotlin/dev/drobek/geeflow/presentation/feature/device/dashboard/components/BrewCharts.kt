@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -90,7 +89,7 @@ internal fun BrewCharts(
     modifier: Modifier = Modifier
 ) {
     val chartModifier = Modifier
-        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(12.dp))
+        .background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.medium)
         .fillMaxWidth()
         .padding(start = 8.dp, top = 16.dp, end = 16.dp, bottom = 8.dp)
 

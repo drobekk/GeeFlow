@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,14 +44,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowLogoShape
+import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.WaveDivider
-import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.FlowControl
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Manual
+import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.composeapp.generated.resources.Res
@@ -105,8 +104,8 @@ fun BrewButton(
             color = secondColor,
             amplitude = 5.dp,
             modifier = Modifier
-                .background(firstColor, RoundedCornerShape(16.dp))
-                .clip(RoundedCornerShape(16.dp))
+                .background(firstColor, MaterialTheme.shapes.large)
+                .clip(MaterialTheme.shapes.large)
                 .height(50.dp)
         )
         transition.AnimatedContent(

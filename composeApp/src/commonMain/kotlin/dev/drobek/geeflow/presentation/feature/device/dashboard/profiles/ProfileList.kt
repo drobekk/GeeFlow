@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -132,8 +131,8 @@ private fun ProfileListContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large)
     ) {
         LazyColumn(
             state = lazyListState,
@@ -146,7 +145,6 @@ private fun ProfileListContent(
                     enabled = !profile.bound,
                     key = profile.id
                 ) { isDragging ->
-                    val cornerRadius by animateDpAsState(if (isDragging) 16.dp else 0.dp)
                     ProfileItem(
                         profile = profile,
                         smartScaleConnected = viewState.smartScaleConnected,
@@ -154,7 +152,6 @@ private fun ProfileListContent(
                         isDragging = isDragging,
                         modifier = Modifier
                             .animateItem()
-                            .clip(RoundedCornerShape(cornerRadius))
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                             .draggableHandle(!profile.bound, onDragStarted = { haptic.performHapticFeedback(LongPress) })
                     )

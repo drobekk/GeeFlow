@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -56,8 +55,8 @@ import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewModelEven
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.NearbyDevices
 import dev.drobek.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.QrCodeScanner
 import dev.drobek.geeflow.ui.EventsDispatcher
-import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.isPreview
@@ -251,7 +250,7 @@ private fun DeviceItem(
     onEvent: (AddDeviceEvent) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(onClick = { onEvent(NearbyDeviceClicked(model.id)) })
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
