@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import dev.bluefalcon.BlueFalcon
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
 import dev.drobek.geeflow.data.db.NativeDatabaseDriverFactory
-import dev.drobek.geeflow.data.users.impl.createIosDataStore
+import dev.drobek.geeflow.data.user.impl.createIosDataStore
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 import platform.UIKit.UIApplication

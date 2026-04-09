@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">GeeFlow</string>
+
+    <!-- COMMON -->
+    <string name="common_go_back">Go back</string>
+    <string name="common_close">Close</string>
+    <string name="common_confirm">Confirm</string>
+    <string name="common_apply">Apply</string>
+    <string name="common_more">More</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_favourite">Favourite</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_stop">Stop</string>
+    <string name="common_flush">Flush</string>
+    <string name="common_rest">Rest</string>
+    <string name="common_cycle">Cycle</string>
+    <string name="common_seconds">seconds</string>
+    <string name="common_sec">sec</string>
+    <string name="common_times">times</string>
+    <string name="common_brew_boiler">Brew Boiler</string>
+    <string name="common_steam_boiler">Steam Boiler</string>
+    <string name="common_avg">(avg)</string>
+    <string name="common_on">ON</string>
+    <string name="common_off">OFF</string>
+    <string name="common_open_settings">Open Settings</string>
+    <string name="common_pressure">Pressure</string>
+    <string name="common_time">Time</string>
+    <string name="common_settings_applied">Settings applied</string>
+    <string name="common_connect">Connect</string>
+    <string name="common_disconnect">Disconnect</string>
+    <string name="common_user_name">User name</string>
+
+    <!-- UNITS -->
+    <string name="unit_bar">bar</string>
+    <string name="unit_grams">g</string>
+    <string name="unit_grams_per_second">g/s</string>
+    <string name="unit_milliliters">ml</string>
+    <string name="unit_milliliters_per_second">ml/s</string>
+
+    <!-- ERRORS -->
+    <string name="error_generic">Oops, something went wrong. Please try again.</string>
+    <string name="error_connect_device">Device is not connected</string>
+    <string name="error_scale_not_connected">Smart scale is needed for profile with weight target</string>
+</resources>

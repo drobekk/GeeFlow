@@ -1,5 +1,6 @@
 package dev.drobek.geeflow.platform
 
+import dev.drobek.geeflow.core.presentation.Platform
 import org.koin.core.annotation.Single
 
 @Single

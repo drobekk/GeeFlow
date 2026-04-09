@@ -1,0 +1,17 @@
+package dev.drobek.geeflow.domain.device.usecase
+
+import dev.drobek.geeflow.data.device.DeviceControllerProvider
+import dev.drobek.geeflow.data.device.model.DeviceState
+import org.koin.core.annotation.Factory
+
+@Factory
+class StopBrewingUseCase(private val provider: DeviceControllerProvider) {
+    suspend operator fun invoke(deviceId: Long) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        if (deviceState.value.brewStatus == DeviceState.BrewStatus.Profile) {
+            stopProfileBrewing()
+        } else {
+            stopManualBrewing()
+        }
+    }
+}

@@ -1,0 +1,54 @@
+CREATE TABLE devices (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  connectionType TEXT NOT NULL,
+  blePeripheralId TEXT,
+  bleMacAddress TEXT,
+  isLastUsed INTEGER NOT NULL DEFAULT 0,
+  manufacturer TEXT NOT NULL DEFAULT '',
+  model TEXT NOT NULL DEFAULT '',
+  version TEXT NOT NULL DEFAULT '',
+  boundProfileId INTEGER DEFAULT NULL
+);
+
+CREATE INDEX devices_ble_mac_idx ON devices(bleMacAddress);
+
+selectAll:
+SELECT * FROM devices;
+
+selectById:
+SELECT * FROM devices WHERE id = ?;
+
+selectByBleMac:
+SELECT * FROM devices WHERE bleMacAddress = ?;
+
+insertDevice:
+INSERT INTO devices(name, connectionType, blePeripheralId, bleMacAddress, isLastUsed, manufacturer, model, version)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+updateDeviceInfo:
+UPDATE devices SET name = ?, isLastUsed = ?, manufacturer = ?, model = ?, version = ? WHERE id = ?;
+
+updateBlePeripheralId:
+UPDATE devices SET blePeripheralId = ? WHERE id = ?;
+
+resetLastUsed:
+UPDATE devices SET isLastUsed = 0;
+
+setLastUsed:
+UPDATE devices SET isLastUsed = 1 WHERE id = ?;
+
+bindProfile:
+UPDATE devices SET boundProfileId = ? WHERE id = ?;
+
+unbindProfile:
+UPDATE devices SET boundProfileId = NULL WHERE id = ?;
+
+deleteById:
+DELETE FROM devices WHERE id = ?;
+
+clearAll:
+DELETE FROM devices;

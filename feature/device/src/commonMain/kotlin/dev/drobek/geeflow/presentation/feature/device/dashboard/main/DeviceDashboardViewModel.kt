@@ -1,0 +1,231 @@
+package dev.drobek.geeflow.presentation.feature.device.dashboard.main
+
+import co.touchlab.kermit.Logger
+import dev.drobek.geeflow.core.presentation.BaseViewModel
+import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.core.presentation.launchCatching
+import dev.drobek.geeflow.data.brew.model.BrewSession
+import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
+import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
+import dev.drobek.geeflow.data.device.model.DeviceState
+import dev.drobek.geeflow.data.device.model.isDemo
+import dev.drobek.geeflow.domain.device.usecase.ConnectDeviceUseCase
+import dev.drobek.geeflow.domain.device.usecase.DisconnectDeviceUseCase
+import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
+import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import dev.drobek.geeflow.domain.device.usecase.StartManualBrewingUseCase
+import dev.drobek.geeflow.domain.device.usecase.StartProfileBrewingUseCase
+import dev.drobek.geeflow.domain.device.usecase.StopBrewingUseCase
+import dev.drobek.geeflow.domain.exception.DeviceNotConnectedException
+import dev.drobek.geeflow.core.presentation.toUserMessage
+import dev.drobek.geeflow.data.user.model.ChartType
+import dev.drobek.geeflow.domain.user.usecase.GetVisibleChartsUseCase
+import dev.drobek.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
+import dev.drobek.geeflow.navigation.NavEvent.To
+import dev.drobek.geeflow.navigation.destination.DeviceDashboard
+import dev.drobek.geeflow.navigation.destination.DeviceList
+import dev.drobek.geeflow.navigation.destination.DeviceSettings
+import dev.drobek.geeflow.navigation.destination.DeviceSettings.EntryPoint
+import dev.drobek.geeflow.platform.permissions.DeniedException
+import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
+import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
+import dev.drobek.geeflow.platform.permissions.PermissionsController
+import dev.drobek.geeflow.presentation.feature.device.dashboard.QuickMaintenance
+import dev.drobek.geeflow.presentation.feature.device.dashboard.QuickSettings
+import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
+import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
+import kotlin.math.pow
+import kotlin.math.round
+import dev.drobek.geeflow.data.device.model.Device as Machine
+
+@KoinViewModel
+internal class DeviceDashboardViewModel(
+    @InjectedParam private val args: DeviceDashboard,
+    @InjectedParam val permissionsController: PermissionsController,
+    getDevice: GetDeviceUseCase,
+    private val observeDeviceState: ObserveDeviceStateUseCase,
+    private val connectDevice: ConnectDeviceUseCase,
+    private val disconnectDevice: DisconnectDeviceUseCase,
+    private val startManualBrewing: StartManualBrewingUseCase,
+    private val startProfileBrewing: StartProfileBrewingUseCase,
+    private val stopBrewing: StopBrewingUseCase,
+    private val observeBrewData: ObserveBrewDataUseCase,
+    private val getVisibleCharts: GetVisibleChartsUseCase,
+    private val toggleChartVisibility: ToggleChartVisibilityUseCase,
+    private val getBrewProfileUseCase: GetBrewProfileUseCase
+) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
+
+    private var selectedProfileId: String? = null
+    private var machine: Machine? = null
+
+    init {
+        machine = getDevice(args.deviceId)
+        modify { copy(device = device.copy(id = args.deviceId, name = machine?.name ?: args.deviceId.toString())) }
+        launch { observeDeviceState(args.deviceId).collect { state -> updateMachineStateUi(state) } }
+        launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
+        launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
+    }
+
+    fun handleEvent(event: DeviceDashboardEvent) = when (event) {
+        is DeviceDashboardEvent.ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
+        is DeviceDashboardEvent.ConnectionButtonClicked -> toggleConnection()
+        is DeviceDashboardEvent.DeviceClicked -> navigate(To(DeviceList))
+        is DeviceDashboardEvent.QuickSettingsClicked -> withDeviceConnected { navigate(To(QuickSettings(args.deviceId))) }
+        is DeviceDashboardEvent.UserClicked -> Unit
+        is DeviceDashboardEvent.ConnectedDevicesClicked -> withDeviceConnected {
+            navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
+        }
+
+        is DeviceDashboardEvent.CleaningClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
+        is DeviceDashboardEvent.DialogDismissed -> modify { copy(dialog = null) }
+        is DeviceDashboardEvent.OpenSystemSettingsClicked -> permissionsController.openAppSettings()
+        is DeviceDashboardEvent.ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
+        is DeviceDashboardEvent.StopBrewClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
+        is DeviceDashboardEvent.FlowControlClicked -> Unit // TODO
+        is DeviceDashboardEvent.BrewClicked -> startProfile()
+        is DeviceDashboardEvent.PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
+        is DeviceDashboardEvent.ProfileSelected -> onProfileSelected(event.id)
+        is DeviceDashboardEvent.Resumed -> connect()
+        is DeviceDashboardEvent.AlarmClicked -> navigate(To(QuickMaintenance(args.deviceId)))
+    }
+
+    private fun toggleConnection() {
+        if (viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Connected) {
+            disconnectDevice(args.deviceId)
+        } else {
+            withBluetoothPermissions {
+                connectDevice(args.deviceId)
+            }
+        }
+    }
+
+    private fun connect() {
+        withBluetoothPermissions {
+            if (viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Disconnected) {
+                connectDevice(args.deviceId)
+            }
+        }
+    }
+
+    private fun startProfile() = launchCatching(::onError) {
+        selectedProfileId
+            ?.toLongOrNull()
+            ?.let { getBrewProfileUseCase(it) }
+            ?.let { profile ->
+                startProfileBrewing(args.deviceId, profile)
+                emitEvent(DeviceDashboardViewModelEvent.SwitchToDetails)
+            }
+    }
+
+    private fun onProfileSelected(id: String?) {
+        selectedProfileId = id
+        selectedProfileId
+            ?.toLongOrNull()
+            ?.let { getBrewProfileUseCase(it) }
+            ?.let { modify { copy(brew = DeviceDashboardViewState.Brew(it.name)) } }
+    }
+
+    private fun updateMachineStateUi(state: DeviceState) {
+        val wasConnected = viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Connected
+        val isNowConnected = state.connectionStatus == DeviceState.ConnectionStatus.Connected
+        if (!wasConnected && isNowConnected && state.waterLevelAlarm) {
+            navigate(To(QuickMaintenance(args.deviceId)))
+        }
+        modify {
+            val newBrewStatus = when (state.brewStatus) {
+                DeviceState.BrewStatus.Manual -> DeviceDashboardViewState.Device.BrewStatus.Manual
+                DeviceState.BrewStatus.Profile -> DeviceDashboardViewState.Device.BrewStatus.Profile
+                else -> DeviceDashboardViewState.Device.BrewStatus.Idle
+            }
+            copy(
+                device = device.copy(
+                    brewBoilerTemp = state.brewBoilerTemp?.roundDecimalsTo(1)?.toString(),
+                    steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),
+                    pressure = state.pressure?.roundDecimalsTo(1)?.toString(),
+                    connectionStatus = when (state.connectionStatus) {
+                        DeviceState.ConnectionStatus.Disconnected -> DeviceDashboardViewState.Device.ConnectionStatus.Disconnected
+                        DeviceState.ConnectionStatus.Connecting -> DeviceDashboardViewState.Device.ConnectionStatus.Connecting
+                        DeviceState.ConnectionStatus.Synchronizing -> DeviceDashboardViewState.Device.ConnectionStatus.Synchronizing
+                        DeviceState.ConnectionStatus.Connected -> DeviceDashboardViewState.Device.ConnectionStatus.Connected
+                    },
+                    brewStatus = newBrewStatus,
+                    smartScaleConnected = state.smartScale?.isConnected == true,
+                    alarm = state.waterLevelAlarm
+                )
+            )
+        }
+    }
+
+    private fun brewSessionDataChanged(session: BrewSession) = modify {
+        copy(
+            brew = brew.copy(
+                time = session.elapsedSeconds,
+                data = session.dataPoints.mapValues { (_, point) ->
+                    ChartData(
+                        pressure = point.pressure,
+                        weight = point.weight,
+                        weightPerSecond = point.weightRate,
+                        volume = point.volume,
+                        volumePerSecond = point.flowRate,
+                    )
+                }
+            )
+        )
+    }
+
+    private fun chartsVisibilityChanged(charts: Set<ChartType>) = modify {
+        copy(visibleCharts = charts.map {
+            when (it) {
+                ChartType.PRESSURE -> DeviceDashboardViewState.DashboardChartType.Pressure
+                ChartType.FLOW_RATE -> DeviceDashboardViewState.DashboardChartType.FlowRate
+                ChartType.WEIGHT_RATE -> DeviceDashboardViewState.DashboardChartType.WeightRate
+                ChartType.VOLUME -> DeviceDashboardViewState.DashboardChartType.Volume
+                ChartType.WEIGHT -> DeviceDashboardViewState.DashboardChartType.Weight
+
+            }
+        }.toSet())
+    }
+
+    private fun withBluetoothPermissions(block: suspend () -> Unit) = launch {
+        try {
+            if (machine?.isDemo == false) {
+                permissionsController.providePermission(PermissionBluetoothScan)
+                permissionsController.providePermission(PermissionBluetoothConnect)
+            }
+            block()
+        } catch (_: DeniedException) {
+            showBluetoothPermissionMissingDialog()
+        }
+    }
+
+    private fun withDeviceConnected(block: () -> Unit) {
+        if (viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Connected) {
+            block()
+        } else {
+            onError(DeviceNotConnectedException(args.deviceId))
+        }
+    }
+
+    private fun showBluetoothPermissionMissingDialog() {
+        modify { copy(dialog = DeviceDashboardViewState.Dialog.BluetoothPermissionMissing) }
+    }
+
+    private fun onError(throwable: Throwable) {
+        Logger.e(throwable = throwable) { "${this::class.simpleName}" }
+        launch { emitEvent(DeviceDashboardViewModelEvent.ShowSnackbar(throwable.toUserMessage())) }
+    }
+
+    private fun DeviceDashboardViewState.DashboardChartType.toDomain() = when (this) {
+        DeviceDashboardViewState.DashboardChartType.Pressure -> ChartType.PRESSURE
+        DeviceDashboardViewState.DashboardChartType.FlowRate -> ChartType.FLOW_RATE
+        DeviceDashboardViewState.DashboardChartType.WeightRate -> ChartType.WEIGHT_RATE
+        DeviceDashboardViewState.DashboardChartType.Volume -> ChartType.VOLUME
+        DeviceDashboardViewState.DashboardChartType.Weight -> ChartType.WEIGHT
+    }
+}
+
+private fun Float.roundDecimalsTo(decimals: Int): Float {
+    val factor = 10f.pow(decimals)
+    return round(this * factor) / factor
+}

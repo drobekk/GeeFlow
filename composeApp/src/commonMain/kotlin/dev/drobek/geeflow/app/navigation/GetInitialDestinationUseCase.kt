@@ -20,7 +20,7 @@ class GetInitialDestinationUseCase(
         return when {
             devices.isNotEmpty() -> {
                 val selectedUser = users.find { it.isSelected }
-                val deviceId = selectedUser?.favoriteDeviceMacAddress ?: devices.first().macAddress
+                val deviceId = selectedUser?.favoriteDeviceId ?: devices.first().id
                 DeviceDashboard(deviceId)
             }
 

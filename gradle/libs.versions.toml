@@ -81,6 +81,14 @@ moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "mok
 moko-permissions-bluetooth = { module = "dev.icerock.moko:permissions-bluetooth", version.ref = "moko" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
 
+# Build logic
+android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-gradlePlugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "composeMultiplatform" }
+compose-compiler-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+sqldelight-gradlePlugin = { module = "app.cash.sqldelight:gradle-plugin", version.ref = "sqldelight" }
+koin-compiler-gradlePlugin = { module = "io.insert-koin:koin-compiler-gradle-plugin", version.ref = "koin-plugin" }
+
 # Other
 qrCode-scanner = { module = "io.github.kalinjul.easyqrscan:scanner", version.ref = "qrCodeScanner" }
 
@@ -91,6 +99,7 @@ sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", versi
 sqldelight-jvm-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 
 # Desktop
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 

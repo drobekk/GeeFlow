@@ -8,7 +8,7 @@ import dev.bluefalcon.BlueFalcon
 import dev.bluefalcon.Logger
 import dev.drobek.geeflow.data.db.AndroidDatabaseDriverFactory
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
-import dev.drobek.geeflow.data.users.impl.createAndroidDataStore
+import dev.drobek.geeflow.data.user.impl.createAndroidDataStore
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
