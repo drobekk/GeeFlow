@@ -10,4 +10,4 @@ fun createDataStore(producePath: () -> String): DataStore<Preferences> =
         produceFile = { producePath().toPath() }
     )
 
-internal const val DATA_STORE_FILE_NAME = "geeflow_settings.preferences_pb"
+internal const val DataStoreFileName = "geeflow_settings.preferences_pb"

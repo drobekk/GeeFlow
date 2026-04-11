@@ -27,5 +27,4 @@ fun expandedSpacing() = Spacing(
     fabVertical = 16.dp
 )
 
-
 val LocalSpacing = staticCompositionLocalOf { compactSpacing() }

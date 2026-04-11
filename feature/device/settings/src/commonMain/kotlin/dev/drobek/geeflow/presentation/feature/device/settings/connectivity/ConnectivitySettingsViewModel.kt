@@ -57,7 +57,9 @@ internal class ConnectivitySettingsViewModel(
                             isSearching = state.smartScaleSearchActive,
                             scales = if (state.smartScaleEnabled) {
                                 scales.map { it.toViewItem(connectingScaleName, connectedName) }
-                            } else emptyList()
+                            } else {
+                                emptyList()
+                            }
                         )
                     }
                 }
@@ -86,7 +88,13 @@ internal class ConnectivitySettingsViewModel(
                 modify {
                     copy(
                         scales = scales.map {
-                            if (it.name == scaleName) it.copy(connectionStatus = ScaleConnectionStatus.Connecting) else it
+                            if (it.name == scaleName) {
+                                it.copy(
+                                    connectionStatus = ScaleConnectionStatus.Connecting
+                                )
+                            } else {
+                                it
+                            }
                         }
                     )
                 }

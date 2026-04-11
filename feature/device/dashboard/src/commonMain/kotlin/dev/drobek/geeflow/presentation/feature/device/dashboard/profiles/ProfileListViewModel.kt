@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.core.presentation.BaseViewModel
 import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.core.presentation.launchCatching
+import dev.drobek.geeflow.core.presentation.toUserMessage
 import dev.drobek.geeflow.data.brew.model.BrewProfile
 import dev.drobek.geeflow.data.brew.model.Condition
 import dev.drobek.geeflow.data.brew.model.ProfileStep
@@ -13,7 +14,6 @@ import dev.drobek.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import dev.drobek.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import dev.drobek.geeflow.domain.brew.usecase.UpdateBrewProfilesPositionsUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
-import dev.drobek.geeflow.core.presentation.toUserMessage
 import dev.drobek.geeflow.navigation.destination.DeviceDashboard
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked

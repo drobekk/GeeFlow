@@ -23,7 +23,6 @@ actual fun getThemeProvider() = object : ThemeProvider {
         } else {
             null
         }
-
     }
 }
 

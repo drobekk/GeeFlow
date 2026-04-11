@@ -30,6 +30,5 @@ class NavEventProviderImpl : NavEventProvider {
         navEventChannel.send(event)
     }
 
-
     override fun popTo(navKey: NavKey, inclusive: Boolean) = navigate(NavEvent.PopTo(navKey, inclusive))
 }

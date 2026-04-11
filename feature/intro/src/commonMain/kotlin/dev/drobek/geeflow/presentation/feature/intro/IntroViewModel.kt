@@ -1,10 +1,10 @@
 package dev.drobek.geeflow.presentation.feature.intro
 
+import dev.drobek.geeflow.core.presentation.BaseViewModel
 import dev.drobek.geeflow.domain.user.usecase.AddUserUseCase
 import dev.drobek.geeflow.navigation.NavEvent.ClearBackStack
 import dev.drobek.geeflow.navigation.NavEvent.To
 import dev.drobek.geeflow.navigation.destination.AddDevice
-import dev.drobek.geeflow.core.presentation.BaseViewModel
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel

@@ -33,7 +33,6 @@ fun GeeFlowSwipeToRevealBox(
     onDismiss: (SwipeToDismissBoxValue) -> Unit = {},
     content: @Composable RowScope.() -> Unit,
 ) {
-
     Box(
         modifier = modifier.anchoredDraggable(
             state = state.anchoredDraggableState,
@@ -44,7 +43,9 @@ fun GeeFlowSwipeToRevealBox(
                     state = state.anchoredDraggableState,
                     positionalThreshold = state.positionalThreshold,
                 )
-            } else null,
+            } else {
+                null
+            },
         ),
         propagateMinConstraints = true,
     ) {
@@ -116,7 +117,6 @@ class SwipeToRevealBoxState {
         this.anchoredDraggableState = AnchoredDraggableState(initialValue)
         this.positionalThreshold = positionalThreshold
     }
-
 
     internal val anchoredDraggableState: AnchoredDraggableState<SwipeToRevealBoxValue>
 

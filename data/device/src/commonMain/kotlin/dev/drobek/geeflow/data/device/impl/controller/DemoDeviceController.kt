@@ -1,15 +1,15 @@
 package dev.drobek.geeflow.data.device.impl.controller
 
-import dev.drobek.geeflow.data.device.DeviceController
-import kotlinx.coroutines.CoroutineScope
 import dev.drobek.geeflow.data.brew.model.BrewProfile
-import dev.drobek.geeflow.data.device.model.Device
-import dev.drobek.geeflow.data.device.model.DeviceConnection
 import dev.drobek.geeflow.data.brew.model.Condition
 import dev.drobek.geeflow.data.brew.model.ProfileStep
+import dev.drobek.geeflow.data.device.DeviceController
+import dev.drobek.geeflow.data.device.model.Device
 import dev.drobek.geeflow.data.device.model.DeviceCapability
+import dev.drobek.geeflow.data.device.model.DeviceConnection
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.data.device.model.SmartScale
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,7 +88,14 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun startManualBrewing() {
-        _deviceState.update { it.copy(brewStatus = DeviceState.BrewStatus.Manual, pressure = 0f, weight = 0f, volume = 0f) }
+        _deviceState.update {
+            it.copy(
+                brewStatus = DeviceState.BrewStatus.Manual,
+                pressure = 0f,
+                weight = 0f,
+                volume = 0f
+            )
+        }
         scope.launch {
             val tickMs = 100L
             val dtSec = tickMs / 1000f
@@ -149,7 +156,14 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun startProfileBrewing(profile: BrewProfile) {
-        _deviceState.update { it.copy(brewStatus = DeviceState.BrewStatus.Profile, pressure = 0f, weight = 0f, volume = 0f) }
+        _deviceState.update {
+            it.copy(
+                brewStatus = DeviceState.BrewStatus.Profile,
+                pressure = 0f,
+                weight = 0f,
+                volume = 0f
+            )
+        }
         scope.launch {
             val tickMs = 100L
             val dtSec = tickMs / 1000f
@@ -311,7 +325,9 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         delay(100)
         _deviceState.update { state ->
             val config = state.config ?: return
-            state.copy(config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count))
+            state.copy(
+                config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count)
+            )
         }
     }
 

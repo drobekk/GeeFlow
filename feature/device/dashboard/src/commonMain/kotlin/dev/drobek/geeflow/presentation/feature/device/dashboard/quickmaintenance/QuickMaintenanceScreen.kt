@@ -205,7 +205,11 @@ private fun Buttons(
                 contentColor = textColor
             )
         ) {
-            Text(stringResource(if (viewState.isCleaning) Res.string.quick_maintenance_stop else Res.string.quick_maintenance_start))
+            Text(
+                stringResource(
+                    if (viewState.isCleaning) Res.string.quick_maintenance_stop else Res.string.quick_maintenance_start
+                )
+            )
         }
     }
 }

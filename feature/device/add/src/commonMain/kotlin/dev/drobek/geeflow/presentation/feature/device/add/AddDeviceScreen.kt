@@ -61,6 +61,7 @@ import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.isPreview
 import geeflow.core.ui.generated.resources.common_open_settings
+import geeflow.core.ui.generated.resources.permission_bluetooth_missing
 import geeflow.feature.device.add.generated.resources.Res
 import geeflow.feature.device.add.generated.resources.add_device_demo
 import geeflow.feature.device.add.generated.resources.add_device_screen_description
@@ -69,7 +70,6 @@ import geeflow.feature.device.add.generated.resources.add_device_screen_no_camer
 import geeflow.feature.device.add.generated.resources.add_device_screen_scan_qr
 import geeflow.feature.device.add.generated.resources.add_device_screen_show_nearby
 import geeflow.feature.device.add.generated.resources.add_device_screen_title
-import geeflow.core.ui.generated.resources.permission_bluetooth_missing
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.publicvalue.multiplatform.qrcode.CameraPosition
@@ -339,7 +339,8 @@ private fun MissingPermissionsMessage(
         )
         VerticalSpacer(24.dp)
         OutlinedButton(
-            onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) }) {
+            onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) }
+        ) {
             Text(text = stringResource(UiRes.string.common_open_settings))
         }
         VerticalSpacer(16.dp)
@@ -383,9 +384,8 @@ private fun PreviewLight() = GeeFlowTheme(false) {
     AddDeviceContent(
         viewState = AddDeviceViewState(
             method = NearbyDevices(
-                changeMethodButtonVisible = true, devices = listOf(
-
-                )
+                changeMethodButtonVisible = true,
+                devices = listOf()
             )
         )
     )

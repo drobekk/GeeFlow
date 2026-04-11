@@ -17,4 +17,3 @@ data class ProfileListViewState(
         val targetData: Map<Float, ChartData> = emptyMap()
     )
 }
-

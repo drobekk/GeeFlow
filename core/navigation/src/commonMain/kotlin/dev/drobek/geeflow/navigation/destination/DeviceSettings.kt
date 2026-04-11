@@ -9,8 +9,10 @@ data class DeviceSettings(val deviceId: Long, val entryPoint: EntryPoint? = null
     sealed interface EntryPoint {
         @Serializable
         object Brewing : EntryPoint
+
         @Serializable
         object Maintenance : EntryPoint
+
         @Serializable
         object Connectivity : EntryPoint
     }

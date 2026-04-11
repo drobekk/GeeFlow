@@ -1,10 +1,10 @@
 package dev.drobek.geeflow.data.device.impl.controller
 
-import dev.drobek.geeflow.data.device.ble.ModbusCrcCalculator
 import dev.drobek.geeflow.data.brew.model.BrewProfile
 import dev.drobek.geeflow.data.brew.model.Condition
 import dev.drobek.geeflow.data.brew.model.ProfileMode
 import dev.drobek.geeflow.data.brew.model.ProfileStep
+import dev.drobek.geeflow.data.device.ble.ModbusCrcCalculator
 
 data class ModbusCommand(val payload: ByteArray, val expectedFc: Byte, val regHi: Byte, val regLo: Byte)
 
@@ -54,7 +54,6 @@ class WendougeeProfileCompiler {
             commands.add(buildWriteSingle(WendougeeRegisters.FV_OFFSET_ZEROING, 0))
             commands.add(buildWriteSingle(WendougeeRegisters.FV_TARGET_VALUE, targetValue.toInt()))
             commands.add(buildWriteSingle(WendougeeRegisters.FV_AUTO_LINK, if (profile.autoLinkOpen) 1 else 0))
-
         } else {
             val startReg = if (isBinding) WendougeeRegisters.CONSTANT_MODE_BOUND_BASE else WendougeeRegisters.CONSTANT_MODE_BASE
 
@@ -114,9 +113,12 @@ class WendougeeProfileCompiler {
         val regHi = (reg ushr 8).toByte()
         val regLo = (reg and 0xFF).toByte()
         val header = byteArrayOf(
-            0x01, 0x06,
-            regHi, regLo,
-            (value ushr 8).toByte(), (value and 0xFF).toByte()
+            0x01,
+            0x06,
+            regHi,
+            regLo,
+            (value ushr 8).toByte(),
+            (value and 0xFF).toByte()
         )
         return ModbusCommand(header + ModbusCrcCalculator.calculateCRC(header), 0x06, regHi, regLo)
     }
@@ -126,20 +128,23 @@ class WendougeeProfileCompiler {
         val regLo = (reg and 0xFF).toByte()
         val num = values.size
         val byteCount = num * 2
-        
+
         val header = byteArrayOf(
-            0x01, 0x10,
-            regHi, regLo,
-            (num ushr 8).toByte(), (num and 0xFF).toByte(),
+            0x01,
+            0x10,
+            regHi,
+            regLo,
+            (num ushr 8).toByte(),
+            (num and 0xFF).toByte(),
             byteCount.toByte()
         )
-        
+
         val data = ByteArray(byteCount)
         values.forEachIndexed { i, v ->
             data[i * 2] = (v ushr 8).toByte()
             data[i * 2 + 1] = (v and 0xFF).toByte()
         }
-        
+
         val payload = header + data
         return ModbusCommand(payload + ModbusCrcCalculator.calculateCRC(payload), 0x10, regHi, regLo)
     }
@@ -150,7 +155,7 @@ class WendougeeProfileCompiler {
         val result = mutableListOf<ResampledPoint>()
         var currentPressure = 0f
         var currentFlow = 0f
-        
+
         val timeline = mutableListOf<ResampledPoint>()
         steps.forEach { step ->
             val durationTicks = (step.time / interval).toInt()
@@ -166,7 +171,7 @@ class WendougeeProfileCompiler {
                 timeline.add(ResampledPoint(currentPressure, currentFlow))
             }
         }
-        
+
         repeat(count) { i ->
             result.add(timeline.getOrNull(i) ?: ResampledPoint(0f, 0f))
         }

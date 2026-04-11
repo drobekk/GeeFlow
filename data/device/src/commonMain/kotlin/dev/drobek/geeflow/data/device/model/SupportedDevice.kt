@@ -23,7 +23,5 @@ sealed class SupportedDevice(
 val Device.supportedDevice: SupportedDevice?
     get() = SupportedDevice.find(manufacturer, model, version)
 
-val Device.isDemo : Boolean
+val Device.isDemo: Boolean
     get() = this.supportedDevice is SupportedDevice.GeeFlowDemo
-
-

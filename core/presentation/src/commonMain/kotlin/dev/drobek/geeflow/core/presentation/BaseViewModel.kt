@@ -7,13 +7,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 
-open class BaseViewModel<ViewState, Event>(initialState: ViewState) : ViewModel(),
+open class BaseViewModel<ViewState, Event>(initialState: ViewState) :
+    ViewModel(),
     ViewStateProvider<ViewState> by StateProviderImpl(initialState),
     EventProvider<Event> by EventProviderImpl(),
     NavEventProvider by NavEventProviderImpl()
 
 fun ViewModel.launch(block: suspend CoroutineScope.() -> Unit) = viewModelScope.launch(block = block)
 
+@Suppress("TooGenericExceptionCaught")
 fun ViewModel.launchCatching(
     onError: (Throwable) -> Unit = {},
     block: suspend CoroutineScope.() -> Unit
@@ -25,4 +27,3 @@ fun ViewModel.launchCatching(
         onError(e)
     }
 }
-

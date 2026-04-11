@@ -92,10 +92,26 @@ internal class BrewingSettingsViewModel(
     }
 
     fun handleEvent(event: BrewingSettingsEvent) = when (event) {
-        is SteamBoilerToggled -> modify { copy(steamBoiler = steamBoiler.copy(enabled = event.enabled)).withApplyVisible() }
-        is BrewBoilerToggled -> modify { copy(brewBoiler = brewBoiler.copy(enabled = event.enabled)).withApplyVisible() }
-        is SteamTempChanged -> modify { copy(steamBoiler = steamBoiler.copy(selectedTemp = event.temp)).withApplyVisible() }
-        is BrewTempChanged -> modify { copy(brewBoiler = brewBoiler.copy(selectedTemp = event.temp)).withApplyVisible() }
+        is SteamBoilerToggled -> modify {
+            copy(
+                steamBoiler = steamBoiler.copy(enabled = event.enabled)
+            ).withApplyVisible()
+        }
+        is BrewBoilerToggled -> modify {
+            copy(
+                brewBoiler = brewBoiler.copy(enabled = event.enabled)
+            ).withApplyVisible()
+        }
+        is SteamTempChanged -> modify {
+            copy(
+                steamBoiler = steamBoiler.copy(selectedTemp = event.temp)
+            ).withApplyVisible()
+        }
+        is BrewTempChanged -> modify {
+            copy(
+                brewBoiler = brewBoiler.copy(selectedTemp = event.temp)
+            ).withApplyVisible()
+        }
         is PulseHeatingToggled -> modify { copy(pulseHeatingEnabled = event.enabled).withApplyVisible() }
         is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
         is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
@@ -155,12 +171,12 @@ internal class BrewingSettingsViewModel(
     private fun BrewingSettingsViewState.withApplyVisible(): BrewingSettingsViewState {
         val snapshot = deviceSnapshot ?: return this
         val changed = brewBoiler.enabled != snapshot.brewBoilerEnabled ||
-                brewBoiler.selectedTemp != snapshot.brewTemp ||
-                steamBoiler.enabled != snapshot.steamBoilerEnabled ||
-                steamBoiler.selectedTemp != snapshot.steamTemp ||
-                pulseHeatingEnabled != snapshot.pulseHeatingEnabled ||
-                paddle.pressure != snapshot.paddlePressure ||
-                paddle.time != snapshot.paddleTime
+            brewBoiler.selectedTemp != snapshot.brewTemp ||
+            steamBoiler.enabled != snapshot.steamBoilerEnabled ||
+            steamBoiler.selectedTemp != snapshot.steamTemp ||
+            pulseHeatingEnabled != snapshot.pulseHeatingEnabled ||
+            paddle.pressure != snapshot.paddlePressure ||
+            paddle.time != snapshot.paddleTime
         return copy(applyButtonVisible = changed)
     }
 

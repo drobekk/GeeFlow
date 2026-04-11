@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
-import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 
 @Composable
 internal fun SettingsToggleRow(

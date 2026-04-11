@@ -23,4 +23,3 @@ actual fun BindEffect(permissionsController: PermissionsController) = MokoBindEf
 
 actual val PermissionBluetoothScan: MokoPermission get() = BluetoothScanPermission
 actual val PermissionBluetoothConnect: MokoPermission get() = BluetoothConnectPermission
-

@@ -92,8 +92,11 @@ class WendougeeDataSController(
         onStateUpdate = { update -> _deviceState.update { it.update() } },
         onScaleFound = { scale ->
             _foundScales.update { current ->
-                if (current.any { it.name == scale.name }) current.map { if (it.name == scale.name) scale else it }
-                else current + scale
+                if (current.any { it.name == scale.name }) {
+                    current.map { if (it.name == scale.name) scale else it }
+                } else {
+                    current + scale
+                }
             }
         },
         onHeartbeat = { onHeartbeatReceived() },
@@ -345,7 +348,9 @@ class WendougeeDataSController(
 
         modbus.writeSingleRegister(targetRegister, stateValue)
 
-        Logger.withTag(TAG).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
+        Logger.withTag(
+            TAG
+        ).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
         _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
             val newConfig = if (boilerType == BoilerType.Steam) {
@@ -465,7 +470,9 @@ class WendougeeDataSController(
         Logger.withTag(TAG).i { "Cleaning settings: time=${timeSec}s standby=${standbySec}s count=$count" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
-            state.copy(config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count))
+            state.copy(
+                config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count)
+            )
         }
     }
 
@@ -526,7 +533,9 @@ class WendougeeDataSController(
             )
         }
 
-        Logger.withTag(TAG).d { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
+        Logger.withTag(
+            TAG
+        ).d { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
         modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
     }
 

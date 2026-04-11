@@ -12,7 +12,7 @@ fun isWidthExpanded(): Boolean {
 }
 
 @Composable
-fun isWidthLarge() : Boolean {
+fun isWidthLarge(): Boolean {
     return calculateWindowSizeClass().isWidthAtLeastBreakpoint(WIDTH_DP_LARGE_LOWER_BOUND)
 }
 

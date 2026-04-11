@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.app
 
 import dev.drobek.geeflow.PlatformModule
-import dev.drobek.geeflow.data.db.DataDbModule
 import dev.drobek.geeflow.data.brew.DataBrewModule
+import dev.drobek.geeflow.data.db.DataDbModule
 import dev.drobek.geeflow.data.device.DataDeviceModule
 import dev.drobek.geeflow.data.user.DataUserModule
 import dev.drobek.geeflow.domain.brew.DomainBrewModule

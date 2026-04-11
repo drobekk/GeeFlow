@@ -3,10 +3,10 @@ package dev.drobek.geeflow.data.device.impl
 import dev.drobek.geeflow.data.device.DeviceController
 import dev.drobek.geeflow.data.device.DeviceControllerProvider
 import dev.drobek.geeflow.data.device.DeviceRepository
-import dev.drobek.geeflow.data.device.model.SupportedDevice
-import dev.drobek.geeflow.data.device.model.supportedDevice
 import dev.drobek.geeflow.data.device.impl.controller.DemoDeviceController
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeDataSController
+import dev.drobek.geeflow.data.device.model.SupportedDevice
+import dev.drobek.geeflow.data.device.model.supportedDevice
 import org.koin.core.annotation.Single
 
 @Single(binds = [DeviceControllerProvider::class])

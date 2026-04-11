@@ -7,17 +7,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import geeflow.core.ui.generated.resources.Bitter_Regular
 import geeflow.core.ui.generated.resources.Bitter_SemiBold
-import geeflow.core.ui.generated.resources.Raleway_Bold
-import geeflow.core.ui.generated.resources.Raleway_Medium
 import geeflow.core.ui.generated.resources.Res
 import org.jetbrains.compose.resources.Font
 
 @Composable
 internal fun geeFlowTypography(): Typography {
-    val sansSerifFont = FontFamily(
-        Font(Res.font.Raleway_Medium, FontWeight.Normal),
-        Font(Res.font.Raleway_Bold, FontWeight.Bold),
-    )
     val serifFont = FontFamily(
         Font(Res.font.Bitter_Regular, FontWeight.Normal),
         Font(Res.font.Bitter_SemiBold, FontWeight.Bold)
@@ -37,4 +31,3 @@ internal fun geeFlowTypography(): Typography {
         )
     }
 }
-

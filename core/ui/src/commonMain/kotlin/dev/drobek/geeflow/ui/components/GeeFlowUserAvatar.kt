@@ -29,11 +29,11 @@ fun GeeFlowUserAvatar(
     // TODO Load avatar from uri
     Box(
         modifier =
-            modifier
-                .clip(CircleShape)
-                .clickable(onClick = onClick)
-                .aspectRatio(1f)
-                .background(MaterialTheme.colorScheme.surfaceContainer),
+        modifier
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+            .aspectRatio(1f)
+            .background(MaterialTheme.colorScheme.surfaceContainer),
         contentAlignment = Alignment.BottomCenter
     ) {
         Icon(

@@ -18,8 +18,6 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.sin
 
-enum class WaveOrientation { Horizontal, Vertical }
-
 fun Modifier.waveBackground(
     targetProgress: Float,
     color: Color,
@@ -145,3 +143,5 @@ fun Modifier.waveBackground(
         drawPath(path = path, color = color)
     }
 }
+
+enum class WaveOrientation { Horizontal, Vertical }

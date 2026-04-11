@@ -179,7 +179,7 @@ private fun BoilerHeader(
         )
         HorizontalSpacer(4.dp)
         Text(
-            text = "(${actualTemp}°)",
+            text = "($actualTemp°)",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.domain.brew.usecase
 
 import dev.drobek.geeflow.data.brew.BrewProfileRepository
-import dev.drobek.geeflow.data.device.DeviceRepository
 import dev.drobek.geeflow.data.device.DeviceControllerProvider
+import dev.drobek.geeflow.data.device.DeviceRepository
 import dev.drobek.geeflow.domain.device.usecase.requireConnected
 import org.koin.core.annotation.Factory
 

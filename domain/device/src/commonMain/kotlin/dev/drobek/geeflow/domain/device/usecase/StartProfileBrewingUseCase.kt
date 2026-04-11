@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.domain.device.usecase
 
-import dev.drobek.geeflow.data.device.DeviceControllerProvider
 import dev.drobek.geeflow.data.brew.model.BrewProfile
 import dev.drobek.geeflow.data.brew.model.Condition
+import dev.drobek.geeflow.data.device.DeviceControllerProvider
 import dev.drobek.geeflow.domain.exception.ScaleNotConnectedException
 import org.koin.core.annotation.Factory
 

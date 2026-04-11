@@ -9,4 +9,3 @@ sealed interface DeviceListEvent {
     data object AddDeviceClicked : DeviceListEvent
     data object BackClicked : DeviceListEvent
 }
-

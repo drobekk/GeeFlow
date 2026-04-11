@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.domain.brew.usecase
 
-import dev.drobek.geeflow.data.device.DeviceControllerProvider
 import dev.drobek.geeflow.data.brew.model.BrewDataPoint
 import dev.drobek.geeflow.data.brew.model.BrewSession
+import dev.drobek.geeflow.data.device.DeviceControllerProvider
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.Flow

@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class KmpLibraryConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) = with(target) {
+        pluginManager.apply("detekt")
         pluginManager.apply(libs.findPlugin("kotlinMultiplatform").get().get().pluginId)
         pluginManager.apply(libs.findPlugin("androidKmpLibrary").get().get().pluginId)
 

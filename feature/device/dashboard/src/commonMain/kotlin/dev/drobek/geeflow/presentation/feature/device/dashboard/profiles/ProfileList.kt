@@ -113,9 +113,12 @@ private fun ProfileListContent(
     val verticalBias by animateFloatAsState(if (isSearchExpanded) -1.0f else 1.0f)
 
     val filteredProfiles = remember(viewState.profiles, searchQuery) {
-        if (searchQuery.isBlank()) viewState.profiles
-        else viewState.profiles.filter {
-            it.name.contains(searchQuery, ignoreCase = true) || it.description.contains(searchQuery, ignoreCase = true)
+        if (searchQuery.isBlank()) {
+            viewState.profiles
+        } else {
+            viewState.profiles.filter {
+                it.name.contains(searchQuery, ignoreCase = true) || it.description.contains(searchQuery, ignoreCase = true)
+            }
         }
     }
 
@@ -153,7 +156,10 @@ private fun ProfileListContent(
                         modifier = Modifier
                             .animateItem()
                             .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .draggableHandle(!profile.bound, onDragStarted = { haptic.performHapticFeedback(LongPress) })
+                            .draggableHandle(
+                                !profile.bound,
+                                onDragStarted = { haptic.performHapticFeedback(LongPress) }
+                            )
                     )
                 }
             }
@@ -246,7 +252,6 @@ private fun BottomBar(
         )
     }
 }
-
 
 @Composable
 private fun SearchBar(

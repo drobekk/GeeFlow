@@ -16,7 +16,7 @@ class ToggleChartVisibilityUseCase(
         } else {
             currentSet + type
         }
-        
+
         repository.setVisibleCharts(newSet)
     }
 }

@@ -48,8 +48,10 @@ sealed interface Condition {
 enum class ProfileMode(val value: Int) {
     @SerialName("1")
     VariablePressure(1),
+
     @SerialName("2")
     ConstantPressure(2),
+
     @SerialName("3")
     FreeVariable(3)
 }

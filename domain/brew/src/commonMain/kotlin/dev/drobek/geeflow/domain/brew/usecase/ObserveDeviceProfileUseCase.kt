@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.domain.brew.usecase
 
 import dev.drobek.geeflow.data.brew.BrewProfileRepository
-import dev.drobek.geeflow.data.device.DeviceRepository
 import dev.drobek.geeflow.data.brew.model.BrewProfile
+import dev.drobek.geeflow.data.device.DeviceRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.Factory

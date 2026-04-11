@@ -241,8 +241,9 @@ private fun PickerSearchField(
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .onFocusChanged {
-                if (it.isFocused) wasFocused = true
-                else if (wasFocused) onDismiss()
+                if (it.isFocused) {
+                    wasFocused = true
+                } else if (wasFocused) onDismiss()
             }
             .padding(horizontal = 16.dp),
         decorationBox = { innerTextField ->

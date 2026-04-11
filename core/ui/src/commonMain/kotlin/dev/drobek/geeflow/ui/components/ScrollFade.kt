@@ -42,12 +42,16 @@ fun Modifier.scrollFade(
     position: FadePosition = FadePosition.Top,
 ): Modifier {
     val atTopState =
-        remember(listState) { derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 } }
+        remember(listState) {
+            derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+        }
     val atEndState = remember(listState) {
         derivedStateOf {
             val info = listState.layoutInfo
             val total = info.totalItemsCount
-            if (total == 0) true else {
+            if (total == 0) {
+                true
+            } else {
                 val lastVisible = info.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf true
                 if (lastVisible.index < total - 1) {
                     false

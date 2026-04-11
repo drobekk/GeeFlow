@@ -55,7 +55,7 @@ class BlueFalconBleClient(
     }
 
     override fun stopScan() {
-        if (connectPeripheralId != null) return  // scan is owned by connect() — don't interrupt it
+        if (connectPeripheralId != null) return // scan is owned by connect() — don't interrupt it
         blueFalcon.stopScanning()
     }
 

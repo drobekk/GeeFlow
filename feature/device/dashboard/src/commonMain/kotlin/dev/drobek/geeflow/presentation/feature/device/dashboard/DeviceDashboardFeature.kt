@@ -37,7 +37,8 @@ internal class DeviceDashboardNavFeature : NavFeature {
     override fun EntryProviderScope<NavKey>.provideEntries(navigator: Navigator) {
         entry<Main> {
             val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
-            val viewModel = koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
+            val viewModel =
+                koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
             val profileListViewModel = koinViewModel<ProfileListViewModel> { parametersOf(it) }
             BindEffect(viewModel.permissionsController)
             DeviceDashboardScreen(viewModel, profileListViewModel, navigator)

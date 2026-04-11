@@ -35,13 +35,13 @@ object WendougeeRegisters {
 
     // Profile Upload: Free Variable Memory Regions
     val FV_MEMORY_REGIONS = listOf(
-        760,  // Pressure First Half
-        824,  // Pressure Second Half
-        888,  // Relative Flow First Half
-        952,  // Relative Flow Second Half
+        760, // Pressure First Half
+        824, // Pressure Second Half
+        888, // Relative Flow First Half
+        952, // Relative Flow Second Half
         1016, // Weight First Half
         1080, // Weight Second Half
         1500, // Absolute Flow First Half
-        1564  // Absolute Flow Second Half
+        1564 // Absolute Flow Second Half
     )
 }

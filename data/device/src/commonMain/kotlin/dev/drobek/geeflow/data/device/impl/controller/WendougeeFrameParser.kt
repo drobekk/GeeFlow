@@ -169,11 +169,11 @@ class WendougeeFrameParser(
 
             Logger.withTag(TAG).i {
                 "Config: brew=${targetBrew.toInt()}°C steam=${targetSteam.toInt()}°C" +
-                        " | boilers: brew=${if (isBrewBoilerEnabled) "ON" else "OFF"} steam=${if (isSteamBoilerEnabled) "ON" else "OFF"}" +
-                        " | heating=${if (isFullSpeedHeating) "FullSpeed" else "Pulse"}" +
-                        " | manual=${manualBrewTimeSec}s@${manualBrewPressure}bar" +
-                        " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×${cleaningCount}" +
-                        " | waterAlarm=${waterAlarm}"
+                    " | boilers: brew=${if (isBrewBoilerEnabled) "ON" else "OFF"} steam=${if (isSteamBoilerEnabled) "ON" else "OFF"}" +
+                    " | heating=${if (isFullSpeedHeating) "FullSpeed" else "Pulse"}" +
+                    " | manual=${manualBrewTimeSec}s@${manualBrewPressure}bar" +
+                    " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×$cleaningCount" +
+                    " | waterAlarm=$waterAlarm"
             }
 
             onStateUpdate {
@@ -232,9 +232,9 @@ class WendougeeFrameParser(
 
             if (shouldLogPolling()) {
                 Logger.withTag(TAG).i {
-                    "Brew: ${brewActual}°C | Steam: ${steamActual}°C | Pressure: ${pressure}bar" +
-                            " | Weight: ${weight}g (${weightRate}g/s) | Volume: ${volume}ml (${flowRate}ml/s) | " +
-                            "Time: ${time}s | Water alarm: $waterLevelAlarm"
+                    "Brew: $brewActual°C | Steam: $steamActual°C | Pressure: ${pressure}bar" +
+                        " | Weight: ${weight}g (${weightRate}g/s) | Volume: ${volume}ml (${flowRate}ml/s) | " +
+                        "Time: ${time}s | Water alarm: $waterLevelAlarm"
                 }
             }
 

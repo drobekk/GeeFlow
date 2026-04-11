@@ -146,9 +146,16 @@ internal fun BrewCharts(
     }
     val flowTarget = if (showFlowRate) {
         sortedFlowTarget?.let {
-            TargetBrewData(it.map { e -> e.key }, it.map { e -> e.value }, waterColor.copy(alpha = 0.5f), unitMlPerSecond)
+            TargetBrewData(
+                it.map { e -> e.key },
+                it.map { e -> e.value },
+                waterColor.copy(alpha = 0.5f),
+                unitMlPerSecond
+            )
         }
-    } else null
+    } else {
+        null
+    }
 
     val accumSeries = buildList {
         if (showVolume) add(BrewChartSeries(sortedPoints.map { it.volume }, waterVariant, unitMl))
@@ -161,36 +168,42 @@ internal fun BrewCharts(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val rowModifier = Modifier.weight(1f).fillMaxSize().then(chartModifier)
-            if (showPressure) BrewDataChart(
-                xValues = xValues,
-                chartSeries = pressureSeries,
-                target = pressureTarget,
-                yFloor = 12.0,
-                maxX = maxX,
-                syncState = syncState,
-                chartId = 0,
-                modifier = rowModifier
-            )
-            if (showFlowChart) BrewDataChart(
-                xValues = xValues,
-                chartSeries = flowSeries,
-                target = flowTarget,
-                yFloor = 12.0,
-                maxX = maxX,
-                syncState = syncState,
-                chartId = 1,
-                modifier = rowModifier
-            )
-            if (showAccumulatedChart) BrewDataChart(
-                xValues = xValues,
-                chartSeries = accumSeries,
-                target = null,
-                yFloor = 40.0,
-                maxX = maxX,
-                syncState = syncState,
-                chartId = 2,
-                modifier = rowModifier
-            )
+            if (showPressure) {
+                BrewDataChart(
+                    xValues = xValues,
+                    chartSeries = pressureSeries,
+                    target = pressureTarget,
+                    yFloor = 12.0,
+                    maxX = maxX,
+                    syncState = syncState,
+                    chartId = 0,
+                    modifier = rowModifier
+                )
+            }
+            if (showFlowChart) {
+                BrewDataChart(
+                    xValues = xValues,
+                    chartSeries = flowSeries,
+                    target = flowTarget,
+                    yFloor = 12.0,
+                    maxX = maxX,
+                    syncState = syncState,
+                    chartId = 1,
+                    modifier = rowModifier
+                )
+            }
+            if (showAccumulatedChart) {
+                BrewDataChart(
+                    xValues = xValues,
+                    chartSeries = accumSeries,
+                    target = null,
+                    yFloor = 40.0,
+                    maxX = maxX,
+                    syncState = syncState,
+                    chartId = 2,
+                    modifier = rowModifier
+                )
+            }
         }
     } else {
         Column(
@@ -198,36 +211,42 @@ internal fun BrewCharts(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val columnModifier = Modifier.weight(1f).fillMaxSize().then(chartModifier)
-            if (showPressure) BrewDataChart(
-                xValues = xValues,
-                chartSeries = pressureSeries,
-                target = pressureTarget,
-                yFloor = 12.0,
-                maxX = maxX,
-                syncState = syncState,
-                chartId = 0,
-                modifier = columnModifier
-            )
-            if (showFlowChart) BrewDataChart(
-                xValues = xValues,
-                chartSeries = flowSeries,
-                target = flowTarget,
-                yFloor = 12.0,
-                maxX = maxX,
-                syncState = syncState,
-                chartId = 1,
-                modifier = columnModifier
-            )
-            if (showAccumulatedChart) BrewDataChart(
-                xValues = xValues,
-                chartSeries = accumSeries,
-                target = null,
-                yFloor = 40.0,
-                maxX = maxX,
-                syncState = syncState,
-                chartId = 2,
-                modifier = columnModifier
-            )
+            if (showPressure) {
+                BrewDataChart(
+                    xValues = xValues,
+                    chartSeries = pressureSeries,
+                    target = pressureTarget,
+                    yFloor = 12.0,
+                    maxX = maxX,
+                    syncState = syncState,
+                    chartId = 0,
+                    modifier = columnModifier
+                )
+            }
+            if (showFlowChart) {
+                BrewDataChart(
+                    xValues = xValues,
+                    chartSeries = flowSeries,
+                    target = flowTarget,
+                    yFloor = 12.0,
+                    maxX = maxX,
+                    syncState = syncState,
+                    chartId = 1,
+                    modifier = columnModifier
+                )
+            }
+            if (showAccumulatedChart) {
+                BrewDataChart(
+                    xValues = xValues,
+                    chartSeries = accumSeries,
+                    target = null,
+                    yFloor = 40.0,
+                    maxX = maxX,
+                    syncState = syncState,
+                    chartId = 2,
+                    modifier = columnModifier
+                )
+            }
         }
     }
 }
@@ -264,12 +283,18 @@ private fun BrewDataChart(
         producer.runTransaction {
             lineSeries {
                 chartSeries.forEach { s ->
-                    if (xValues.isNotEmpty()) series(x = xValues, y = s.yValues)
-                    else series(x = listOf(0.0), y = listOf(0.0))
+                    if (xValues.isNotEmpty()) {
+                        series(x = xValues, y = s.yValues)
+                    } else {
+                        series(x = listOf(0.0), y = listOf(0.0))
+                    }
                 }
                 target?.let { t ->
-                    if (t.tX.isNotEmpty()) series(x = t.tX, y = t.tY)
-                    else series(x = listOf(0.0), y = listOf(0.0))
+                    if (t.tX.isNotEmpty()) {
+                        series(x = t.tX, y = t.tY)
+                    } else {
+                        series(x = listOf(0.0), y = listOf(0.0))
+                    }
                 }
             }
         }

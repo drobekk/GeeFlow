@@ -21,9 +21,12 @@ class ModbusBleClient(
         val regHi = (reg ushr 8).toByte()
         val regLo = (reg and 0xFF).toByte()
         val header = byteArrayOf(
-            0x01, 0x06,
-            regHi, regLo,
-            (value ushr 8).toByte(), (value and 0xFF).toByte()
+            0x01,
+            0x06,
+            regHi,
+            regLo,
+            (value ushr 8).toByte(),
+            (value and 0xFF).toByte()
         )
         val payload = header + ModbusCrcCalculator.calculateCRC(header)
         writeAndAwaitModbus(payload, 0x06, regHi, regLo, timeoutMs)
@@ -40,9 +43,12 @@ class ModbusBleClient(
         val byteCount = num * 2
 
         val header = byteArrayOf(
-            0x01, 0x10,
-            regHi, regLo,
-            (num ushr 8).toByte(), (num and 0xFF).toByte(),
+            0x01,
+            0x10,
+            regHi,
+            regLo,
+            (num ushr 8).toByte(),
+            (num and 0xFF).toByte(),
             byteCount.toByte()
         )
 

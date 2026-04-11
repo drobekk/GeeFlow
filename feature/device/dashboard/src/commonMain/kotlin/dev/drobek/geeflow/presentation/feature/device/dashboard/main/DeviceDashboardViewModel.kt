@@ -4,11 +4,13 @@ import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.core.presentation.BaseViewModel
 import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.core.presentation.launchCatching
+import dev.drobek.geeflow.core.presentation.toUserMessage
 import dev.drobek.geeflow.data.brew.model.BrewSession
-import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
-import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.data.device.model.isDemo
+import dev.drobek.geeflow.data.user.model.ChartType
+import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
+import dev.drobek.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import dev.drobek.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import dev.drobek.geeflow.domain.device.usecase.GetDeviceUseCase
@@ -17,8 +19,6 @@ import dev.drobek.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import dev.drobek.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import dev.drobek.geeflow.domain.device.usecase.StopBrewingUseCase
 import dev.drobek.geeflow.domain.exception.DeviceNotConnectedException
-import dev.drobek.geeflow.core.presentation.toUserMessage
-import dev.drobek.geeflow.data.user.model.ChartType
 import dev.drobek.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import dev.drobek.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import dev.drobek.geeflow.navigation.NavEvent.To
@@ -71,7 +71,11 @@ internal class DeviceDashboardViewModel(
         is DeviceDashboardEvent.ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is DeviceDashboardEvent.ConnectionButtonClicked -> toggleConnection()
         is DeviceDashboardEvent.DeviceClicked -> navigate(To(DeviceList))
-        is DeviceDashboardEvent.QuickSettingsClicked -> withDeviceConnected { navigate(To(QuickSettings(args.deviceId))) }
+        is DeviceDashboardEvent.QuickSettingsClicked -> withDeviceConnected {
+            navigate(
+                To(QuickSettings(args.deviceId))
+            )
+        }
         is DeviceDashboardEvent.UserClicked -> Unit
         is DeviceDashboardEvent.ConnectedDevicesClicked -> withDeviceConnected {
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
@@ -175,16 +179,17 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun chartsVisibilityChanged(charts: Set<ChartType>) = modify {
-        copy(visibleCharts = charts.map {
-            when (it) {
-                ChartType.PRESSURE -> DeviceDashboardViewState.DashboardChartType.Pressure
-                ChartType.FLOW_RATE -> DeviceDashboardViewState.DashboardChartType.FlowRate
-                ChartType.WEIGHT_RATE -> DeviceDashboardViewState.DashboardChartType.WeightRate
-                ChartType.VOLUME -> DeviceDashboardViewState.DashboardChartType.Volume
-                ChartType.WEIGHT -> DeviceDashboardViewState.DashboardChartType.Weight
-
-            }
-        }.toSet())
+        copy(
+            visibleCharts = charts.map {
+                when (it) {
+                    ChartType.PRESSURE -> DeviceDashboardViewState.DashboardChartType.Pressure
+                    ChartType.FLOW_RATE -> DeviceDashboardViewState.DashboardChartType.FlowRate
+                    ChartType.WEIGHT_RATE -> DeviceDashboardViewState.DashboardChartType.WeightRate
+                    ChartType.VOLUME -> DeviceDashboardViewState.DashboardChartType.Volume
+                    ChartType.WEIGHT -> DeviceDashboardViewState.DashboardChartType.Weight
+                }
+            }.toSet()
+        )
     }
 
     private fun withBluetoothPermissions(block: suspend () -> Unit) = launch {

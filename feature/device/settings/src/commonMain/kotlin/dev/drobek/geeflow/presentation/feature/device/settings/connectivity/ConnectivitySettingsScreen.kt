@@ -187,7 +187,6 @@ private fun CompactContent(
     }
 }
 
-
 @Composable
 private fun ScaleItem(
     scale: ScaleViewItem,

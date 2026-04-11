@@ -85,7 +85,9 @@ fun GeeFlowTopBar(
             }
         }
     ) { measurables, constraints ->
-        val iconPlaceable = measurables.first { it.layoutId == "icon" }.measure(constraints.copy(minWidth = 0, minHeight = 0))
+        val iconPlaceable = measurables.first { it.layoutId == "icon" }.measure(
+            constraints.copy(minWidth = 0, minHeight = 0)
+        )
 
         val topPadding = 16.dp.roundToPx()
         val bottomPaddingExpanded = 32.dp.roundToPx()
@@ -123,7 +125,11 @@ fun GeeFlowTopBar(
         val collapsedSubtitleY = expandedSubtitleY - titleDeltaY
 
         val currentTitleY = lerp(expandedTitleY.toFloat(), collapsedTitleY.toFloat(), collapsedFraction).roundToInt()
-        val currentSubtitleY = lerp(expandedSubtitleY.toFloat(), collapsedSubtitleY.toFloat(), collapsedFraction).roundToInt()
+        val currentSubtitleY = lerp(
+            expandedSubtitleY.toFloat(),
+            collapsedSubtitleY.toFloat(),
+            collapsedFraction
+        ).roundToInt()
         val currentHeight = lerp(expandedHeight.toFloat(), collapsedHeight.toFloat(), collapsedFraction).roundToInt()
 
         val heightLimit = (collapsedHeight - expandedHeight).toFloat()

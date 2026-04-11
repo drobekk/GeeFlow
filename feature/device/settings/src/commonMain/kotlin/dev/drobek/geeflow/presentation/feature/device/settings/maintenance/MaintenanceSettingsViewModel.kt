@@ -75,7 +75,11 @@ internal class MaintenanceSettingsViewModel(
 
     fun handleEvent(event: MaintenanceSettingsEvent) = when (event) {
         is CleaningTimeChanged -> modify { copy(cleaning = cleaning.copy(timeSec = event.timeSec)).withApplyVisible() }
-        is CleaningRestChanged -> modify { copy(cleaning = cleaning.copy(restSec = event.standbySec)).withApplyVisible() }
+        is CleaningRestChanged -> modify {
+            copy(
+                cleaning = cleaning.copy(restSec = event.standbySec)
+            ).withApplyVisible()
+        }
         is CleaningCountChanged -> modify { copy(cleaning = cleaning.copy(count = event.count)).withApplyVisible() }
         is WaterAlarmToggled -> modify { copy(waterAlarm = event.enabled).withApplyVisible() }
         is ApplyClicked -> saveSettings()
@@ -122,9 +126,9 @@ internal class MaintenanceSettingsViewModel(
     private fun MaintenanceSettingsViewState.withApplyVisible(): MaintenanceSettingsViewState {
         val snapshot = deviceSnapshot ?: return this
         val changed = cleaning.timeSec != snapshot.cleaningTimeSec ||
-                cleaning.restSec != snapshot.cleaningRestSec ||
-                cleaning.count != snapshot.cleaningCount ||
-                waterAlarm != snapshot.waterAlarm
+            cleaning.restSec != snapshot.cleaningRestSec ||
+            cleaning.count != snapshot.cleaningCount ||
+            waterAlarm != snapshot.waterAlarm
         return copy(applyButtonVisible = changed)
     }
 }

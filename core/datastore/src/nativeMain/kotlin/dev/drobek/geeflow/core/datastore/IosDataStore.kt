@@ -18,6 +18,6 @@ fun createIosDataStore(): DataStore<Preferences> = createDataStore(
             create = false,
             error = null,
         )
-        requireNotNull(documentDirectory).path + "/$DATA_STORE_FILE_NAME"
+        requireNotNull(documentDirectory).path + "/$DataStoreFileName"
     }
 )
