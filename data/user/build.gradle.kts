@@ -15,7 +15,7 @@ kotlin {
             api(projects.data.db)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-            api(libs.androidx.datastore.preferences)
+            api(projects.core.datastore)
         }
     }
 }

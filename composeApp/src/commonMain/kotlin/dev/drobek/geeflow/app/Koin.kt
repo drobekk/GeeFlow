@@ -8,7 +8,10 @@ import dev.drobek.geeflow.data.user.DataUserModule
 import dev.drobek.geeflow.domain.brew.DomainBrewModule
 import dev.drobek.geeflow.domain.device.DomainDeviceModule
 import dev.drobek.geeflow.domain.user.DomainUserModule
-import dev.drobek.geeflow.presentation.feature.device.FeatureDeviceModule
+import dev.drobek.geeflow.presentation.feature.device.add.FeatureDeviceAddModule
+import dev.drobek.geeflow.presentation.feature.device.dashboard.FeatureDeviceDashboardModule
+import dev.drobek.geeflow.presentation.feature.device.list.FeatureDeviceListModule
+import dev.drobek.geeflow.presentation.feature.device.settings.FeatureDeviceSettingsModule
 import dev.drobek.geeflow.presentation.feature.intro.FeatureIntroModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +36,10 @@ class GeeFlowApp
         DomainUserModule::class,
         DomainDeviceModule::class,
         DomainBrewModule::class,
-        FeatureDeviceModule::class,
+        FeatureDeviceListModule::class,
+        FeatureDeviceAddModule::class,
+        FeatureDeviceDashboardModule::class,
+        FeatureDeviceSettingsModule::class,
         FeatureIntroModule::class,
     ]
 )

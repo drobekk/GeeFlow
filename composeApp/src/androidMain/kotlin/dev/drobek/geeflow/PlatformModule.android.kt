@@ -6,9 +6,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import dev.bluefalcon.BlueFalcon
 import dev.bluefalcon.Logger
+import dev.drobek.geeflow.core.datastore.createAndroidDataStore
 import dev.drobek.geeflow.data.db.AndroidDatabaseDriverFactory
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
-import dev.drobek.geeflow.data.user.impl.createAndroidDataStore
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
@@ -22,8 +22,7 @@ actual class PlatformModule {
         AndroidDatabaseDriverFactory(context)
 
     @Single
-    fun dataStore(context: Context): DataStore<Preferences> =
-        createAndroidDataStore(context)
+    fun dataStore(context: Context): DataStore<Preferences> = createAndroidDataStore(context)
 
     @Single
     fun blueFalcon(context: Context): BlueFalcon =

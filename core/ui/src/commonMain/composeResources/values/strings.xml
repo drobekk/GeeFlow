@@ -37,6 +37,9 @@
     <string name="unit_milliliters">ml</string>
     <string name="unit_milliliters_per_second">ml/s</string>
 
+    <!-- PERMISSIONS -->
+    <string name="permission_bluetooth_missing">Bluetooth permission is missing, please grant it in app settings</string>
+
     <!-- ERRORS -->
     <string name="error_generic">Oops, something went wrong. Please try again.</string>
     <string name="error_connect_device">Device is not connected</string>

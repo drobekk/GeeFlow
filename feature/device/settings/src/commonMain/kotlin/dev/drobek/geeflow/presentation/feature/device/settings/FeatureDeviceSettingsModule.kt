@@ -1,0 +1,8 @@
+package dev.drobek.geeflow.presentation.feature.device.settings
+
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
+
+@Module
+@ComponentScan("dev.drobek.geeflow.presentation.feature.device.settings")
+class FeatureDeviceSettingsModule

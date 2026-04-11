@@ -33,6 +33,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+include(":core:datastore")
 include(":core:domain")
 include(":core:navigation")
 include(":core:presentation")
@@ -46,6 +47,9 @@ include(":domain:device")
 include(":domain:brew")
 include(":permissions")
 include(":feature:intro")
-include(":feature:device")
+include(":feature:device:list")
+include(":feature:device:add")
+include(":feature:device:dashboard")
+include(":feature:device:settings")
 include(":composeApp")
 include(":androidApp")

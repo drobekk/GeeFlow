@@ -1,0 +1,35 @@
+<resources>
+    <!-- Device Settings Main -->
+    <string name="device_settings_title">Machine Settings</string>
+    <string name="device_settings_placeholder">Select an item to view details</string>
+    <string name="device_settings_subtitle">Manage your brewing preferences and device setup</string>
+    <string name="device_settings_brewing">Brewing</string>
+    <string name="device_settings_brewing_description">Boiler parameters and buttons binding</string>
+    <string name="device_settings_maintenance">Maintenance</string>
+    <string name="device_settings_maintenance_description">Cleaning and water level alarm</string>
+    <string name="device_settings_connectivity">Connectivity</string>
+    <string name="device_settings_connectivity_description">External smart accessories</string>
+
+    <!-- Device Settings Maintenance -->
+    <string name="device_settings_maintenance_cleaning">Cleaning</string>
+    <string name="device_settings_maintenance_alarms">Alarms</string>
+    <string name="device_settings_maintenance_water_alarm">Water shortage alarm</string>
+    <string name="device_settings_maintenance_water_alarm_description">Low water level warning</string>
+    <string name="device_water_alarm_error">Water level is low. Please refill the water tank.</string>
+
+    <string name="device_dashboard_connecting">Connecting</string>
+
+    <!-- Device Settings Connectivity -->
+    <string name="device_settings_connectivity_smart_scale">Smart Scale</string>
+    <string name="device_settings_connectivity_smart_scale_description">Automatically stop brewing when target weight is reached</string>
+    <string name="device_settings_connectivity_smart_scale_info">Connect a smart scale to automatically stop brewing when the desired weight is reached.</string>
+    <string name="device_settings_connectivity_searching">Searching for compatible devices…</string>
+    <string name="device_settings_connectivity_not_found">Not seeing your device?</string>
+    <string name="device_settings_connectivity_rescan">Scan now</string>
+
+    <!-- Device Settings Brewing -->
+    <string name="device_settings_brewing_boiler">Boiler</string>
+    <string name="device_settings_brewing_paddle">Paddle long press (M)</string>
+    <string name="device_settings_brewing_pulse_heating">Pulse heating</string>
+    <string name="device_settings_brewing_pulse_heating_description">Longer heating time but lower power consumption</string>
+</resources>
