@@ -1,5 +1,6 @@
 package dev.drobek.geeflow.domain.device.usecase
 
+import co.touchlab.kermit.Logger
 import dev.drobek.geeflow.data.device.model.Device
 import dev.drobek.geeflow.data.device.model.DeviceConnection
 import kotlinx.serialization.SerialName
@@ -22,6 +23,7 @@ private data class QrDeviceData(
 class ParseDeviceQrCodeUseCase {
     private val json = Json { ignoreUnknownKeys = true }
 
+    @Suppress("TooGenericExceptionCaught")
     operator fun invoke(url: String): Device? {
         return try {
             val dataJson = url.substringAfter("data=", "")
@@ -40,6 +42,7 @@ class ParseDeviceQrCodeUseCase {
                 ),
             )
         } catch (e: Exception) {
+            Logger.e(throwable = e) { "Failed to parse device QR code from URL: $url" }
             null
         }
     }
@@ -48,15 +51,13 @@ class ParseDeviceQrCodeUseCase {
     private fun formatMac(raw: String): String =
         raw.uppercase().replace(":", "").chunked(2).joinToString(":")
 
-    private fun decodeUrl(url: String): String {
-        return url
-            .replace("%7B", "{")
-            .replace("%7D", "}")
-            .replace("%22", "\"")
-            .replace("%3A", ":")
-            .replace("%2C", ",")
-            .replace("%20", " ")
-            .replace("%5B", "[")
-            .replace("%5D", "]")
-    }
+    private fun decodeUrl(url: String): String = url
+        .replace("%7B", "{")
+        .replace("%7D", "}")
+        .replace("%22", "\"")
+        .replace("%3A", ":")
+        .replace("%2C", ",")
+        .replace("%20", " ")
+        .replace("%5B", "[")
+        .replace("%5D", "]")
 }

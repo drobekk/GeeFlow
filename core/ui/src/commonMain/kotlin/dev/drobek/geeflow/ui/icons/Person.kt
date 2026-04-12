@@ -16,7 +16,7 @@ val GeeFlowIcon.Person: ImageVector
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
             viewportWidth = 24f,
-            viewportHeight = 24f
+            viewportHeight = 24f,
         ).apply {
             path(fill = SolidColor(Color(0xFFE3E3E3))) {
                 moveTo(8.446f, 14.242f)

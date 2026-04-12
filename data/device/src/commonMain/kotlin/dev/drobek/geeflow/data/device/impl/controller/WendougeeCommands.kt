@@ -2,10 +2,12 @@ package dev.drobek.geeflow.data.device.impl.controller
 
 object WendougeeCommands {
 
+    private const val HEX_RADIX = 16
+
     fun String.decodeHex(): ByteArray {
         check(length % 2 == 0) { "Must have an even length" }
         return chunked(2)
-            .map { it.toInt(16).toByte() }
+            .map { it.toInt(HEX_RADIX).toByte() }
             .toByteArray()
     }
 

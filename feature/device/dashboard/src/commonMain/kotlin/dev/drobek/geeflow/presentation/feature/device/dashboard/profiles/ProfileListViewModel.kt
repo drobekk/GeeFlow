@@ -37,7 +37,7 @@ internal class ProfileListViewModel(
     private val observeDeviceStateUseCase: ObserveDeviceStateUseCase,
     private val bindProfileUseCase: BindProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
-    private val updateBrewProfilesPositionsUseCase: UpdateBrewProfilesPositionsUseCase
+    private val updateBrewProfilesPositionsUseCase: UpdateBrewProfilesPositionsUseCase,
 ) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
 
     private var currentDomainProfiles: List<BrewProfile> = emptyList()
@@ -46,7 +46,7 @@ internal class ProfileListViewModel(
         launch {
             combine(
                 observeDeviceProfileUseCase(args.deviceId),
-                observeUserProfilesUseCase()
+                observeUserProfilesUseCase(),
             ) { deviceProfile, userProfiles ->
                 deviceProfile to (listOfNotNull(deviceProfile) + userProfiles.filter { it.id != deviceProfile?.id })
             }.collect { (deviceProfile, profiles) ->
@@ -116,9 +116,9 @@ internal class ProfileListViewModel(
                         index = index,
                         profile = profile,
                         selected = selectedProfileId == profile.id.toString(),
-                        bound = boundProfileId == profile.id.toString()
+                        bound = boundProfileId == profile.id.toString(),
                     )
-                }
+                },
             )
         }
         emitEvent(SelectProfile(selectedProfileId))
@@ -154,10 +154,10 @@ internal class ProfileListViewModel(
             currentTime += step.time.toFloat()
         }
 
-        val totalTicks = (currentTime * 10).toInt()
+        val totalTicks = (currentTime * TickScale).toInt()
         val targetData = buildMap(totalTicks + 1) {
             for (tick in 0..totalTicks) {
-                val t = tick / 10f
+                val t = tick / TickScale.toFloat()
                 val event = events.lastOrNull { it.time <= t } ?: events.first()
                 put(
                     key = t,
@@ -166,8 +166,8 @@ internal class ProfileListViewModel(
                         weight = 0f,
                         weightPerSecond = 0f,
                         volume = 0f,
-                        volumePerSecond = event.flow
-                    )
+                        volumePerSecond = event.flow,
+                    ),
                 )
             }
         }
@@ -180,7 +180,9 @@ internal class ProfileListViewModel(
             brewByWeight = profile.finishCondition is Condition.Weight,
             bound = bound,
             selected = selected,
-            targetData = targetData
+            targetData = targetData,
         )
     }
 }
+
+private const val TickScale = 10

@@ -33,5 +33,5 @@ fun GeeFlowOutlinedTextField(
     contentPadding = contentPadding,
     shape = shape,
     keyboardOptions = keyboardOptions,
-    onKeyboardAction = onKeyboardAction
+    onKeyboardAction = onKeyboardAction,
 )

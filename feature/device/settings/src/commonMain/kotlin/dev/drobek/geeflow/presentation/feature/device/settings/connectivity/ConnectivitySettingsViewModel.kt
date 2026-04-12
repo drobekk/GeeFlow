@@ -30,7 +30,7 @@ internal class ConnectivitySettingsViewModel(
     private val setSmartScaleConnectivity: SetSmartScaleConnectivityUseCase,
     private val requestSmartScaleList: RequestSmartScaleListUseCase,
     private val connectSmartScale: ConnectSmartScaleUseCase,
-    private val disconnectSmartScale: DisconnectSmartScaleUseCase
+    private val disconnectSmartScale: DisconnectSmartScaleUseCase,
 ) : BaseViewModel<ConnectivitySettingsViewState, ConnectivitySettingsViewModelEvent>(ConnectivitySettingsViewState()) {
 
     private var connectingScaleName: String? = null
@@ -43,7 +43,7 @@ internal class ConnectivitySettingsViewModel(
         launch {
             combine(
                 observeDeviceState(arguments.deviceId),
-                observeFoundScales(arguments.deviceId)
+                observeFoundScales(arguments.deviceId),
             ) { state, scales -> state to scales }
                 .collect { (state, scales) ->
                     val connectedName = state.smartScale?.name
@@ -59,7 +59,7 @@ internal class ConnectivitySettingsViewModel(
                                 scales.map { it.toViewItem(connectingScaleName, connectedName) }
                             } else {
                                 emptyList()
-                            }
+                            },
                         )
                     }
                 }
@@ -90,12 +90,12 @@ internal class ConnectivitySettingsViewModel(
                         scales = scales.map {
                             if (it.name == scaleName) {
                                 it.copy(
-                                    connectionStatus = ScaleConnectionStatus.Connecting
+                                    connectionStatus = ScaleConnectionStatus.Connecting,
                                 )
                             } else {
                                 it
                             }
-                        }
+                        },
                     )
                 }
                 launchCatching { connectSmartScale(arguments.deviceId, scaleName) }
@@ -111,6 +111,6 @@ internal class ConnectivitySettingsViewModel(
             connectedName -> ScaleConnectionStatus.Connected
             connectingName -> ScaleConnectionStatus.Connecting
             else -> ScaleConnectionStatus.Disconnected
-        }
+        },
     )
 }

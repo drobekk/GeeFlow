@@ -6,7 +6,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class UpdateBrewProfilesPositionsUseCase(
-    private val brewProfileRepository: BrewProfileRepository
+    private val brewProfileRepository: BrewProfileRepository,
 ) {
     operator fun invoke(profiles: List<BrewProfile>) {
         brewProfileRepository.updateBrewProfilesPositions(profiles)

@@ -10,17 +10,17 @@ data class CleaningStatus(
     val inProgress: Boolean,
     val flush: Progress,
     val rest: Progress,
-    val cycle: Progress
+    val cycle: Progress,
 ) {
     data class Progress(
         val current: Int,
-        val target: Int
+        val target: Int,
     )
 }
 
 @Factory
 class GetCleaningStatusUseCase(
-    private val provider: DeviceControllerProvider
+    private val provider: DeviceControllerProvider,
 ) {
     operator fun invoke(deviceId: Long): Flow<CleaningStatus> =
         provider.getController(deviceId).deviceState.map { state ->
@@ -36,7 +36,7 @@ class GetCleaningStatusUseCase(
                     inProgress = false,
                     flush = CleaningStatus.Progress(0, flushTarget),
                     rest = CleaningStatus.Progress(0, restTarget),
-                    cycle = CleaningStatus.Progress(0, cycleTarget)
+                    cycle = CleaningStatus.Progress(0, cycleTarget),
                 )
             }
 
@@ -50,7 +50,7 @@ class GetCleaningStatusUseCase(
                     inProgress = false,
                     flush = CleaningStatus.Progress(0, flushTime),
                     rest = CleaningStatus.Progress(0, restTime),
-                    cycle = CleaningStatus.Progress(0, totalCycles)
+                    cycle = CleaningStatus.Progress(0, totalCycles),
                 )
             }
 
@@ -67,7 +67,7 @@ class GetCleaningStatusUseCase(
                 inProgress = true,
                 flush = CleaningStatus.Progress(currentFlush, flushTime),
                 rest = CleaningStatus.Progress(currentRest, restTime),
-                cycle = CleaningStatus.Progress(currentCycle + 1, totalCycles)
+                cycle = CleaningStatus.Progress(currentCycle + 1, totalCycles),
             )
         }
 }

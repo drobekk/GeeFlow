@@ -9,7 +9,7 @@ class SetCleaningSettingsUseCase(private val provider: DeviceControllerProvider)
         deviceId: Long,
         timeSec: Float,
         restSec: Float,
-        count: Int
+        count: Int,
     ) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
         setCleaningSettings(timeSec, restSec, count)

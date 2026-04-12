@@ -38,19 +38,11 @@ import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
-internal class BrewSyncState {
-    var markerX by mutableStateOf<Double?>(null)
-    var activeChartId by mutableStateOf<Int?>(null)
-}
-
-@Composable
-internal fun rememberBrewSyncState(): BrewSyncState = remember { BrewSyncState() }
-
 @Composable
 internal fun rememberBrewChartMarker(units: List<String>): CartesianMarker {
     val labelBackground = rememberShapeComponent(
         fill = Fill(MaterialTheme.colorScheme.surfaceContainerHigh),
-        shape = MaterialTheme.shapes.small
+        shape = MaterialTheme.shapes.small,
     )
     val label = rememberTextComponent(
         style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurface),
@@ -113,6 +105,14 @@ internal fun rememberBrewMarkerVisibilityListener(
         }
     }
 }
+
+internal class BrewSyncState {
+    var markerX by mutableStateOf<Double?>(null)
+    var activeChartId by mutableStateOf<Int?>(null)
+}
+
+@Composable
+internal fun rememberBrewSyncState(): BrewSyncState = remember { BrewSyncState() }
 
 private class SideCenteredCartesianMarker(
     label: TextComponent,
@@ -218,9 +218,11 @@ private class BrewMarkerValueFormatter(private val units: List<String>) : Defaul
     }
 }
 
+private const val DecimalScale = 10
+
 private fun Double.format1dp(): String {
-    val rounded = (this * 10).roundToLong()
-    val intPart = rounded / 10
-    val fracPart = abs(rounded % 10)
+    val rounded = (this * DecimalScale).roundToLong()
+    val intPart = rounded / DecimalScale
+    val fracPart = abs(rounded % DecimalScale)
     return "$intPart.$fracPart"
 }

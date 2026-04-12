@@ -10,12 +10,12 @@ import org.koin.core.annotation.Factory
 @Factory
 class ObserveUserProfilesUseCase(
     private val getSelectedUserUseCase: GetSelectedUserUseCase,
-    private val brewProfileRepository: BrewProfileRepository
+    private val brewProfileRepository: BrewProfileRepository,
 ) {
     operator fun invoke(): Flow<List<BrewProfile>> = combine(
         getSelectedUserUseCase(),
-        brewProfileRepository.brewProfiles
+        brewProfileRepository.brewProfiles,
     ) { user, _ ->
-        user?.id?.let { brewProfileRepository.getBrewProfilesForUser(it) } ?: emptyList()
+        user?.id?.let { brewProfileRepository.getBrewProfilesForUser(it) }.orEmpty()
     }
 }

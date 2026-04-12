@@ -5,10 +5,10 @@ data class QuickMaintenanceViewState(
     val waterLevelAlarm: Boolean = false,
     val flushProgress: Progress = Progress(0, 0),
     val restProgress: Progress = Progress(0, 0),
-    val cycleProgress: Progress = Progress(0, 0)
+    val cycleProgress: Progress = Progress(0, 0),
 ) {
     data class Progress(
         val current: Int,
-        val target: Int
+        val target: Int,
     )
 }

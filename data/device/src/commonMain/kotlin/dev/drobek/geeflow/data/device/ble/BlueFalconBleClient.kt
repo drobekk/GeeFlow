@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalUuidApi::class)
+@file:Suppress("TooManyFunctions", "TooGenericExceptionCaught", "UnsafeCallOnNullableType")
 
 package dev.drobek.geeflow.data.device.ble
 
@@ -22,7 +23,7 @@ import kotlin.uuid.ExperimentalUuidApi
 
 @Single
 class BlueFalconBleClient(
-    private val blueFalcon: BlueFalcon
+    private val blueFalcon: BlueFalcon,
 ) : BleClient, BlueFalconDelegate {
 
     private val _connectionState = MutableStateFlow<BleConnectionState>(BleConnectionState.Disconnected)
@@ -135,7 +136,7 @@ class BlueFalconBleClient(
 
     override fun didDiscoverDevice(
         bluetoothPeripheral: BluetoothPeripheral,
-        advertisementData: Map<AdvertisementDataRetrievalKeys, Any>
+        advertisementData: Map<AdvertisementDataRetrievalKeys, Any>,
     ) {
         val name = advertisementData[AdvertisementDataRetrievalKeys.LocalName] as? String
             ?: bluetoothPeripheral.name
@@ -176,7 +177,7 @@ class BlueFalconBleClient(
         bluetoothPeripheral.services.values
             .flatMap { it.characteristics }
             .forEach { characteristic ->
-                val uuid = characteristic.name?.lowercase() ?: ""
+                val uuid = characteristic.name?.lowercase().orEmpty()
                 characteristics[uuid] = characteristic
                 Logger.withTag(TAG).d { "Discovered characteristic: $uuid" }
             }
@@ -188,18 +189,18 @@ class BlueFalconBleClient(
 
     override fun didUpdateNotificationStateFor(
         bluetoothPeripheral: BluetoothPeripheral,
-        bluetoothCharacteristic: BluetoothCharacteristic
+        bluetoothCharacteristic: BluetoothCharacteristic,
     ) {
-        val uuid = bluetoothCharacteristic.name?.lowercase() ?: ""
+        val uuid = bluetoothCharacteristic.name?.lowercase().orEmpty()
         _incomingData.tryEmit(CharacteristicData(uuid, ByteArray(0)))
     }
 
     override fun didCharacteristcValueChanged(
         bluetoothPeripheral: BluetoothPeripheral,
-        bluetoothCharacteristic: BluetoothCharacteristic
+        bluetoothCharacteristic: BluetoothCharacteristic,
     ) {
         val data = bluetoothCharacteristic.value ?: return
-        val uuid = bluetoothCharacteristic.name?.lowercase() ?: ""
+        val uuid = bluetoothCharacteristic.name?.lowercase().orEmpty()
         _incomingData.tryEmit(CharacteristicData(uuid, data))
     }
 

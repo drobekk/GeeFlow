@@ -19,60 +19,11 @@ import kotlin.time.Instant
 @Factory
 class ObserveBrewDataUseCase(
     private val provider: DeviceControllerProvider,
-    private val getSelectedUserUseCase: GetSelectedUserUseCase
+    private val getSelectedUserUseCase: GetSelectedUserUseCase,
 ) {
     operator fun invoke(deviceId: Long): Flow<BrewSession> {
         val scanFlow = provider.getController(deviceId).deviceState
-            .scan(Accumulator()) { acc, state ->
-                val status = state.brewStatus
-                val currentlyBrewing = status == DeviceState.BrewStatus.Manual || status == DeviceState.BrewStatus.Profile
-
-                if (currentlyBrewing) {
-                    val now = Clock.System.now()
-                    if (!acc.isBrewing) {
-                        acc.data.clear()
-                        acc.isBrewing = true
-                        acc.startTime = now
-                        acc.status = status
-                        acc.lastTick = -1
-                        acc.lastPoint = null
-                    }
-
-                    val elapsed = acc.startTime?.let { now - it } ?: Duration.ZERO
-                    val elapsedSeconds = elapsed.toDouble(DurationUnit.SECONDS).toFloat()
-
-                    acc.timeInSeconds = elapsedSeconds.toInt()
-                    val currentPoint = BrewDataPoint(
-                        pressure = state.pressure ?: 0f,
-                        weight = state.weight ?: 0f,
-                        volume = state.volume ?: 0f,
-                        flowRate = state.flowRate ?: 0f,
-                        weightRate = state.weightRate ?: 0f
-                    )
-                    val currentTick = (elapsedSeconds * 10).roundToInt()
-                    val prevTick = acc.lastTick
-                    val prevPoint = acc.lastPoint
-                    if (prevPoint != null && currentTick > prevTick) {
-                        for (tick in (prevTick + 1)..currentTick) {
-                            val t = if (currentTick == prevTick) 1f else (tick - prevTick).toFloat() / (currentTick - prevTick)
-                            acc.data[tick / 10f] = BrewDataPoint(
-                                pressure = lerp(prevPoint.pressure, currentPoint.pressure, t),
-                                weight = lerp(prevPoint.weight, currentPoint.weight, t),
-                                volume = lerp(prevPoint.volume, currentPoint.volume, t),
-                                flowRate = lerp(prevPoint.flowRate, currentPoint.flowRate, t),
-                                weightRate = lerp(prevPoint.weightRate, currentPoint.weightRate, t),
-                            )
-                        }
-                    } else {
-                        acc.data[currentTick / 10f] = currentPoint
-                    }
-                    acc.lastTick = currentTick
-                    acc.lastPoint = currentPoint
-                } else if (status == DeviceState.BrewStatus.Idle) {
-                    acc.isBrewing = false
-                }
-                acc
-            }
+            .scan(Accumulator(), ::accumulateBrewData)
 
         return combine(scanFlow, getSelectedUserUseCase()) { acc, user ->
             val isManual = acc.status == DeviceState.BrewStatus.Manual
@@ -83,9 +34,56 @@ class ObserveBrewDataUseCase(
                 profileName = if (isManual) "M" else null,
                 startTime = acc.startTime,
                 inProgress = acc.isBrewing,
-                dataPoints = acc.data.toMap()
+                dataPoints = acc.data.toMap(),
             )
         }.distinctUntilChanged()
+    }
+
+    private fun accumulateBrewData(acc: Accumulator, state: DeviceState): Accumulator {
+        val status = state.brewStatus
+        val currentlyBrewing = status == DeviceState.BrewStatus.Manual || status == DeviceState.BrewStatus.Profile
+
+        if (currentlyBrewing) {
+            val now = Clock.System.now()
+            if (!acc.isBrewing) {
+                acc.reset(now, status)
+            }
+
+            val elapsed = acc.startTime?.let { now - it } ?: Duration.ZERO
+            val elapsedSeconds = elapsed.toDouble(DurationUnit.SECONDS).toFloat()
+
+            acc.timeInSeconds = elapsedSeconds.toInt()
+            val currentPoint = BrewDataPoint(
+                pressure = state.pressure ?: 0f,
+                weight = state.weight ?: 0f,
+                volume = state.volume ?: 0f,
+                flowRate = state.flowRate ?: 0f,
+                weightRate = state.weightRate ?: 0f,
+            )
+            val currentTick = (elapsedSeconds * TICKS_PER_SECOND).roundToInt()
+            val prevTick = acc.lastTick
+            val prevPoint = acc.lastPoint
+
+            if (prevPoint != null && currentTick > prevTick) {
+                for (tick in (prevTick + 1)..currentTick) {
+                    val t = (tick - prevTick).toFloat() / (currentTick - prevTick)
+                    acc.data[tick / TICKS_PER_SECOND_FLOAT] = BrewDataPoint(
+                        pressure = lerp(prevPoint.pressure, currentPoint.pressure, t),
+                        weight = lerp(prevPoint.weight, currentPoint.weight, t),
+                        volume = lerp(prevPoint.volume, currentPoint.volume, t),
+                        flowRate = lerp(prevPoint.flowRate, currentPoint.flowRate, t),
+                        weightRate = lerp(prevPoint.weightRate, currentPoint.weightRate, t),
+                    )
+                }
+            } else {
+                acc.data[currentTick / TICKS_PER_SECOND_FLOAT] = currentPoint
+            }
+            acc.lastTick = currentTick
+            acc.lastPoint = currentPoint
+        } else if (status == DeviceState.BrewStatus.Idle) {
+            acc.isBrewing = false
+        }
+        return acc
     }
 
     private class Accumulator {
@@ -96,7 +94,19 @@ class ObserveBrewDataUseCase(
         var timeInSeconds: Int = 0
         var lastTick: Int = -1
         var lastPoint: BrewDataPoint? = null
+
+        fun reset(now: Instant, status: DeviceState.BrewStatus) {
+            data.clear()
+            isBrewing = true
+            startTime = now
+            this.status = status
+            lastTick = -1
+            lastPoint = null
+        }
     }
 }
+
+private const val TICKS_PER_SECOND = 10
+private const val TICKS_PER_SECOND_FLOAT = 10f
 
 private fun lerp(a: Float, b: Float, t: Float): Float = a + (b - a) * t

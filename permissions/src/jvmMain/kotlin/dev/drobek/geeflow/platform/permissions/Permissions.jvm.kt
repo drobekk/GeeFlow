@@ -13,8 +13,13 @@ actual interface PermissionsControllerFactory {
 }
 
 private class PermissionsControllerImpl : PermissionsController {
-    override suspend fun providePermission(permission: Permission) {}
-    override fun openAppSettings() {}
+    override suspend fun providePermission(permission: Permission) {
+        // no-op on JVM
+    }
+
+    override fun openAppSettings() {
+        // no-op on JVM
+    }
 }
 
 private class PermissionsControllerFactoryImpl : PermissionsControllerFactory {
@@ -26,6 +31,7 @@ actual fun rememberPermissionsControllerFactory(): PermissionsControllerFactory 
 
 @Composable
 actual fun BindEffect(permissionsController: PermissionsController) {
+    // no-op on JVM
 }
 
 actual interface Permission

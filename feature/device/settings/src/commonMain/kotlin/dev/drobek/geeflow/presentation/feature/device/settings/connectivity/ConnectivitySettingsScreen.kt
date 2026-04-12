@@ -72,13 +72,13 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun ConnectivitySettingsScreen(
     viewModel: ConnectivitySettingsViewModel,
-    navigator: dev.drobek.geeflow.navigation.Navigator
+    navigator: dev.drobek.geeflow.navigation.Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     ConnectivitySettingsContent(
         viewState = viewState,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 
     NavigatorEffect(navigator, viewModel.navEvent)
@@ -88,7 +88,7 @@ internal fun ConnectivitySettingsScreen(
 @Composable
 private fun ConnectivitySettingsContent(
     viewState: ConnectivitySettingsViewState,
-    onEvent: (ConnectivitySettingsEvent) -> Unit = {}
+    onEvent: (ConnectivitySettingsEvent) -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     if (isWidthExpanded()) {
@@ -97,7 +97,7 @@ private fun ConnectivitySettingsContent(
             onEvent = onEvent,
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
+                .systemBarsPadding(),
         )
     } else {
         GeeFlowScaffold(
@@ -111,10 +111,10 @@ private fun ConnectivitySettingsContent(
                     onEvent = onEvent,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(it)
+                        .padding(it),
                 )
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         )
     }
 }
@@ -123,15 +123,15 @@ private fun ConnectivitySettingsContent(
 private fun CompactContent(
     viewState: ConnectivitySettingsViewState,
     onEvent: (ConnectivitySettingsEvent) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(
             horizontal = GeeFlowTheme.spacing.contentHorizontal,
-            vertical = GeeFlowTheme.spacing.contentVertical
+            vertical = GeeFlowTheme.spacing.contentVertical,
         ),
-        verticalArrangement = spacedBy(16.dp)
+        verticalArrangement = spacedBy(16.dp),
     ) {
         item {
             SettingsToggleRow(
@@ -139,14 +139,14 @@ private fun CompactContent(
                 subtitle = stringResource(Res.string.device_settings_connectivity_smart_scale_description),
                 checked = viewState.smartScaleEnabled,
                 onCheckedChanged = { onEvent(SmartScaleToggled(it)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         item { HorizontalDivider() }
         itemsIndexed(viewState.scales) { _, scale ->
             ScaleItem(
                 scale = scale,
-                onConnectionClicked = { onEvent(ScaleConnectionClicked(scale.name)) }
+                onConnectionClicked = { onEvent(ScaleConnectionClicked(scale.name)) },
             )
         }
         item {
@@ -156,7 +156,7 @@ private fun CompactContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp)
+                    modifier = Modifier.fillMaxWidth().padding(24.dp),
                 )
 
                 viewState.isSearching -> Text(
@@ -164,18 +164,18 @@ private fun CompactContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp)
+                    modifier = Modifier.fillMaxWidth().padding(24.dp),
                 )
 
                 viewState.nothingConnected -> Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = stringResource(Res.string.device_settings_connectivity_not_found),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f).padding(start = 16.dp)
+                        modifier = Modifier.weight(1f).padding(start = 16.dp),
                     )
                     TextButton(onClick = { onEvent(RescanClicked) }) {
                         Text(stringResource(Res.string.device_settings_connectivity_rescan))
@@ -190,7 +190,7 @@ private fun CompactContent(
 @Composable
 private fun ScaleItem(
     scale: ScaleViewItem,
-    onConnectionClicked: () -> Unit
+    onConnectionClicked: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -198,18 +198,18 @@ private fun ScaleItem(
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = scale.name,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         HorizontalSpacer(16.dp)
         ScaleConnectionButton(
             connectionStatus = scale.connectionStatus,
-            onClick = onConnectionClicked
+            onClick = onConnectionClicked,
         )
     }
 }
@@ -218,14 +218,14 @@ private fun ScaleItem(
 private fun ScaleConnectionButton(
     connectionStatus: ScaleConnectionStatus,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val containerColor by animateColorAsState(
         when (connectionStatus) {
             ScaleConnectionStatus.Disconnected -> Color.Transparent
             ScaleConnectionStatus.Connecting -> MaterialTheme.colorScheme.surfaceContainer
             ScaleConnectionStatus.Connected -> MaterialTheme.colorScheme.primary
-        }
+        },
     )
 
     val contentColor by animateColorAsState(
@@ -233,7 +233,7 @@ private fun ScaleConnectionButton(
             ScaleConnectionStatus.Disconnected -> MaterialTheme.colorScheme.primary
             ScaleConnectionStatus.Connecting -> MaterialTheme.colorScheme.onSurfaceVariant
             ScaleConnectionStatus.Connected -> MaterialTheme.colorScheme.onPrimary
-        }
+        },
     )
 
     val text = when (connectionStatus) {
@@ -247,21 +247,21 @@ private fun ScaleConnectionButton(
         onClick = onClick,
         colors = ButtonDefaults.textButtonColors(
             containerColor = containerColor,
-            contentColor = contentColor
+            contentColor = contentColor,
         ),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
     ) {
         if (connectionStatus == ScaleConnectionStatus.Connecting) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp),
                 color = contentColor,
-                strokeWidth = 2.dp
+                strokeWidth = 2.dp,
             )
         } else if (connectionStatus == ScaleConnectionStatus.Connected) {
             Icon(
                 modifier = Modifier.size(20.dp),
                 painter = rememberVectorPainter(Icons.Filled.BluetoothConnected),
-                contentDescription = null
+                contentDescription = null,
             )
         }
         Text(
@@ -269,7 +269,7 @@ private fun ScaleConnectionButton(
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 8.dp),
         )
     }
 }
@@ -294,8 +294,8 @@ private fun PreviewWithScales() = GeeFlowTheme(false) {
             smartScaleEnabled = true,
             scales = listOf(
                 ScaleViewItem("Bookoo Themis Ultra", ScaleConnectionStatus.Disconnected),
-                ScaleViewItem("Acaia Lunar", ScaleConnectionStatus.Connected)
-            )
-        )
+                ScaleViewItem("Acaia Lunar", ScaleConnectionStatus.Connected),
+            ),
+        ),
     )
 }

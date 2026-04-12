@@ -53,7 +53,7 @@ internal fun BrewBar(
     isBrewing: Boolean,
     visibleCharts: Set<DashboardChartType>,
     onToggle: (DashboardChartType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val lastPoint = brew.data.values.lastOrNull()
 
@@ -82,7 +82,7 @@ internal fun BrewBar(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
         ) {
             Text(
                 text = brew.name,
@@ -100,7 +100,7 @@ internal fun BrewBar(
 
         Row(
             modifier = Modifier.fillMaxWidth().height(50.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             SummaryItem(
                 modifier = Modifier.weight(1f),
@@ -111,10 +111,10 @@ internal fun BrewBar(
                         color = MaterialTheme.colorScheme.error,
                         type = Pressure,
                         showDivider = visibleCharts.contains(Pressure),
-                        showAvg = !isBrewing && brew.data.isNotEmpty()
-                    )
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
+                    ),
                 ),
-                onToggle = onToggle
+                onToggle = onToggle,
             )
             SummaryItem(
                 modifier = Modifier.weight(2f),
@@ -125,7 +125,7 @@ internal fun BrewBar(
                         color = MaterialTheme.colorScheme.onSurface,
                         type = WeightRate,
                         showDivider = visibleCharts.contains(WeightRate),
-                        showAvg = !isBrewing && brew.data.isNotEmpty()
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
                     ),
                     ValueEntry(
                         value = currentFlow,
@@ -133,10 +133,10 @@ internal fun BrewBar(
                         color = GeeFlowTheme.colors.water,
                         type = FlowRate,
                         showDivider = visibleCharts.contains(FlowRate),
-                        showAvg = !isBrewing && brew.data.isNotEmpty()
-                    )
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
+                    ),
                 ),
-                onToggle = onToggle
+                onToggle = onToggle,
             )
             SummaryItem(
                 modifier = Modifier.weight(2f),
@@ -147,7 +147,7 @@ internal fun BrewBar(
                         color = MaterialTheme.colorScheme.onSurface,
                         type = Weight,
                         showDivider = visibleCharts.contains(Weight),
-                        showAvg = false
+                        showAvg = false,
                     ),
                     ValueEntry(
                         value = totalVolume.toDouble(),
@@ -155,10 +155,10 @@ internal fun BrewBar(
                         color = GeeFlowTheme.colors.waterVariant,
                         type = Volume,
                         showDivider = visibleCharts.contains(Volume),
-                        showAvg = false
-                    )
+                        showAvg = false,
+                    ),
                 ),
-                onToggle = onToggle
+                onToggle = onToggle,
             )
         }
     }
@@ -170,7 +170,7 @@ private data class ValueEntry(
     val color: Color,
     val type: DashboardChartType,
     val showDivider: Boolean,
-    val showAvg: Boolean
+    val showAvg: Boolean,
 )
 
 @Composable
@@ -184,7 +184,7 @@ private fun SummaryItem(
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         values.forEach { entry ->
             Column(
@@ -194,13 +194,13 @@ private fun SummaryItem(
                     .clickable { onToggle(entry.type) }
                     .padding(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = entry.value.format(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 AnimatedVisibility(
                     visible = entry.showDivider,
@@ -220,7 +220,7 @@ private fun SummaryItem(
                     Text(
                         text = entry.unit,
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     AnimatedVisibility(
                         visible = entry.showAvg,
@@ -230,7 +230,7 @@ private fun SummaryItem(
                         Text(
                             text = " ${stringResource(Res.string.common_avg)}",
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -239,7 +239,9 @@ private fun SummaryItem(
     }
 }
 
-private fun Double.format() = ((this * 10).toInt() / 10.0).toString()
+private const val DecimalScale = 10
+
+private fun Double.format() = ((this * DecimalScale).toInt() / DecimalScale.toDouble()).toString()
 
 private val previewBrew = Brew(
     name = "Slayer shot",
@@ -250,15 +252,15 @@ private val previewBrew = Brew(
             weight = 36.0f,
             weightPerSecond = 2.5f,
             volume = 40.0f,
-            volumePerSecond = 2.8f
-        )
-    )
+            volumePerSecond = 2.8f,
+        ),
+    ),
 )
 
 private val previewVisibleCharts = setOf(
     Pressure,
     FlowRate,
-    WeightRate
+    WeightRate,
 )
 
 @Composable
@@ -268,7 +270,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
         brew = previewBrew,
         isBrewing = true,
         visibleCharts = previewVisibleCharts,
-        onToggle = {}
+        onToggle = {},
     )
 }
 

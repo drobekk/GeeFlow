@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class GetVisibleChartsUseCase(
-    private val repository: UserSettingsRepository
+    private val repository: UserSettingsRepository,
 ) {
     operator fun invoke(): Flow<Set<ChartType>> = repository.visibleCharts
 }

@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class GetSelectedUserUseCase(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     operator fun invoke(): Flow<User?> = userRepository.selectedUser
 }

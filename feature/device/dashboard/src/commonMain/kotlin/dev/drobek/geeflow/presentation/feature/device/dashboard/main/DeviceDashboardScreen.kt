@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
 internal fun DeviceDashboardScreen(
     viewModel: DeviceDashboardViewModel,
     profileListViewModel: ProfileListViewModel,
-    navigator: Navigator
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -79,7 +79,7 @@ internal fun DeviceDashboardScreen(
         profileListViewState = profileListViewState,
         snackbarState = snackbarState,
         onProfileListEvent = profileListViewModel::handleEvent,
-        pagerState = pagerState
+        pagerState = pagerState,
     )
 
     EventsDispatcher(profileListViewModel.events) {
@@ -110,7 +110,7 @@ internal fun DeviceDashboardScreen(
     viewState.dialog?.let {
         DeviceDashboardDialog(
             model = it,
-            onEvent = viewModel::handleEvent
+            onEvent = viewModel::handleEvent,
         )
     }
 }
@@ -123,7 +123,7 @@ private fun DeviceDashboardContent(
     profileListViewState: ProfileListViewState,
     snackbarState: SnackbarHostState = SnackbarHostState(),
     onProfileListEvent: (ProfileListEvent) -> Unit,
-    pagerState: androidx.compose.foundation.pager.PagerState
+    pagerState: androidx.compose.foundation.pager.PagerState,
 ) {
     if (isWidthExpanded()) {
         ExpandedDashboard(
@@ -131,7 +131,7 @@ private fun DeviceDashboardContent(
             profileListViewState = profileListViewState,
             snackbarState = snackbarState,
             onEvent = onEvent,
-            onProfileListEvent = onProfileListEvent
+            onProfileListEvent = onProfileListEvent,
         )
     } else {
         CompactDashboard(
@@ -140,7 +140,7 @@ private fun DeviceDashboardContent(
             onEvent = onEvent,
             profileListViewState = profileListViewState,
             onProfileListEvent = onProfileListEvent,
-            pagerState = pagerState
+            pagerState = pagerState,
         )
     }
 }
@@ -152,37 +152,36 @@ private fun ExpandedDashboard(
     snackbarState: SnackbarHostState,
     onEvent: (DeviceDashboardEvent) -> Unit = {},
     onProfileListEvent: (ProfileListEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.systemBarsPadding()) {
         Row(Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.weight(0.7f).padding(start = 16.dp)) {
+            Column(modifier = Modifier.weight(MainColumnWeight).padding(start = 16.dp)) {
                 val selectedProfile = profileListViewState.profiles.find { it.selected }
                 TopBar(
                     device = viewState.device,
-                    user = viewState.user,
                     onEvent = onEvent,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 16.dp)
+                        .padding(top = 16.dp, bottom = 16.dp),
                 )
                 BrewCharts(
                     brew = viewState.brew,
                     selectedProfile = selectedProfile,
                     visibleCharts = viewState.visibleCharts,
-                    modifier = Modifier.weight(0.7f)
+                    modifier = Modifier.weight(MainColumnWeight),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     verticalAlignment = Alignment.Bottom,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                 ) {
                     BrewBar(
                         brew = viewState.brew,
                         isBrewing = viewState.device.isBrewing,
                         visibleCharts = viewState.visibleCharts,
                         onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
-                        modifier = Modifier.weight(1f).padding(bottom = 10.dp)
+                        modifier = Modifier.weight(1f).padding(bottom = 10.dp),
                     )
                     HorizontalSpacer(16.dp)
                     BrewButton(
@@ -190,22 +189,22 @@ private fun ExpandedDashboard(
                         onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
                         onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
                         onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
-                        onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) }
+                        onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
                     )
                 }
             }
             Column(
                 modifier = Modifier
-                    .weight(0.3f)
+                    .weight(SideColumnWeight)
                     .fillMaxHeight()
-                    .padding(16.dp)
+                    .padding(16.dp),
             ) {
                 ProfileList(
                     viewState = profileListViewState,
                     onEvent = onProfileListEvent,
                     modifier = Modifier
                         .fillMaxSize()
-                        .weight(1f)
+                        .weight(1f),
                 )
             }
         }
@@ -213,7 +212,7 @@ private fun ExpandedDashboard(
             hostState = snackbarState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
         )
     }
 }
@@ -225,7 +224,7 @@ private fun CompactDashboard(
     snackbarState: SnackbarHostState,
     onEvent: (DeviceDashboardEvent) -> Unit = {},
     onProfileListEvent: (ProfileListEvent) -> Unit,
-    pagerState: androidx.compose.foundation.pager.PagerState
+    pagerState: androidx.compose.foundation.pager.PagerState,
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -236,11 +235,10 @@ private fun CompactDashboard(
         topBar = {
             TopBar(
                 device = viewState.device,
-                user = viewState.user,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 24.dp, end = 24.dp)
+                    .padding(start = 24.dp, top = 24.dp, end = 24.dp),
             )
         },
         bottomBar = {
@@ -252,10 +250,10 @@ private fun CompactDashboard(
                 onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp)
+                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp),
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarState, modifier = Modifier.padding(horizontal = 16.dp)) }
+        snackbarHost = { SnackbarHost(hostState = snackbarState, modifier = Modifier.padding(horizontal = 16.dp)) },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             TabRow(
@@ -263,12 +261,12 @@ private fun CompactDashboard(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
                 onSelected = { index ->
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                }
+                },
             )
             HorizontalPager(
                 state = pagerState,
                 key = { it },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) { page ->
                 when (page) {
                     CompactDashboardPage.Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
@@ -280,7 +278,7 @@ private fun CompactDashboard(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .weight(1f)
-                                .padding(start = 24.dp, end = 24.dp)
+                                .padding(start = 24.dp, end = 24.dp),
                         )
                         BrewBar(
                             brew = viewState.brew,
@@ -289,7 +287,7 @@ private fun CompactDashboard(
                             onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 24.dp, top = 16.dp, end = 24.dp)
+                                .padding(start = 24.dp, top = 16.dp, end = 24.dp),
                         )
                     }
 
@@ -298,7 +296,7 @@ private fun CompactDashboard(
                         onEvent = onProfileListEvent,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 24.dp)
+                            .padding(horizontal = 24.dp),
                     )
 
                     else -> Unit
@@ -312,7 +310,7 @@ private fun CompactDashboard(
 private fun TabRow(
     selectedTabIndex: Int,
     modifier: Modifier = Modifier,
-    onSelected: (Int) -> Unit = {}
+    onSelected: (Int) -> Unit = {},
 ) = Row(modifier = modifier) {
     CompactDashboardPage.entries.forEachIndexed { index, page ->
         val color by animateColorAsState(
@@ -320,7 +318,7 @@ private fun TabRow(
                 MaterialTheme.colorScheme.primary
             } else {
                 MaterialTheme.colorScheme.primary.disabled()
-            }
+            },
         )
         Text(
             text = when (page) {
@@ -337,13 +335,14 @@ private fun TabRow(
             style = MaterialTheme.typography.labelLarge,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            color = color
+            color = color,
         )
     }
 }
 
 private enum class CompactDashboardPage {
-    Details, Profiles
+    Details,
+    Profiles
 }
 
 @Composable
@@ -355,10 +354,13 @@ private fun DeviceDashboardPreview(isDark: Boolean) {
             viewState = state.value,
             profileListViewState = getMockProfileListViewState(),
             onProfileListEvent = {},
-            pagerState = pagerState
+            pagerState = pagerState,
         )
     }
 }
+
+private const val MainColumnWeight = 0.7f
+private const val SideColumnWeight = 0.3f
 
 @Composable
 @GeeFlowScreenPreview

@@ -1,17 +1,8 @@
-build:
-  maxIssues: 0
-
 config:
   validation: true
-  warningsAsErrors: false
+  warningsAsErrors: true
 
 processors:
-  active: true
-
-output-reports:
-  active: true
-
-console-reports:
   active: true
 
 naming:
@@ -19,31 +10,82 @@ naming:
     ignoreAnnotated:
       - 'Composable'
   TopLevelPropertyNaming:
-    constantPattern: '[A-Z][A-Za-z0-9]*'
+    constantPattern: '[A-Z][A-Za-z0-9]*|[A-Z][_A-Z0-9]*'
+  ObjectPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9]*|[A-Z][_A-Z0-9]*'
 
 complexity:
   LongParameterList:
-    functionThreshold: 8
     ignoreDefaultParameters: true
+    allowedFunctionParameters: 8
+    allowedConstructorParameters: 8
   TooManyFunctions:
+    ignoreOverridden: true
     ignoreAnnotatedFunctions:
       - 'Preview'
+      - 'GeeFlowScreenPreview'
+  LongMethod:
+    active: true
+    allowedLines: 60
+    ignoreAnnotated: [ 'Composable' ]
+  CyclomaticComplexMethod:
+    active: true
+    allowedComplexity: 16
+    ignoreAnnotated: [ 'Composable' ]
+
+performance:
+  SpreadOperator:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    exceptionNames:
+      - Error
+      - IllegalMonitorStateException
+      - NullPointerException
+      - RuntimeException
+      - Throwable
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    excludes: [ '**/icons/**' ]
 
 style:
   MaxLineLength:
     maxLineLength: 130
   MagicNumber:
-    ignorePropertyDeclaration: true
-    ignoreCompanionObjectPropertyDeclaration: true
-  UnusedPrivateMember:
     ignoreAnnotated:
       - 'Preview'
       - 'GeeFlowScreenPreview'
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  UnusedPrivateFunction:
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
+      - 'GeeFlowScreenPreview'
+  ReturnCount:
+    max: 4
 
-formatting:
-  active: true
-  autoCorrect: true
-  android: false
-  MaximumLineLength:
-    active: true
+ktlint:
+  ArgumentListWrapping:
     maxLineLength: 130
+  BlankLineBetweenWhenConditions:
+    active: false
+  ClassSignature:
+    active: false
+  FunctionSignature:
+    active: false
+  MaximumLineLength:
+    maxLineLength: 130
+  PropertyName:
+    active: false
+  BinaryExpressionWrapping:
+    maxLineLength: 130
+  BackingPropertyNaming:
+    active: true
+    excludes: [ '**/icons/**' ]
+  TrailingCommaOnDeclarationSite:
+    active: false
+  TrailingCommaOnCallSite:
+    active: false

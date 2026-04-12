@@ -5,5 +5,5 @@ data class ChartData(
     val weight: Float,
     val weightPerSecond: Float,
     val volume: Float,
-    val volumePerSecond: Float
+    val volumePerSecond: Float,
 )

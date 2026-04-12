@@ -36,12 +36,14 @@ fun Modifier.squareSize(
     position: Float = 0.5f,
 ): Modifier = this.then(
     when {
-        position == 0.5f -> SquareSizeCenter
+        position == CenterPosition -> SquareSizeCenter
         else -> createSquareSizeModifier(position = position)
-    }
+    },
 )
 
-private val SquareSizeCenter = createSquareSizeModifier(position = 0.5f)
+private const val CenterPosition = 0.5f
+
+private val SquareSizeCenter = createSquareSizeModifier(position = CenterPosition)
 
 private class SquareSizeModifier(
     private val position: Float,
@@ -85,9 +87,7 @@ private class SquareSizeModifier(
         return true
     }
 
-    override fun hashCode(): Int {
-        return position.hashCode()
-    }
+    override fun hashCode(): Int = position.hashCode()
 }
 
 @Suppress("ModifierFactoryExtensionFunction", "ModifierFactoryReturnType")

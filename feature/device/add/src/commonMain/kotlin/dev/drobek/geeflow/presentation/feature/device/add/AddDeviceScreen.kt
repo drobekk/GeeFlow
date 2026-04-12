@@ -80,7 +80,7 @@ import geeflow.core.ui.generated.resources.Res as UiRes
 @Composable
 internal fun AddDeviceScreen(
     viewModel: AddDeviceViewModel,
-    navigator: Navigator
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -89,7 +89,7 @@ internal fun AddDeviceScreen(
     AddDeviceContent(
         viewState = viewState,
         snackbarHostState = snackbarHostState,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 
     LifecycleResumeEffect(Unit) {
@@ -114,7 +114,7 @@ internal fun AddDeviceScreen(
 private fun AddDeviceContent(
     viewState: AddDeviceViewState,
     onEvent: (AddDeviceEvent) -> Unit = {},
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
@@ -131,7 +131,7 @@ private fun AddDeviceContent(
             if (viewState.method.changeMethodButtonVisible) {
                 FloatingActionButton(
                     viewState = viewState,
-                    onEvent = onEvent
+                    onEvent = onEvent,
                 )
             }
         },
@@ -141,9 +141,9 @@ private fun AddDeviceContent(
                 viewState = viewState,
                 onEvent = onEvent,
                 scrollBehavior = scrollBehavior,
-                contentPadding = it
+                contentPadding = it,
             )
-        }
+        },
     )
 }
 
@@ -157,20 +157,20 @@ private fun Content(
 ) {
     AnimatedContent(
         modifier = Modifier.fillMaxSize(),
-        targetState = viewState.method
+        targetState = viewState.method,
     ) { method ->
         when (method) {
             is NearbyDevices -> NearbyDevicesList(
                 model = method,
                 onEvent = onEvent,
                 contentPadding = contentPadding,
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             )
 
             is QrCodeScanner -> Scanner(
                 model = method,
                 onEvent = onEvent,
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
             )
         }
     }
@@ -180,27 +180,27 @@ private fun Content(
 private fun FloatingActionButton(
     viewState: AddDeviceViewState,
     onEvent: (AddDeviceEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = FloatingActionButton(
     modifier = modifier.padding(
         horizontal = GeeFlowTheme.spacing.fabHorizontal,
-        vertical = GeeFlowTheme.spacing.fabVertical
+        vertical = GeeFlowTheme.spacing.fabVertical,
     ),
     onClick = {
         when (viewState.method) {
             is NearbyDevices -> onEvent(ShowQrCodeScannerClicked)
             is QrCodeScanner -> onEvent(ShowNearbyDevicesClicked)
         }
-    }
+    },
 ) {
     Text(
         text = stringResource(
             when (viewState.method) {
                 is NearbyDevices -> Res.string.add_device_screen_scan_qr
                 is QrCodeScanner -> Res.string.add_device_screen_show_nearby
-            }
+            },
         ),
-        modifier = Modifier.padding(horizontal = 24.dp)
+        modifier = Modifier.padding(horizontal = 24.dp),
     )
 }
 
@@ -210,29 +210,29 @@ private fun NearbyDevicesList(
     model: NearbyDevices,
     onEvent: (AddDeviceEvent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = contentPadding + PaddingValues(
             horizontal = GeeFlowTheme.spacing.contentHorizontal,
-            vertical = GeeFlowTheme.spacing.contentVertical
+            vertical = GeeFlowTheme.spacing.contentVertical,
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         when {
             model.showMissingPermissionMessage -> item {
                 MissingPermissionsMessage(
                     onEvent = onEvent,
-                    modifier = Modifier.fillParentMaxSize()
+                    modifier = Modifier.fillParentMaxSize(),
                 )
             }
 
             model.devices.isEmpty() -> item {
                 EmptyListMessage(
                     onEvent = onEvent,
-                    modifier = Modifier.fillParentMaxSize()
+                    modifier = Modifier.fillParentMaxSize(),
                 )
             }
         }
@@ -248,7 +248,7 @@ private fun NearbyDevicesList(
 @Composable
 private fun DeviceItem(
     model: AddDeviceViewState.DeviceItem,
-    onEvent: (AddDeviceEvent) -> Unit
+    onEvent: (AddDeviceEvent) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large)
@@ -259,12 +259,12 @@ private fun DeviceItem(
         Text(
             text = model.name,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
             text = model.id,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -274,10 +274,10 @@ private fun Scanner(
     model: QrCodeScanner,
     onEvent: (AddDeviceEvent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
 ) {
     val shape = MaterialTheme.shapes.extraLarge
-    val modifier = modifier
+    val scannerModifier = modifier
         .fillMaxHeight()
         .padding(contentPadding)
         .padding(48.dp)
@@ -288,10 +288,10 @@ private fun Scanner(
         .fillMaxSize()
 
     if (isPreview) {
-        Box(modifier = modifier)
+        Box(modifier = scannerModifier)
     } else {
         ScannerWithPermissions(
-            modifier = modifier.clipToBounds(),
+            modifier = scannerModifier.clipToBounds(),
             onScanned = {
                 onEvent(QrCodeScanned(it))
                 !model.scanningEnabled
@@ -301,22 +301,22 @@ private fun Scanner(
             enableTorch = false,
             permissionDeniedContent = { permissionState ->
                 Column(
-                    modifier = modifier.padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = scannerModifier.padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     VerticalSpacer(1f)
                     Text(
                         modifier = Modifier.padding(6.dp),
                         text = stringResource(Res.string.add_device_screen_no_camera_permission),
                         textAlign = TextAlign.Center,
-                        color = Color.White
+                        color = Color.White,
                     )
                     Button(onClick = { permissionState.goToSettings() }) {
                         Text(text = stringResource(UiRes.string.common_open_settings))
                     }
                     VerticalSpacer(1f)
                 }
-            }
+            },
         )
     }
 }
@@ -324,22 +324,22 @@ private fun Scanner(
 @Composable
 private fun MissingPermissionsMessage(
     onEvent: (AddDeviceEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = stringResource(UiRes.string.permission_bluetooth_missing),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelLarge,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         VerticalSpacer(24.dp)
         OutlinedButton(
-            onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) }
+            onClick = { onEvent(AddDeviceEvent.OpenSystemSettingsClicked) },
         ) {
             Text(text = stringResource(UiRes.string.common_open_settings))
         }
@@ -351,18 +351,18 @@ private fun MissingPermissionsMessage(
 @Composable
 private fun EmptyListMessage(
     onEvent: (AddDeviceEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth().wrapContentHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = stringResource(Res.string.add_device_screen_empty),
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelLarge,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         VerticalSpacer(16.dp)
         AddDemoDeviceButton(onEvent)
@@ -371,11 +371,11 @@ private fun EmptyListMessage(
 
 @Composable
 private fun AddDemoDeviceButton(
-    onEvent: (AddDeviceEvent) -> Unit
+    onEvent: (AddDeviceEvent) -> Unit,
 ) = OutlinedButton(
     modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
     onClick = { onEvent(AddDeviceEvent.AddDemoDeviceClicked) },
-    content = { Text(text = stringResource(Res.string.add_device_demo)) }
+    content = { Text(text = stringResource(Res.string.add_device_demo)) },
 )
 
 @Composable
@@ -385,9 +385,9 @@ private fun PreviewLight() = GeeFlowTheme(false) {
         viewState = AddDeviceViewState(
             method = NearbyDevices(
                 changeMethodButtonVisible = true,
-                devices = listOf()
-            )
-        )
+                devices = listOf(),
+            ),
+        ),
     )
 }
 
@@ -396,7 +396,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 private fun PreviewDark() = GeeFlowTheme(true) {
     AddDeviceContent(
         viewState = AddDeviceViewState(
-            method = QrCodeScanner()
-        )
+            method = QrCodeScanner(),
+        ),
     )
 }

@@ -13,5 +13,5 @@ enum class DeviceCapability {
     SingleDoseGrinderConnectivity,
     CommercialGrinderConnectivity,
     PressureProfiling,
-    FlowProfiling
+    FlowProfiling,
 }

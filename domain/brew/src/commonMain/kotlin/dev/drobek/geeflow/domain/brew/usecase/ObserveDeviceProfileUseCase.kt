@@ -10,11 +10,11 @@ import org.koin.core.annotation.Factory
 @Factory
 class ObserveDeviceProfileUseCase(
     private val deviceRepository: DeviceRepository,
-    private val brewProfileRepository: BrewProfileRepository
+    private val brewProfileRepository: BrewProfileRepository,
 ) {
     operator fun invoke(deviceId: Long): Flow<BrewProfile?> = combine(
         deviceRepository.devices,
-        brewProfileRepository.brewProfiles
+        brewProfileRepository.brewProfiles,
     ) { devices, profiles ->
         val boundProfileId = devices.find { it.id == deviceId }?.boundProfileId
         profiles.find { it.id == boundProfileId }

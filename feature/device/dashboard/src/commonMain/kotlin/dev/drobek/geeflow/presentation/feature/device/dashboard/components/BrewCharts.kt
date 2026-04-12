@@ -72,14 +72,14 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 private data class BrewChartSeries(
     val yValues: List<Number>,
     val color: Color,
-    val unit: String
+    val unit: String,
 )
 
 private data class TargetBrewData(
     val tX: List<Double>,
     val tY: List<Double>,
     val color: Color,
-    val unit: String
+    val unit: String,
 )
 
 @Composable
@@ -87,7 +87,7 @@ internal fun BrewCharts(
     brew: Brew,
     visibleCharts: Set<DashboardChartType>,
     selectedProfile: Profile? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val chartModifier = Modifier
         .background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.medium)
@@ -98,12 +98,12 @@ internal fun BrewCharts(
     val xValues = sortedEntries.map { it.key.toDouble() }
     val sortedPoints = sortedEntries.map { it.value }
 
-    val targetData = selectedProfile?.targetData ?: emptyMap()
+    val targetData = selectedProfile?.targetData.orEmpty()
     val targetPressure = targetData.map { it.key.toDouble() to it.value.pressure.toDouble() }.toMap()
     val targetFlow = targetData.map { it.key.toDouble() to it.value.volumePerSecond.toDouble() }.toMap()
 
     val maxBrewX = xValues.maxOrNull() ?: 0.0
-    val maxX = maxOf(maxBrewX + 5f, 20.0)
+    val maxX = maxOf(maxBrewX + ChartXPadding, MinChartX)
 
     val syncState = rememberBrewSyncState()
 
@@ -150,7 +150,7 @@ internal fun BrewCharts(
                 it.map { e -> e.key },
                 it.map { e -> e.value },
                 waterColor.copy(alpha = 0.5f),
-                unitMlPerSecond
+                unitMlPerSecond,
             )
         }
     } else {
@@ -165,7 +165,7 @@ internal fun BrewCharts(
     if (isHeightCompact()) {
         Row(
             modifier = modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val rowModifier = Modifier.weight(1f).fillMaxSize().then(chartModifier)
             if (showPressure) {
@@ -177,7 +177,7 @@ internal fun BrewCharts(
                     maxX = maxX,
                     syncState = syncState,
                     chartId = 0,
-                    modifier = rowModifier
+                    modifier = rowModifier,
                 )
             }
             if (showFlowChart) {
@@ -189,7 +189,7 @@ internal fun BrewCharts(
                     maxX = maxX,
                     syncState = syncState,
                     chartId = 1,
-                    modifier = rowModifier
+                    modifier = rowModifier,
                 )
             }
             if (showAccumulatedChart) {
@@ -201,14 +201,14 @@ internal fun BrewCharts(
                     maxX = maxX,
                     syncState = syncState,
                     chartId = 2,
-                    modifier = rowModifier
+                    modifier = rowModifier,
                 )
             }
         }
     } else {
         Column(
             modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val columnModifier = Modifier.weight(1f).fillMaxSize().then(chartModifier)
             if (showPressure) {
@@ -220,7 +220,7 @@ internal fun BrewCharts(
                     maxX = maxX,
                     syncState = syncState,
                     chartId = 0,
-                    modifier = columnModifier
+                    modifier = columnModifier,
                 )
             }
             if (showFlowChart) {
@@ -232,7 +232,7 @@ internal fun BrewCharts(
                     maxX = maxX,
                     syncState = syncState,
                     chartId = 1,
-                    modifier = columnModifier
+                    modifier = columnModifier,
                 )
             }
             if (showAccumulatedChart) {
@@ -244,7 +244,7 @@ internal fun BrewCharts(
                     maxX = maxX,
                     syncState = syncState,
                     chartId = 2,
-                    modifier = columnModifier
+                    modifier = columnModifier,
                 )
             }
         }
@@ -255,13 +255,13 @@ internal fun BrewCharts(
 private fun ChartsNotSelected(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = stringResource(Res.string.device_dashboard_select_charts),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -333,7 +333,7 @@ private fun BrewChart(
     marker: CartesianMarker,
     markerVisibilityListener: CartesianMarkerVisibilityListener,
     syncMarkerX: Double?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (colors.isEmpty() && targetColor == null) return
 
@@ -363,10 +363,10 @@ private fun BrewChart(
                                 stroke = LineCartesianLayer.LineStroke.Dashed(),
                                 areaFill = null,
                             )
-                        }
-                    ).toTypedArray()
+                        },
+                    ).toTypedArray(),
                 ),
-                rangeProvider = CartesianLayerRangeProvider.fixed(minX = 0.0, maxX = maxX, minY = 0.0, maxY = maxY)
+                rangeProvider = CartesianLayerRangeProvider.fixed(minX = 0.0, maxX = maxX, minY = 0.0, maxY = maxY),
             ),
             getXStep = { getXStep(maxX) },
             marker = marker,
@@ -376,7 +376,7 @@ private fun BrewChart(
             startAxis = VerticalAxis.rememberStart(
                 tick = null,
                 label = rememberAxisLabelComponent(
-                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 ),
                 line = null,
                 tickLength = 2.dp,
@@ -386,34 +386,44 @@ private fun BrewChart(
                     shape = DashedShape(
                         shape = CircleShape,
                         dashLength = 1.dp,
-                        gapLength = 5.dp
-                    )
-                )
+                        gapLength = 5.dp,
+                    ),
+                ),
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 line = null,
                 tick = null,
                 label = rememberAxisLabelComponent(
-                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
                 ),
                 itemPlacer = HorizontalAxis.ItemPlacer.aligned(
                     spacing = { 1 },
                     shiftExtremeLines = false,
-                    addExtremeLabelPadding = false
+                    addExtremeLabelPadding = false,
                 ),
                 valueFormatter = { _, value, _ -> value.toLong().toString() },
                 guideline = rememberAxisGuidelineComponent(
-                    shape = DashedShape(shape = CircleShape, dashLength = 1.dp, gapLength = 5.dp)
-                )
+                    shape = DashedShape(shape = CircleShape, dashLength = 1.dp, gapLength = 5.dp),
+                ),
             ),
         ),
         modelProducer = modelProducer,
         animationSpec = null,
         animateIn = false,
         modifier = modifier,
-        scrollState = vicoScrollState
+        scrollState = vicoScrollState,
     )
 }
+
+private const val ChartXPadding = 5.0
+private const val MinChartX = 20.0
+private const val StepNiceLow = 1.5
+private const val StepNiceMid = 3.0
+private const val StepNiceHigh = 7.0
+private const val StepNiceMax = 10.0
+private const val StepNice5 = 5.0
 
 private fun getXStep(maxValue: Double, targetStepCount: Int = 10): Double {
     if (maxValue <= 0) return 1.0
@@ -422,10 +432,10 @@ private fun getXStep(maxValue: Double, targetStepCount: Int = 10): Double {
     val normalizedStep = roughStep / magnitude
 
     val niceMultiplier = when {
-        normalizedStep <= 1.5 -> 1.0
-        normalizedStep <= 3.0 -> 2.0
-        normalizedStep <= 7.0 -> 5.0
-        else -> 10.0
+        normalizedStep <= StepNiceLow -> 1.0
+        normalizedStep <= StepNiceMid -> 2.0
+        normalizedStep <= StepNiceHigh -> StepNice5
+        else -> StepNiceMax
     }
 
     return niceMultiplier * magnitude

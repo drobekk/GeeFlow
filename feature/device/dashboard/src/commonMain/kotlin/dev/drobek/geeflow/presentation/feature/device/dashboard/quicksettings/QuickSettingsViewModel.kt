@@ -32,7 +32,7 @@ import org.koin.core.annotation.KoinViewModel
 internal class QuickSettingsViewModel(
     @InjectedParam val arguments: QuickSettings,
     private val observeDeviceState: ObserveDeviceStateUseCase,
-    private val setBoilerSettings: SetBoilerSettingsUseCase
+    private val setBoilerSettings: SetBoilerSettingsUseCase,
 ) : BaseViewModel<QuickSettingsViewState, QuickSettingsViewModelEvent>(QuickSettingsViewState()) {
 
     private var applyJob: Job? = null
@@ -52,7 +52,7 @@ internal class QuickSettingsViewModel(
                         modify {
                             copy(
                                 brewBoiler = brewBoiler.copy(actualTemp = it.value.brewBoilerTemp ?: 0f),
-                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f)
+                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f),
                             )
                         }
                     }
@@ -66,13 +66,13 @@ internal class QuickSettingsViewModel(
             steamBoiler = steamBoiler.copy(
                 enabled = config?.steamBoilerEnabled ?: false,
                 actualTemp = state.steamBoilerTemp ?: 0f,
-                selectedTemp = config?.targetSteamTemp?.toInt().toString()
+                selectedTemp = config?.targetSteamTemp?.toInt().toString(),
             ),
             brewBoiler = brewBoiler.copy(
                 enabled = config?.brewBoilerEnabled ?: false,
                 actualTemp = state.brewBoilerTemp ?: 0f,
-                selectedTemp = config?.targetBrewTemp?.toInt().toString()
-            )
+                selectedTemp = config?.targetBrewTemp?.toInt().toString(),
+            ),
         )
     }
 
@@ -99,17 +99,17 @@ internal class QuickSettingsViewModel(
                     deviceId = arguments.deviceId,
                     boilerType = BoilerType.Steam,
                     enabled = viewState.value.steamBoiler.enabled,
-                    temp = viewState.value.steamBoiler.selectedTemp.toInt()
+                    temp = viewState.value.steamBoiler.selectedTemp.toInt(),
                 )
                 setBoilerSettings(
                     deviceId = arguments.deviceId,
                     boilerType = BoilerType.Brew,
                     enabled = viewState.value.brewBoiler.enabled,
-                    temp = viewState.value.brewBoiler.selectedTemp.toInt()
+                    temp = viewState.value.brewBoiler.selectedTemp.toInt(),
                 )
                 modify { copy(applying = false) }
                 navigate(NavEvent.Back)
-            }
+            },
         )
     }
 

@@ -18,27 +18,27 @@ internal fun SettingsToggleRow(
     subtitle: String,
     checked: Boolean,
     onCheckedChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
             VerticalSpacer(4.dp)
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         HorizontalSpacer(16.dp)
         GeeFlowSwitch(
             checked = checked,
             onCheckedChange = onCheckedChanged,
-            enabled = true
+            enabled = true,
         )
     }
 }

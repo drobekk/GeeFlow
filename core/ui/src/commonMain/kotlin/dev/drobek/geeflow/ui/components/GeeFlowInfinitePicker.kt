@@ -54,13 +54,13 @@ fun GeeFlowInfinitePicker(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    hint: String? = null
+    hint: String? = null,
 ) {
     if (items.isEmpty()) return
 
     val itemHeightSp = 38.sp
     val itemHeight = with(LocalDensity.current) { itemHeightSp.toDp() }
-    val totalHeight = itemHeight * 3
+    val totalHeight = itemHeight * VisibleItemsCount
     val density = LocalDensity.current
     val itemHeightPx = with(density) { itemHeight.toPx() }
 
@@ -103,7 +103,7 @@ fun GeeFlowInfinitePicker(
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shape = MaterialTheme.shapes.large,
-        modifier = modifier.height(totalHeight)
+        modifier = modifier.height(totalHeight),
     ) {
         Box(contentAlignment = Alignment.Center) {
             LazyColumn(
@@ -111,11 +111,11 @@ fun GeeFlowInfinitePicker(
                 userScrollEnabled = enabled,
                 flingBehavior = snapFlingBehavior,
                 modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 items(
                     count = Int.MAX_VALUE,
-                    key = { it }
+                    key = { it },
                 ) { index ->
                     val item = items[index % items.size]
                     Text(
@@ -131,7 +131,7 @@ fun GeeFlowInfinitePicker(
                                 onSelectionChanged(item)
                             }
                             .padding(horizontal = 32.dp, vertical = 8.dp)
-                            .wrapContentHeight(Alignment.CenterVertically)
+                            .wrapContentHeight(Alignment.CenterVertically),
                     )
                 }
             }
@@ -148,7 +148,7 @@ fun GeeFlowInfinitePicker(
                         reverseDirection = true,
                         orientation = Orientation.Vertical,
                         flingBehavior = snapFlingBehavior,
-                        enabled = enabled && !isEditing
+                        enabled = enabled && !isEditing,
                     )
                     .pointerInput(enabled, isEditing) {
                         if (enabled && !isEditing) {
@@ -156,7 +156,7 @@ fun GeeFlowInfinitePicker(
                                 isEditing = true
                             }
                         }
-                    }
+                    },
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     if (isEditing) {
@@ -166,19 +166,23 @@ fun GeeFlowInfinitePicker(
                             listState = listState,
                             keyboardOptions = keyboardOptions,
                             hint = hint,
-                            onDismiss = { isEditing = false }
+                            onDismiss = { isEditing = false },
                         )
                     } else {
                         val selectedItem = remember(items, centerIndex) { items[centerIndex % items.size] }
                         Text(
                             text = selectedItem,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = if (enabled) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .wrapContentHeight(Alignment.CenterVertically)
+                                .wrapContentHeight(Alignment.CenterVertically),
                         )
                     }
                 }
@@ -194,7 +198,7 @@ private fun PickerSearchField(
     listState: LazyListState,
     keyboardOptions: KeyboardOptions,
     hint: String?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
@@ -207,7 +211,7 @@ private fun PickerSearchField(
 
     val textStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onPrimary,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
     )
 
     BasicTextField(
@@ -230,41 +234,47 @@ private fun PickerSearchField(
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimary),
         singleLine = true,
         keyboardOptions = keyboardOptions.copy(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = {
-            val matchIndex = items.indexOfFirst { it.startsWith(searchQuery, ignoreCase = true) }
-            if (matchIndex != -1) {
-                onSelectionChanged(items[matchIndex])
-            }
-            onDismiss()
-        }),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                val matchIndex = items.indexOfFirst { it.startsWith(searchQuery, ignoreCase = true) }
+                if (matchIndex != -1) {
+                    onSelectionChanged(items[matchIndex])
+                }
+                onDismiss()
+            },
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .onFocusChanged {
                 if (it.isFocused) {
                     wasFocused = true
-                } else if (wasFocused) onDismiss()
+                } else if (wasFocused) {
+                    onDismiss()
+                }
             }
             .padding(horizontal = 16.dp),
         decorationBox = { innerTextField ->
             Box(
                 modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 if (searchQuery.isEmpty() && hint != null) {
                     Text(
                         text = hint,
                         style = textStyle.copy(
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
                         ),
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
                 innerTextField()
             }
-        }
+        },
     )
 }
+
+private const val VisibleItemsCount = 3
 
 @Composable
 @Preview
@@ -275,7 +285,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
             selected = "110",
             onSelectionChanged = {},
             keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-            hint = "Enter"
+            hint = "Enter",
         )
     }
 }
@@ -289,7 +299,7 @@ private fun PreviewDark() = GeeFlowTheme(true) {
             selected = "110",
             onSelectionChanged = {},
             keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-            hint = "Enter"
+            hint = "Enter",
         )
     }
 }

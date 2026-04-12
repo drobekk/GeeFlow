@@ -39,7 +39,7 @@ internal class AddDeviceViewModel(
     @InjectedParam val permissionsController: PermissionsController,
     private val addDeviceUseCase: AddDeviceUseCase,
     private val parseDeviceQrCodeUseCase: ParseDeviceQrCodeUseCase,
-    private val nearbyDevicesController: NearbyDevicesController
+    private val nearbyDevicesController: NearbyDevicesController,
 ) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(AddDeviceViewState(platform.getMethod())) {
 
     init {
@@ -75,7 +75,7 @@ internal class AddDeviceViewModel(
                     manufacturer = SupportedDevice.GeeFlowDemo.manufacturer,
                     model = SupportedDevice.GeeFlowDemo.model,
                     version = SupportedDevice.GeeFlowDemo.version,
-                )
+                ),
             )
         }
     }

@@ -6,9 +6,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class GetBrewProfileUseCase(
-    private val brewProfileRepository: BrewProfileRepository
+    private val brewProfileRepository: BrewProfileRepository,
 ) {
-    operator fun invoke(id: Long): BrewProfile? {
-        return brewProfileRepository.getBrewProfileById(id)
-    }
+    operator fun invoke(id: Long): BrewProfile? = brewProfileRepository.getBrewProfileById(id)
 }

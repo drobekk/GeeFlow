@@ -15,7 +15,7 @@ import dev.drobek.geeflow.ui.isWidthExpanded
 fun GeeFlowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     useSystemTheme: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val systemThemeProvider = remember { getThemeProvider() }
     val systemTheme = systemThemeProvider.getSystemColorScheme()
@@ -29,7 +29,7 @@ fun GeeFlowTheme(
 
     CompositionLocalProvider(
         LocalSpacing provides spacing,
-        LocalColors provides customColors
+        LocalColors provides customColors,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -38,15 +38,15 @@ fun GeeFlowTheme(
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.surface,
-                    content = content
+                    content = content,
                 )
-            }
+            },
         )
     }
 }
 
 object GeeFlowTheme {
-    val spacing: Spacing
+    val spacing: GeeFlowSpacing
         @Composable
         get() = LocalSpacing.current
 

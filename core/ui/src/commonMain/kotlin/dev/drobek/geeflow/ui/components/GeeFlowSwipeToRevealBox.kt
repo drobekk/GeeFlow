@@ -84,9 +84,9 @@ fun GeeFlowSwipeToRevealBox(
                 .offset {
                     IntOffset(
                         x = if (state.offset.isNaN()) 0 else state.offset.roundToInt(),
-                        y = 0
+                        y = 0,
                     )
-                }
+                },
         )
     }
 
@@ -198,11 +198,12 @@ class SwipeToRevealBoxState {
         anchoredDraggableState.animateTo(targetValue = direction)
     }
 
+    @Suppress("FunctionNaming")
     companion object {
         fun Saver(positionalThreshold: (totalDistance: Float) -> Float) =
             androidx.compose.runtime.saveable.Saver<SwipeToRevealBoxState, SwipeToRevealBoxValue>(
                 save = { it.currentValue },
-                restore = { SwipeToRevealBoxState(it, positionalThreshold) }
+                restore = { SwipeToRevealBoxState(it, positionalThreshold) },
             )
     }
 }
@@ -211,10 +212,8 @@ class SwipeToRevealBoxState {
 fun rememberSwipeToRevealBoxState(
     initialValue: SwipeToRevealBoxValue = SwipeToRevealBoxValue.Settled,
     positionalThreshold: (totalDistance: Float) -> Float = SwipeToDismissBoxDefaults.positionalThreshold,
-): SwipeToRevealBoxState {
-    return rememberSaveable(
-        saver = SwipeToRevealBoxState.Saver(positionalThreshold = positionalThreshold)
-    ) {
-        SwipeToRevealBoxState(initialValue, positionalThreshold)
-    }
+): SwipeToRevealBoxState = rememberSaveable(
+    saver = SwipeToRevealBoxState.Saver(positionalThreshold = positionalThreshold),
+) {
+    SwipeToRevealBoxState(initialValue, positionalThreshold)
 }

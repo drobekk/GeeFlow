@@ -22,7 +22,7 @@ fun WaveDivider(
     amplitude: Dp = 4.dp,
     durationMillis: Int = 4000,
     orientation: WaveOrientation = WaveOrientation.Horizontal,
-    reversed: Boolean = false
+    reversed: Boolean = false,
 ) {
     Box(
         modifier = modifier
@@ -30,7 +30,7 @@ fun WaveDivider(
                 when (orientation) {
                     WaveOrientation.Horizontal -> Modifier.fillMaxWidth().height(thickness)
                     WaveOrientation.Vertical -> Modifier.fillMaxHeight().width(thickness)
-                }
+                },
             )
             .waveBackground(
                 targetProgress = 0.5f,
@@ -39,7 +39,7 @@ fun WaveDivider(
                 orientation = orientation,
                 waves = waves,
                 durationMillis = durationMillis,
-                reversed = reversed
-            )
+                reversed = reversed,
+            ),
     )
 }

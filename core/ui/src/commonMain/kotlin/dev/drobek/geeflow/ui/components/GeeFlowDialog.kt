@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 fun GeeFlowDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
@@ -25,8 +25,8 @@ fun GeeFlowDialog(
                     .wrapContentWidth()
                     .wrapContentHeight(),
                 shape = MaterialTheme.shapes.large,
-                content = content
+                content = content,
             )
-        }
+        },
     )
 }

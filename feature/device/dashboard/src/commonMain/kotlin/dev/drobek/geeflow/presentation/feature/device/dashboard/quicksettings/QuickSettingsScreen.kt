@@ -55,7 +55,7 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun QuickSettingsScreen(
     viewModel: QuickSettingsViewModel,
-    navigator: Navigator
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -75,14 +75,14 @@ internal fun QuickSettingsScreen(
     Box(modifier = Modifier.fillMaxWidth()) {
         QuickSettingsContent(
             viewState = viewState,
-            onEvent = viewModel::handleEvent
+            onEvent = viewModel::handleEvent,
         )
 
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),
         )
     }
 }
@@ -90,37 +90,37 @@ internal fun QuickSettingsScreen(
 @Composable
 private fun QuickSettingsContent(
     viewState: QuickSettingsViewState,
-    onEvent: (QuickSettingsEvent) -> Unit
+    onEvent: (QuickSettingsEvent) -> Unit,
 ) = Column(
     modifier = Modifier
         .background(MaterialTheme.colorScheme.background, MaterialTheme.shapes.large)
         .verticalScroll(rememberScrollState())
         .padding(horizontal = 24.dp, vertical = 16.dp)
         .fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
+    horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     GeeFlowDialogTopBar(
         title = stringResource(Res.string.settings_quick_title),
-        onCloseClick = { onEvent(QuickSettingsEvent.CloseClicked) }
+        onCloseClick = { onEvent(QuickSettingsEvent.CloseClicked) },
     )
     VerticalSpacer(16.dp)
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(24.dp)
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         Boiler(
             boiler = viewState.brewBoiler,
             label = stringResource(CoreRes.string.common_brew_boiler),
             onTempChanged = { onEvent(QuickSettingsEvent.BrewTempChanged(it)) },
             onEnabledChanged = { onEvent(QuickSettingsEvent.BrewBoilerToggled(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         Boiler(
             boiler = viewState.steamBoiler,
             label = stringResource(CoreRes.string.common_steam_boiler),
             onTempChanged = { onEvent(QuickSettingsEvent.SteamTempChanged(it)) },
             onEnabledChanged = { onEvent(QuickSettingsEvent.SteamBoilerToggled(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
     VerticalSpacer(24.dp)
@@ -133,10 +133,10 @@ private fun Boiler(
     label: String,
     onTempChanged: (String) -> Unit,
     onEnabledChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Column(
     modifier = modifier,
-    horizontalAlignment = Alignment.CenterHorizontally
+    horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     BoilerHeader(
         label = label,
@@ -147,14 +147,14 @@ private fun Boiler(
         checked = boiler.enabled,
         onCheckedChange = onEnabledChanged,
         enabled = true,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(8.dp)
     GeeFlowInfinitePicker(
         items = boiler.tempList,
         selected = boiler.selectedTemp,
         enabled = boiler.enabled,
-        onSelectionChanged = onTempChanged
+        onSelectionChanged = onTempChanged,
     )
 }
 
@@ -169,13 +169,13 @@ private fun BoilerHeader(
     }
     FlowRow(
         verticalArrangement = Arrangement.Center,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         HorizontalSpacer(4.dp)
         Text(
@@ -183,7 +183,7 @@ private fun BoilerHeader(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(min = textWidth)
+            modifier = Modifier.widthIn(min = textWidth),
         )
     }
 }
@@ -191,14 +191,14 @@ private fun BoilerHeader(
 @Composable
 private fun Buttons(
     applying: Boolean,
-    onEvent: (QuickSettingsEvent) -> Unit
+    onEvent: (QuickSettingsEvent) -> Unit,
 ) = Row(
     modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
 ) {
     TextButton(
         onClick = { onEvent(QuickSettingsEvent.MoreSettingsClicked) },
-        content = { Text(stringResource(Res.string.settings_quick_more)) }
+        content = { Text(stringResource(Res.string.settings_quick_more)) },
     )
     Button(
         onClick = { if (!applying) onEvent(QuickSettingsEvent.ConfirmClicked) },
@@ -207,13 +207,13 @@ private fun Buttons(
                 if (it) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
                     Text(stringResource(CoreRes.string.common_confirm))
                 }
             }
-        }
+        },
     )
 }
 
@@ -225,15 +225,15 @@ private fun QuickSettingsPreviewLight() = GeeFlowTheme(false) {
             steamBoiler = Boiler(
                 enabled = true,
                 actualTemp = 122.0f,
-                selectedTemp = "125"
+                selectedTemp = "125",
             ),
             brewBoiler = Boiler(
                 enabled = false,
                 actualTemp = 93.5f,
-                selectedTemp = "93"
-            )
+                selectedTemp = "93",
+            ),
         ),
-        onEvent = {}
+        onEvent = {},
     )
 }
 
@@ -245,15 +245,15 @@ private fun QuickSettingsPreviewDark() = GeeFlowTheme(true) {
             steamBoiler = Boiler(
                 enabled = false,
                 actualTemp = 122.0f,
-                selectedTemp = "125"
+                selectedTemp = "125",
             ),
             brewBoiler = Boiler(
                 enabled = true,
                 actualTemp = 93.5f,
-                selectedTemp = "93"
+                selectedTemp = "93",
             ),
-            applying = true
+            applying = true,
         ),
-        onEvent = {}
+        onEvent = {},
     )
 }

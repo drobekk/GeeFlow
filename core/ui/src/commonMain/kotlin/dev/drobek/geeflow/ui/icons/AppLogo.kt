@@ -16,7 +16,7 @@ val GeeFlowIcon.AppLogo: ImageVector
             defaultWidth = 48.dp,
             defaultHeight = 48.dp,
             viewportWidth = 1024f,
-            viewportHeight = 1024f
+            viewportHeight = 1024f,
         ).apply {
             path(fill = SolidColor(Color.Black)) {
                 moveTo(512f, -0f)

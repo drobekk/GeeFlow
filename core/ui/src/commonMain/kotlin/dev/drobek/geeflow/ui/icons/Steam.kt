@@ -16,7 +16,7 @@ val GeeFlowIcon.Steam: ImageVector
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
             viewportWidth = 960f,
-            viewportHeight = 960f
+            viewportHeight = 960f,
         ).apply {
             path(fill = SolidColor(Color(0xFFE3E3E3))) {
                 moveTo(532f, 829f)

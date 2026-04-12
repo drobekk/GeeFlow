@@ -6,6 +6,7 @@ import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.data.device.model.DeviceState.BoilerType
+import dev.drobek.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
@@ -35,9 +36,10 @@ import org.koin.core.annotation.KoinViewModel
 internal class BrewingSettingsViewModel(
     @InjectedParam val arguments: BrewingSettings,
     private val observeDeviceState: ObserveDeviceStateUseCase,
+    private val getDeviceConstraints: GetDeviceConstraintsUseCase,
     private val setBoilerSettings: SetBoilerSettingsUseCase,
     private val setPulseHeatingMode: SetPulseHeatingModeUseCase,
-    private val setManualBrewSettings: SetManualBrewSettingsUseCase
+    private val setManualBrewSettings: SetManualBrewSettingsUseCase,
 ) : BaseViewModel<BrewingSettingsViewState, BrewingSettingsViewModelEvent>(BrewingSettingsViewState()) {
 
     private var deviceSnapshot: DeviceSnapshot? = null
@@ -50,6 +52,20 @@ internal class BrewingSettingsViewModel(
 
     private fun loadMachineState() {
         launch {
+            val constraints = getDeviceConstraints(arguments.deviceId)
+            val brewTempList = constraints.brewTempRange.map { it.toString() }
+            val steamTempList = constraints.steamTempRange.map { it.toString() }
+            val pressureList = constraints.manualBrewPressureRange.map {
+                "${it / DecimalScale}.${it % DecimalScale}"
+            }
+            val timeList = constraints.manualBrewTimeRange.map { it.toString() }
+            modify {
+                copy(
+                    brewBoiler = brewBoiler.copy(tempList = brewTempList),
+                    steamBoiler = steamBoiler.copy(tempList = steamTempList),
+                    paddle = paddle.copy(pressureList = pressureList, timeList = timeList),
+                )
+            }
             observeDeviceState(arguments.deviceId)
                 .withIndex()
                 .collect {
@@ -59,7 +75,7 @@ internal class BrewingSettingsViewModel(
                         modify {
                             copy(
                                 brewBoiler = brewBoiler.copy(actualTemp = it.value.brewBoilerTemp ?: 0f),
-                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f)
+                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f),
                             )
                         }
                     }
@@ -74,18 +90,18 @@ internal class BrewingSettingsViewModel(
                 steamBoiler = steamBoiler.copy(
                     enabled = config?.steamBoilerEnabled ?: false,
                     actualTemp = state.steamBoilerTemp ?: 0f,
-                    selectedTemp = config?.targetSteamTemp?.toInt()?.toString() ?: "0"
+                    selectedTemp = config?.targetSteamTemp?.toInt()?.toString() ?: "0",
                 ),
                 brewBoiler = brewBoiler.copy(
                     enabled = config?.brewBoilerEnabled ?: false,
                     actualTemp = state.brewBoilerTemp ?: 0f,
-                    selectedTemp = config?.targetBrewTemp?.toInt()?.toString() ?: "0"
+                    selectedTemp = config?.targetBrewTemp?.toInt()?.toString() ?: "0",
                 ),
                 pulseHeatingEnabled = config?.heatingMode == DeviceState.HeatingMode.Pulse,
                 paddle = paddle.copy(
                     pressure = config?.manualBrewPressure?.toString() ?: "0.0",
-                    time = config?.manualBrewTimeSec?.toInt()?.toString() ?: "0"
-                )
+                    time = config?.manualBrewTimeSec?.toInt()?.toString() ?: "0",
+                ),
             )
         }
         deviceSnapshot = snapshotFromState(viewState.value)
@@ -94,24 +110,28 @@ internal class BrewingSettingsViewModel(
     fun handleEvent(event: BrewingSettingsEvent) = when (event) {
         is SteamBoilerToggled -> modify {
             copy(
-                steamBoiler = steamBoiler.copy(enabled = event.enabled)
+                steamBoiler = steamBoiler.copy(enabled = event.enabled),
             ).withApplyVisible()
         }
+
         is BrewBoilerToggled -> modify {
             copy(
-                brewBoiler = brewBoiler.copy(enabled = event.enabled)
+                brewBoiler = brewBoiler.copy(enabled = event.enabled),
             ).withApplyVisible()
         }
+
         is SteamTempChanged -> modify {
             copy(
-                steamBoiler = steamBoiler.copy(selectedTemp = event.temp)
+                steamBoiler = steamBoiler.copy(selectedTemp = event.temp),
             ).withApplyVisible()
         }
+
         is BrewTempChanged -> modify {
             copy(
-                brewBoiler = brewBoiler.copy(selectedTemp = event.temp)
+                brewBoiler = brewBoiler.copy(selectedTemp = event.temp),
             ).withApplyVisible()
         }
+
         is PulseHeatingToggled -> modify { copy(pulseHeatingEnabled = event.enabled).withApplyVisible() }
         is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
         is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
@@ -132,24 +152,24 @@ internal class BrewingSettingsViewModel(
                     deviceId = arguments.deviceId,
                     boilerType = BoilerType.Steam,
                     enabled = steamBoiler.enabled,
-                    temp = steamBoiler.selectedTemp.toInt()
+                    temp = steamBoiler.selectedTemp.toInt(),
                 )
                 setBoilerSettings(
                     deviceId = arguments.deviceId,
                     boilerType = BoilerType.Brew,
                     enabled = brewBoiler.enabled,
-                    temp = brewBoiler.selectedTemp.toInt()
+                    temp = brewBoiler.selectedTemp.toInt(),
                 )
                 setPulseHeatingMode(arguments.deviceId, pulseHeatingEnabled)
                 setManualBrewSettings(
                     deviceId = arguments.deviceId,
                     pressure = paddle.pressure.toFloat(),
-                    timeSec = paddle.time.toFloat()
+                    timeSec = paddle.time.toFloat(),
                 )
                 deviceSnapshot = snapshotFromState(viewState.value)
                 modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
                 emitEvent(ShowSnackbar(getString(Res.string.common_settings_applied)))
-            }
+            },
         )
     }
 
@@ -189,4 +209,8 @@ internal class BrewingSettingsViewModel(
         val paddlePressure: String,
         val paddleTime: String,
     )
+
+    companion object {
+        private const val DecimalScale = 10
+    }
 }

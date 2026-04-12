@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package dev.drobek.geeflow.data.brew.model
 
 import kotlinx.serialization.SerialName
@@ -13,7 +15,7 @@ data class BrewProfile(
     val finishCondition: Condition,
     val autoLinkOpen: Boolean = false,
     val steps: List<ProfileStep> = emptyList(),
-    val position: Int = 0
+    val position: Int = 0,
 )
 
 @Serializable
@@ -53,5 +55,5 @@ enum class ProfileMode(val value: Int) {
     ConstantPressure(2),
 
     @SerialName("3")
-    FreeVariable(3)
+    FreeVariable(3),
 }

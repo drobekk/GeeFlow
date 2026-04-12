@@ -13,7 +13,7 @@ import org.koin.core.annotation.Single
 class DefaultDeviceControllerProvider(
     private val deviceRepository: DeviceRepository,
     private val wendougeeDataSController: WendougeeDataSController,
-    private val demoDeviceController: DemoDeviceController
+    private val demoDeviceController: DemoDeviceController,
 ) : DeviceControllerProvider {
     override var currentDeviceId: Long? = null
         private set

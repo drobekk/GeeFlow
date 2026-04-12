@@ -41,12 +41,13 @@ class GeeFlowApp
         FeatureDeviceDashboardModule::class,
         FeatureDeviceSettingsModule::class,
         FeatureIntroModule::class,
-    ]
+    ],
 )
 @Configuration
 @ComponentScan("dev.drobek.geeflow")
 class AppModule
 
+@Suppress("InjectDispatcher")
 @Singleton
 class AppCoroutineScope : CoroutineScope {
     override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Default

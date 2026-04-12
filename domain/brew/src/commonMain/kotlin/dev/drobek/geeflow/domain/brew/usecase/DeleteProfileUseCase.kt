@@ -7,12 +7,12 @@ import org.koin.core.annotation.Factory
 @Factory
 class DeleteProfileUseCase(
     private val brewProfileRepository: BrewProfileRepository,
-    private val deviceRepository: DeviceRepository
+    private val deviceRepository: DeviceRepository,
 ) {
-    @Throws(Exception::class)
+    @Throws(IllegalStateException::class)
     operator fun invoke(profileId: Long) {
         val isBound = deviceRepository.devices.value.any { it.boundProfileId == profileId }
-        if (isBound) throw Exception("Cannot delete bound profile")
+        check(isBound.not()) { "Cannot delete bound profile" }
         brewProfileRepository.removeBrewProfile(profileId)
     }
 }

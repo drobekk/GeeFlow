@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions", "LongParameterList")
+
 package dev.drobek.geeflow.presentation.feature.device.dashboard.main
 
 import co.touchlab.kermit.Logger
@@ -7,6 +9,8 @@ import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.core.presentation.toUserMessage
 import dev.drobek.geeflow.data.brew.model.BrewSession
 import dev.drobek.geeflow.data.device.model.DeviceState
+import dev.drobek.geeflow.data.device.model.DeviceState.BrewStatus
+import dev.drobek.geeflow.data.device.model.DeviceState.ConnectionStatus
 import dev.drobek.geeflow.data.device.model.isDemo
 import dev.drobek.geeflow.data.user.model.ChartType
 import dev.drobek.geeflow.domain.brew.usecase.GetBrewProfileUseCase
@@ -32,6 +36,10 @@ import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
 import dev.drobek.geeflow.platform.permissions.PermissionsController
 import dev.drobek.geeflow.presentation.feature.device.dashboard.QuickMaintenance
 import dev.drobek.geeflow.presentation.feature.device.dashboard.QuickSettings
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
+import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -53,7 +61,7 @@ internal class DeviceDashboardViewModel(
     private val observeBrewData: ObserveBrewDataUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
-    private val getBrewProfileUseCase: GetBrewProfileUseCase
+    private val getBrewProfileUseCase: GetBrewProfileUseCase,
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
     private var selectedProfileId: String? = null
@@ -67,15 +75,15 @@ internal class DeviceDashboardViewModel(
         launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
     }
 
+    @Suppress("CyclomaticComplexMethod")
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
         is DeviceDashboardEvent.ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is DeviceDashboardEvent.ConnectionButtonClicked -> toggleConnection()
         is DeviceDashboardEvent.DeviceClicked -> navigate(To(DeviceList))
         is DeviceDashboardEvent.QuickSettingsClicked -> withDeviceConnected {
-            navigate(
-                To(QuickSettings(args.deviceId))
-            )
+            navigate(To(QuickSettings(args.deviceId)))
         }
+
         is DeviceDashboardEvent.UserClicked -> Unit
         is DeviceDashboardEvent.ConnectedDevicesClicked -> withDeviceConnected {
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
@@ -95,7 +103,7 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun toggleConnection() {
-        if (viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Connected) {
+        if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
             disconnectDevice(args.deviceId)
         } else {
             withBluetoothPermissions {
@@ -106,7 +114,7 @@ internal class DeviceDashboardViewModel(
 
     private fun connect() {
         withBluetoothPermissions {
-            if (viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Disconnected) {
+            if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Disconnected) {
                 connectDevice(args.deviceId)
             }
         }
@@ -127,20 +135,20 @@ internal class DeviceDashboardViewModel(
         selectedProfileId
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
-            ?.let { modify { copy(brew = DeviceDashboardViewState.Brew(it.name)) } }
+            ?.let { modify { copy(brew = Brew(it.name)) } }
     }
 
     private fun updateMachineStateUi(state: DeviceState) {
-        val wasConnected = viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Connected
-        val isNowConnected = state.connectionStatus == DeviceState.ConnectionStatus.Connected
+        val wasConnected = viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected
+        val isNowConnected = state.connectionStatus == ConnectionStatus.Connected
         if (!wasConnected && isNowConnected && state.waterLevelAlarm) {
             navigate(To(QuickMaintenance(args.deviceId)))
         }
         modify {
             val newBrewStatus = when (state.brewStatus) {
-                DeviceState.BrewStatus.Manual -> DeviceDashboardViewState.Device.BrewStatus.Manual
-                DeviceState.BrewStatus.Profile -> DeviceDashboardViewState.Device.BrewStatus.Profile
-                else -> DeviceDashboardViewState.Device.BrewStatus.Idle
+                BrewStatus.Manual -> Device.BrewStatus.Manual
+                BrewStatus.Profile -> Device.BrewStatus.Profile
+                else -> Device.BrewStatus.Idle
             }
             copy(
                 device = device.copy(
@@ -148,15 +156,15 @@ internal class DeviceDashboardViewModel(
                     steamBoilerTemp = state.steamBoilerTemp?.roundDecimalsTo(1)?.toString(),
                     pressure = state.pressure?.roundDecimalsTo(1)?.toString(),
                     connectionStatus = when (state.connectionStatus) {
-                        DeviceState.ConnectionStatus.Disconnected -> DeviceDashboardViewState.Device.ConnectionStatus.Disconnected
-                        DeviceState.ConnectionStatus.Connecting -> DeviceDashboardViewState.Device.ConnectionStatus.Connecting
-                        DeviceState.ConnectionStatus.Synchronizing -> DeviceDashboardViewState.Device.ConnectionStatus.Synchronizing
-                        DeviceState.ConnectionStatus.Connected -> DeviceDashboardViewState.Device.ConnectionStatus.Connected
+                        ConnectionStatus.Disconnected -> Device.ConnectionStatus.Disconnected
+                        ConnectionStatus.Connecting -> Device.ConnectionStatus.Connecting
+                        ConnectionStatus.Synchronizing -> Device.ConnectionStatus.Synchronizing
+                        ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
                     },
                     brewStatus = newBrewStatus,
                     smartScaleConnected = state.smartScale?.isConnected == true,
-                    alarm = state.waterLevelAlarm
-                )
+                    alarm = state.waterLevelAlarm,
+                ),
             )
         }
     }
@@ -173,8 +181,8 @@ internal class DeviceDashboardViewModel(
                         volume = point.volume,
                         volumePerSecond = point.flowRate,
                     )
-                }
-            )
+                },
+            ),
         )
     }
 
@@ -182,13 +190,13 @@ internal class DeviceDashboardViewModel(
         copy(
             visibleCharts = charts.map {
                 when (it) {
-                    ChartType.PRESSURE -> DeviceDashboardViewState.DashboardChartType.Pressure
-                    ChartType.FLOW_RATE -> DeviceDashboardViewState.DashboardChartType.FlowRate
-                    ChartType.WEIGHT_RATE -> DeviceDashboardViewState.DashboardChartType.WeightRate
-                    ChartType.VOLUME -> DeviceDashboardViewState.DashboardChartType.Volume
-                    ChartType.WEIGHT -> DeviceDashboardViewState.DashboardChartType.Weight
+                    ChartType.PRESSURE -> DashboardChartType.Pressure
+                    ChartType.FLOW_RATE -> DashboardChartType.FlowRate
+                    ChartType.WEIGHT_RATE -> DashboardChartType.WeightRate
+                    ChartType.VOLUME -> DashboardChartType.Volume
+                    ChartType.WEIGHT -> DashboardChartType.Weight
                 }
-            }.toSet()
+            }.toSet(),
         )
     }
 
@@ -205,7 +213,7 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun withDeviceConnected(block: () -> Unit) {
-        if (viewState.value.device.connectionStatus == DeviceDashboardViewState.Device.ConnectionStatus.Connected) {
+        if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
             block()
         } else {
             onError(DeviceNotConnectedException(args.deviceId))
@@ -213,7 +221,7 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun showBluetoothPermissionMissingDialog() {
-        modify { copy(dialog = DeviceDashboardViewState.Dialog.BluetoothPermissionMissing) }
+        modify { copy(dialog = Dialog.BluetoothPermissionMissing) }
     }
 
     private fun onError(throwable: Throwable) {
@@ -221,12 +229,12 @@ internal class DeviceDashboardViewModel(
         launch { emitEvent(DeviceDashboardViewModelEvent.ShowSnackbar(throwable.toUserMessage())) }
     }
 
-    private fun DeviceDashboardViewState.DashboardChartType.toDomain() = when (this) {
-        DeviceDashboardViewState.DashboardChartType.Pressure -> ChartType.PRESSURE
-        DeviceDashboardViewState.DashboardChartType.FlowRate -> ChartType.FLOW_RATE
-        DeviceDashboardViewState.DashboardChartType.WeightRate -> ChartType.WEIGHT_RATE
-        DeviceDashboardViewState.DashboardChartType.Volume -> ChartType.VOLUME
-        DeviceDashboardViewState.DashboardChartType.Weight -> ChartType.WEIGHT
+    private fun DashboardChartType.toDomain() = when (this) {
+        DashboardChartType.Pressure -> ChartType.PRESSURE
+        DashboardChartType.FlowRate -> ChartType.FLOW_RATE
+        DashboardChartType.WeightRate -> ChartType.WEIGHT_RATE
+        DashboardChartType.Volume -> ChartType.VOLUME
+        DashboardChartType.Weight -> ChartType.WEIGHT
     }
 }
 

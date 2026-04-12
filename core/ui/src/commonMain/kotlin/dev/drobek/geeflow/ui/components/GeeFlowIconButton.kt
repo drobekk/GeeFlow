@@ -19,18 +19,18 @@ fun GeeFlowIconButton(
     enabled: Boolean = true,
     size: Dp = 80.dp,
     shape: Shape = CircleShape,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     FilledIconButton(
         onClick = onClick,
         enabled = enabled,
         shape = shape,
-        modifier = modifier.size(size)
+        modifier = modifier.size(size),
     ) {
         Icon(
             painter = painter,
             contentDescription = contentDescription,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp),
         )
     }
 }

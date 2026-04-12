@@ -12,7 +12,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class UserSettingsRepositoryImpl(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
 ) : UserSettingsRepository {
 
     private val visibleChartsKey = stringSetPreferencesKey("visible_charts")
@@ -20,13 +20,8 @@ class UserSettingsRepositoryImpl(
     override val visibleCharts: Flow<Set<ChartType>> = dataStore.data.map { preferences ->
         val stringSet = preferences[visibleChartsKey]
         stringSet
-            ?.mapNotNull {
-                try {
-                    ChartType.valueOf(it)
-                } catch (e: Exception) {
-                    null
-                }
-            }?.toSet()
+            ?.mapNotNull { ChartType.entries.find { entry -> entry.name == it } }
+            ?.toSet()
             ?: setOf(ChartType.PRESSURE, ChartType.FLOW_RATE, ChartType.WEIGHT_RATE)
     }
 

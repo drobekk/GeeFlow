@@ -26,7 +26,7 @@ internal fun DeviceDashboardDialog(
     onEvent: (DeviceDashboardEvent) -> Unit,
 ) {
     GeeFlowDialog(
-        onDismissRequest = { onEvent(DeviceDashboardEvent.DialogDismissed) }
+        onDismissRequest = { onEvent(DeviceDashboardEvent.DialogDismissed) },
     ) {
         when (model) {
             DeviceDashboardViewState.Dialog.BluetoothPermissionMissing -> BluetoothPermissionMissingDialog(onEvent)
@@ -43,12 +43,12 @@ private fun BluetoothPermissionMissingDialog(onEvent: (DeviceDashboardEvent) -> 
     Column(modifier = Modifier.padding(32.dp)) {
         Text(
             text = stringResource(CoreRes.string.permission_bluetooth_missing),
-            modifier = Modifier.align(Alignment.Start)
+            modifier = Modifier.align(Alignment.Start),
         )
         VerticalSpacer(24.dp)
         Button(
             onClick = { onEvent(DeviceDashboardEvent.OpenSystemSettingsClicked) },
-            modifier = Modifier.align(Alignment.End)
+            modifier = Modifier.align(Alignment.End),
         ) {
             Text(text = stringResource(CoreRes.string.common_open_settings))
         }
@@ -60,6 +60,6 @@ private fun BluetoothPermissionMissingDialog(onEvent: (DeviceDashboardEvent) -> 
 private fun Preview() = GeeFlowTheme {
     DeviceDashboardDialog(
         model = DeviceDashboardViewState.Dialog.BluetoothPermissionMissing,
-        onEvent = {}
+        onEvent = {},
     )
 }

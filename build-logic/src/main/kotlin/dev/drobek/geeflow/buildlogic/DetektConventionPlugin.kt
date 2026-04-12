@@ -1,7 +1,7 @@
 package dev.drobek.geeflow.buildlogic
 
-import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import dev.detekt.gradle.Detekt
+import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -14,20 +14,20 @@ class DetektConventionPlugin : Plugin<Project> {
         target.dependencies.add("detektPlugins", target.libs.findLibrary("detekt-formatting").get())
 
         target.extensions.configure<DetektExtension> {
-            parallel = true
-            buildUponDefaultConfig = true
-            autoCorrect = true
             config.setFrom(target.rootProject.files("config/detekt/detekt.yml"))
         }
 
         target.tasks.withType<Detekt>().configureEach {
+            multiPlatformEnabled.set(true)
+            parallel.set(true)
             exclude("**/generated/**", "**/build/**")
+            exclude { it.file.absolutePath.contains("/build/") || it.file.absolutePath.contains("\\build\\") }
+            buildUponDefaultConfig.set(true)
             reports {
+                checkstyle.required.set(true)
                 html.required.set(true)
-                xml.required.set(false)
-                txt.required.set(false)
-                sarif.required.set(false)
-                md.required.set(false)
+                sarif.required.set(true)
+                markdown.required.set(true)
             }
         }
 

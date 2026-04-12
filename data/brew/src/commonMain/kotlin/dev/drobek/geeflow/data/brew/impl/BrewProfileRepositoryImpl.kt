@@ -11,7 +11,7 @@ import org.koin.core.annotation.Singleton
 @Singleton
 class BrewProfileRepositoryImpl(
     private val brewsDao: BrewsDao,
-    private val defaultBrewProfileProvider: DefaultBrewProfileProvider
+    private val defaultBrewProfileProvider: DefaultBrewProfileProvider,
 ) : BrewProfileRepository {
 
     private val _brewProfiles = MutableStateFlow<List<BrewProfile>>(emptyList())
@@ -33,9 +33,7 @@ class BrewProfileRepositoryImpl(
         return brewsDao.getBrewProfilesByUserId(userId)
     }
 
-    override fun getBrewProfileById(id: Long): BrewProfile? {
-        return brewsDao.getBrewProfileById(id)
-    }
+    override fun getBrewProfileById(id: Long): BrewProfile? = brewsDao.getBrewProfileById(id)
 
     private fun addDefaultProfiles(userId: Long) {
         defaultBrewProfileProvider.getDefaultProfiles(userId).forEach { defaultProfile ->

@@ -22,25 +22,23 @@ import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 
 @Composable
 fun GeeFlowUserAvatar(
-    model: Any? = null,
     onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // TODO Load avatar from uri
     Box(
-        modifier =
-        modifier
+        modifier = modifier
             .clip(CircleShape)
             .clickable(onClick = onClick)
             .aspectRatio(1f)
             .background(MaterialTheme.colorScheme.surfaceContainer),
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = Alignment.BottomCenter,
     ) {
         Icon(
             painter = rememberVectorPainter(GeeFlowIcon.Person),
             modifier = Modifier.fillMaxSize(),
             tint = MaterialTheme.colorScheme.outlineVariant,
-            contentDescription = null
+            contentDescription = null,
         )
     }
 }

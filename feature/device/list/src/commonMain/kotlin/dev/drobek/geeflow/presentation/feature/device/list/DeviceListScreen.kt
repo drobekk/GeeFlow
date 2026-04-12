@@ -88,7 +88,7 @@ fun DeviceListScreen(navigator: Navigator) {
     DevicesListContent(
         viewState = viewState,
         showBackButton = showBackButton,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 
     NavigatorEffect(navigator, viewModel.navEvent)
@@ -119,9 +119,9 @@ private fun DevicesListContent(
                 devices = viewState.devices,
                 onEvent = onEvent,
                 contentPadding = it,
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             )
-        }
+        },
     )
 }
 
@@ -130,14 +130,14 @@ private fun DeviceList(
     devices: List<DeviceListViewState.Device>,
     onEvent: (DeviceListEvent) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = LazyColumn(
     modifier = modifier.fillMaxSize(),
     contentPadding = contentPadding + PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
-        vertical = GeeFlowTheme.spacing.contentVertical
+        vertical = GeeFlowTheme.spacing.contentVertical,
     ),
-    verticalArrangement = Arrangement.spacedBy(16.dp)
+    verticalArrangement = Arrangement.spacedBy(16.dp),
 ) {
     if (devices.isEmpty()) {
         item { ListEmptyItem(modifier = Modifier.fillParentMaxSize()) }
@@ -149,7 +149,7 @@ private fun DeviceList(
 @Composable
 private fun DeviceItem(
     device: DeviceListViewState.Device,
-    onEvent: (DeviceListEvent) -> Unit
+    onEvent: (DeviceListEvent) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -158,28 +158,28 @@ private fun DeviceItem(
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(onClick = { onEvent(DeviceClicked(device)) })
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
                     text = device.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 AnimatedVisibility(
                     visible = device.favourite,
                     enter = fadeIn(),
-                    exit = fadeOut()
+                    exit = fadeOut(),
                 ) {
                     Icon(
                         painter = rememberVectorPainter(image = Icons.Filled.Star),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(12.dp),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
             }
@@ -187,7 +187,7 @@ private fun DeviceItem(
                 Text(
                     text = device.macAddress,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -201,43 +201,43 @@ private fun DeviceItemMenu(device: DeviceListViewState.Device, onEvent: (DeviceL
     Box {
         IconButton(
             onClick = { isMenuVisible = true },
-            modifier = Modifier
+            modifier = Modifier,
         ) {
             Icon(
                 painter = rememberVectorPainter(image = Icons.Filled.MoreVert),
-                contentDescription = stringResource(CoreRes.string.common_more)
+                contentDescription = stringResource(CoreRes.string.common_more),
             )
         }
         DropdownMenu(
             expanded = isMenuVisible,
             onDismissRequest = { isMenuVisible = false },
-            shape = MaterialTheme.shapes.large
+            shape = MaterialTheme.shapes.large,
         ) {
             DropdownMenuItem(
                 text = { Text(text = stringResource(Res.string.device_list_screen_set_as_default)) },
                 leadingIcon = {
                     Icon(
                         painter = rememberVectorPainter(image = Icons.Filled.Star),
-                        contentDescription = stringResource(CoreRes.string.common_favourite)
+                        contentDescription = stringResource(CoreRes.string.common_favourite),
                     )
                 },
                 onClick = {
                     onEvent(DeviceSetAsDefaultClicked(device))
                     isMenuVisible = false
-                }
+                },
             )
             DropdownMenuItem(
                 text = { Text(text = stringResource(CoreRes.string.common_remove)) },
                 leadingIcon = {
                     Icon(
                         rememberVectorPainter(Icons.Filled.Delete),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 },
                 onClick = {
                     onEvent(DeviceRemoveClicked(device))
                     isMenuVisible = false
-                }
+                },
             )
         }
     }
@@ -246,24 +246,24 @@ private fun DeviceItemMenu(device: DeviceListViewState.Device, onEvent: (DeviceL
 @Composable
 private fun AddButton(
     modifier: Modifier = Modifier,
-    onEvent: (DeviceListEvent) -> Unit
+    onEvent: (DeviceListEvent) -> Unit,
 ) = FloatingActionButton(
     modifier = modifier.padding(
         horizontal = GeeFlowTheme.spacing.fabHorizontal,
-        vertical = GeeFlowTheme.spacing.fabVertical
+        vertical = GeeFlowTheme.spacing.fabVertical,
     ),
     onClick = { onEvent(DeviceListEvent.AddDeviceClicked) },
     content = {
         Icon(
             painter = rememberVectorPainter(image = Icons.Filled.Add),
-            contentDescription = stringResource(Res.string.device_list_screen_add_device)
+            contentDescription = stringResource(Res.string.device_list_screen_add_device),
         )
-    }
+    },
 )
 
 @Composable
 private fun ListEmptyItem(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Text(
         text = stringResource(Res.string.device_list_screen_empty),
@@ -272,7 +272,7 @@ private fun ListEmptyItem(
             .wrapContentHeight(),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.labelLarge,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
     )
 }
 
@@ -286,16 +286,16 @@ private fun PreviewLight() = GeeFlowTheme(false) {
                     name = "Data-S",
                     id = 1L,
                     macAddress = "AA:BB:CC:DD:EE:FF",
-                    favourite = true
+                    favourite = true,
                 ),
                 DeviceListViewState.Device(
                     name = "Data-S",
                     id = 2L,
                     macAddress = "",
-                    favourite = false
-                )
-            )
-        )
+                    favourite = false,
+                ),
+            ),
+        ),
     )
 }
 

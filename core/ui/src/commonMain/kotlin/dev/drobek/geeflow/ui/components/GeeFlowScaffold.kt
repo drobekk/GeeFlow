@@ -50,7 +50,7 @@ fun GeeFlowScaffold(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = WindowInsets.systemBars,
-    content: @Composable (paddingValues: PaddingValues) -> Unit
+    content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
     val topBar: @Composable () -> Unit = {
         GeeFlowTopBar(
@@ -65,8 +65,8 @@ fun GeeFlowScaffold(
                 .conditional(
                     condition = isWidthExpanded(),
                     ifTrue = { widthIn(max = 300.dp) },
-                    ifFalse = { fillMaxWidth() }
-                )
+                    ifFalse = { fillMaxWidth() },
+                ),
         )
     }
     if (isWidthExpanded()) {
@@ -79,7 +79,7 @@ fun GeeFlowScaffold(
             contentColor = contentColor,
             modifier = modifier,
             contentWindowInsets = contentWindowInsets,
-            content = content
+            content = content,
         )
     } else {
         GeeFlowScaffoldCompact(
@@ -91,7 +91,7 @@ fun GeeFlowScaffold(
             contentColor = contentColor,
             modifier = modifier,
             contentWindowInsets = contentWindowInsets,
-            content = content
+            content = content,
         )
     }
 }
@@ -107,7 +107,7 @@ fun GeeFlowScaffold(
     contentColor: Color = contentColorFor(containerColor),
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = WindowInsets.systemBars,
-    content: @Composable (paddingValues: PaddingValues) -> Unit
+    content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
     if (isWidthExpanded()) {
         GeeFlowScaffoldExpanded(
@@ -119,7 +119,7 @@ fun GeeFlowScaffold(
             contentColor = contentColor,
             modifier = modifier,
             contentWindowInsets = contentWindowInsets,
-            content = content
+            content = content,
         )
     } else {
         GeeFlowScaffoldCompact(
@@ -131,7 +131,7 @@ fun GeeFlowScaffold(
             contentColor = contentColor,
             modifier = modifier,
             contentWindowInsets = contentWindowInsets,
-            content = content
+            content = content,
         )
     }
 }
@@ -147,7 +147,7 @@ fun GeeFlowScaffoldExpanded(
     contentColor: Color = contentColorFor(containerColor),
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = WindowInsets.systemBars,
-    content: @Composable (paddingValues: PaddingValues) -> Unit
+    content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) = Scaffold(
     modifier = modifier,
     snackbarHost = snackbarHost,
@@ -161,7 +161,7 @@ fun GeeFlowScaffoldExpanded(
             }
             WaveDivider(
                 color = MaterialTheme.colorScheme.surfaceContainer,
-                orientation = WaveOrientation.Vertical
+                orientation = WaveOrientation.Vertical,
             )
             Box {
                 content(paddingValues)
@@ -173,15 +173,15 @@ fun GeeFlowScaffoldExpanded(
                                 FabPosition.End -> Alignment.BottomEnd
                                 FabPosition.Center -> Alignment.BottomCenter
                                 else -> Alignment.BottomEnd
-                            }
+                            },
                         )
                         .padding(16.dp)
                         .padding(bottom = paddingValues.calculateBottomPadding()),
-                    content = { floatingActionButton() }
+                    content = { floatingActionButton() },
                 )
             }
         }
-    }
+    },
 )
 
 @Composable
@@ -194,7 +194,7 @@ fun GeeFlowScaffoldCompact(
     contentColor: Color = contentColorFor(containerColor),
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
-    content: @Composable (paddingValues: PaddingValues) -> Unit
+    content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) = Scaffold(
     modifier = modifier,
     snackbarHost = snackbarHost,
@@ -209,9 +209,9 @@ fun GeeFlowScaffoldCompact(
             WaveDivider(
                 color = MaterialTheme.colorScheme.surfaceContainer,
                 orientation = WaveOrientation.Horizontal,
-                reversed = true
+                reversed = true,
             )
         }
     },
-    content = content
+    content = content,
 )

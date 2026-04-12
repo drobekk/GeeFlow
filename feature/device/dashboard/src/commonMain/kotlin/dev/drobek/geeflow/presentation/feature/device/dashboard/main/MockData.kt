@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package dev.drobek.geeflow.presentation.feature.device.dashboard.main
 
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
@@ -32,7 +34,7 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
             weight = weight,
             weightPerSecond = weightRate,
             volume = volume,
-            volumePerSecond = flowRate
+            volumePerSecond = flowRate,
         )
     }
 
@@ -45,13 +47,13 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
             steamBoilerTemp = "125.0°",
             pressure = "9.0",
             connectionStatus = Device.ConnectionStatus.Connected,
-            brewStatus = Device.BrewStatus.Manual
+            brewStatus = Device.BrewStatus.Manual,
         ),
         brew = Brew(
             name = "Manual Extraction",
             time = 30,
-            data = dataPoints
-        )
+            data = dataPoints,
+        ),
     )
 }
 
@@ -64,14 +66,14 @@ fun getMockProfileListViewState() = ProfileListViewState(
             name = "Light Roast",
             description = "69g",
             brewByWeight = true,
-            selected = true
+            selected = true,
         ),
         Profile(
             id = "2",
             number = "2",
             name = "Dark Roast",
             description = "88ml",
-            brewByWeight = false
+            brewByWeight = false,
         ),
         Profile(
             id = "3",
@@ -79,15 +81,15 @@ fun getMockProfileListViewState() = ProfileListViewState(
             name = "Turbo Shot",
             description = "36g",
             brewByWeight = true,
-            bound = true
-        )
+            bound = true,
+        ),
     ) + List(10) { index ->
         Profile(
             id = (index + 4).toString(),
             number = (index + 4).toString(),
             name = "Profile ${index + 4}",
             description = if (index % 2 == 0) "${80 + index}ml" else "${40 + index}g",
-            brewByWeight = index % 2 == 0
+            brewByWeight = index % 2 == 0,
         )
-    }
+    },
 )

@@ -5,5 +5,5 @@ enum class ChartType {
     FLOW_RATE,
     WEIGHT_RATE,
     VOLUME,
-    WEIGHT
+    WEIGHT,
 }

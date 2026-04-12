@@ -7,7 +7,7 @@ import dev.drobek.geeflow.navigation.Navigator
 
 class AppNavigator(
     val finish: () -> Unit,
-    val backStack: NavBackStack<NavKey>
+    val backStack: NavBackStack<NavKey>,
 ) : Navigator {
 
     override val isAtRoot: Boolean

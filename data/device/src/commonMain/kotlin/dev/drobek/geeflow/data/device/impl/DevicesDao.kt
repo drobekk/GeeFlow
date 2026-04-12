@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions", "LongParameterList")
+
 package dev.drobek.geeflow.data.device.impl
 
 import dev.drobek.geeflow.data.db.DatabaseProvider
@@ -103,6 +105,7 @@ class DevicesDao(databaseProvider: DatabaseProvider) {
             peripheralId = blePeripheralId.orEmpty(),
             macAddress = bleMacAddress.orEmpty(),
         )
+
         else -> error("Unknown connectionType '$connectionType' in devices row")
     }
 

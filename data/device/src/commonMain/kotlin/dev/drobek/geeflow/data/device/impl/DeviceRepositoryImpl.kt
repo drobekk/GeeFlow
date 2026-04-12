@@ -10,7 +10,7 @@ import org.koin.core.annotation.Singleton
 
 @Singleton
 class DeviceRepositoryImpl(
-    private val devicesDao: DevicesDao
+    private val devicesDao: DevicesDao,
 ) : DeviceRepository {
 
     private val _devices = MutableStateFlow<List<Device>>(emptyList())
@@ -26,13 +26,9 @@ class DeviceRepositoryImpl(
         return id
     }
 
-    override fun getDeviceById(id: Long): Device? {
-        return devicesDao.getDeviceById(id)
-    }
+    override fun getDeviceById(id: Long): Device? = devicesDao.getDeviceById(id)
 
-    override fun getDeviceByBleMacAddress(macAddress: String): Device? {
-        return devicesDao.getDeviceByBleMac(macAddress)
-    }
+    override fun getDeviceByBleMacAddress(macAddress: String): Device? = devicesDao.getDeviceByBleMac(macAddress)
 
     override fun removeDeviceById(id: Long) {
         devicesDao.deleteDevice(id)

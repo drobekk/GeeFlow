@@ -1,9 +1,12 @@
+@file:Suppress("TooManyFunctions")
+
 package dev.drobek.geeflow.data.device
 
 import dev.drobek.geeflow.data.brew.model.BrewProfile
 import dev.drobek.geeflow.data.device.model.Device
 import dev.drobek.geeflow.data.device.model.DeviceCapability
 import dev.drobek.geeflow.data.device.model.DeviceConnection
+import dev.drobek.geeflow.data.device.model.DeviceConstraints
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.data.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.data.device.model.DeviceState.HeatingMode
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface DeviceController {
     val deviceState: StateFlow<DeviceState>
     val capabilities: Set<DeviceCapability>
+    val constraints: DeviceConstraints
     val foundScales: StateFlow<List<SmartScale>>
 
     /**

@@ -90,12 +90,12 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 internal fun ProfileList(
     viewState: ProfileListViewState,
     onEvent: (ProfileListEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ProfileListContent(
         viewState = viewState,
         onEvent = onEvent,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -104,7 +104,7 @@ internal fun ProfileList(
 private fun ProfileListContent(
     viewState: ProfileListViewState,
     onEvent: (ProfileListEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearchExpanded by remember { mutableStateOf(false) }
@@ -128,25 +128,25 @@ private fun ProfileListContent(
         lazyListState = lazyListState,
         onMove = { from, to ->
             onEvent(ProfileListEvent.Reordered(from.index, to.index))
-        }
+        },
     )
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large),
     ) {
         LazyColumn(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp)
+            contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp),
         ) {
             items(filteredProfiles, key = { it.id }) { profile ->
                 ReorderableItem(
                     state = reorderableState,
                     enabled = !profile.bound,
-                    key = profile.id
+                    key = profile.id,
                 ) { isDragging ->
                     ProfileItem(
                         profile = profile,
@@ -158,8 +158,8 @@ private fun ProfileListContent(
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                             .draggableHandle(
                                 !profile.bound,
-                                onDragStarted = { haptic.performHapticFeedback(LongPress) }
-                            )
+                                onDragStarted = { haptic.performHapticFeedback(LongPress) },
+                            ),
                     )
                 }
             }
@@ -170,7 +170,7 @@ private fun ProfileListContent(
             onSearchQueryChange = { searchQuery = it },
             onExpandedChange = { isSearchExpanded = it },
             onEvent = onEvent,
-            modifier = Modifier.align(BiasAlignment(0.0f, verticalBias))
+            modifier = Modifier.align(BiasAlignment(0.0f, verticalBias)),
         )
     }
 }
@@ -183,21 +183,21 @@ private fun BottomBar(
     onSearchQueryChange: (String) -> Unit,
     onExpandedChange: (Boolean) -> Unit,
     onEvent: (ProfileListEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val topBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.surfaceContainer,
             MaterialTheme.colorScheme.surfaceContainer,
-            Color.Transparent
-        )
+            Color.Transparent,
+        ),
     )
     val bottomBrush = Brush.verticalGradient(
         colors = listOf(
             Color.Transparent,
             MaterialTheme.colorScheme.surfaceContainer,
-            MaterialTheme.colorScheme.surfaceContainer
-        )
+            MaterialTheme.colorScheme.surfaceContainer,
+        ),
     )
     Row(
         modifier = modifier
@@ -206,39 +206,39 @@ private fun BottomBar(
             .padding(16.dp)
             .height(48.dp),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedVisibility(
             !searchExpanded,
             enter = expandHorizontally(clip = false) + fadeIn(),
-            exit = shrinkHorizontally(clip = false) + fadeOut()
+            exit = shrinkHorizontally(clip = false) + fadeOut(),
         ) {
             Row(
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape)
-                    .padding(horizontal = 6.dp)
+                    .padding(horizontal = 6.dp),
             ) {
                 ToggleButton(
                     checked = false,
                     shapes = ToggleButtonDefaults.shapes(
                         shape = CircleShape,
                         checkedShape = CircleShape,
-                        pressedShape = CircleShape
+                        pressedShape = CircleShape,
                     ),
-                    onCheckedChange = { onEvent(ProfileListEvent.HistoryClicked) }
+                    onCheckedChange = { onEvent(ProfileListEvent.HistoryClicked) },
                 ) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.History),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
                 IconButton(
-                    onClick = { onEvent(ProfileListEvent.AddProfileClicked) }
+                    onClick = { onEvent(ProfileListEvent.AddProfileClicked) },
                 ) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.Add),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
             }
@@ -248,7 +248,7 @@ private fun BottomBar(
             expanded = searchExpanded,
             onSearchQueryChange = onSearchQueryChange,
             onExpandedChange = onExpandedChange,
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier.fillMaxHeight(),
         )
     }
 }
@@ -259,13 +259,13 @@ private fun SearchBar(
     expanded: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onExpandedChange: (Boolean) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(expanded) {
         if (expanded) {
-            delay(150)
+            delay(FocusDelayMs)
             focusRequester.requestFocus()
         } else {
             onSearchQueryChange("")
@@ -275,13 +275,13 @@ private fun SearchBar(
     Row(
         modifier = modifier.background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
         horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedVisibility(
             modifier = Modifier.weight(1f, false),
             visible = expanded,
             enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
-            exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
+            exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut(),
         ) {
             BasicTextField(
                 value = searchQuery,
@@ -292,7 +292,7 @@ private fun SearchBar(
                     .focusRequester(focusRequester)
                     .padding(start = 16.dp),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 ),
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -302,42 +302,42 @@ private fun SearchBar(
                             Text(
                                 text = stringResource(Res.string.profile_list_search),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             )
                         }
                         innerTextField()
                     }
-                }
+                },
             )
         }
 
         AnimatedContent(
             targetState = expanded,
-            contentAlignment = Alignment.Center
-        ) { expanded ->
-            if (expanded) {
+            contentAlignment = Alignment.Center,
+        ) { currentExpanded ->
+            if (currentExpanded) {
                 IconButton(
                     modifier = Modifier.aspectRatio(1f),
                     onClick = {
                         onExpandedChange(false)
                         onSearchQueryChange("")
-                    }
+                    },
                 ) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.Cancel),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
                 IconButton(
                     modifier = Modifier.aspectRatio(1f),
-                    onClick = { onExpandedChange(true) }
+                    onClick = { onExpandedChange(true) },
                 ) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.Search),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -351,7 +351,7 @@ private fun ProfileItem(
     smartScaleConnected: Boolean,
     onEvent: (ProfileListEvent) -> Unit,
     isDragging: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val swipeToDismissBoxState = rememberSwipeToRevealBoxState()
     val scope = rememberCoroutineScope()
@@ -370,14 +370,14 @@ private fun ProfileItem(
                         swipeToDismissBoxState.dismiss(SwipeToRevealBoxValue.Settled)
                         onEvent(it)
                     }
-                }
+                },
             )
-        }
+        },
     ) {
         ProfileItemContent(
             profile = profile,
             smartScaleConnected = smartScaleConnected,
-            onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) }
+            onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) },
         )
     }
 }
@@ -386,45 +386,45 @@ private fun ProfileItem(
 private fun ProfileItemRevealContent(
     profile: Profile,
     onEvent: (ProfileListEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.background(MaterialTheme.colorScheme.surface),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         IconButton(
             onClick = { onEvent(ProfileListEvent.RemoveProfileClicked(profile.id)) },
             enabled = !profile.bound,
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
-            )
+                contentColor = MaterialTheme.colorScheme.error,
+            ),
         ) {
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.Delete),
-                contentDescription = stringResource(Res.string.profile_list_delete)
+                contentDescription = stringResource(Res.string.profile_list_delete),
             )
         }
         IconButton(
             onClick = { onEvent(ProfileListEvent.EditProfileClicked(profile.id)) },
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary
-            )
+                contentColor = MaterialTheme.colorScheme.primary,
+            ),
         ) {
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.Edit),
-                contentDescription = stringResource(Res.string.profile_list_search)
+                contentDescription = stringResource(Res.string.profile_list_search),
             )
         }
         IconButton(
             onClick = { onEvent(ProfileListEvent.BindProfileClicked(profile.id)) },
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.tertiary
-            )
+                contentColor = MaterialTheme.colorScheme.tertiary,
+            ),
         ) {
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.Link),
-                contentDescription = stringResource(Res.string.profile_list_bind)
+                contentDescription = stringResource(Res.string.profile_list_bind),
             )
         }
     }
@@ -435,7 +435,7 @@ private fun ProfileItemContent(
     profile: Profile,
     smartScaleConnected: Boolean,
     onProfileClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val backgroundColor = when {
         profile.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
@@ -455,10 +455,10 @@ private fun ProfileItemContent(
             .background(backgroundColor)
             .clickable { onProfileClick(profile.id) }
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedContent(
-            targetState = profile.bound
+            targetState = profile.bound,
         ) { bound ->
             if (bound) {
                 Icon(
@@ -467,7 +467,7 @@ private fun ProfileItemContent(
                         .padding(4.dp),
                     painter = rememberVectorPainter(Icons.Filled.InsertLink),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
                 Text(
@@ -477,7 +477,7 @@ private fun ProfileItemContent(
                     modifier = Modifier
                         .background(numberColor, CircleShape)
                         .squareSize()
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                 )
             }
         }
@@ -485,13 +485,13 @@ private fun ProfileItemContent(
         Column(Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = spacedBy(4.dp)
+                horizontalArrangement = spacedBy(4.dp),
             ) {
                 Text(
                     text = profile.name,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f, false)
+                    modifier = Modifier.weight(1f, false),
                 )
                 if (profile.brewByWeight) {
                     val backgroundColor = if (smartScaleConnected) {
@@ -505,11 +505,13 @@ private fun ProfileItemContent(
             Text(
                 text = profile.description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
+
+private const val FocusDelayMs = 150L
 
 @Composable
 @GeeFlowScreenPreview
@@ -517,7 +519,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
     ProfileList(
         viewState = getMockProfileListViewState(),
         onEvent = {},
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(16.dp),
     )
 }
 
@@ -527,6 +529,6 @@ private fun PreviewDark() = GeeFlowTheme(true) {
     ProfileList(
         viewState = getMockProfileListViewState(),
         onEvent = {},
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(16.dp),
     )
 }

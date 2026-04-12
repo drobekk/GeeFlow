@@ -9,7 +9,7 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class IntroViewModel(
-    private val addUserUseCase: AddUserUseCase
+    private val addUserUseCase: AddUserUseCase,
 ) : BaseViewModel<Unit, Unit>(Unit) {
 
     fun handleEvent(event: IntroEvent) = when (event) {

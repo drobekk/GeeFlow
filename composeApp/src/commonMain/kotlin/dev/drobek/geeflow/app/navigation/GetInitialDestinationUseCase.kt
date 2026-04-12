@@ -11,7 +11,7 @@ import org.koin.core.annotation.Factory
 @Factory
 class GetInitialDestinationUseCase(
     private val getUsersUseCase: GetUsersUseCase,
-    private val getDevicesUseCase: GetDevicesUseCase
+    private val getDevicesUseCase: GetDevicesUseCase,
 ) {
     operator fun invoke(): NavKey {
         val users = getUsersUseCase().value

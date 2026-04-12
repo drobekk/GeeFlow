@@ -10,15 +10,15 @@ data class DeviceDashboardViewState(
     val visibleCharts: Set<DashboardChartType> = setOf(
         DashboardChartType.Pressure,
         DashboardChartType.FlowRate,
-        DashboardChartType.WeightRate
-    )
+        DashboardChartType.WeightRate,
+    ),
 ) {
     enum class DashboardChartType {
         Pressure,
         FlowRate,
         WeightRate,
         Volume,
-        Weight
+        Weight,
     }
 
     data class User(
@@ -29,7 +29,7 @@ data class DeviceDashboardViewState(
     data class Brew(
         val name: String = "",
         val time: Int = 0,
-        val data: Map<Float, ChartData> = getEmptyChartData()
+        val data: Map<Float, ChartData> = getEmptyChartData(),
     )
 
     data class Device(
@@ -41,16 +41,21 @@ data class DeviceDashboardViewState(
         val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
         val brewStatus: BrewStatus = BrewStatus.Idle,
         val smartScaleConnected: Boolean = false,
-        val alarm: Boolean = false
+        val alarm: Boolean = false,
     ) {
         val isBrewing = brewStatus != BrewStatus.Idle
 
         enum class ConnectionStatus {
-            Disconnected, Connecting, Synchronizing, Connected
+            Disconnected,
+            Connecting,
+            Synchronizing,
+            Connected,
         }
 
         enum class BrewStatus {
-            Manual, Profile, Idle
+            Manual,
+            Profile,
+            Idle,
         }
     }
 
@@ -65,6 +70,6 @@ internal fun getEmptyChartData() = mapOf(
         weight = 0f,
         weightPerSecond = 0f,
         volume = 0f,
-        volumePerSecond = 0f
-    )
+        volumePerSecond = 0f,
+    ),
 )

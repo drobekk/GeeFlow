@@ -63,7 +63,6 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashb
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.QuickSettingsClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.UserClicked
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
-import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.User
 import dev.drobek.geeflow.ui.components.GeeFlowUserAvatar
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.icons.DeviceHub
@@ -89,9 +88,8 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun TopBar(
     device: Device,
-    user: User, // TODO Fill user profile image
     onEvent: (DeviceDashboardEvent) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     FlowRow(
         modifier = modifier,
@@ -99,7 +97,7 @@ internal fun TopBar(
     ) {
         GeeFlowUserAvatar(
             modifier = Modifier.size(48.dp),
-            onClick = { onEvent(UserClicked) }
+            onClick = { onEvent(UserClicked) },
         )
         HorizontalSpacer(8.dp)
         DeviceTile(device, onEvent)
@@ -107,7 +105,7 @@ internal fun TopBar(
         ActionBar(
             device = device,
             onEvent = onEvent,
-            modifier = Modifier.weight(1f, false)
+            modifier = Modifier.weight(1f, false),
         )
     }
 }
@@ -116,23 +114,22 @@ internal fun TopBar(
 private fun ActionBar(
     device: Device,
     onEvent: (DeviceDashboardEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.height(IntrinsicSize.Min),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Box(Modifier.weight(1f)) {
             ConnectionStatusButton(
                 connectionStatus = device.connectionStatus,
                 onEvent = onEvent,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier.fillMaxHeight(),
             )
         }
         HorizontalSpacer(16.dp)
-        val cornerSize = MaterialTheme.shapes.large.copy(topEnd = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
         Row(
-            modifier = Modifier.width(IntrinsicSize.Max)
+            modifier = Modifier.width(IntrinsicSize.Max),
         ) {
             AlarmButton(
                 visible = device.alarm,
@@ -140,14 +137,14 @@ private fun ActionBar(
                 modifier = Modifier.clip(
                     MaterialTheme.shapes.large.copy(
                         topEnd = CornerSize(0.dp),
-                        bottomEnd = CornerSize(0.dp)
-                    )
-                )
+                        bottomEnd = CornerSize(0.dp),
+                    ),
+                ),
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             ConnectivityButton(
                 smartScaleConnected = device.smartScaleConnected,
-                onClick = { onEvent(ConnectedDevicesClicked) }
+                onClick = { onEvent(ConnectedDevicesClicked) },
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             SettingsButton(
@@ -155,9 +152,9 @@ private fun ActionBar(
                 modifier = Modifier.clip(
                     MaterialTheme.shapes.large.copy(
                         topStart = CornerSize(0.dp),
-                        bottomStart = CornerSize(0.dp)
-                    )
-                )
+                        bottomStart = CornerSize(0.dp),
+                    ),
+                ),
             )
         }
     }
@@ -167,14 +164,14 @@ private fun ActionBar(
 private fun AlarmButton(
     visible: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Box(
     modifier = modifier
         .clickable(onClick = onClick)
         .background(MaterialTheme.colorScheme.surfaceContainer)
         .height(48.dp)
         .padding(horizontal = 16.dp),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
 ) {
     AnimatedContent(targetState = visible) {
         if (it) {
@@ -183,23 +180,23 @@ private fun AlarmButton(
                 initialValue = 1f,
                 targetValue = 1.2f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(500),
-                    repeatMode = RepeatMode.Reverse
+                    animation = tween(WarningAnimationMs),
+                    repeatMode = RepeatMode.Reverse,
                 ),
-                label = "scale"
+                label = "scale",
             )
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.Error),
                 contentDescription = stringResource(Res.string.device_dashboard_alarm),
                 tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(20.dp).scale(scale)
+                modifier = Modifier.size(20.dp).scale(scale),
             )
         } else {
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.AutoAwesome),
                 contentDescription = stringResource(Res.string.device_dashboard_clean),
                 modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -208,20 +205,20 @@ private fun AlarmButton(
 @Composable
 private fun SettingsButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Box(
     modifier = modifier
         .clickable(onClick = onClick)
         .background(MaterialTheme.colorScheme.surfaceContainer)
         .height(48.dp)
         .padding(horizontal = 16.dp),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
 ) {
     Icon(
         painter = rememberVectorPainter(Icons.Filled.Tune),
         contentDescription = stringResource(CoreRes.string.common_settings),
         modifier = Modifier.size(20.dp),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 
@@ -229,28 +226,28 @@ private fun SettingsButton(
 private fun ConnectivityButton(
     smartScaleConnected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Box(
     modifier = modifier
         .clickable(onClick = onClick)
         .background(MaterialTheme.colorScheme.surfaceContainer)
         .height(48.dp)
         .padding(horizontal = 16.dp),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
 ) {
     if (smartScaleConnected) {
         Box(
             modifier = Modifier
                 .padding(bottom = 10.dp)
                 .background(MaterialTheme.colorScheme.tertiary, CircleShape)
-                .size(4.dp)
+                .size(4.dp),
         )
     }
     Icon(
         painter = rememberVectorPainter(GeeFlowIcon.DeviceHub),
         modifier = Modifier.size(20.dp),
         contentDescription = stringResource(Res.string.device_dashboard_connected_devices),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 
@@ -258,7 +255,7 @@ private fun ConnectivityButton(
 private fun ConnectionStatusButton(
     connectionStatus: Device.ConnectionStatus,
     onEvent: (DeviceDashboardEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val containerColor by animateColorAsState(
         when (connectionStatus) {
@@ -266,7 +263,7 @@ private fun ConnectionStatusButton(
             Device.ConnectionStatus.Connecting -> MaterialTheme.colorScheme.surfaceContainer
             Device.ConnectionStatus.Synchronizing -> MaterialTheme.colorScheme.secondaryContainer
             Device.ConnectionStatus.Connected -> MaterialTheme.colorScheme.primary
-        }
+        },
     )
 
     val text = when (connectionStatus) {
@@ -282,7 +279,7 @@ private fun ConnectionStatusButton(
             Device.ConnectionStatus.Connecting -> MaterialTheme.colorScheme.onSurfaceVariant
             Device.ConnectionStatus.Synchronizing -> MaterialTheme.colorScheme.onSecondaryContainer
             Device.ConnectionStatus.Connected -> MaterialTheme.colorScheme.onPrimary
-        }
+        },
     )
 
     TextButton(
@@ -290,15 +287,15 @@ private fun ConnectionStatusButton(
         onClick = { onEvent(ConnectionButtonClicked) },
         colors = ButtonDefaults.textButtonColors(
             containerColor = containerColor,
-            contentColor = contentColor
+            contentColor = contentColor,
         ),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
     ) {
         if (connectionStatus == Device.ConnectionStatus.Connecting || connectionStatus == Device.ConnectionStatus.Synchronizing) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp),
                 color = contentColor,
-                strokeWidth = 2.dp
+                strokeWidth = 2.dp,
             )
         } else {
             Icon(
@@ -309,9 +306,9 @@ private fun ConnectionStatusButton(
                         Device.ConnectionStatus.Connecting -> Icons.Filled.BluetoothAudio
                         Device.ConnectionStatus.Synchronizing -> Icons.Filled.BluetoothAudio
                         Device.ConnectionStatus.Disconnected -> Icons.Filled.BluetoothDisabled
-                    }
+                    },
                 ),
-                contentDescription = null
+                contentDescription = null,
             )
         }
         Text(
@@ -319,7 +316,7 @@ private fun ConnectionStatusButton(
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 8.dp),
         )
     }
 }
@@ -328,28 +325,28 @@ private fun ConnectionStatusButton(
 internal fun DeviceTile(
     device: Device,
     onEvent: (DeviceDashboardEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
             .clip(MaterialTheme.shapes.medium)
             .clickable(onClick = { onEvent(DeviceClicked) })
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Row(modifier = Modifier.padding(start = 3.dp)) {
             Text(
                 text = device.name,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.ArrowDropDown),
                 tint = MaterialTheme.colorScheme.outline,
-                contentDescription = null
+                contentDescription = null,
             )
         }
         Row(
             modifier = Modifier.animateContentSize(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             ParameterItem(
                 value = device.brewBoilerTemp,
@@ -357,11 +354,11 @@ internal fun DeviceTile(
             )
             ParameterItem(
                 value = device.steamBoilerTemp,
-                painter = rememberVectorPainter(GeeFlowIcon.Steam)
+                painter = rememberVectorPainter(GeeFlowIcon.Steam),
             )
             ParameterItem(
                 value = device.pressure,
-                painter = rememberVectorPainter(GeeFlowIcon.Pressure)
+                painter = rememberVectorPainter(GeeFlowIcon.Pressure),
             )
         }
     }
@@ -371,17 +368,17 @@ internal fun DeviceTile(
 private fun ParameterItem(
     value: String?,
     painter: Painter,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Row(
     modifier = modifier,
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(4.dp)
+    horizontalArrangement = Arrangement.spacedBy(4.dp),
 ) {
     Icon(
         painter = painter,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
-        tint = MaterialTheme.colorScheme.outline
+        tint = MaterialTheme.colorScheme.outline,
     )
 
     val textMeasurer = rememberTextMeasurer()
@@ -393,9 +390,11 @@ private fun ParameterItem(
         text = value ?: "  —",
         color = MaterialTheme.colorScheme.outline,
         style = MaterialTheme.typography.labelLarge,
-        modifier = Modifier.widthIn(min = textWidth)
+        modifier = Modifier.widthIn(min = textWidth),
     )
 }
+
+private const val WarningAnimationMs = 500
 
 @Composable
 @GeeFlowScreenPreview
@@ -409,13 +408,12 @@ private fun PreviewLight() = GeeFlowTheme(false) {
             pressure = "9.0",
             connectionStatus = Device.ConnectionStatus.Connected,
             smartScaleConnected = true,
-            alarm = alarmOn
+            alarm = alarmOn,
         ),
-        user = User(name = "Kamil"),
         modifier = Modifier.padding(16.dp),
         onEvent = {
             alarmOn = !alarmOn
-        }
+        },
     )
 }
 
@@ -430,8 +428,7 @@ private fun PreviewDark() = GeeFlowTheme(true) {
             pressure = "9.0",
             connectionStatus = Device.ConnectionStatus.Connected,
             smartScaleConnected = true,
-            alarm = true
+            alarm = true,
         ),
-        user = User(name = "Chuck")
     )
 }

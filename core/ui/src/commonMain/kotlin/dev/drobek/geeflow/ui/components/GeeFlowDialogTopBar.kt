@@ -22,7 +22,7 @@ import org.jetbrains.compose.resources.stringResource
 fun GeeFlowDialogTopBar(
     title: String,
     onCloseClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         Text(
@@ -32,18 +32,18 @@ fun GeeFlowDialogTopBar(
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.Center)
+                .align(Alignment.Center),
         )
         IconButton(
             onClick = onCloseClick,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .offset(x = 8.dp)
+                .offset(x = 8.dp),
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = stringResource(Res.string.common_close),
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

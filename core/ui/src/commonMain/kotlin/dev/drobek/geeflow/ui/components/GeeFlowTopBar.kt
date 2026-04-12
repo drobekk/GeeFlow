@@ -39,14 +39,14 @@ fun GeeFlowTopBar(
     navIconContentDescription: String? = stringResource(Res.string.common_go_back),
     windowInsets: WindowInsets = WindowInsets.statusBars,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val collapsedFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
 
     val titleStyle = lerp(
         MaterialTheme.typography.displayMedium,
         MaterialTheme.typography.titleLarge,
-        collapsedFraction
+        collapsedFraction,
     )
 
     Layout(
@@ -57,13 +57,13 @@ fun GeeFlowTopBar(
             IconButton(
                 onClick = navIconClick,
                 enabled = navIconPainter != null,
-                modifier = Modifier.layoutId("icon")
+                modifier = Modifier.layoutId("icon"),
             ) {
                 navIconPainter?.let {
                     Icon(
                         painter = navIconPainter,
                         contentDescription = navIconContentDescription,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
@@ -72,7 +72,7 @@ fun GeeFlowTopBar(
                 style = titleStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.layoutId("title")
+                modifier = Modifier.layoutId("title"),
             )
             if (subtitle != null) {
                 Text(
@@ -80,13 +80,13 @@ fun GeeFlowTopBar(
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .layoutId("subtitle")
-                        .alpha(1f - (collapsedFraction * 2f).coerceAtMost(1f))
+                        .alpha(1f - (collapsedFraction * 2f).coerceAtMost(1f)),
                 )
             }
-        }
+        },
     ) { measurables, constraints ->
         val iconPlaceable = measurables.first { it.layoutId == "icon" }.measure(
-            constraints.copy(minWidth = 0, minHeight = 0)
+            constraints.copy(minWidth = 0, minHeight = 0),
         )
 
         val topPadding = 16.dp.roundToPx()
@@ -101,12 +101,12 @@ fun GeeFlowTopBar(
 
         val titleMaxWidth = (constraints.maxWidth - currentTitleX - endMargin).coerceAtLeast(0)
         val titlePlaceable = measurables.first { it.layoutId == "title" }.measure(
-            constraints.copy(minWidth = 0, minHeight = 0, maxWidth = titleMaxWidth)
+            constraints.copy(minWidth = 0, minHeight = 0, maxWidth = titleMaxWidth),
         )
 
         val subtitleMaxWidth = (constraints.maxWidth - expandedTitleX - endMargin).coerceAtLeast(0)
         val subtitlePlaceable = measurables.firstOrNull { it.layoutId == "subtitle" }?.measure(
-            constraints.copy(minWidth = 0, minHeight = 0, maxWidth = subtitleMaxWidth)
+            constraints.copy(minWidth = 0, minHeight = 0, maxWidth = subtitleMaxWidth),
         )
 
         val expandedTitleY = topPadding + iconPlaceable.height + spacing
@@ -128,7 +128,7 @@ fun GeeFlowTopBar(
         val currentSubtitleY = lerp(
             expandedSubtitleY.toFloat(),
             collapsedSubtitleY.toFloat(),
-            collapsedFraction
+            collapsedFraction,
         ).roundToInt()
         val currentHeight = lerp(expandedHeight.toFloat(), collapsedHeight.toFloat(), collapsedFraction).roundToInt()
 

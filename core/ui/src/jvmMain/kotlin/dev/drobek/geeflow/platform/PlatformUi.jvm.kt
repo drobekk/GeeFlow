@@ -7,6 +7,4 @@ import androidx.window.core.layout.WindowSizeClass
 actual fun getThemeProvider() = object : ThemeProvider {}
 
 @Composable
-actual fun calculateWindowSizeClass(): WindowSizeClass {
-    return currentWindowAdaptiveInfo(true).windowSizeClass
-}
+actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfo(true).windowSizeClass

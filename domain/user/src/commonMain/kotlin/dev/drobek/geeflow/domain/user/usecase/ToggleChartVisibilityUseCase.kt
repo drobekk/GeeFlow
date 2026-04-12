@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class ToggleChartVisibilityUseCase(
-    private val repository: UserSettingsRepository
+    private val repository: UserSettingsRepository,
 ) {
     suspend operator fun invoke(type: ChartType) {
         val currentSet = repository.visibleCharts.first()

@@ -6,7 +6,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class GetDeviceUseCase(
-    private val deviceRepository: DeviceRepository
+    private val deviceRepository: DeviceRepository,
 ) {
     operator fun invoke(id: Long): Device? = deviceRepository.getDeviceById(id)
 }

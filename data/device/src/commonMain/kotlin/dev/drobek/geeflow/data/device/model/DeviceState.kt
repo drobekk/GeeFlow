@@ -15,7 +15,7 @@ data class DeviceState(
     val smartScale: SmartScale? = null,
     val smartScaleEnabled: Boolean = false,
     val smartScaleSearchActive: Boolean = false,
-    val waterLevelAlarm: Boolean = false
+    val waterLevelAlarm: Boolean = false,
 ) {
     data class Config(
         val targetSteamTemp: Float,
@@ -28,30 +28,30 @@ data class DeviceState(
         val cleaningStandbySec: Float,
         val cleaningCount: Int,
         val heatingMode: HeatingMode,
-        val waterAlarmEnabled: Boolean
+        val waterAlarmEnabled: Boolean,
     )
 
     enum class ConnectionStatus {
         Disconnected,
         Connecting,
         Synchronizing,
-        Connected
+        Connected,
     }
 
     enum class BrewStatus {
         Manual,
         Profile,
         Cleaning,
-        Idle
+        Idle,
     }
 
     enum class HeatingMode {
         FullSpeed,
-        Pulse
+        Pulse,
     }
 
     enum class BoilerType {
         Steam,
-        Brew
+        Brew,
     }
 }

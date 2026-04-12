@@ -67,7 +67,7 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun MaintenanceSettingsScreen(
     viewModel: MaintenanceSettingsViewModel,
-    navigator: Navigator
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -76,7 +76,7 @@ internal fun MaintenanceSettingsScreen(
     MaintenanceSettingsContent(
         viewState = viewState,
         snackbarHostState = snackbarHostState,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 
     NavigatorEffect(navigator, viewModel.navEvent)
@@ -96,14 +96,14 @@ internal fun MaintenanceSettingsScreen(
 private fun MaintenanceSettingsContent(
     viewState: MaintenanceSettingsViewState,
     onEvent: (MaintenanceSettingsEvent) -> Unit = {},
-    snackbarHostState: SnackbarHostState = SnackbarHostState()
+    snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     if (isWidthExpanded()) {
         ExpandedContent(
             viewState = viewState,
             snackbarHostState = snackbarHostState,
-            onEvent = onEvent
+            onEvent = onEvent,
         )
     } else {
         GeeFlowScaffold(
@@ -115,7 +115,7 @@ private fun MaintenanceSettingsContent(
                 SettingsApplyFab(
                     loading = viewState.applyButtonLoading,
                     visible = viewState.applyButtonVisible,
-                    onClick = { onEvent(MaintenanceSettingsEvent.ApplyClicked) }
+                    onClick = { onEvent(MaintenanceSettingsEvent.ApplyClicked) },
                 )
             },
             scrollBehavior = scrollBehavior,
@@ -127,12 +127,12 @@ private fun MaintenanceSettingsContent(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .padding(it)
-                        .padding(bottom = SettingsApplyFabPadding)
+                        .padding(bottom = SettingsApplyFabPadding),
                 )
             },
             modifier = Modifier
                 .imePadding()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         )
     }
 }
@@ -141,7 +141,7 @@ private fun MaintenanceSettingsContent(
 private fun ExpandedContent(
     viewState: MaintenanceSettingsViewState,
     snackbarHostState: SnackbarHostState,
-    onEvent: (MaintenanceSettingsEvent) -> Unit
+    onEvent: (MaintenanceSettingsEvent) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (isWidthLarge()) {
@@ -151,10 +151,10 @@ private fun ExpandedContent(
                     .verticalScroll(rememberScrollState())
                     .padding(
                         horizontal = GeeFlowTheme.spacing.contentHorizontal,
-                        vertical = GeeFlowTheme.spacing.contentVertical
+                        vertical = GeeFlowTheme.spacing.contentVertical,
                     )
                     .systemBarsPadding()
-                    .padding(bottom = SettingsApplyFabPadding)
+                    .padding(bottom = SettingsApplyFabPadding),
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     CleaningSection(viewState.cleaning, onEvent)
@@ -172,18 +172,18 @@ private fun ExpandedContent(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .systemBarsPadding()
-                    .padding(bottom = SettingsApplyFabPadding)
+                    .padding(bottom = SettingsApplyFabPadding),
             )
         }
         SettingsApplyFab(
             loading = viewState.applyButtonLoading,
             visible = viewState.applyButtonVisible,
             onClick = { onEvent(MaintenanceSettingsEvent.ApplyClicked) },
-            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding()
+            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding(),
         )
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.systemBarsPadding().align(Alignment.BottomCenter)
+            modifier = Modifier.systemBarsPadding().align(Alignment.BottomCenter),
         )
     }
 }
@@ -192,13 +192,13 @@ private fun ExpandedContent(
 private fun CompactContent(
     viewState: MaintenanceSettingsViewState,
     onEvent: (MaintenanceSettingsEvent) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.padding(
             horizontal = GeeFlowTheme.spacing.contentHorizontal,
-            vertical = GeeFlowTheme.spacing.contentVertical
-        )
+            vertical = GeeFlowTheme.spacing.contentVertical,
+        ),
     ) {
         CleaningSection(viewState.cleaning, onEvent)
         VerticalSpacer(24.dp)
@@ -211,11 +211,11 @@ private fun CompactContent(
 @Composable
 private fun CleaningSection(
     cleaning: MaintenanceSettingsViewState.Cleaning,
-    onEvent: (MaintenanceSettingsEvent) -> Unit
+    onEvent: (MaintenanceSettingsEvent) -> Unit,
 ) {
     SectionTitle(
         text = stringResource(Res.string.device_settings_maintenance_cleaning),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(24.dp)
     Row {
@@ -225,7 +225,7 @@ private fun CleaningSection(
             items = cleaning.timeList,
             selected = cleaning.timeSec,
             onSelectionChanged = { onEvent(CleaningTimeChanged(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         HorizontalSpacer(16.dp)
         Picker(
@@ -234,7 +234,7 @@ private fun CleaningSection(
             items = cleaning.restList,
             selected = cleaning.restSec,
             onSelectionChanged = { onEvent(CleaningRestChanged(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         HorizontalSpacer(16.dp)
         Picker(
@@ -243,7 +243,7 @@ private fun CleaningSection(
             items = cleaning.countList,
             selected = cleaning.count,
             onSelectionChanged = { onEvent(CleaningCountChanged(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -256,25 +256,25 @@ private fun Picker(
     selected: String,
 
     onSelectionChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
             text = subtitle,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         VerticalSpacer(12.dp)
         GeeFlowInfinitePicker(
             items = items,
             selected = selected,
             enabled = true,
-            onSelectionChanged = onSelectionChanged
+            onSelectionChanged = onSelectionChanged,
         )
     }
 }
@@ -282,11 +282,11 @@ private fun Picker(
 @Composable
 private fun WaterAlarmSection(
     waterAlarm: Boolean,
-    onEvent: (MaintenanceSettingsEvent) -> Unit
+    onEvent: (MaintenanceSettingsEvent) -> Unit,
 ) {
     SectionTitle(
         text = stringResource(Res.string.device_settings_maintenance_alarms),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(24.dp)
     SettingsToggleRow(
@@ -294,19 +294,19 @@ private fun WaterAlarmSection(
         subtitle = stringResource(Res.string.device_settings_maintenance_water_alarm_description),
         checked = waterAlarm,
         onCheckedChanged = { onEvent(WaterAlarmToggled(it)) },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
 @Composable
 private fun SectionTitle(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Text(
     text = text,
     style = MaterialTheme.typography.titleLarge,
     color = MaterialTheme.colorScheme.onSurfaceVariant,
-    modifier = modifier
+    modifier = modifier,
 )
 
 @Composable

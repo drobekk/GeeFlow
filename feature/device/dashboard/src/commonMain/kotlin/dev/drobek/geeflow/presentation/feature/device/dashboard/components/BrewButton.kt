@@ -65,21 +65,21 @@ fun BrewButton(
     onFlowClick: () -> Unit,
     onManualFlowClick: () -> Unit,
     onStopClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val firstColor by animateColorAsState(
         if (isBrewing) {
             MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
         } else {
             MaterialTheme.colorScheme.surfaceContainerHigh
-        }
+        },
     )
     val secondColor by animateColorAsState(
         if (isBrewing) {
             MaterialTheme.colorScheme.error
         } else {
             MaterialTheme.colorScheme.surfaceContainerHighest
-        }
+        },
     )
     val transition = updateTransition(targetState = isBrewing, label = "BrewingTransition")
     val logoOffsetY by transition.animateDp(
@@ -90,7 +90,7 @@ fun BrewButton(
                 spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
             }
         },
-        label = "logoOffset"
+        label = "logoOffset",
     ) { brewing -> if (brewing) 100.dp else 0.dp }
     val logoAlpha by transition.animateFloat(label = "logoAlpha") { if (it) 0f else 1f }
 
@@ -98,7 +98,7 @@ fun BrewButton(
         modifier = modifier
             .height(72.dp)
             .width(IntrinsicSize.Min),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         WaveDivider(
             color = secondColor,
@@ -106,40 +106,42 @@ fun BrewButton(
             modifier = Modifier
                 .background(firstColor, MaterialTheme.shapes.large)
                 .clip(MaterialTheme.shapes.large)
-                .height(50.dp)
+                .height(50.dp),
         )
         transition.AnimatedContent(
-            transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
+            transitionSpec = {
+                fadeIn(tween(TransitionDurationMs)) togetherWith fadeOut(tween(TransitionDurationMs))
+            },
             modifier = Modifier
                 .conditional(condition = isBrewing, ifTrue = { clickable(onClick = onStopClick, role = Role.Button) })
                 .height(50.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             BrewingContent(modifier = Modifier.visible(it))
             BrewContent(
                 onManualClick = onManualClick,
                 onManualFlowClick = onManualFlowClick,
-                modifier = Modifier.visible(!it)
+                modifier = Modifier.visible(!it),
             )
         }
 
-        if (logoAlpha > 0.01f) {
+        if (logoAlpha > LogoVisibleThreshold) {
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .offset(y = logoOffsetY)
-                    .graphicsLayer { alpha = logoAlpha }
+                    .graphicsLayer { alpha = logoAlpha },
             ) {
                 FilledIconButton(
                     shape = GeeFlowLogoShape,
                     onClick = onFlowClick,
-                    modifier = Modifier.size(72.dp)
+                    modifier = Modifier.size(72.dp),
                 ) {
                     Icon(
                         painter = rememberVectorPainter(GeeFlowIcon.AppLogo),
                         contentDescription = null,
                         modifier = Modifier.size(48.dp).padding(top = 5.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
             }
@@ -151,25 +153,25 @@ fun BrewButton(
 private fun BrewContent(
     onManualClick: () -> Unit,
     onManualFlowClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth().padding(horizontal = 32.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(32.dp)
+        horizontalArrangement = Arrangement.spacedBy(32.dp),
     ) {
         IconButton(
             onClick = onManualClick,
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
+                .weight(1f),
         ) {
             Icon(
                 painter = rememberVectorPainter(GeeFlowIcon.Manual),
                 modifier = Modifier.size(20.dp),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         HorizontalSpacer(1f)
@@ -177,13 +179,13 @@ private fun BrewContent(
             onClick = onManualFlowClick,
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
+                .weight(1f),
         ) {
             Icon(
                 painter = rememberVectorPainter(GeeFlowIcon.FlowControl),
                 modifier = Modifier.size(28.dp),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -191,7 +193,7 @@ private fun BrewContent(
 
 @Composable
 private fun BrewingContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Text(
         text = stringResource(Res.string.common_stop).uppercase(),
@@ -201,9 +203,12 @@ private fun BrewingContent(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 32.dp)
+            .padding(horizontal = 32.dp),
     )
 }
+
+private const val TransitionDurationMs = 300
+private const val LogoVisibleThreshold = 0.01f
 
 @Composable
 @GeeFlowScreenPreview
@@ -214,7 +219,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
         onManualClick = {},
         onFlowClick = { isBrewing = true },
         onManualFlowClick = {},
-        onStopClick = { isBrewing = false }
+        onStopClick = { isBrewing = false },
     )
 }
 
@@ -227,6 +232,6 @@ private fun PreviewDark() = GeeFlowTheme(true) {
         onManualClick = {},
         onFlowClick = { isBrewing = true },
         onManualFlowClick = {},
-        onStopClick = { isBrewing = false }
+        onStopClick = { isBrewing = false },
     )
 }

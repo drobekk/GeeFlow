@@ -67,7 +67,7 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun DeviceSettingsScreen(
     viewModel: DeviceSettingsViewModel,
-    navigator: Navigator
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val selectedIndex = when (navigator.getCurrentDestination()) {
@@ -82,7 +82,7 @@ internal fun DeviceSettingsScreen(
     Content(
         viewState = viewState,
         selectedIndex = selectedIndex,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 }
 
@@ -96,12 +96,12 @@ private fun Content(
         ExpandedContent(
             viewState = viewState,
             selectedIndex = selectedIndex,
-            onEvent = onEvent
+            onEvent = onEvent,
         )
     } else {
         CompactContent(
             viewState = viewState,
-            onEvent = onEvent
+            onEvent = onEvent,
         )
     }
 }
@@ -111,7 +111,7 @@ private fun Content(
 private fun ExpandedContent(
     viewState: DeviceSettingsViewState,
     selectedIndex: Int?,
-    onEvent: (DeviceSettingsEvent) -> Unit
+    onEvent: (DeviceSettingsEvent) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
@@ -124,7 +124,7 @@ private fun ExpandedContent(
                 navIconContentDescription = stringResource(CoreRes.string.common_go_back),
                 navIconClick = { onEvent(BackClicked) },
                 modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
             LazyColumn(
                 state = listState,
@@ -134,7 +134,7 @@ private fun ExpandedContent(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .background(MaterialTheme.colorScheme.surfaceContainer)
                     .scrollFade(listState = listState, color = MaterialTheme.colorScheme.surfaceContainer),
-                contentPadding = WindowInsets.navigationBars.asPaddingValues()
+                contentPadding = WindowInsets.navigationBars.asPaddingValues(),
             ) {
                 itemsIndexed(viewState.items) { index, item ->
                     val selected = index == selectedIndex
@@ -154,16 +154,16 @@ private fun ExpandedContent(
                         modifier = Modifier
                             .padding(
                                 horizontal = compactSpacing().contentHorizontal,
-                                vertical = 8.dp
+                                vertical = 8.dp,
                             )
-                            .clip(MaterialTheme.shapes.large)
+                            .clip(MaterialTheme.shapes.large),
                     )
                 }
             }
         }
         WaveDivider(
             color = MaterialTheme.colorScheme.surfaceContainer,
-            orientation = WaveOrientation.Vertical
+            orientation = WaveOrientation.Vertical,
         )
     }
 }
@@ -172,7 +172,7 @@ private fun ExpandedContent(
 @Composable
 private fun CompactContent(
     viewState: DeviceSettingsViewState,
-    onEvent: (DeviceSettingsEvent) -> Unit
+    onEvent: (DeviceSettingsEvent) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowScaffold(
@@ -188,9 +188,9 @@ private fun CompactContent(
                     .fillMaxSize(),
                 contentPadding = paddingValues + PaddingValues(
                     horizontal = GeeFlowTheme.spacing.contentHorizontal,
-                    vertical = GeeFlowTheme.spacing.contentVertical
+                    vertical = GeeFlowTheme.spacing.contentVertical,
                 ),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(viewState.items) { item ->
                     SettingsItem(
@@ -198,12 +198,12 @@ private fun CompactContent(
                         onEvent = onEvent,
                         modifier = Modifier
                             .clip(MaterialTheme.shapes.large)
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                            .background(MaterialTheme.colorScheme.surfaceContainerLow),
                     )
                 }
                 item { Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) }
             }
-        }
+        },
     )
 }
 
@@ -213,24 +213,24 @@ private fun SettingsItem(
     onEvent: (DeviceSettingsEvent) -> Unit,
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
             .background(backgroundColor)
             .fillMaxWidth()
             .clickable(onClick = { onEvent(ItemClicked(item)) })
-            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         Text(
             text = item.name,
             style = MaterialTheme.typography.titleMedium,
-            color = contentColor
+            color = contentColor,
         )
         Text(
             text = item.description,
             style = MaterialTheme.typography.labelMedium,
-            color = contentColor
+            color = contentColor,
         )
     }
 }
@@ -241,17 +241,17 @@ private fun previewViewState() = DeviceSettingsViewState(
     items = listOf(
         Item.Brewing(
             stringResource(Res.string.device_settings_brewing),
-            stringResource(Res.string.device_settings_brewing_description)
+            stringResource(Res.string.device_settings_brewing_description),
         ),
         Item.Maintenance(
             stringResource(Res.string.device_settings_maintenance),
-            stringResource(Res.string.device_settings_maintenance_description)
+            stringResource(Res.string.device_settings_maintenance_description),
         ),
         Item.Connectivity(
             stringResource(Res.string.device_settings_connectivity),
-            stringResource(Res.string.device_settings_connectivity_description)
-        )
-    )
+            stringResource(Res.string.device_settings_connectivity_description),
+        ),
+    ),
 )
 
 @Composable

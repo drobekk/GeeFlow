@@ -28,13 +28,13 @@ internal class DeviceListViewModel(
     private val disconnectCurrentDevice: DisconnectCurrentDeviceUseCase,
     private val getCurrentDeviceId: GetCurrentDeviceIdUseCase,
     private val setFavoriteDeviceUseCase: SetFavoriteDeviceUseCase,
-    getSelectedUserUseCase: GetSelectedUserUseCase
+    getSelectedUserUseCase: GetSelectedUserUseCase,
 ) : BaseViewModel<DeviceListViewState, Unit>(DeviceListViewState()) {
 
     init {
         combine(
             getDevicesUseCase(),
-            getSelectedUserUseCase()
+            getSelectedUserUseCase(),
         ) { domainDevices, selectedUser ->
             modify {
                 copy(
@@ -43,16 +43,16 @@ internal class DeviceListViewModel(
                         DeviceListViewState.Device(
                             id = domainDevice.id,
                             name = domainDevice.name,
-                            macAddress = ble?.macAddress ?: "",
-                            favourite = selectedUser?.favoriteDeviceId == domainDevice.id
+                            macAddress = ble?.macAddress.orEmpty(),
+                            favourite = selectedUser?.favoriteDeviceId == domainDevice.id,
                         )
                     },
                     user = selectedUser?.let {
                         DeviceListViewState.User(
                             id = selectedUser.id,
-                            name = selectedUser.name
+                            name = selectedUser.name,
                         )
-                    }
+                    },
                 )
             }
         }.launchIn(viewModelScope)
@@ -72,6 +72,7 @@ internal class DeviceListViewModel(
             deleteDeviceUseCase(event.device.id)
             navigate(NavEvent.Remove(DeviceDashboard(event.device.id)))
         }
+
         is DeviceSetAsDefaultClicked -> {
             viewState.value.user?.let { user ->
                 setFavoriteDeviceUseCase(user.id, event.device.id)

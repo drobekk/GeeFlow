@@ -32,34 +32,34 @@ internal fun SettingsApplyFab(
     loading: Boolean,
     visible: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = AnimatedVisibility(
     visible = visible,
     enter = slideInVertically { it } + fadeIn(),
     exit = slideOutVertically { it } + fadeOut(),
-    modifier = modifier
+    modifier = modifier,
 ) {
     FloatingActionButton(
         modifier = Modifier.padding(
             horizontal = GeeFlowTheme.spacing.fabHorizontal,
-            vertical = GeeFlowTheme.spacing.fabVertical
+            vertical = GeeFlowTheme.spacing.fabVertical,
         ),
-        onClick = { if (!loading) onClick() }
+        onClick = { if (!loading) onClick() },
     ) {
         AnimatedContent(
             targetState = loading,
-            label = "Apply button"
+            label = "Apply button",
         ) { isLoading ->
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.padding(horizontal = 24.dp).size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             } else {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = rememberVectorPainter(Icons.Filled.Check),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                     HorizontalSpacer(8.dp)
                     Text(text = stringResource(Res.string.common_apply))

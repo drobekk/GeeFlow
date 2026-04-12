@@ -11,7 +11,7 @@ import org.koin.core.annotation.Singleton
 
 @Singleton
 class UserRepositoryImpl(
-    private val usersDao: UsersDao
+    private val usersDao: UsersDao,
 ) : UserRepository {
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
@@ -27,9 +27,7 @@ class UserRepositoryImpl(
         refresh()
     }
 
-    override fun getUserById(id: Long): User? {
-        return usersDao.getUserById(id)
-    }
+    override fun getUserById(id: Long): User? = usersDao.getUserById(id)
 
     override fun removeUser(id: Long) {
         usersDao.deleteUser(id)

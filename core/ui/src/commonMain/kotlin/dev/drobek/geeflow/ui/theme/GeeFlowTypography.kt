@@ -14,7 +14,7 @@ import org.jetbrains.compose.resources.Font
 internal fun geeFlowTypography(): Typography {
     val serifFont = FontFamily(
         Font(Res.font.Bitter_Regular, FontWeight.Normal),
-        Font(Res.font.Bitter_SemiBold, FontWeight.Bold)
+        Font(Res.font.Bitter_SemiBold, FontWeight.Bold),
     )
 
     return with(MaterialTheme.typography) {
@@ -27,7 +27,7 @@ internal fun geeFlowTypography(): Typography {
             headlineSmall = headlineSmall.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
             titleLarge = titleLarge.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
             titleMedium = titleMedium.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
-            titleSmall = titleSmall.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold)
+            titleSmall = titleSmall.copy(fontFamily = serifFont, fontWeight = FontWeight.Bold),
         )
     }
 }

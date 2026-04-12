@@ -15,17 +15,17 @@ private val waterVariantDark = Color(0xFF79B3D7)
 @Immutable
 data class Colors(
     val water: Color,
-    val waterVariant: Color
+    val waterVariant: Color,
 )
 
 val lightCustomColors = Colors(
     water = waterLight,
-    waterVariant = waterVariantLight
+    waterVariant = waterVariantLight,
 )
 
 val darkCustomColors = Colors(
     water = waterDark,
-    waterVariant = waterVariantDark
+    waterVariant = waterVariantDark,
 )
 
 val LocalColors = staticCompositionLocalOf { lightCustomColors }

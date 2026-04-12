@@ -10,7 +10,7 @@ class SetBoilerSettingsUseCase(private val provider: DeviceControllerProvider) {
         deviceId: Long,
         boilerType: BoilerType,
         enabled: Boolean,
-        temp: Int
+        temp: Int,
     ) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
         setBoilerState(boilerType, enabled)

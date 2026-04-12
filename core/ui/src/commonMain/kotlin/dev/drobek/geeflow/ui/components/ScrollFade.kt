@@ -73,18 +73,18 @@ fun Modifier.scrollFade(
     showTop: Boolean,
     showBottom: Boolean,
     height: Dp,
-    color: Color
+    color: Color,
 ): Modifier = composed {
     val topAlpha = animateFloatAsState(
         targetValue = if (showTop) 1f else 0f,
         animationSpec = tween(durationMillis = AnimationSpeedMs),
-        label = "ScrollFadeTopAlpha"
+        label = "ScrollFadeTopAlpha",
     ).value
 
     val bottomAlpha = animateFloatAsState(
         targetValue = if (showBottom) 1f else 0f,
         animationSpec = tween(durationMillis = AnimationSpeedMs),
-        label = "ScrollFadeBottomAlpha"
+        label = "ScrollFadeBottomAlpha",
     ).value
 
     drawWithContent {
@@ -94,26 +94,26 @@ fun Modifier.scrollFade(
             val brush = verticalGradient(
                 colors = listOf(color.copy(alpha = topAlpha), color.copy(alpha = 0f)),
                 startY = 0f,
-                endY = heightPx
+                endY = heightPx,
             )
             drawRect(
                 brush = brush,
                 topLeft = Offset(0f, 0f),
                 size = Size(size.width, heightPx),
-                blendMode = BlendMode.SrcOver
+                blendMode = BlendMode.SrcOver,
             )
         }
         if (bottomAlpha > 0f) {
             val brush = verticalGradient(
                 colors = listOf(color.copy(alpha = 0f), color.copy(alpha = bottomAlpha)),
                 startY = size.height - heightPx,
-                endY = size.height
+                endY = size.height,
             )
             drawRect(
                 brush = brush,
                 topLeft = Offset(0f, size.height - heightPx),
                 size = Size(size.width, heightPx),
-                blendMode = BlendMode.SrcOver
+                blendMode = BlendMode.SrcOver,
             )
         }
     }
@@ -127,7 +127,7 @@ fun Modifier.verticalScrollWithFade(
     reverseScrolling: Boolean = false,
     dividerHeight: Dp = 25.dp,
     color: Color = MaterialTheme.colorScheme.background,
-    fadePosition: FadePosition = FadePosition.Top
+    fadePosition: FadePosition = FadePosition.Top,
 ) = scrollFade(state, dividerHeight, color, fadePosition)
     .verticalScroll(state, enabled, flingBehavior, reverseScrolling)
 

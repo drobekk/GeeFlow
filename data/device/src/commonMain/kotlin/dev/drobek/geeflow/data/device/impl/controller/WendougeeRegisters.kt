@@ -42,6 +42,6 @@ object WendougeeRegisters {
         1016, // Weight First Half
         1080, // Weight Second Half
         1500, // Absolute Flow First Half
-        1564 // Absolute Flow Second Half
+        1564, // Absolute Flow Second Half
     )
 }

@@ -18,7 +18,7 @@ fun ViewModel.launch(block: suspend CoroutineScope.() -> Unit) = viewModelScope.
 @Suppress("TooGenericExceptionCaught")
 fun ViewModel.launchCatching(
     onError: (Throwable) -> Unit = {},
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ): Job = viewModelScope.launch {
     try {
         block()

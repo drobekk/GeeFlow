@@ -9,7 +9,7 @@ data class BrewSession(
     val startTime: Instant? = null,
     val inProgress: Boolean = false,
     val elapsedSeconds: Int = 0,
-    val dataPoints: Map<Float, BrewDataPoint> = emptyMap()
+    val dataPoints: Map<Float, BrewDataPoint> = emptyMap(),
 )
 
 data class BrewDataPoint(
@@ -17,5 +17,5 @@ data class BrewDataPoint(
     val weight: Float,
     val volume: Float,
     val flowRate: Float,
-    val weightRate: Float
+    val weightRate: Float,
 )

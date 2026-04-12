@@ -22,7 +22,7 @@ class UsersDao(databaseProvider: DatabaseProvider) {
             name = user.name,
             photoUri = user.photoUri,
             isSelected = if (user.isSelected) 1L else 0L,
-            favoriteDeviceId = user.favoriteDeviceId
+            favoriteDeviceId = user.favoriteDeviceId,
         )
     }
 
@@ -46,12 +46,12 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         name: String,
         photoUri: String?,
         isSelected: Long,
-        favoriteDeviceId: Long?
+        favoriteDeviceId: Long?,
     ): User = User(
         id = id,
         name = name,
         photoUri = photoUri,
         isSelected = isSelected != 0L,
-        favoriteDeviceId = favoriteDeviceId
+        favoriteDeviceId = favoriteDeviceId,
     )
 }

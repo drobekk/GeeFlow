@@ -24,14 +24,14 @@ internal class QuickMaintenanceViewModel(
     private val getCleaningStatus: GetCleaningStatusUseCase,
     private val observeDeviceState: ObserveDeviceStateUseCase,
     private val startCleaning: StartCleaningUseCase,
-    private val stopCleaning: StopCleaningUseCase
+    private val stopCleaning: StopCleaningUseCase,
 ) : BaseViewModel<QuickMaintenanceViewState, QuickMaintenanceViewModelEvent>(QuickMaintenanceViewState()) {
 
     init {
         launch {
             combine(
                 getCleaningStatus(arguments.deviceId),
-                observeDeviceState(arguments.deviceId)
+                observeDeviceState(arguments.deviceId),
             ) { status, state -> status to state }
                 .collect { (status, state) ->
                     modify {
@@ -40,13 +40,13 @@ internal class QuickMaintenanceViewModel(
                             isCleaning = status.inProgress,
                             flushProgress = QuickMaintenanceViewState.Progress(
                                 status.flush.current,
-                                status.flush.target
+                                status.flush.target,
                             ),
                             restProgress = QuickMaintenanceViewState.Progress(status.rest.current, status.rest.target),
                             cycleProgress = QuickMaintenanceViewState.Progress(
                                 status.cycle.current,
-                                status.cycle.target
-                            )
+                                status.cycle.target,
+                            ),
                         )
                     }
                 }

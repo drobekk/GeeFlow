@@ -18,7 +18,7 @@ interface Navigator {
 @Composable
 fun NavigatorEffect(
     navigator: Navigator,
-    navEventFlow: Flow<NavEvent>
+    navEventFlow: Flow<NavEvent>,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner.lifecycle) {

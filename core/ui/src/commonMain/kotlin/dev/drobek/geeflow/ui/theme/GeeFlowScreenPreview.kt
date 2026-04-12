@@ -6,13 +6,13 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @Preview(
     name = "Compact",
-    fontScale = 1f
+    fontScale = 1f,
 )
 @Preview(
     name = "Expanded",
     widthDp = 840,
     heightDp = 460,
-    fontScale = 1f
+    fontScale = 1f,
 )
 annotation class GeeFlowScreenPreview
 

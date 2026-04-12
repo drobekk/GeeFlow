@@ -8,7 +8,7 @@ class SetManualBrewSettingsUseCase(private val provider: DeviceControllerProvide
     suspend operator fun invoke(
         deviceId: Long,
         pressure: Float,
-        timeSec: Float
+        timeSec: Float,
     ) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
         setManualBrewPressure(pressure)

@@ -5,6 +5,7 @@ import dev.drobek.geeflow.core.presentation.BaseViewModel
 import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.data.device.model.DeviceState
+import dev.drobek.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetCleaningSettingsUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetWaterAlarmUseCase
@@ -30,6 +31,7 @@ import org.koin.core.annotation.KoinViewModel
 internal class MaintenanceSettingsViewModel(
     @InjectedParam val arguments: MaintenanceSettings,
     private val observeDeviceState: ObserveDeviceStateUseCase,
+    private val getDeviceConstraints: GetDeviceConstraintsUseCase,
     private val setCleaningSettings: SetCleaningSettingsUseCase,
     private val setWaterAlarm: SetWaterAlarmUseCase,
 ) : BaseViewModel<MaintenanceSettingsViewState, MaintenanceSettingsViewModelEvent>(MaintenanceSettingsViewState()) {
@@ -51,6 +53,16 @@ internal class MaintenanceSettingsViewModel(
 
     private fun loadMachineState() {
         launch {
+            val constraints = getDeviceConstraints(arguments.deviceId)
+            modify {
+                copy(
+                    cleaning = cleaning.copy(
+                        timeList = constraints.cleaningTimeRange.map { it.toString() },
+                        restList = constraints.cleaningRestRange.map { it.toString() },
+                        countList = constraints.cleaningCountRange.map { it.toString() },
+                    ),
+                )
+            }
             observeDeviceState(arguments.deviceId)
                 .firstOrNull()
                 ?.let(::updateViewState)
@@ -65,9 +77,9 @@ internal class MaintenanceSettingsViewModel(
                 cleaning = cleaning.copy(
                     timeSec = config?.cleaningTimeSec?.toInt()?.toString() ?: "1",
                     restSec = config?.cleaningStandbySec?.toInt()?.toString() ?: "1",
-                    count = config?.cleaningCount?.toString() ?: "1"
+                    count = config?.cleaningCount?.toString() ?: "1",
                 ),
-                waterAlarm = config?.waterAlarmEnabled ?: false
+                waterAlarm = config?.waterAlarmEnabled ?: false,
             )
         }
         deviceSnapshot = snapshotFromState(viewState.value)
@@ -77,9 +89,10 @@ internal class MaintenanceSettingsViewModel(
         is CleaningTimeChanged -> modify { copy(cleaning = cleaning.copy(timeSec = event.timeSec)).withApplyVisible() }
         is CleaningRestChanged -> modify {
             copy(
-                cleaning = cleaning.copy(restSec = event.standbySec)
+                cleaning = cleaning.copy(restSec = event.standbySec),
             ).withApplyVisible()
         }
+
         is CleaningCountChanged -> modify { copy(cleaning = cleaning.copy(count = event.count)).withApplyVisible() }
         is WaterAlarmToggled -> modify { copy(waterAlarm = event.enabled).withApplyVisible() }
         is ApplyClicked -> saveSettings()
@@ -100,14 +113,14 @@ internal class MaintenanceSettingsViewModel(
                         deviceId = arguments.deviceId,
                         timeSec = cleaning.timeSec.toFloat(),
                         restSec = cleaning.restSec.toFloat(),
-                        count = cleaning.count.toInt()
+                        count = cleaning.count.toInt(),
                     )
                     setWaterAlarm(arguments.deviceId, waterAlarm)
                 }
                 deviceSnapshot = snapshotFromState(viewState.value)
                 modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
                 emitEvent(ShowSnackbar(getString(Res.string.common_settings_applied)))
-            }
+            },
         )
     }
 

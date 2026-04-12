@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class AddDeviceUseCase(
-    private val deviceRepository: DeviceRepository
+    private val deviceRepository: DeviceRepository,
 ) {
     operator fun invoke(device: Device): Long {
         val ble = device.connection as? DeviceConnection.Ble

@@ -10,12 +10,12 @@ import org.koin.core.annotation.Factory
 class BindProfileUseCase(
     private val brewProfileRepository: BrewProfileRepository,
     private val deviceRepository: DeviceRepository,
-    private val provider: DeviceControllerProvider
+    private val provider: DeviceControllerProvider,
 ) {
-    @Throws(Exception::class)
+    @Throws(IllegalStateException::class)
     suspend operator fun invoke(deviceId: Long, profileId: Long) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
-        val profile = brewProfileRepository.getBrewProfileById(profileId) ?: throw Exception("Profile not found")
+        val profile = checkNotNull(brewProfileRepository.getBrewProfileById(profileId))
         bindProfile(profile)
         deviceRepository.bindProfile(deviceId, profileId)
     }

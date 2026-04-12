@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class GetDevicesUseCase(
-    private val deviceRepository: DeviceRepository
+    private val deviceRepository: DeviceRepository,
 ) {
     operator fun invoke(): StateFlow<List<Device>> = deviceRepository.devices
 }

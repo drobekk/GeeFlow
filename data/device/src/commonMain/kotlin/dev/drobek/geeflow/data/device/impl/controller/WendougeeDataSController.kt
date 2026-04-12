@@ -29,6 +29,7 @@ import dev.drobek.geeflow.data.device.impl.discovery.WendougeeBleDeviceDiscovere
 import dev.drobek.geeflow.data.device.model.Device
 import dev.drobek.geeflow.data.device.model.DeviceCapability
 import dev.drobek.geeflow.data.device.model.DeviceConnection
+import dev.drobek.geeflow.data.device.model.DeviceConstraints
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.data.device.model.DeviceState.BoilerType
 import dev.drobek.geeflow.data.device.model.DeviceState.BrewStatus
@@ -69,6 +70,16 @@ class WendougeeDataSController(
     private val _resolvedConnection = MutableSharedFlow<DeviceConnection>(extraBufferCapacity = 1)
     override val resolvedConnection: SharedFlow<DeviceConnection> = _resolvedConnection.asSharedFlow()
 
+    override val constraints: DeviceConstraints = DeviceConstraints(
+        brewTempRange = 0..BREW_MAX_TEMP,
+        steamTempRange = 0..STEAM_MAX_TEMP,
+        manualBrewPressureRange = 1..PADDLE_PRESSURE_MAX_INT,
+        manualBrewTimeRange = 0..PADDLE_TIME_MAX,
+        cleaningTimeRange = 1..CLEANING_TIME_MAX,
+        cleaningRestRange = 1..CLEANING_REST_MAX,
+        cleaningCountRange = 1..CLEANING_COUNT_MAX,
+    )
+
     override val capabilities: Set<DeviceCapability> = setOf(
         DeviceCapability.SteamBoiler,
         DeviceCapability.BrewBoiler,
@@ -82,7 +93,7 @@ class WendougeeDataSController(
         DeviceCapability.SingleDoseGrinderConnectivity,
         DeviceCapability.CommercialGrinderConnectivity,
         DeviceCapability.PressureProfiling,
-        DeviceCapability.FlowProfiling
+        DeviceCapability.FlowProfiling,
     )
 
     var logPolling: Boolean = false
@@ -100,7 +111,7 @@ class WendougeeDataSController(
             }
         },
         onHeartbeat = { onHeartbeatReceived() },
-        shouldLogPolling = { logPolling }
+        shouldLogPolling = { logPolling },
     )
     private val profileCompiler = WendougeeProfileCompiler()
 
@@ -118,6 +129,64 @@ class WendougeeDataSController(
         private const val POLLING_INTERVAL_MS = 200L
         private const val BREW_PULSE_MS = 100L
         private const val HEARTBEAT_TIMEOUT_MS = 10_000L
+
+        private const val MTU_SIZE = 512
+        private const val MTU_TIMEOUT_MS = 4_000L
+        private const val MTU_RETRY_DELAY_MS = 200L
+        private const val POST_MTU_DELAY_MS = 500L
+        private const val CHARS_READY_TIMEOUT_MS = 10_000L
+        private const val CHARS_RETRY_DELAY_MS = 200L
+        private const val POST_CHARS_DELAY_MS = 300L
+        private const val INIT_CONFIG_DELAY_MS = 300L
+        private const val INIT_SCALE_DELAY_MS = 400L
+        private const val SCALE_STATUS_DELAY_MS = 100L
+        private const val SCALE_LIST_DELAY_MS = 200L
+        private const val POST_INIT_DELAY_MS = 300L
+        private const val POLL_BETWEEN_DELAY_MS = 30L
+        private const val POLL_TIMEOUT_MS = 800L
+        private const val FC_COIL_WRITE: Byte = 0x05
+        private const val SENSOR_SCALE_FACTOR = 10
+        private const val BREW_MAX_TEMP = 110
+        private const val STEAM_MAX_TEMP = 140
+        private const val PADDLE_PRESSURE_MAX_INT = 120
+        private const val PADDLE_TIME_MAX = 60
+        private const val CLEANING_TIME_MAX = 60
+        private const val CLEANING_REST_MAX = 60
+        private const val CLEANING_COUNT_MAX = 10
+        private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
+        private const val COIL_MANUAL_BREW = 0x9A
+        private const val COIL_SHORT_PRESS = 0x96
+        private const val COIL_CLEANING = 0x9B
+        private const val COIL_PROFILE_FREE = 0x9E
+        private const val SCALE_FRAME_DATA_OFFSET = 7
+        private const val SCALE_FRAME_CMD_IDX = 4
+        private const val BYTE_SHIFT = 8
+        private const val BYTE_MASK = 0xFF
+        private const val SCALE_FRAME_CHECKSUM_SALT = 0x53
+        private const val HEX_RADIX = 16
+        private const val SCALE_CMD_CONNECT = 0x80
+        private const val SCALE_CMD_DISCONNECT = 0x87
+        private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
+        private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
+        private val SCALE_FRAME_PREFIX = byteArrayOf(0xFF.toByte(), 0x55.toByte(), 0xFF.toByte(), 0xFF.toByte())
+
+        private fun toHexString(arr: ByteArray): String = arr.joinToString("") {
+            (it.toInt() and BYTE_MASK).toString(HEX_RADIX).padStart(2, '0')
+        }
+
+        private fun buildScaleFrame(cmd: Int, name: String): ByteArray {
+            val nameBytes = name.encodeToByteArray()
+            val len = nameBytes.size
+            val buffer = ByteArray(SCALE_FRAME_DATA_OFFSET + len)
+            SCALE_FRAME_PREFIX.copyInto(buffer)
+            buffer[SCALE_FRAME_CMD_IDX] = cmd.toByte()
+            buffer[SCALE_FRAME_CMD_IDX + 1] = (len ushr BYTE_SHIFT).toByte()
+            buffer[SCALE_FRAME_CMD_IDX + 2] = (len and BYTE_MASK).toByte()
+            nameBytes.copyInto(buffer, destinationOffset = SCALE_FRAME_DATA_OFFSET)
+            var sum = 0
+            for (i in SCALE_FRAME_CMD_IDX until buffer.size) sum += buffer[i].toInt() and BYTE_MASK
+            return buffer + ((sum + SCALE_FRAME_CHECKSUM_SALT) and BYTE_MASK).toByte()
+        }
     }
 
     init {
@@ -186,73 +255,73 @@ class WendougeeDataSController(
 
                 _deviceState.update { it.copy(connectionStatus = ConnectionStatus.Synchronizing) }
 
-                // MTU negotiation
-                val mtuSet = withTimeoutOrNull(4_000) {
-                    while (isActive) {
-                        if (bleClient.changeMTU(512)) break
-                        delay(200)
-                    }
-                    true
-                }
-                if (mtuSet == null) Logger.withTag(TAG).w { "MTU negotiation timed out" }
-                delay(500)
-
-                // Enable notifications
-                val charsReady = withTimeoutOrNull(10_000) {
-                    while (isActive) {
-                        val dataReady = bleClient.notifyCharacteristic(DATA_UUID_SUFFIX, true)
-                        val ctrlReady = bleClient.notifyCharacteristic(CTRL_UUID_SUFFIX, true)
-                        if (dataReady && ctrlReady) return@withTimeoutOrNull true
-                        delay(200)
-                    }
-                    false
-                }
-                if (charsReady != true) {
-                    Logger.withTag(TAG).e { "Characteristics not ready — aborting connect" }
-                    bleClient.disconnect()
-                    resetToDisconnected()
-                    return@launch
-                }
-                delay(300)
-
-                // Send init commands
-                write(DATA_UUID_SUFFIX, CMD_READ_CONFIG_LONG)
-                delay(300)
-                write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_QUERY)
-                delay(400)
-                write(CTRL_UUID_SUFFIX, CMD_START_STREAMING)
-                if (_deviceState.value.smartScaleEnabled) {
-                    delay(100)
-                    write(CTRL_UUID_SUFFIX, CMD_SCALE_STATUS_REQUEST)
-                    delay(200)
-                    write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
-                }
-                delay(300)
-
-                // Two pollers must succeed before we mark Connected
-                pollLongOnce()
-                pollShortOnce()
+                if (!sendInitCommands()) return@launch
 
                 _deviceState.update { it.copy(connectionStatus = ConnectionStatus.Connected) }
                 Logger.withTag(TAG).i { "Connected and ready" }
 
-                // Steady-state polling loop
                 while (isActive) {
                     runCatching { pollLongOnce() }
                         .onFailure { Logger.withTag(TAG).w(it) { "Poll long missed" } }
-                    delay(30)
+                    delay(POLL_BETWEEN_DELAY_MS)
                     runCatching { pollShortOnce() }
                         .onFailure { Logger.withTag(TAG).w(it) { "Poll short missed" } }
                     delay(POLLING_INTERVAL_MS)
                 }
-            } catch (t: CancellationException) {
-                throw t
-            } catch (t: Throwable) {
-                Logger.withTag(TAG).e(t) { "Connect flow failed" }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Logger.withTag(TAG).e(e) { "Connect flow failed" }
                 bleClient.disconnect()
                 resetToDisconnected()
             }
         }
+    }
+
+    private suspend fun sendInitCommands(): Boolean {
+        val mtuSet = withTimeoutOrNull(MTU_TIMEOUT_MS) {
+            while (isActive) {
+                if (bleClient.changeMTU(MTU_SIZE)) break
+                delay(MTU_RETRY_DELAY_MS)
+            }
+            true
+        }
+        if (mtuSet == null) Logger.withTag(TAG).w { "MTU negotiation timed out" }
+        delay(POST_MTU_DELAY_MS)
+
+        val charsReady = withTimeoutOrNull(CHARS_READY_TIMEOUT_MS) {
+            while (isActive) {
+                val dataReady = bleClient.notifyCharacteristic(DATA_UUID_SUFFIX, true)
+                val ctrlReady = bleClient.notifyCharacteristic(CTRL_UUID_SUFFIX, true)
+                if (dataReady && ctrlReady) return@withTimeoutOrNull true
+                delay(CHARS_RETRY_DELAY_MS)
+            }
+            false
+        }
+        if (charsReady != true) {
+            Logger.withTag(TAG).e { "Characteristics not ready — aborting connect" }
+            bleClient.disconnect()
+            resetToDisconnected()
+            return false
+        }
+        delay(POST_CHARS_DELAY_MS)
+
+        write(DATA_UUID_SUFFIX, CMD_READ_CONFIG_LONG)
+        delay(INIT_CONFIG_DELAY_MS)
+        write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_QUERY)
+        delay(INIT_SCALE_DELAY_MS)
+        write(CTRL_UUID_SUFFIX, CMD_START_STREAMING)
+        if (_deviceState.value.smartScaleEnabled) {
+            delay(SCALE_STATUS_DELAY_MS)
+            write(CTRL_UUID_SUFFIX, CMD_SCALE_STATUS_REQUEST)
+            delay(SCALE_LIST_DELAY_MS)
+            write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
+        }
+        delay(POST_INIT_DELAY_MS)
+
+        pollLongOnce()
+        pollShortOnce()
+        return true
     }
 
     /**
@@ -310,7 +379,7 @@ class WendougeeDataSController(
                 steamBoilerTemp = null,
                 brewBoilerTemp = null,
                 smartScale = null,
-                smartScaleSearchActive = false
+                smartScaleSearchActive = false,
             )
         }
         _foundScales.value = emptyList()
@@ -319,16 +388,16 @@ class WendougeeDataSController(
     private suspend fun pollLongOnce() {
         modbus.sendCustomCommandAndWaitForPrefix(
             payload = CMD_POLLING_LONG,
-            expectedPrefix = byteArrayOf(0x01, 0x03, 0x28),
-            timeoutMs = 800
+            expectedPrefix = POLL_LONG_PREFIX,
+            timeoutMs = POLL_TIMEOUT_MS,
         )
     }
 
     private suspend fun pollShortOnce() {
         modbus.sendCustomCommandAndWaitForPrefix(
             payload = CMD_POLLING_SHORT,
-            expectedPrefix = byteArrayOf(0x01, 0x01),
-            timeoutMs = 800
+            expectedPrefix = POLL_SHORT_PREFIX,
+            timeoutMs = POLL_TIMEOUT_MS,
         )
     }
 
@@ -349,7 +418,7 @@ class WendougeeDataSController(
         modbus.writeSingleRegister(targetRegister, stateValue)
 
         Logger.withTag(
-            TAG
+            TAG,
         ).i { "Boiler ${if (boilerType == BoilerType.Steam) "Steam" else "Brew"} set to $enabled confirmed" }
         _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
@@ -363,7 +432,7 @@ class WendougeeDataSController(
     }
 
     override suspend fun setSteamTemperature(temp: Int) {
-        if (temp !in 0..140) {
+        if (temp !in 0..STEAM_MAX_TEMP) {
             Logger.withTag(TAG).e { "Temperature $temp out of safe range!" }
             return
         }
@@ -379,7 +448,7 @@ class WendougeeDataSController(
     }
 
     override suspend fun setBrewTemperature(temp: Int) {
-        if (temp !in 0..110) {
+        if (temp !in 0..BREW_MAX_TEMP) {
             Logger.withTag(TAG).e { "Brew temperature $temp out of range!" }
             return
         }
@@ -396,39 +465,35 @@ class WendougeeDataSController(
     override suspend fun startManualBrewing() {
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting manual brew cycle..." }
-            sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, 0x9A.toByte())
+            sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, COIL_MANUAL_BREW.toByte())
         }
     }
 
     override suspend fun stopManualBrewing() {
         if (_deviceState.value.brewStatus == BrewStatus.Manual) {
             Logger.withTag(TAG).i { "Stopping manual brew cycle..." }
-            sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew Stop", 0x00, 0x9A.toByte())
+            sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew Stop", 0x00, COIL_MANUAL_BREW.toByte())
         }
     }
 
     override suspend fun stopProfileBrewing() {
         if (_deviceState.value.brewStatus == BrewStatus.Profile) {
             Logger.withTag(TAG).i { "Stopping profile brew cycle..." }
-            triggerShortPress()
+            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
         }
-    }
-
-    private suspend fun triggerShortPress() {
-        sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, 0x96.toByte())
     }
 
     override suspend fun startCleaning() {
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Sending start signal for cleaning..." }
-            sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Cleaning Procedure", 0x00, 0x9B.toByte())
+            sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Cleaning Procedure", 0x00, COIL_CLEANING.toByte())
         }
     }
 
     override suspend fun stopCleaning() {
         if (_deviceState.value.brewStatus == BrewStatus.Cleaning) {
             Logger.withTag(TAG).i { "Sending stop signal for cleaning..." }
-            sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Stop Cleaning", 0x00, 0x9B.toByte())
+            sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Stop Cleaning", 0x00, COIL_CLEANING.toByte())
         }
     }
 
@@ -444,7 +509,7 @@ class WendougeeDataSController(
     override suspend fun setManualBrewPressure(pressure: Float) {
         if (_deviceState.value.config?.manualBrewPressure == pressure) return
 
-        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_PRESSURE, listOf((pressure * 10).toInt()))
+        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_PRESSURE, listOf((pressure * SENSOR_SCALE_FACTOR).toInt()))
         Logger.withTag(TAG).d { "Manual brew pressure set to $pressure bar confirmed" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
@@ -455,7 +520,7 @@ class WendougeeDataSController(
     override suspend fun setManualBrewTime(timeSec: Float) {
         if (_deviceState.value.config?.manualBrewTimeSec == timeSec) return
 
-        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_TIME, listOf((timeSec * 10).toInt()))
+        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_TIME, listOf((timeSec * SENSOR_SCALE_FACTOR).toInt()))
         Logger.withTag(TAG).d { "Manual brew time set to $timeSec s confirmed" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
@@ -464,14 +529,17 @@ class WendougeeDataSController(
     }
 
     override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
-        modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_TIME, listOf((timeSec * 10).toInt()))
-        modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_STANDBY_TIME, listOf((standbySec * 10).toInt()))
+        modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_TIME, listOf((timeSec * SENSOR_SCALE_FACTOR).toInt()))
+        modbus.writeMultipleRegisters(
+            WendougeeRegisters.CLEANING_STANDBY_TIME,
+            listOf((standbySec * SENSOR_SCALE_FACTOR).toInt()),
+        )
         modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_COUNT, listOf(count))
         Logger.withTag(TAG).i { "Cleaning settings: time=${timeSec}s standby=${standbySec}s count=$count" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
             state.copy(
-                config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count)
+                config = config.copy(cleaningTimeSec = timeSec, cleaningStandbySec = standbySec, cleaningCount = count),
             )
         }
     }
@@ -487,9 +555,9 @@ class WendougeeDataSController(
     }
 
     private suspend fun sendModbusPulse(onCommand: ByteArray, offCommand: ByteArray, label: String, regHi: Byte, regLo: Byte) {
-        modbus.writeAndAwaitModbus(onCommand, 0x05, regHi, regLo)
+        modbus.writeAndAwaitModbus(onCommand, FC_COIL_WRITE, regHi, regLo)
         delay(BREW_PULSE_MS)
-        modbus.writeAndAwaitModbus(offCommand, 0x05, regHi, regLo)
+        modbus.writeAndAwaitModbus(offCommand, FC_COIL_WRITE, regHi, regLo)
         Logger.withTag(TAG).d { "$label pulse completed and confirmed" }
     }
 
@@ -502,7 +570,7 @@ class WendougeeDataSController(
                 cmd.payload,
                 expectedFc = cmd.expectedFc,
                 expectedRegHi = cmd.regHi,
-                expectedRegLo = cmd.regLo
+                expectedRegLo = cmd.regLo,
             )
         }
 
@@ -513,10 +581,10 @@ class WendougeeDataSController(
                 offCommand = "0105009e0000ad24".decodeHex(),
                 label = "Profile Brew (Free)",
                 regHi = 0x00,
-                regLo = 0x9E.toByte()
+                regLo = COIL_PROFILE_FREE.toByte(),
             )
         } else {
-            triggerShortPress()
+            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
         }
     }
 
@@ -529,12 +597,12 @@ class WendougeeDataSController(
                 cmd.payload,
                 expectedFc = cmd.expectedFc,
                 expectedRegHi = cmd.regHi,
-                expectedRegLo = cmd.regLo
+                expectedRegLo = cmd.regLo,
             )
         }
 
         Logger.withTag(
-            TAG
+            TAG,
         ).d { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
         modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
     }
@@ -545,7 +613,7 @@ class WendougeeDataSController(
         if (enabled) {
             _foundScales.value = emptyList()
             write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_ON)
-            delay(200)
+            delay(SCALE_SEARCH_AFTER_ENABLE_DELAY_MS)
             write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
         } else {
             write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_OFF)
@@ -559,7 +627,7 @@ class WendougeeDataSController(
 
     override suspend fun connectSmartScale(name: String) {
         Logger.withTag(TAG).i { "Connecting smart scale: $name" }
-        write(CTRL_UUID_SUFFIX, buildScaleFrame(0x80, name))
+        write(CTRL_UUID_SUFFIX, buildScaleFrame(SCALE_CMD_CONNECT, name))
     }
 
     override suspend fun disconnectSmartScale() {
@@ -568,31 +636,12 @@ class WendougeeDataSController(
             return
         }
         Logger.withTag(TAG).i { "Disconnecting smart scale: $name" }
-        write(CTRL_UUID_SUFFIX, buildScaleFrame(0x87, name))
+        write(CTRL_UUID_SUFFIX, buildScaleFrame(SCALE_CMD_DISCONNECT, name))
     }
 
     private suspend fun write(uuid: String, data: ByteArray) {
         val channel = if (uuid.contains(CTRL_UUID_SUFFIX)) "CTRL" else "DATA"
-        Logger.withTag(BLE_TRACE_TAG).v { "→ [$channel] ${data.toHexTrace()} (${data.size}B)" }
+        Logger.withTag(BLE_TRACE_TAG).v { "→ [$channel] ${toHexString(data)} (${data.size}B)" }
         bleClient.writeCharacteristic(uuid, data)
-    }
-
-    private fun ByteArray.toHexTrace() = joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }
-
-    private fun buildScaleFrame(cmd: Int, name: String): ByteArray {
-        val nameBytes = name.encodeToByteArray()
-        val len = nameBytes.size
-        val buffer = ByteArray(7 + len)
-        buffer[0] = 0xFF.toByte()
-        buffer[1] = 0x55.toByte()
-        buffer[2] = 0xFF.toByte()
-        buffer[3] = 0xFF.toByte()
-        buffer[4] = cmd.toByte()
-        buffer[5] = (len ushr 8).toByte()
-        buffer[6] = (len and 0xFF).toByte()
-        nameBytes.copyInto(buffer, destinationOffset = 7)
-        var sum = 0
-        for (i in 4 until buffer.size) sum += buffer[i].toInt() and 0xFF
-        return buffer + ((sum + 0x53) and 0xFF).toByte()
     }
 }

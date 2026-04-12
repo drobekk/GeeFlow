@@ -36,21 +36,21 @@ fun GeeFlowSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     val shape = MaterialTheme.shapes.large
 
     val offBorderColor by animateColorAsState(
-        if (!checked) MaterialTheme.colorScheme.primary else Color.Transparent
+        if (!checked) MaterialTheme.colorScheme.primary else Color.Transparent,
     )
     val offTextColor by animateColorAsState(
-        if (!checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        if (!checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
     )
     val onBackgroundColor by animateColorAsState(
-        if (checked) MaterialTheme.colorScheme.primary else Color.Transparent
+        if (checked) MaterialTheme.colorScheme.primary else Color.Transparent,
     )
     val onTextColor by animateColorAsState(
-        if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+        if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
     Row(
@@ -59,7 +59,7 @@ fun GeeFlowSwitch(
             .height(IntrinsicSize.Min)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .alpha(if (enabled) 1f else 0.38f)
+            .alpha(if (enabled) 1f else DisabledAlpha),
     ) {
         Text(
             text = stringResource(Res.string.common_off),
@@ -74,7 +74,7 @@ fun GeeFlowSwitch(
             style = MaterialTheme.typography.labelLarge,
             fontWeight = if (!checked) FontWeight.Bold else FontWeight.Normal,
             color = offTextColor,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
 
         Text(
@@ -90,10 +90,12 @@ fun GeeFlowSwitch(
             style = MaterialTheme.typography.labelLarge,
             fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal,
             color = onTextColor,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
+
+private const val DisabledAlpha = 0.38f
 
 @Composable
 @Preview

@@ -22,7 +22,9 @@ class ConnectDeviceUseCase(
         // Observe resolved connection events (e.g. iOS peripheral UUID change) and persist them
         scope.launch {
             controller.resolvedConnection
-                .takeWhile { controller.deviceState.value.connectionStatus != DeviceState.ConnectionStatus.Disconnected }
+                .takeWhile {
+                    controller.deviceState.value.connectionStatus != DeviceState.ConnectionStatus.Disconnected
+                }
                 .collect { connection ->
                     if (connection != device.connection) {
                         updateDeviceConnection(deviceId, connection)

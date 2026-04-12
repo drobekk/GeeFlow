@@ -37,13 +37,13 @@ import org.koin.core.annotation.KoinViewModel
 internal class DeviceSettingsViewModel(
     @InjectedParam val args: DeviceSettings,
     getDeviceUseCase: GetDeviceUseCase,
-    private val getDeviceCapabilitiesUseCase: GetDeviceCapabilitiesUseCase
-) : BaseViewModel<DeviceSettingsViewState, DeviceLitViewModelEvent>(DeviceSettingsViewState()) {
+    private val getDeviceCapabilitiesUseCase: GetDeviceCapabilitiesUseCase,
+) : BaseViewModel<DeviceSettingsViewState, Unit>(DeviceSettingsViewState()) {
 
     private val connectivityCapabilities = setOf(
         SmartScaleConnectivity,
         SingleDoseGrinderConnectivity,
-        CommercialGrinderConnectivity
+        CommercialGrinderConnectivity,
     )
     private val brewingCapabilities = setOf(SteamBoiler, BrewBoiler, HeatingMode)
     private val maintenanceCapabilities = setOf(CleaningMode, CleaningSettings, WaterAlarm)
@@ -82,8 +82,8 @@ internal class DeviceSettingsViewModel(
             items.add(
                 Item.Brewing(
                     name = getString(Res.string.device_settings_brewing),
-                    description = getString(Res.string.device_settings_brewing_description)
-                )
+                    description = getString(Res.string.device_settings_brewing_description),
+                ),
             )
         }
 
@@ -91,8 +91,8 @@ internal class DeviceSettingsViewModel(
             items.add(
                 Item.Maintenance(
                     name = getString(Res.string.device_settings_maintenance),
-                    description = getString(Res.string.device_settings_maintenance_description)
-                )
+                    description = getString(Res.string.device_settings_maintenance_description),
+                ),
             )
         }
 
@@ -100,8 +100,8 @@ internal class DeviceSettingsViewModel(
             items.add(
                 Item.Connectivity(
                     name = getString(Res.string.device_settings_connectivity),
-                    description = getString(Res.string.device_settings_connectivity_description)
-                )
+                    description = getString(Res.string.device_settings_connectivity_description),
+                ),
             )
         }
         modify { copy(items = items) }

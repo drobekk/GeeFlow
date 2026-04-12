@@ -48,7 +48,7 @@ private fun RootNavigation(closeApp: () -> Unit) {
     NavDisplay(
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
+            rememberViewModelStoreNavEntryDecorator(),
         ),
         onBack = { backStack.removeLast() },
         sceneStrategies = listOf(listDetailStrategy, dialogSceneStrategy),
@@ -58,7 +58,7 @@ private fun RootNavigation(closeApp: () -> Unit) {
             navFeatures.forEach {
                 with(it) { provideEntries(navigator) }
             }
-        }
+        },
     )
 }
 

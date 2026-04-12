@@ -6,25 +6,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Immutable
-data class Spacing(
+data class GeeFlowSpacing(
     val contentHorizontal: Dp,
     val contentVertical: Dp,
     val fabHorizontal: Dp,
-    val fabVertical: Dp
+    val fabVertical: Dp,
 )
 
-fun compactSpacing() = Spacing(
+fun compactSpacing() = GeeFlowSpacing(
     contentHorizontal = 24.dp,
     contentVertical = 24.dp,
     fabHorizontal = 8.dp,
-    fabVertical = 8.dp
+    fabVertical = 8.dp,
 )
 
-fun expandedSpacing() = Spacing(
+fun expandedSpacing() = GeeFlowSpacing(
     contentHorizontal = 48.dp,
     contentVertical = 24.dp,
     fabHorizontal = 32.dp,
-    fabVertical = 16.dp
+    fabVertical = 16.dp,
 )
 
 val LocalSpacing = staticCompositionLocalOf { compactSpacing() }

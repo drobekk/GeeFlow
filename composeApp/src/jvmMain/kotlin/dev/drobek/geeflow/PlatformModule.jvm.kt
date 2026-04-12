@@ -18,12 +18,11 @@ actual class PlatformModule {
     @Single
     fun dataStore(): DataStore<Preferences> = createJvmDataStore()
 
+    // TODO Compile dll https://github.com/Reedyuk/blue-falcon?tab=readme-ov-file#windows
     @Single
-    fun blueFalcon(): BlueFalcon =
-        // TODO Compile dll https://github.com/Reedyuk/blue-falcon?tab=readme-ov-file#windows
-        BlueFalcon(
-            log = null,
-            context = ApplicationContext(),
-            autoDiscoverAllServicesAndCharacteristics = true
-        )
+    fun blueFalcon(): BlueFalcon = BlueFalcon(
+        log = null,
+        context = ApplicationContext(),
+        autoDiscoverAllServicesAndCharacteristics = true,
+    )
 }

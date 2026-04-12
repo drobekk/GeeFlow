@@ -8,7 +8,7 @@ internal fun KotlinMultiplatformExtension.configureAndroidLibrary(
     namespace: String,
     compileSdk: Int,
     minSdk: Int,
-    enableAndroidResources: Boolean = false
+    enableAndroidResources: Boolean = false,
 ) {
     val ext = (this as ExtensionAware).extensions
         .getByName("androidLibrary") as KotlinMultiplatformAndroidLibraryExtension

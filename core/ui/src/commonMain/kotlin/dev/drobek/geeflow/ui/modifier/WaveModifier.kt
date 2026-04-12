@@ -26,15 +26,15 @@ fun Modifier.waveBackground(
     amplitude: Dp = 4.dp,
     durationMillis: Int = 3000,
     progressAnimationDurationMillis: Int = 1000,
-    reversed: Boolean = false
+    reversed: Boolean = false,
 ): Modifier = composed {
     val progress by animateFloatAsState(
         targetValue = targetProgress,
         animationSpec = tween(
             durationMillis = if (targetProgress == 0f) 300 else progressAnimationDurationMillis,
-            easing = LinearEasing
+            easing = LinearEasing,
         ),
-        label = "WaveProgressAnimation"
+        label = "WaveProgressAnimation",
     )
 
     val infiniteTransition = rememberInfiniteTransition(label = "waveTransition")
@@ -43,9 +43,9 @@ fun Modifier.waveBackground(
         initialValue = 0f,
         targetValue = (2 * PI).toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = durationMillis, easing = LinearEasing)
+            animation = tween(durationMillis = durationMillis, easing = LinearEasing),
         ),
-        label = "phase"
+        label = "phase",
     )
 
     val actualPhase = if (reversed) -phase else phase
@@ -55,9 +55,9 @@ fun Modifier.waveBackground(
         targetValue = 1.3f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = (durationMillis * 0.8).toInt(), easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
+            repeatMode = RepeatMode.Reverse,
         ),
-        label = "amplitudeFactor"
+        label = "amplitudeFactor",
     )
 
     this.drawBehind {
@@ -71,77 +71,96 @@ fun Modifier.waveBackground(
             return@drawBehind
         }
 
-        val path = Path()
         val currentAmplitude = amplitude.toPx() * amplitudeFactor
-
-        if (orientation == WaveOrientation.Horizontal) {
-            // Horizontal wave: Fill bottom-to-top (default) or top-to-bottom (reversed)
-            val fillLevel = if (reversed) {
-                h * progress.coerceIn(0f, 1f)
-            } else {
-                h * (1f - progress.coerceIn(0f, 1f))
-            }
-
-            fun yAt(x: Float): Float = fillLevel + sin((2f * PI.toFloat()) * waves * (x / w) + actualPhase) * currentAmplitude
-
-            if (reversed) {
-                path.moveTo(0f, 0f)
-                path.lineTo(0f, yAt(0f))
-                var x = 0f
-                while (x <= w) {
-                    path.lineTo(x, yAt(x))
-                    x += 4f
-                }
-                path.lineTo(w, yAt(w))
-                path.lineTo(w, 0f)
-            } else {
-                path.moveTo(0f, h)
-                path.lineTo(0f, yAt(0f))
-                var x = 0f
-                while (x <= w) {
-                    path.lineTo(x, yAt(x))
-                    x += 4f
-                }
-                path.lineTo(w, yAt(w))
-                path.lineTo(w, h)
-            }
-            path.close()
+        val path = if (orientation == WaveOrientation.Horizontal) {
+            buildHorizontalWavePath(w, h, progress, waves, actualPhase, currentAmplitude, reversed)
         } else {
-            // Vertical wave: Fill left-to-right (default) or right-to-left (reversed)
-            val fillLevel = if (reversed) {
-                w * (1f - progress.coerceIn(0f, 1f))
-            } else {
-                w * progress.coerceIn(0f, 1f)
-            }
-
-            fun xAt(y: Float): Float = fillLevel + sin((2f * PI.toFloat()) * waves * (y / h) + actualPhase) * currentAmplitude
-
-            if (reversed) {
-                path.moveTo(w, 0f)
-                path.lineTo(xAt(0f), 0f)
-                var y = 0f
-                while (y <= h) {
-                    path.lineTo(xAt(y), y)
-                    y += 4f
-                }
-                path.lineTo(xAt(h), h)
-                path.lineTo(w, h)
-            } else {
-                path.moveTo(0f, 0f)
-                path.lineTo(xAt(0f), 0f)
-                var y = 0f
-                while (y <= h) {
-                    path.lineTo(xAt(y), y)
-                    y += 4f
-                }
-                path.lineTo(xAt(h), h)
-                path.lineTo(0f, h)
-            }
-            path.close()
+            buildVerticalWavePath(w, h, progress, waves, actualPhase, currentAmplitude, reversed)
         }
 
         drawPath(path = path, color = color)
     }
 }
 
-enum class WaveOrientation { Horizontal, Vertical }
+private fun buildHorizontalWavePath(
+    w: Float,
+    h: Float,
+    progress: Float,
+    waves: Float,
+    phase: Float,
+    amplitude: Float,
+    reversed: Boolean,
+): Path {
+    val fillLevel = if (reversed) h * progress.coerceIn(0f, 1f) else h * (1f - progress.coerceIn(0f, 1f))
+    fun yAt(x: Float) = fillLevel + sin((2f * PI.toFloat()) * waves * (x / w) + phase) * amplitude
+
+    return Path().apply {
+        if (reversed) {
+            moveTo(0f, 0f)
+            lineTo(0f, yAt(0f))
+            var x = 0f
+            while (x <= w) {
+                lineTo(x, yAt(x))
+                x += WaveSampleStepPx
+            }
+            lineTo(w, yAt(w))
+            lineTo(w, 0f)
+        } else {
+            moveTo(0f, h)
+            lineTo(0f, yAt(0f))
+            var x = 0f
+            while (x <= w) {
+                lineTo(x, yAt(x))
+                x += WaveSampleStepPx
+            }
+            lineTo(w, yAt(w))
+            lineTo(w, h)
+        }
+        close()
+    }
+}
+
+private fun buildVerticalWavePath(
+    w: Float,
+    h: Float,
+    progress: Float,
+    waves: Float,
+    phase: Float,
+    amplitude: Float,
+    reversed: Boolean,
+): Path {
+    val fillLevel = if (reversed) w * (1f - progress.coerceIn(0f, 1f)) else w * progress.coerceIn(0f, 1f)
+    fun xAt(y: Float) = fillLevel + sin((2f * PI.toFloat()) * waves * (y / h) + phase) * amplitude
+
+    return Path().apply {
+        if (reversed) {
+            moveTo(w, 0f)
+            lineTo(xAt(0f), 0f)
+            var y = 0f
+            while (y <= h) {
+                lineTo(xAt(y), y)
+                y += WaveSampleStepPx
+            }
+            lineTo(xAt(h), h)
+            lineTo(w, h)
+        } else {
+            moveTo(0f, 0f)
+            lineTo(xAt(0f), 0f)
+            var y = 0f
+            while (y <= h) {
+                lineTo(xAt(y), y)
+                y += WaveSampleStepPx
+            }
+            lineTo(xAt(h), h)
+            lineTo(0f, h)
+        }
+        close()
+    }
+}
+
+enum class WaveOrientation {
+    Horizontal,
+    Vertical
+}
+
+private const val WaveSampleStepPx = 4f

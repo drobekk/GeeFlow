@@ -54,7 +54,7 @@ fun IntroScreen(navigator: Navigator) {
     val viewModel = koinViewModel<IntroViewModel>()
 
     IntroScreenContent(
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 
     NavigatorEffect(navigator, viewModel.navEvent)
@@ -62,7 +62,7 @@ fun IntroScreen(navigator: Navigator) {
 
 @Composable
 private fun IntroScreenContent(
-    onEvent: (IntroEvent) -> Unit = {}
+    onEvent: (IntroEvent) -> Unit = {},
 ) {
     GeeFlowScaffold(
         topBar = { Logo() },
@@ -71,10 +71,10 @@ private fun IntroScreenContent(
                 onEvent = onEvent,
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(it)
+                    .padding(it),
             )
         },
-        modifier = Modifier.imePadding()
+        modifier = Modifier.imePadding(),
     )
 }
 
@@ -85,28 +85,28 @@ private fun Logo(modifier: Modifier = Modifier) {
             .conditional(
                 condition = isWidthExpanded(),
                 ifTrue = { fillMaxHeight() },
-                ifFalse = { fillMaxWidth() }
+                ifFalse = { fillMaxWidth() },
             )
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .statusBarsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Icon(
             painter = rememberVectorPainter(GeeFlowIcon.AppLogo),
             modifier = Modifier.size(140.dp),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
         VerticalSpacer(24.dp)
         Text(
             text = stringResource(UiRes.string.app_name),
-            style = MaterialTheme.typography.displayMedium
+            style = MaterialTheme.typography.displayMedium,
         )
         Text(
             text = stringResource(Res.string.intro_screen_welcome_message),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
         )
     }
 }
@@ -114,7 +114,7 @@ private fun Logo(modifier: Modifier = Modifier) {
 @Composable
 private fun Form(
     onEvent: (IntroEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
@@ -122,13 +122,13 @@ private fun Form(
             .navigationBarsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         val userNameTextFieldState = rememberTextFieldState()
         Text(
             text = stringResource(Res.string.intro_screen_set_up),
             style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         VerticalSpacer(16.dp)
         GeeFlowOutlinedTextField(
@@ -140,7 +140,7 @@ private fun Form(
                     onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString()))
                 }
             },
-            label = { Text(stringResource(UiRes.string.common_user_name)) }
+            label = { Text(stringResource(UiRes.string.common_user_name)) },
         )
         VerticalSpacer(32.dp)
         VerticalSpacer(1f)
@@ -148,7 +148,7 @@ private fun Form(
             painter = rememberVectorPainter(Icons.Filled.Check),
             enabled = userNameTextFieldState.text.isNotEmpty(),
             contentDescription = stringResource(UiRes.string.common_confirm),
-            onClick = { onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString())) }
+            onClick = { onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString())) },
         )
     }
 }

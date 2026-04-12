@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package dev.drobek.geeflow.data.brew.provider
 
 import dev.drobek.geeflow.data.brew.model.BrewProfile
@@ -16,9 +18,9 @@ class DefaultBrewProfileProvider {
             mode = ProfileMode.VariablePressure,
             finishCondition = Condition.Volume(50f),
             steps = listOf(
-                ProfileStep.Pressure(time = 30, pressure = 9f)
+                ProfileStep.Pressure(time = 30, pressure = 9f),
             ),
-            position = 0
+            position = 0,
         ),
         BrewProfile(
             userId = userId,
@@ -29,9 +31,9 @@ class DefaultBrewProfileProvider {
             steps = listOf(
                 ProfileStep.Flow(time = 5, flow = 6f),
                 ProfileStep.Wait(time = 2),
-                ProfileStep.Flow(time = 13, flow = 6f)
+                ProfileStep.Flow(time = 13, flow = 6f),
             ),
-            position = 1
-        )
+            position = 1,
+        ),
     )
 }

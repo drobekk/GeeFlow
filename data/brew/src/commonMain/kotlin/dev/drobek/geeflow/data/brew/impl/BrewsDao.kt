@@ -30,7 +30,7 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
             finishCondition = Json.encodeToString(brewProfile.finishCondition),
             autoLinkOpen = if (brewProfile.autoLinkOpen) 1L else 0L,
             steps = Json.encodeToString(brewProfile.steps),
-            position = brewProfile.position.toLong()
+            position = brewProfile.position.toLong(),
         )
     }
 
@@ -38,6 +38,7 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         dbQuery.deleteById(id)
     }
 
+    @Suppress("LongParameterList")
     private fun mapToBrewProfile(
         id: Long,
         userId: Long,
@@ -47,7 +48,7 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         finishCondition: String,
         autoLinkOpen: Long,
         steps: String,
-        position: Long
+        position: Long,
     ): BrewProfile = BrewProfile(
         id = id,
         userId = userId,
@@ -57,6 +58,6 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         finishCondition = Json.decodeFromString<Condition>(finishCondition),
         autoLinkOpen = autoLinkOpen != 0L,
         steps = Json.decodeFromString<List<ProfileStep>>(steps),
-        position = position.toInt()
+        position = position.toInt(),
     )
 }

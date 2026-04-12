@@ -72,7 +72,7 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun BrewingSettingsScreen(
     viewModel: BrewingSettingsViewModel,
-    navigator: dev.drobek.geeflow.navigation.Navigator
+    navigator: dev.drobek.geeflow.navigation.Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -81,7 +81,7 @@ internal fun BrewingSettingsScreen(
     BrewSettingsContent(
         viewState = viewState,
         snackbarHostState = snackbarHostState,
-        onEvent = viewModel::handleEvent
+        onEvent = viewModel::handleEvent,
     )
 
     NavigatorEffect(navigator, viewModel.navEvent)
@@ -98,14 +98,14 @@ internal fun BrewingSettingsScreen(
 private fun BrewSettingsContent(
     viewState: BrewingSettingsViewState,
     onEvent: (BrewingSettingsEvent) -> Unit = {},
-    snackbarHostState: SnackbarHostState = SnackbarHostState()
+    snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     if (isWidthExpanded()) {
         ExpandedContent(
             viewState = viewState,
             snackbarHostState = snackbarHostState,
-            onEvent = onEvent
+            onEvent = onEvent,
         )
     } else {
         GeeFlowScaffold(
@@ -117,7 +117,7 @@ private fun BrewSettingsContent(
                 SettingsApplyFab(
                     loading = viewState.applyButtonLoading,
                     visible = viewState.applyButtonVisible,
-                    onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) }
+                    onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
                 )
             },
             scrollBehavior = scrollBehavior,
@@ -129,12 +129,12 @@ private fun BrewSettingsContent(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .padding(it)
-                        .padding(bottom = SettingsApplyFabPadding)
+                        .padding(bottom = SettingsApplyFabPadding),
                 )
             },
             modifier = Modifier
                 .imePadding()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         )
     }
 }
@@ -143,7 +143,7 @@ private fun BrewSettingsContent(
 private fun ExpandedContent(
     viewState: BrewingSettingsViewState,
     snackbarHostState: SnackbarHostState,
-    onEvent: (BrewingSettingsEvent) -> Unit
+    onEvent: (BrewingSettingsEvent) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (isWidthLarge()) {
@@ -153,15 +153,15 @@ private fun ExpandedContent(
                     .verticalScroll(rememberScrollState())
                     .padding(
                         horizontal = GeeFlowTheme.spacing.contentHorizontal,
-                        vertical = GeeFlowTheme.spacing.contentVertical
+                        vertical = GeeFlowTheme.spacing.contentVertical,
                     )
                     .systemBarsPadding()
-                    .padding(bottom = SettingsApplyFabPadding)
+                    .padding(bottom = SettingsApplyFabPadding),
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     BoilerSection(
                         viewState = viewState,
-                        onEvent = onEvent
+                        onEvent = onEvent,
                     )
                 }
                 HorizontalSpacer(24.dp)
@@ -180,18 +180,18 @@ private fun ExpandedContent(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .systemBarsPadding()
-                    .padding(bottom = SettingsApplyFabPadding)
+                    .padding(bottom = SettingsApplyFabPadding),
             )
         }
         SettingsApplyFab(
             loading = viewState.applyButtonLoading,
             visible = viewState.applyButtonVisible,
             onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
-            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding()
+            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding(),
         )
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.systemBarsPadding().align(Alignment.BottomCenter)
+            modifier = Modifier.systemBarsPadding().align(Alignment.BottomCenter),
         )
     }
 }
@@ -200,14 +200,14 @@ private fun ExpandedContent(
 private fun CompactContent(
     viewState: BrewingSettingsViewState,
     onEvent: (BrewingSettingsEvent) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
             .padding(
                 horizontal = GeeFlowTheme.spacing.contentHorizontal,
-                vertical = GeeFlowTheme.spacing.contentVertical
-            )
+                vertical = GeeFlowTheme.spacing.contentVertical,
+            ),
     ) {
         BoilerSection(viewState, onEvent)
         VerticalSpacer(24.dp)
@@ -220,11 +220,11 @@ private fun CompactContent(
 @Composable
 private fun BoilerSection(
     viewState: BrewingSettingsViewState,
-    onEvent: (BrewingSettingsEvent) -> Unit
+    onEvent: (BrewingSettingsEvent) -> Unit,
 ) {
     SectionTitle(
         text = stringResource(Res.string.device_settings_brewing_boiler),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(24.dp)
     Row {
@@ -233,7 +233,7 @@ private fun BoilerSection(
             label = stringResource(CoreRes.string.common_brew_boiler),
             onTempChanged = { onEvent(BrewTempChanged(it)) },
             onEnabledChanged = { onEvent(BrewBoilerToggled(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         HorizontalSpacer(16.dp)
         Boiler(
@@ -241,7 +241,7 @@ private fun BoilerSection(
             label = stringResource(CoreRes.string.common_steam_boiler),
             onTempChanged = { onEvent(SteamTempChanged(it)) },
             onEnabledChanged = { onEvent(SteamBoilerToggled(it)) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
     VerticalSpacer(24.dp)
@@ -250,52 +250,52 @@ private fun BoilerSection(
         subtitle = stringResource(Res.string.device_settings_brewing_pulse_heating_description),
         checked = viewState.pulseHeatingEnabled,
         onCheckedChanged = { onEvent(PulseHeatingToggled(it)) },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
 @Composable
 private fun PaddleSection(
     paddle: BrewingSettingsViewState.Paddle,
-    onEvent: (BrewingSettingsEvent) -> Unit
+    onEvent: (BrewingSettingsEvent) -> Unit,
 ) {
     SectionTitle(
         text = stringResource(Res.string.device_settings_brewing_paddle),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(24.dp)
     Row {
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         ) {
             Text(
                 text = stringResource(CoreRes.string.common_pressure),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
             VerticalSpacer(16.dp)
             GeeFlowInfinitePicker(
                 items = paddle.pressureList,
                 selected = paddle.pressure,
                 enabled = true,
-                onSelectionChanged = { onEvent(PaddlePressureChanged(it)) }
+                onSelectionChanged = { onEvent(PaddlePressureChanged(it)) },
             )
         }
         HorizontalSpacer(16.dp)
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         ) {
             Text(
                 text = stringResource(CoreRes.string.common_time),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
             VerticalSpacer(16.dp)
             GeeFlowInfinitePicker(
                 items = paddle.timeList,
                 selected = paddle.time,
                 enabled = true,
-                onSelectionChanged = { onEvent(BrewingSettingsEvent.PaddleTimeChanged(it)) }
+                onSelectionChanged = { onEvent(BrewingSettingsEvent.PaddleTimeChanged(it)) },
             )
         }
     }
@@ -304,12 +304,12 @@ private fun PaddleSection(
 @Composable
 private fun SectionTitle(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Text(
     text = text,
     style = MaterialTheme.typography.titleLarge,
     color = MaterialTheme.colorScheme.onSurfaceVariant,
-    modifier = modifier
+    modifier = modifier,
 )
 
 @Composable
@@ -318,10 +318,10 @@ private fun Boiler(
     label: String,
     onTempChanged: (String) -> Unit,
     onEnabledChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = Column(
     modifier = modifier,
-    horizontalAlignment = Alignment.CenterHorizontally
+    horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     BoilerHeader(
         label = label,
@@ -332,14 +332,14 @@ private fun Boiler(
         checked = boiler.enabled,
         onCheckedChange = onEnabledChanged,
         enabled = true,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(8.dp)
     GeeFlowInfinitePicker(
         items = boiler.tempList,
         selected = boiler.selectedTemp,
         enabled = boiler.enabled,
-        onSelectionChanged = onTempChanged
+        onSelectionChanged = onTempChanged,
     )
 }
 
@@ -350,20 +350,20 @@ private fun BoilerHeader(
 ) = FlowRow(
     verticalArrangement = Arrangement.Center,
     horizontalArrangement = Arrangement.Start,
-    modifier = Modifier.fillMaxWidth()
+    modifier = Modifier.fillMaxWidth(),
 ) {
     Text(
         text = label,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurface,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
     )
     HorizontalSpacer(4.dp)
     Text(
         text = "($actualTemp°)",
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
     )
 }
 
