@@ -1,0 +1,6 @@
+<resources>
+    <!-- User list screen -->
+    <string name="user_list_screen_title">Users</string>
+    <string name="user_list_screen_subtitle">Select a user profile</string>
+    <string name="user_list_screen_empty">No users found.</string>
+</resources>

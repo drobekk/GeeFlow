@@ -85,7 +85,7 @@ internal class QuickSettingsViewModel(
         is CloseClicked -> navigate(NavEvent.Back)
         is MoreSettingsClicked -> {
             navigate(NavEvent.Back)
-            navigate(NavEvent.To(DeviceSettings(arguments.deviceId, EntryPoint.Brewing)))
+            navigate(NavEvent.To(DeviceSettings(arguments.deviceId, if (event.isExpanded) EntryPoint.Brewing else null)))
         }
     }
 

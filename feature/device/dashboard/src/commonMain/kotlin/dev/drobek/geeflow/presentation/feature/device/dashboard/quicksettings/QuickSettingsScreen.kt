@@ -41,6 +41,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
+import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.core.ui.generated.resources.common_brew_boiler
 import geeflow.core.ui.generated.resources.common_confirm
@@ -91,6 +92,7 @@ internal fun QuickSettingsScreen(
 private fun QuickSettingsContent(
     viewState: QuickSettingsViewState,
     onEvent: (QuickSettingsEvent) -> Unit,
+    isExpanded: Boolean = isWidthExpanded(),
 ) = Column(
     modifier = Modifier
         .background(MaterialTheme.colorScheme.background, MaterialTheme.shapes.large)
@@ -124,7 +126,7 @@ private fun QuickSettingsContent(
         )
     }
     VerticalSpacer(24.dp)
-    Buttons(viewState.applying, onEvent)
+    Buttons(viewState.applying, isExpanded, onEvent)
 }
 
 @Composable
@@ -191,13 +193,14 @@ private fun BoilerHeader(
 @Composable
 private fun Buttons(
     applying: Boolean,
+    isExpanded: Boolean,
     onEvent: (QuickSettingsEvent) -> Unit,
 ) = Row(
     modifier = Modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.SpaceBetween,
 ) {
     TextButton(
-        onClick = { onEvent(QuickSettingsEvent.MoreSettingsClicked) },
+        onClick = { onEvent(QuickSettingsEvent.MoreSettingsClicked(isExpanded)) },
         content = { Text(stringResource(Res.string.settings_quick_more)) },
     )
     Button(

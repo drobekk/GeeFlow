@@ -2,6 +2,6 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard.quickmaintenanc
 
 sealed interface QuickMaintenanceEvent {
     data object ToggleCleaningClicked : QuickMaintenanceEvent
-    data object MoreSettingsClicked : QuickMaintenanceEvent
+    data class MoreSettingsClicked(val isExpanded: Boolean) : QuickMaintenanceEvent
     data object CloseClicked : QuickMaintenanceEvent
 }

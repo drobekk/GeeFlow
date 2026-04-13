@@ -6,6 +6,6 @@ sealed interface QuickSettingsEvent {
     data class SteamTempChanged(val temp: String) : QuickSettingsEvent
     data class BrewTempChanged(val temp: String) : QuickSettingsEvent
     data object ConfirmClicked : QuickSettingsEvent
-    data object MoreSettingsClicked : QuickSettingsEvent
+    data class MoreSettingsClicked(val isExpanded: Boolean) : QuickSettingsEvent
     data object CloseClicked : QuickSettingsEvent
 }

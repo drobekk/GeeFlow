@@ -38,6 +38,8 @@ kotlin {
             api(projects.feature.device.add)
             api(projects.feature.device.dashboard)
             api(projects.feature.device.settings)
+            api(projects.feature.user.settings)
+            api(projects.feature.user.list)
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptiveLayout)
             implementation(libs.jetbrains.material3.adaptiveNavigation3)

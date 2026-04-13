@@ -26,6 +26,7 @@ import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
 import dev.drobek.geeflow.ui.components.VerticalSpacer
+import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.WaveOrientation
 import dev.drobek.geeflow.ui.modifier.waveBackground
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
@@ -63,6 +64,7 @@ internal fun QuickMaintenanceScreen(
 private fun QuickMaintenanceContent(
     viewState: QuickMaintenanceViewState,
     onEvent: (QuickMaintenanceEvent) -> Unit,
+    isExpanded: Boolean = isWidthExpanded(),
 ) {
     Column(
         modifier = Modifier
@@ -83,7 +85,7 @@ private fun QuickMaintenanceContent(
             CleaningProgressContent(viewState)
         }
         VerticalSpacer(32.dp)
-        Buttons(viewState, onEvent)
+        Buttons(viewState, isExpanded, onEvent)
     }
 }
 
@@ -177,6 +179,7 @@ private fun ProgressItem(
 @Composable
 private fun Buttons(
     viewState: QuickMaintenanceViewState,
+    isExpanded: Boolean,
     onEvent: (QuickMaintenanceEvent) -> Unit,
 ) = Row(
     modifier = Modifier.fillMaxWidth(),
@@ -184,7 +187,7 @@ private fun Buttons(
     horizontalArrangement = Arrangement.SpaceBetween,
 ) {
     TextButton(
-        onClick = { onEvent(QuickMaintenanceEvent.MoreSettingsClicked) },
+        onClick = { onEvent(QuickMaintenanceEvent.MoreSettingsClicked(isExpanded)) },
         content = { Text(stringResource(CoreRes.string.common_settings)) },
     )
     if (viewState.waterLevelAlarm) {

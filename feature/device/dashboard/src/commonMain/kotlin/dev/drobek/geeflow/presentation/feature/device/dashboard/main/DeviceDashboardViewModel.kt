@@ -30,6 +30,7 @@ import dev.drobek.geeflow.navigation.destination.DeviceDashboard
 import dev.drobek.geeflow.navigation.destination.DeviceList
 import dev.drobek.geeflow.navigation.destination.DeviceSettings
 import dev.drobek.geeflow.navigation.destination.DeviceSettings.EntryPoint
+import dev.drobek.geeflow.navigation.destination.UserSettings
 import dev.drobek.geeflow.platform.permissions.DeniedException
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothConnect
 import dev.drobek.geeflow.platform.permissions.PermissionBluetoothScan
@@ -84,7 +85,7 @@ internal class DeviceDashboardViewModel(
             navigate(To(QuickSettings(args.deviceId)))
         }
 
-        is DeviceDashboardEvent.UserClicked -> Unit
+        is DeviceDashboardEvent.UserClicked -> navigate(To(UserSettings))
         is DeviceDashboardEvent.ConnectedDevicesClicked -> withDeviceConnected {
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
         }

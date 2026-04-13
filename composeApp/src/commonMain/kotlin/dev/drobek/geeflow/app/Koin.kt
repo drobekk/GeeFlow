@@ -13,6 +13,8 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.FeatureDeviceDas
 import dev.drobek.geeflow.presentation.feature.device.list.FeatureDeviceListModule
 import dev.drobek.geeflow.presentation.feature.device.settings.FeatureDeviceSettingsModule
 import dev.drobek.geeflow.presentation.feature.intro.FeatureIntroModule
+import dev.drobek.geeflow.presentation.feature.user.list.FeatureUserListModule
+import dev.drobek.geeflow.presentation.feature.user.settings.FeatureUserSettingsModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -41,6 +43,8 @@ class GeeFlowApp
         FeatureDeviceDashboardModule::class,
         FeatureDeviceSettingsModule::class,
         FeatureIntroModule::class,
+        FeatureUserSettingsModule::class,
+        FeatureUserListModule::class,
     ],
 )
 @Configuration

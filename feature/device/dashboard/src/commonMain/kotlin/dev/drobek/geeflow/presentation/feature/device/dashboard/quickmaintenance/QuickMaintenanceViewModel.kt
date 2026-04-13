@@ -63,9 +63,9 @@ internal class QuickMaintenanceViewModel(
         }
 
         CloseClicked -> navigate(Back)
-        MoreSettingsClicked -> {
+        is MoreSettingsClicked -> {
             navigate(Back)
-            navigate(To(DeviceSettings(arguments.deviceId, EntryPoint.Maintenance)))
+            navigate(To(DeviceSettings(arguments.deviceId, if (event.isExpanded) EntryPoint.Maintenance else null)))
         }
     }
 }

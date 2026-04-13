@@ -1,0 +1,18 @@
+<resources>
+    <!-- User Settings -->
+    <string name="user_settings_subtitle">Manage your profile and preferences</string>
+    <string name="user_settings_placeholder">Select an item to view details</string>
+    <string name="user_settings_change">Change</string>
+
+    <!-- Items -->
+    <string name="user_settings_profile">Profile</string>
+    <string name="user_settings_profile_description">Name, photo and account</string>
+    <string name="user_settings_brewing_preferences">Brewing Preferences</string>
+    <string name="user_settings_brewing_preferences_description">Units, auto-connect and profiles</string>
+    <string name="user_settings_appearance">Appearance &amp; Display</string>
+    <string name="user_settings_appearance_description">Theme, language and screen</string>
+    <string name="user_settings_support">Support &amp; Community</string>
+    <string name="user_settings_support_description">Feedback, rating and donations</string>
+    <string name="user_settings_about">About</string>
+    <string name="user_settings_about_description">Licenses, privacy policy and version</string>
+</resources>
