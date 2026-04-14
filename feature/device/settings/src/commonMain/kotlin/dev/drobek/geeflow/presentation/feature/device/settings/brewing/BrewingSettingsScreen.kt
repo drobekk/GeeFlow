@@ -43,11 +43,11 @@ import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSe
 import dev.drobek.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewState.Boiler
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
-import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowSwitch
+import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
@@ -245,7 +245,7 @@ private fun BoilerSection(
         )
     }
     VerticalSpacer(24.dp)
-    SettingsToggleRow(
+    GeeFlowToggleListItem(
         title = stringResource(Res.string.device_settings_brewing_pulse_heating),
         subtitle = stringResource(Res.string.device_settings_brewing_pulse_heating_description),
         checked = viewState.pulseHeatingEnabled,

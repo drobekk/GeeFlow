@@ -9,7 +9,23 @@ expect fun getThemeProvider(): ThemeProvider
 @Composable
 expect fun calculateWindowSizeClass(): WindowSizeClass
 
+@Composable
+expect fun KeepScreenOnEffect(enabled: Boolean)
+
+@Composable
+expect fun FullScreenEffect(enabled: Boolean)
+
+@Composable
+expect fun ThemeModeEffect(darkTheme: Boolean)
+
+@Composable
+expect fun rememberLanguageSettingsLauncher(): (() -> Unit)?
+
+expect val isFullScreenSupported: Boolean
+
+expect val isKeepScreenOnSupported: Boolean
+
 interface ThemeProvider {
     @Composable
-    fun getSystemColorScheme(): ColorScheme? = null
+    fun getSystemColorScheme(darkTheme: Boolean): ColorScheme? = null
 }

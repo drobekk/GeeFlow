@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val GeeFlowIcon.AppLogo: ImageVector
+val GeeFlowIcon.Logo: ImageVector
     get() {
         if (_AppLogo != null) {
             return _AppLogo!!

@@ -23,8 +23,5 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.kermit)
         }
-        jvmMain.dependencies {
-            implementation(libs.compose.material3.adaptive)
-        }
     }
 }

@@ -42,7 +42,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.NavigatorEffect
-import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.CloseClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ScaleConnectionClicked
@@ -50,6 +49,7 @@ import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.Conn
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleConnectionStatus
 import dev.drobek.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleViewItem
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
+import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
@@ -134,7 +134,7 @@ private fun CompactContent(
         verticalArrangement = spacedBy(16.dp),
     ) {
         item {
-            SettingsToggleRow(
+            GeeFlowToggleListItem(
                 title = stringResource(Res.string.device_settings_connectivity_smart_scale),
                 subtitle = stringResource(Res.string.device_settings_connectivity_smart_scale_description),
                 checked = viewState.smartScaleEnabled,

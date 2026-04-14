@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -38,8 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
+import dev.drobek.geeflow.presentation.feature.user.settings.AppearanceSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
+import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsViewState.Item
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowTopBar
@@ -73,11 +75,16 @@ internal fun UserSettingsScreen(
     navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val selectedIndex = when (navigator.getCurrentDestination()) {
+        is AppearanceSettings -> viewState.items.indexOfFirst { it is Item.AppearanceDisplay }
+        else -> null
+    }.takeIf { it != null && it >= 0 }
 
     NavigatorEffect(navigator, viewModel.navEvent)
 
     Content(
         viewState = viewState,
+        selectedIndex = selectedIndex,
         onEvent = viewModel::handleEvent,
     )
 }
@@ -85,10 +92,11 @@ internal fun UserSettingsScreen(
 @Composable
 private fun Content(
     viewState: UserSettingsViewState,
+    selectedIndex: Int? = null,
     onEvent: (UserSettingsEvent) -> Unit = {},
 ) {
     if (isWidthExpanded()) {
-        ExpandedContent(viewState = viewState, onEvent = onEvent)
+        ExpandedContent(viewState = viewState, selectedIndex = selectedIndex, onEvent = onEvent)
     } else {
         CompactContent(viewState = viewState, onEvent = onEvent)
     }
@@ -98,6 +106,7 @@ private fun Content(
 @Composable
 private fun ExpandedContent(
     viewState: UserSettingsViewState,
+    selectedIndex: Int?,
     onEvent: (UserSettingsEvent) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -123,10 +132,21 @@ private fun ExpandedContent(
                     .scrollFade(listState = listState, color = MaterialTheme.colorScheme.surfaceContainer),
                 contentPadding = WindowInsets.navigationBars.asPaddingValues(),
             ) {
-                items(viewState.items) { item ->
+                itemsIndexed(viewState.items) { index, item ->
+                    val selected = index == selectedIndex
                     SettingsItem(
                         item = item,
                         onEvent = onEvent,
+                        backgroundColor = if (selected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.background
+                        },
+                        contentColor = if (selected) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                         modifier = Modifier
                             .padding(
                                 horizontal = compactSpacing().contentHorizontal,
@@ -135,6 +155,7 @@ private fun ExpandedContent(
                             .clip(MaterialTheme.shapes.large),
                     )
                 }
+                item { Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) }
             }
         }
         WaveDivider(
@@ -168,7 +189,7 @@ private fun CompactContent(
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                items(viewState.items) { item ->
+                itemsIndexed(viewState.items) { _, item ->
                     SettingsItem(
                         item = item,
                         onEvent = onEvent,
@@ -195,7 +216,7 @@ private fun SettingsItem(
         modifier = modifier
             .background(backgroundColor)
             .fillMaxWidth()
-            .clickable(onClick = {})
+            .clickable(onClick = { onEvent(ItemClicked(item)) })
             .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -249,7 +270,7 @@ private fun previewViewState() = UserSettingsViewState(
 @Composable
 @GeeFlowScreenPreview
 private fun PreviewLight() = GeeFlowTheme(false) {
-    Content(previewViewState())
+    Content(previewViewState(), selectedIndex = 2)
 }
 
 @Composable

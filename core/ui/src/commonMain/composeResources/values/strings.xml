@@ -26,6 +26,7 @@
     <string name="common_pressure">Pressure</string>
     <string name="common_time">Time</string>
     <string name="common_settings_applied">Settings applied</string>
+    <string name="common_cancel">Cancel</string>
     <string name="common_connect">Connect</string>
     <string name="common_disconnect">Disconnect</string>
     <string name="common_user_name">User name</string>

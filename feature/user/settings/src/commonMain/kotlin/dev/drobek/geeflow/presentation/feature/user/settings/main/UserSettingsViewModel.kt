@@ -5,8 +5,10 @@ import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import dev.drobek.geeflow.navigation.destination.UserList
 import dev.drobek.geeflow.navigation.destination.UserSettings
+import dev.drobek.geeflow.presentation.feature.user.settings.AppearanceSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
+import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ItemClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsViewState.Item
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_about
@@ -39,6 +41,10 @@ internal class UserSettingsViewModel(
     fun handleEvent(event: UserSettingsEvent) = when (event) {
         BackClicked -> popTo(UserSettings, inclusive = true)
         ChangeUserClicked -> navigateTo(UserList)
+        is ItemClicked -> when (event.item) {
+            is Item.AppearanceDisplay -> navigateTo(AppearanceSettings)
+            else -> Unit
+        }
     }
 
     private fun buildItems() = launch {

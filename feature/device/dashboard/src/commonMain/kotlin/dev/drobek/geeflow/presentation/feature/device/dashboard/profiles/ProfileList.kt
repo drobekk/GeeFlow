@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType.Companion.LongPress
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
@@ -128,6 +129,7 @@ private fun ProfileListContent(
         lazyListState = lazyListState,
         onMove = { from, to ->
             onEvent(ProfileListEvent.Reordered(from.index, to.index))
+            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
         },
     )
 
@@ -156,8 +158,8 @@ private fun ProfileListContent(
                         modifier = Modifier
                             .animateItem()
                             .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .draggableHandle(
-                                !profile.bound,
+                            .longPressDraggableHandle(
+                                enabled = !profile.bound,
                                 onDragStarted = { haptic.performHapticFeedback(LongPress) },
                             ),
                     )

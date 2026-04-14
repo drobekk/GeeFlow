@@ -33,8 +33,8 @@ import dev.drobek.geeflow.ui.components.GeeFlowIconButton
 import dev.drobek.geeflow.ui.components.GeeFlowOutlinedTextField
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.VerticalSpacer
-import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
+import dev.drobek.geeflow.ui.icons.Logo
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
@@ -94,7 +94,7 @@ private fun Logo(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            painter = rememberVectorPainter(GeeFlowIcon.AppLogo),
+            painter = rememberVectorPainter(GeeFlowIcon.Logo),
             modifier = Modifier.size(140.dp),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,

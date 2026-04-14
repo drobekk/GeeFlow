@@ -32,7 +32,6 @@ import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
 import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
-import dev.drobek.geeflow.presentation.feature.device.settings.components.SettingsToggleRow
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningCountChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningRestChanged
 import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningTimeChanged
@@ -42,6 +41,7 @@ import dev.drobek.geeflow.presentation.feature.device.settings.maintenance.Maint
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.GeeFlowInfinitePicker
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
+import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
@@ -289,7 +289,7 @@ private fun WaterAlarmSection(
         modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(24.dp)
-    SettingsToggleRow(
+    GeeFlowToggleListItem(
         title = stringResource(resource = Res.string.device_settings_maintenance_water_alarm),
         subtitle = stringResource(Res.string.device_settings_maintenance_water_alarm_description),
         checked = waterAlarm,

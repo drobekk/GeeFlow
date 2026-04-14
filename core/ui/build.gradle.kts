@@ -14,5 +14,8 @@ kotlin {
             implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.uiToolingPreview)
         }
+        androidMain.dependencies {
+            implementation(libs.androidx.appcompat)
+        }
     }
 }

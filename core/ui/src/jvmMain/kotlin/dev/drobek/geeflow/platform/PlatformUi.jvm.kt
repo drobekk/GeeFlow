@@ -8,3 +8,19 @@ actual fun getThemeProvider() = object : ThemeProvider {}
 
 @Composable
 actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfo(true).windowSizeClass
+
+@Composable
+actual fun KeepScreenOnEffect(enabled: Boolean) = Unit
+
+@Composable
+actual fun FullScreenEffect(enabled: Boolean) = Unit
+
+@Composable
+actual fun ThemeModeEffect(darkTheme: Boolean) = Unit
+
+@Composable
+actual fun rememberLanguageSettingsLauncher(): (() -> Unit)? = null
+
+actual val isFullScreenSupported: Boolean = false
+
+actual val isKeepScreenOnSupported: Boolean = false

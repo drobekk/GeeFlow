@@ -1,4 +1,4 @@
-package dev.drobek.geeflow.presentation.feature.device.settings.components
+package dev.drobek.geeflow.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,18 +7,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.components.GeeFlowSwitch
-import dev.drobek.geeflow.ui.components.HorizontalSpacer
-import dev.drobek.geeflow.ui.components.VerticalSpacer
+import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 
 @Composable
-internal fun SettingsToggleRow(
+fun GeeFlowListItem(
     title: String,
     subtitle: String,
-    checked: Boolean,
-    onCheckedChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
@@ -34,11 +32,30 @@ internal fun SettingsToggleRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        HorizontalSpacer(16.dp)
-        GeeFlowSwitch(
-            checked = checked,
-            onCheckedChange = onCheckedChanged,
-            enabled = true,
-        )
+        if (trailingContent != null) {
+            HorizontalSpacer(16.dp)
+            trailingContent()
+        }
     }
+}
+
+@Composable
+@Preview
+private fun PreviewLight() = GeeFlowTheme(false) {
+    GeeFlowListItem(
+        title = "List Item Title",
+        subtitle = "List Item Subtitle",
+        trailingContent = {
+            Text("Trailing")
+        },
+    )
+}
+
+@Composable
+@Preview
+private fun PreviewDark() = GeeFlowTheme(true) {
+    GeeFlowListItem(
+        title = "List Item Title",
+        subtitle = "List Item Subtitle",
+    )
 }

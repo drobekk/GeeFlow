@@ -3,10 +3,13 @@ package dev.drobek.geeflow.app
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -17,7 +20,13 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.drobek.geeflow.app.navigation.AppNavigator
 import dev.drobek.geeflow.app.navigation.GetInitialDestinationUseCase
+import dev.drobek.geeflow.data.user.model.AppTheme
+import dev.drobek.geeflow.data.user.model.DarkMode
+import dev.drobek.geeflow.domain.user.model.AppearanceSettings
+import dev.drobek.geeflow.domain.user.usecase.GetAppearanceSettingsUseCase
 import dev.drobek.geeflow.navigation.NavFeature
+import dev.drobek.geeflow.platform.FullScreenEffect
+import dev.drobek.geeflow.platform.KeepScreenOnEffect
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import kotlinx.serialization.modules.plus
 import org.koin.compose.KoinApplication
@@ -28,7 +37,19 @@ import org.koin.plugin.module.dsl.koinConfiguration
 @Composable
 fun App(closeApp: () -> Unit) {
     KoinApplication(koinConfiguration<GeeFlowApp>()) {
-        GeeFlowTheme {
+        val getAppearanceSettings = koinInject<GetAppearanceSettingsUseCase>()
+        val appearance by getAppearanceSettings().collectAsStateWithLifecycle(AppearanceSettings())
+        val darkTheme = when (appearance.darkMode) {
+            DarkMode.SYSTEM -> isSystemInDarkTheme()
+            DarkMode.LIGHT -> false
+            DarkMode.DARK -> true
+        }
+        GeeFlowTheme(
+            darkTheme = darkTheme,
+            useSystemTheme = appearance.appTheme == AppTheme.SYSTEM,
+        ) {
+            KeepScreenOnEffect(appearance.keepScreenOn)
+            FullScreenEffect(appearance.fullScreenMode)
             RootNavigation(closeApp)
         }
     }

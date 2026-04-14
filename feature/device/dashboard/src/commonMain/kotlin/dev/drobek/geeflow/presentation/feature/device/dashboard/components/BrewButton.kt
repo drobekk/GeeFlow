@@ -47,9 +47,9 @@ import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.components.GeeFlowLogoShape
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.WaveDivider
-import dev.drobek.geeflow.ui.icons.AppLogo
 import dev.drobek.geeflow.ui.icons.FlowControl
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
+import dev.drobek.geeflow.ui.icons.Logo
 import dev.drobek.geeflow.ui.icons.Manual
 import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
@@ -138,7 +138,7 @@ fun BrewButton(
                     modifier = Modifier.size(72.dp),
                 ) {
                     Icon(
-                        painter = rememberVectorPainter(GeeFlowIcon.AppLogo),
+                        painter = rememberVectorPainter(GeeFlowIcon.Logo),
                         contentDescription = null,
                         modifier = Modifier.size(48.dp).padding(top = 5.dp),
                         tint = MaterialTheme.colorScheme.onPrimary,

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import dev.drobek.geeflow.platform.ThemeModeEffect
 import dev.drobek.geeflow.platform.getThemeProvider
 import dev.drobek.geeflow.ui.isWidthExpanded
 
@@ -17,8 +18,9 @@ fun GeeFlowTheme(
     useSystemTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    ThemeModeEffect(darkTheme = darkTheme)
     val systemThemeProvider = remember { getThemeProvider() }
-    val systemTheme = systemThemeProvider.getSystemColorScheme()
+    val systemTheme = systemThemeProvider.getSystemColorScheme(darkTheme)
     val spacing = if (isWidthExpanded()) expandedSpacing() else compactSpacing()
     val colorScheme = when {
         useSystemTheme && systemTheme != null && !isPreview -> systemTheme

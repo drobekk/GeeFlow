@@ -52,7 +52,6 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation(libs.compose.material3.adaptive)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
@@ -65,6 +64,7 @@ dependencies {
 }
 
 koinCompiler {
+    compileSafety = false
     userLogs = true
     debugLogs = false
 }
