@@ -64,8 +64,6 @@ import geeflow.feature.user.settings.generated.resources.user_settings_change
 import geeflow.feature.user.settings.generated.resources.user_settings_profile
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_description
 import geeflow.feature.user.settings.generated.resources.user_settings_subtitle
-import geeflow.feature.user.settings.generated.resources.user_settings_support
-import geeflow.feature.user.settings.generated.resources.user_settings_support_description
 import org.jetbrains.compose.resources.stringResource
 import geeflow.core.ui.generated.resources.Res as CoreRes
 
@@ -255,10 +253,6 @@ private fun previewViewState() = UserSettingsViewState(
         Item.AppearanceDisplay(
             stringResource(Res.string.user_settings_appearance),
             stringResource(Res.string.user_settings_appearance_description),
-        ),
-        Item.SupportCommunity(
-            stringResource(Res.string.user_settings_support),
-            stringResource(Res.string.user_settings_support_description),
         ),
         Item.About(
             stringResource(Res.string.user_settings_about),

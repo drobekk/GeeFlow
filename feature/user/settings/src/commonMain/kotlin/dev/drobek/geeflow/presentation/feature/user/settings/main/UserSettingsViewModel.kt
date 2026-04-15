@@ -5,6 +5,7 @@ import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import dev.drobek.geeflow.navigation.destination.UserList
 import dev.drobek.geeflow.navigation.destination.UserSettings
+import dev.drobek.geeflow.presentation.feature.user.settings.AboutSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.AppearanceSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
@@ -19,8 +20,6 @@ import geeflow.feature.user.settings.generated.resources.user_settings_brewing_p
 import geeflow.feature.user.settings.generated.resources.user_settings_brewing_preferences_description
 import geeflow.feature.user.settings.generated.resources.user_settings_profile
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_description
-import geeflow.feature.user.settings.generated.resources.user_settings_support
-import geeflow.feature.user.settings.generated.resources.user_settings_support_description
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.KoinViewModel
 
@@ -43,6 +42,7 @@ internal class UserSettingsViewModel(
         ChangeUserClicked -> navigateTo(UserList)
         is ItemClicked -> when (event.item) {
             is Item.AppearanceDisplay -> navigateTo(AppearanceSettings)
+            is Item.About -> navigateTo(AboutSettings)
             else -> Unit
         }
     }
@@ -60,10 +60,6 @@ internal class UserSettingsViewModel(
             Item.AppearanceDisplay(
                 name = getString(Res.string.user_settings_appearance),
                 description = getString(Res.string.user_settings_appearance_description),
-            ),
-            Item.SupportCommunity(
-                name = getString(Res.string.user_settings_support),
-                description = getString(Res.string.user_settings_support_description),
             ),
             Item.About(
                 name = getString(Res.string.user_settings_about),

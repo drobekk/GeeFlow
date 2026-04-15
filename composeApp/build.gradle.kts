@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.aboutLibraries)
 }
 
 kotlin {
@@ -67,6 +68,23 @@ koinCompiler {
     compileSafety = false
     userLogs = true
     debugLogs = false
+}
+
+aboutLibraries {
+    export {
+        outputPath = file("src/commonMain/composeResources/files/aboutlibraries.json")
+        prettyPrint = true
+    }
+    library {
+        duplicationMode = com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
+    }
+}
+
+tasks.configureEach {
+    if (name.contains("generateComposeResClass", ignoreCase = true) ||
+        name.contains("copyNonXmlValueResources", ignoreCase = true)) {
+        dependsOn("exportLibraryDefinitions")
+    }
 }
 
 compose.desktop {

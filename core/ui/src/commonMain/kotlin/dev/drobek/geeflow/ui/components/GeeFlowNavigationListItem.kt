@@ -1,18 +1,22 @@
 package dev.drobek.geeflow.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.disabled
 
 @Composable
-fun GeeFlowToggleListItem(
+fun GeeFlowNavigationListItem(
     title: String,
     subtitle: String,
-    checked: Boolean,
-    onCheckedChanged: (Boolean) -> Unit,
+    enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
         vertical = 16.dp,
@@ -25,10 +29,11 @@ fun GeeFlowToggleListItem(
         modifier = modifier,
         contentPadding = contentPadding,
         trailingContent = {
-            GeeFlowSwitch(
-                checked = checked,
-                onCheckedChange = onCheckedChanged,
-                enabled = true,
+            val tint = if (enabled) LocalContentColor.current else LocalContentColor.current.disabled()
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = tint,
             )
         },
     )
@@ -37,21 +42,17 @@ fun GeeFlowToggleListItem(
 @Composable
 @Preview
 private fun PreviewLight() = GeeFlowTheme(false) {
-    GeeFlowToggleListItem(
-        title = "Toggle List Item",
-        subtitle = "Subtitle describing the toggle option.",
-        checked = true,
-        onCheckedChanged = {},
+    GeeFlowNavigationListItem(
+        title = "Navigation List Item",
+        subtitle = "Subtitle describing the navigation option.",
     )
 }
 
 @Composable
 @Preview
 private fun PreviewDark() = GeeFlowTheme(true) {
-    GeeFlowToggleListItem(
-        title = "Toggle List Item",
-        subtitle = "Subtitle describing the toggle option.",
-        checked = false,
-        onCheckedChanged = {},
+    GeeFlowNavigationListItem(
+        title = "Navigation List Item",
+        subtitle = "Subtitle describing the navigation option.",
     )
 }

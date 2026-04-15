@@ -1,8 +1,10 @@
 [versions]
-agp = "9.0.1"
-android-compileSdk = "36"
+agp = "9.1.1"
+android-compileSdk = "37"
 android-minSdk = "26"
-android-targetSdk = "36"
+android-targetSdk = "37"
+app-version = "1.0.0"
+app-version-code = "1"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.18.0"
@@ -11,11 +13,11 @@ androidx-lifecycle = "2.10.0"
 androidx-testExt = "1.3.0"
 blueFalcon = "2.5.4"
 composeHotReload = "1.0.0"
-composeMultiplatform = "1.11.0-alpha04"
+composeMultiplatform = "1.11.0-beta02"
 junit = "4.13.2"
 kermit = "2.1.0"
-koin = "4.2.0"
-koin-plugin = "0.4.1"
+koin = "4.2.1"
+koin-plugin = "0.6.2"
 kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.2"
 material3 = "1.10.0-alpha05"
@@ -27,14 +29,20 @@ compose-multiplatform-adaptive = "1.3.0-alpha06"
 compose-multiplatform-lifecycle = "2.10.0"
 sqldelight = "2.3.2"
 qrCodeScanner = "0.7.1"
-kotlinx-serialization = "1.10.0"
+kotlinx-serialization = "1.11.0"
 moko = "0.20.1"
-vico = "3.0.3"
+vico = "3.1.0"
 datastore = "1.2.1"
 reorderable = "3.0.0"
 detekt = "2.0.0-alpha.2"
+aboutLibraries = "14.0.1"
+buildKonfig = "0.18.0"
 
 [libraries]
+aboutLibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
+aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutLibraries-gradlePlugin = { module = "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin", version.ref = "aboutLibraries" }
+buildKonfig-gradlePlugin = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "buildKonfig" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
@@ -118,3 +126,5 @@ kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
+buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }

@@ -11,7 +11,6 @@ data class UserSettingsViewState(
         data class Profile(override val name: String, override val description: String) : Item
         data class BrewingPreferences(override val name: String, override val description: String) : Item
         data class AppearanceDisplay(override val name: String, override val description: String) : Item
-        data class SupportCommunity(override val name: String, override val description: String) : Item
         data class About(override val name: String, override val description: String) : Item
     }
 }

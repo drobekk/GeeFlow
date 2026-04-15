@@ -8,6 +8,9 @@ import androidx.navigation3.runtime.NavKey
 import dev.drobek.geeflow.navigation.NavFeature
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.destination.UserSettings
+import dev.drobek.geeflow.presentation.feature.user.settings.about.AboutScreen
+import dev.drobek.geeflow.presentation.feature.user.settings.about.AboutViewModel
+import dev.drobek.geeflow.presentation.feature.user.settings.about.licenses.LicensesListScreen
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsScreen
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsViewModel
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsDetailsPlaceholder
@@ -21,6 +24,12 @@ import org.koin.core.annotation.Single
 
 @Serializable
 internal object AppearanceSettings : NavKey
+
+@Serializable
+internal object AboutSettings : NavKey
+
+@Serializable
+internal object LicensesList : NavKey
 
 @Single
 internal class UserSettingsNavFeature : NavFeature {
@@ -36,12 +45,23 @@ internal class UserSettingsNavFeature : NavFeature {
             val viewModel = koinViewModel<AppearanceSettingsViewModel>()
             AppearanceSettingsScreen(viewModel, navigator)
         }
+
+        entry<AboutSettings>(metadata = detailPane()) {
+            val viewModel = koinViewModel<AboutViewModel>()
+            AboutScreen(viewModel, navigator)
+        }
+
+        entry<LicensesList>(metadata = detailPane()) {
+            LicensesListScreen(navigator)
+        }
     }
 
     override val serializerModule: SerializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(UserSettings::class, UserSettings.serializer())
             subclass(AppearanceSettings::class, AppearanceSettings.serializer())
+            subclass(AboutSettings::class, AboutSettings.serializer())
+            subclass(LicensesList::class, LicensesList.serializer())
         }
     }
 }

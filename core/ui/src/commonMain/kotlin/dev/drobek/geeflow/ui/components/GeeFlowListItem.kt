@@ -1,7 +1,9 @@
 package dev.drobek.geeflow.ui.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,9 +18,13 @@ fun GeeFlowListItem(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(
+        horizontal = GeeFlowTheme.spacing.contentHorizontal,
+        vertical = 16.dp,
+    ),
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.padding(contentPadding), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,

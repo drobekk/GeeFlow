@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.data.user.model.AppTheme
 import dev.drobek.geeflow.navigation.Navigator
@@ -30,7 +28,7 @@ import dev.drobek.geeflow.presentation.feature.user.settings.appearance.Appearan
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.FullScreenChanged
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnChanged
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.components.AppearanceDialogs
-import dev.drobek.geeflow.ui.components.GeeFlowListItem
+import dev.drobek.geeflow.ui.components.GeeFlowNavigationListItem
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.isWidthExpanded
@@ -39,6 +37,7 @@ import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode
+import geeflow.feature.user.settings.generated.resources.user_settings_appearance_description
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_full_screen
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_full_screen_description
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_keep_screen_on
@@ -108,7 +107,7 @@ private fun CompactContent(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowScaffold(
         title = stringResource(Res.string.user_settings_appearance_title),
-        subtitle = null,
+        subtitle = stringResource(Res.string.user_settings_appearance_description),
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -157,52 +156,45 @@ private fun AppearanceContent(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        GeeFlowListItem(
+        GeeFlowNavigationListItem(
             title = stringResource(Res.string.user_settings_appearance_dark_mode),
             subtitle = stringResource(viewState.darkMode.titleRes),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onEvent(DarkModeClicked) }
-                .padding(vertical = 16.dp, horizontal = GeeFlowTheme.spacing.contentHorizontal),
+                .clickable { onEvent(DarkModeClicked) },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
-        GeeFlowListItem(
+        GeeFlowNavigationListItem(
             title = stringResource(Res.string.user_settings_appearance_app_theme),
             subtitle = stringResource(viewState.appTheme.titleRes),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onEvent(AppThemeClicked) }
-                .padding(vertical = 16.dp, horizontal = GeeFlowTheme.spacing.contentHorizontal),
+                .clickable { onEvent(AppThemeClicked) },
         )
         if (isLanguageSupported) {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
-            GeeFlowListItem(
+            GeeFlowNavigationListItem(
                 title = stringResource(Res.string.user_settings_appearance_language),
                 subtitle = stringResource(Res.string.user_settings_appearance_language_description),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onLanguageClicked)
-                    .padding(vertical = 16.dp, horizontal = GeeFlowTheme.spacing.contentHorizontal),
+                    .clickable(onClick = onLanguageClicked),
             )
         }
         if (isFullScreenSupported) {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
             GeeFlowToggleListItem(
                 title = stringResource(Res.string.user_settings_appearance_full_screen),
                 subtitle = stringResource(Res.string.user_settings_appearance_full_screen_description),
                 checked = viewState.fullScreenMode,
                 onCheckedChanged = { onEvent(FullScreenChanged(it)) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = GeeFlowTheme.spacing.contentHorizontal),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         if (isKeepScreenOnSupported) {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
             GeeFlowToggleListItem(
                 title = stringResource(Res.string.user_settings_appearance_keep_screen_on),
                 subtitle = stringResource(Res.string.user_settings_appearance_keep_screen_on_description),
                 checked = viewState.keepScreenOn,
                 onCheckedChanged = { onEvent(KeepScreenOnChanged(it)) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = GeeFlowTheme.spacing.contentHorizontal),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
