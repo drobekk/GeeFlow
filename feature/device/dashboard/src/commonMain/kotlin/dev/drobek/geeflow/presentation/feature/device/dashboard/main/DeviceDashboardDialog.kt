@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import dev.drobek.geeflow.ui.components.GeeFlowDialog
 import dev.drobek.geeflow.ui.components.VerticalSpacer
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_open_settings
 import geeflow.core.ui.generated.resources.permission_bluetooth_missing
 import org.jetbrains.compose.resources.stringResource
@@ -57,7 +57,7 @@ private fun BluetoothPermissionMissingDialog(onEvent: (DeviceDashboardEvent) -> 
 
 @Composable
 @Preview
-private fun Preview() = GeeFlowTheme {
+private fun Preview() = GeeFlowThemePreview(false) {
     DeviceDashboardDialog(
         model = DeviceDashboardViewState.Dialog.BluetoothPermissionMissing,
         onEvent = {},

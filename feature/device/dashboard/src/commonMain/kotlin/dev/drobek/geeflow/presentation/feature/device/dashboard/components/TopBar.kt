@@ -71,7 +71,7 @@ import dev.drobek.geeflow.ui.icons.Pressure
 import dev.drobek.geeflow.ui.icons.Steam
 import dev.drobek.geeflow.ui.icons.Temperature
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_settings
 import geeflow.feature.device.dashboard.generated.resources.Res
 import geeflow.feature.device.dashboard.generated.resources.device_dashboard_alarm
@@ -398,7 +398,7 @@ private const val WarningAnimationMs = 500
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     var alarmOn by remember { mutableStateOf(false) }
     TopBar(
         device = Device(
@@ -419,7 +419,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     TopBar(
         device = Device(
             name = "Wendougee Data-S",

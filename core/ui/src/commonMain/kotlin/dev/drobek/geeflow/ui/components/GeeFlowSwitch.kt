@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_off
 import geeflow.core.ui.generated.resources.common_on
@@ -99,7 +99,7 @@ private const val DisabledAlpha = 0.38f
 
 @Composable
 @Preview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     Row(Modifier.width(200.dp)) {
         GeeFlowSwitch(checked = false, onCheckedChange = {}, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(16.dp))
@@ -109,7 +109,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     Row(Modifier.width(200.dp)) {
         GeeFlowSwitch(checked = false, onCheckedChange = {}, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(16.dp))

@@ -51,7 +51,7 @@ internal class UserSettingsNavFeature : NavFeature {
             AboutScreen(viewModel, navigator)
         }
 
-        entry<LicensesList>(metadata = detailPane()) {
+        entry<LicensesList> {
             LicensesListScreen(navigator)
         }
     }

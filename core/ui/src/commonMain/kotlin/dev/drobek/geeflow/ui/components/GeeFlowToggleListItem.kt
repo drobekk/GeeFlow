@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 
 @Composable
 fun GeeFlowToggleListItem(
@@ -36,7 +37,7 @@ fun GeeFlowToggleListItem(
 
 @Composable
 @Preview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     GeeFlowToggleListItem(
         title = "Toggle List Item",
         subtitle = "Subtitle describing the toggle option.",
@@ -47,7 +48,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     GeeFlowToggleListItem(
         title = "Toggle List Item",
         subtitle = "Subtitle describing the toggle option.",

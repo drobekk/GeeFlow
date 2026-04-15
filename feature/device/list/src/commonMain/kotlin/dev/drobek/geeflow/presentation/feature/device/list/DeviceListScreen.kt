@@ -61,6 +61,7 @@ import dev.drobek.geeflow.presentation.feature.device.list.DeviceListEvent.Devic
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_favourite
 import geeflow.core.ui.generated.resources.common_more
 import geeflow.core.ui.generated.resources.common_remove
@@ -278,7 +279,7 @@ private fun ListEmptyItem(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     DevicesListContent(
         DeviceListViewState(
             devices = listOf(
@@ -301,6 +302,6 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     DevicesListContent(DeviceListViewState())
 }

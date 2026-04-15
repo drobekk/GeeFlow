@@ -52,7 +52,7 @@ import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.disabled
 import kotlinx.coroutines.launch
 
@@ -349,7 +349,7 @@ private enum class CompactDashboardPage {
 private fun DeviceDashboardPreview(isDark: Boolean) {
     val state = remember { mutableStateOf(getMockDeviceDashboardViewState()) }
     val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
-    GeeFlowTheme(isDark) {
+    GeeFlowThemePreview(isDark) {
         DeviceDashboardContent(
             viewState = state.value,
             profileListViewState = getMockProfileListViewState(),

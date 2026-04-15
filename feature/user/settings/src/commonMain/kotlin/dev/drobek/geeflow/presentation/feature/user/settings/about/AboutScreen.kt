@@ -28,6 +28,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_about_description
 import geeflow.feature.user.settings.generated.resources.user_settings_about_licenses
@@ -148,12 +149,12 @@ private fun AboutContent(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     Content()
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     Content()
 }

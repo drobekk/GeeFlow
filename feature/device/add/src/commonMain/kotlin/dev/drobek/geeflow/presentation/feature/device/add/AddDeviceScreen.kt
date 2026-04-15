@@ -59,6 +59,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.isPreview
 import geeflow.core.ui.generated.resources.common_open_settings
 import geeflow.core.ui.generated.resources.permission_bluetooth_missing
@@ -380,7 +381,7 @@ private fun AddDemoDeviceButton(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     AddDeviceContent(
         viewState = AddDeviceViewState(
             method = NearbyDevices(
@@ -393,7 +394,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     AddDeviceContent(
         viewState = AddDeviceViewState(
             method = QrCodeScanner(),

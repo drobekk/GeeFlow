@@ -96,10 +96,7 @@ internal class MaintenanceSettingsViewModel(
         is CleaningCountChanged -> modify { copy(cleaning = cleaning.copy(count = event.count)).withApplyVisible() }
         is WaterAlarmToggled -> modify { copy(waterAlarm = event.enabled).withApplyVisible() }
         is ApplyClicked -> saveSettings()
-        is CloseClicked -> {
-            popTo(arguments, true)
-            navigate(NavEvent.Back)
-        }
+        is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun saveSettings() {

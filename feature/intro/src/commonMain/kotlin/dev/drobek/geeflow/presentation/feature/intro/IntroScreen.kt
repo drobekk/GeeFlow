@@ -38,7 +38,7 @@ import dev.drobek.geeflow.ui.icons.Logo
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.app_name
 import geeflow.core.ui.generated.resources.common_confirm
 import geeflow.core.ui.generated.resources.common_user_name
@@ -155,12 +155,12 @@ private fun Form(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     IntroScreenContent()
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     IntroScreenContent()
 }

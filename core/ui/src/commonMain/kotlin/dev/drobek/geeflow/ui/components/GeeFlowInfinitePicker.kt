@@ -43,7 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import kotlinx.coroutines.launch
 
 @Composable
@@ -278,7 +278,7 @@ private const val VisibleItemsCount = 3
 
 @Composable
 @Preview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     Box(Modifier.padding(16.dp)) {
         GeeFlowInfinitePicker(
             items = (100..126).map { it.toString() },
@@ -292,7 +292,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     Box(Modifier.padding(16.dp)) {
         GeeFlowInfinitePicker(
             items = (100..126).map { it.toString() },

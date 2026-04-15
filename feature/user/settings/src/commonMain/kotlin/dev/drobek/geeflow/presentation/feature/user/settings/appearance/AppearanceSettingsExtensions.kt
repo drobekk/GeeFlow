@@ -4,6 +4,7 @@ import dev.drobek.geeflow.data.user.model.AppTheme
 import dev.drobek.geeflow.data.user.model.DarkMode
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme_espresso
+import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme_mono
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme_system
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode_dark
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode_light
@@ -20,5 +21,6 @@ internal val DarkMode.titleRes: StringResource
 internal val AppTheme.titleRes: StringResource
     get() = when (this) {
         AppTheme.ESPRESSO -> Res.string.user_settings_appearance_app_theme_espresso
+        AppTheme.MONO -> Res.string.user_settings_appearance_app_theme_mono
         AppTheme.SYSTEM -> Res.string.user_settings_appearance_app_theme_system
     }

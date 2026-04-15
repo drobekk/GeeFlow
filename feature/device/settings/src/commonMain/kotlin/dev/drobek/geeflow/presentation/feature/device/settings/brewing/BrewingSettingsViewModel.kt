@@ -136,10 +136,7 @@ internal class BrewingSettingsViewModel(
         is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
         is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
         is ApplyClicked -> saveSettings()
-        is CloseClicked -> {
-            popTo(arguments, true)
-            navigate(NavEvent.Back)
-        }
+        is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun saveSettings() = with(viewState.value) {

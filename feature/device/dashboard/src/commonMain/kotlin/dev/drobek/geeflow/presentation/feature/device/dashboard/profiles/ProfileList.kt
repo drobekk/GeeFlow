@@ -74,7 +74,7 @@ import dev.drobek.geeflow.ui.components.SwipeToRevealBoxValue
 import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState
 import dev.drobek.geeflow.ui.modifier.squareSize
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.disabled
 import geeflow.feature.device.dashboard.generated.resources.Res
 import geeflow.feature.device.dashboard.generated.resources.profile_list_bind
@@ -517,7 +517,7 @@ private const val FocusDelayMs = 150L
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     ProfileList(
         viewState = getMockProfileListViewState(),
         onEvent = {},
@@ -527,7 +527,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     ProfileList(
         viewState = getMockProfileListViewState(),
         onEvent = {},

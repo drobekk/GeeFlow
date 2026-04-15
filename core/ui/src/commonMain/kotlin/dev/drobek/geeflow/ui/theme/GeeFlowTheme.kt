@@ -1,33 +1,23 @@
 package dev.drobek.geeflow.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import dev.drobek.geeflow.platform.ThemeModeEffect
-import dev.drobek.geeflow.platform.getThemeProvider
 import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.theme.colorscheme.espressoColorScheme
 
 @Composable
 fun GeeFlowTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    useSystemTheme: Boolean = true,
+    darkMode: Boolean,
+    colorScheme: ColorScheme,
     content: @Composable () -> Unit,
 ) {
-    ThemeModeEffect(darkTheme = darkTheme)
-    val systemThemeProvider = remember { getThemeProvider() }
-    val systemTheme = systemThemeProvider.getSystemColorScheme(darkTheme)
     val spacing = if (isWidthExpanded()) expandedSpacing() else compactSpacing()
-    val colorScheme = when {
-        useSystemTheme && systemTheme != null && !isPreview -> systemTheme
-        darkTheme -> darkScheme
-        else -> lightScheme
-    }
-    val customColors = if (darkTheme) darkCustomColors else lightCustomColors
+    val customColors = if (darkMode) darkCustomColors else lightCustomColors
 
     CompositionLocalProvider(
         LocalSpacing provides spacing,
@@ -39,12 +29,24 @@ fun GeeFlowTheme(
             content = {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = colorScheme.surface,
                     content = content,
                 )
             },
         )
     }
+}
+
+@Composable
+fun GeeFlowThemePreview(
+    darkMode: Boolean,
+    content: @Composable () -> Unit,
+) {
+    GeeFlowTheme(
+        darkMode = darkMode,
+        colorScheme = espressoColorScheme(darkMode),
+        content = content,
+    )
 }
 
 object GeeFlowTheme {

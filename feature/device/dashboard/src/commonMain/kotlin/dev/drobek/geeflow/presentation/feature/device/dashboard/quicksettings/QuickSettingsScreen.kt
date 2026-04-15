@@ -42,7 +42,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_brew_boiler
 import geeflow.core.ui.generated.resources.common_confirm
 import geeflow.core.ui.generated.resources.common_steam_boiler
@@ -222,7 +222,7 @@ private fun Buttons(
 
 @Composable
 @Preview
-private fun QuickSettingsPreviewLight() = GeeFlowTheme(false) {
+private fun QuickSettingsPreviewLight() = GeeFlowThemePreview(false) {
     QuickSettingsContent(
         viewState = QuickSettingsViewState(
             steamBoiler = Boiler(
@@ -242,7 +242,7 @@ private fun QuickSettingsPreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun QuickSettingsPreviewDark() = GeeFlowTheme(true) {
+private fun QuickSettingsPreviewDark() = GeeFlowThemePreview(true) {
     QuickSettingsContent(
         viewState = QuickSettingsViewState(
             steamBoiler = Boiler(

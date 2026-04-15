@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Person
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 
 @Composable
 fun GeeFlowUserAvatar(
@@ -45,12 +45,12 @@ fun GeeFlowUserAvatar(
 
 @Composable
 @Preview(widthDp = 60, heightDp = 60)
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     GeeFlowUserAvatar(modifier = Modifier.requiredSize(56.dp))
 }
 
 @Composable
 @Preview(widthDp = 60, heightDp = 60)
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     GeeFlowUserAvatar(modifier = Modifier.requiredSize(56.dp))
 }

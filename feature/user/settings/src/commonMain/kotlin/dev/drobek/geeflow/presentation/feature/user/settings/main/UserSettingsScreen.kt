@@ -51,6 +51,7 @@ import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.WaveOrientation
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.compactSpacing
 import geeflow.core.ui.generated.resources.common_go_back
 import geeflow.feature.user.settings.generated.resources.Res
@@ -263,12 +264,12 @@ private fun previewViewState() = UserSettingsViewState(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     Content(previewViewState(), selectedIndex = 2)
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     Content(previewViewState())
 }

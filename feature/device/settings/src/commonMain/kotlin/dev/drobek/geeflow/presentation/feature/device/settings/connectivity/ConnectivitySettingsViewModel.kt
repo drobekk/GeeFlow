@@ -70,10 +70,7 @@ internal class ConnectivitySettingsViewModel(
         is SmartScaleToggled -> launchCatching { setSmartScaleConnectivity(arguments.deviceId, event.enabled) }
         is ScaleConnectionClicked -> onScaleConnectionClicked(event.scaleName)
         is RescanClicked -> launchCatching { requestSmartScaleList(arguments.deviceId) }
-        is CloseClicked -> {
-            popTo(arguments, true)
-            navigate(NavEvent.Back)
-        }
+        is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun onScaleConnectionClicked(scaleName: String) {

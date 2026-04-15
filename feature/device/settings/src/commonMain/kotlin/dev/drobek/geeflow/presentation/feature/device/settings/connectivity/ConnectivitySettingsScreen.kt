@@ -54,6 +54,7 @@ import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_connect
 import geeflow.core.ui.generated.resources.common_disconnect
 import geeflow.feature.device.settings.generated.resources.Res
@@ -140,6 +141,7 @@ private fun CompactContent(
                 checked = viewState.smartScaleEnabled,
                 onCheckedChanged = { onEvent(SmartScaleToggled(it)) },
                 modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(),
             )
         }
         item { HorizontalDivider() }
@@ -276,19 +278,19 @@ private fun ScaleConnectionButton(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDisabled() = GeeFlowTheme(false) {
+private fun PreviewDisabled() = GeeFlowThemePreview(false) {
     ConnectivitySettingsContent(ConnectivitySettingsViewState(smartScaleEnabled = false))
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewSearching() = GeeFlowTheme(false) {
+private fun PreviewSearching() = GeeFlowThemePreview(false) {
     ConnectivitySettingsContent(ConnectivitySettingsViewState(smartScaleEnabled = true, scales = emptyList()))
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewWithScales() = GeeFlowTheme(false) {
+private fun PreviewWithScales() = GeeFlowThemePreview(false) {
     ConnectivitySettingsContent(
         ConnectivitySettingsViewState(
             smartScaleEnabled = true,

@@ -53,7 +53,7 @@ import dev.drobek.geeflow.ui.icons.Logo
 import dev.drobek.geeflow.ui.icons.Manual
 import dev.drobek.geeflow.ui.modifier.conditional
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_stop
 import org.jetbrains.compose.resources.stringResource
@@ -212,7 +212,7 @@ private const val LogoVisibleThreshold = 0.01f
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     var isBrewing by remember { mutableStateOf(false) }
     BrewButton(
         isBrewing = isBrewing,
@@ -225,7 +225,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     var isBrewing by remember { mutableStateOf(true) }
     BrewButton(
         isBrewing = isBrewing,

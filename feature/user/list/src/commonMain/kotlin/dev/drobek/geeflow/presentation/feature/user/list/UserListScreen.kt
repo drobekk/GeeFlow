@@ -41,6 +41,7 @@ import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.feature.user.list.generated.resources.Res
 import geeflow.feature.user.list.generated.resources.user_list_screen_empty
 import geeflow.feature.user.list.generated.resources.user_list_screen_subtitle
@@ -151,7 +152,7 @@ private fun ListEmptyItem(modifier: Modifier = Modifier) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     UserListContent(
         UserListViewState(
             users = listOf(
@@ -164,6 +165,6 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     UserListContent(UserListViewState())
 }

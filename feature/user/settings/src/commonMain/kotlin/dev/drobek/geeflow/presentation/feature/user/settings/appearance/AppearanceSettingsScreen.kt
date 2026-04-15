@@ -34,6 +34,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode
@@ -202,7 +203,7 @@ private fun AppearanceContent(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     Content(
         viewState = AppearanceSettingsViewState(),
         isLanguageSupported = true,
@@ -211,7 +212,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     Content(
         viewState = AppearanceSettingsViewState(appTheme = AppTheme.SYSTEM),
         isLanguageSupported = false,

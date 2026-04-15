@@ -29,7 +29,7 @@ import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.WaveOrientation
 import dev.drobek.geeflow.ui.modifier.waveBackground
-import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_close
 import geeflow.core.ui.generated.resources.common_cycle
 import geeflow.core.ui.generated.resources.common_flush
@@ -219,7 +219,7 @@ private fun Buttons(
 
 @Composable
 @Preview
-private fun PreviewCleaning() = GeeFlowTheme(false) {
+private fun PreviewCleaning() = GeeFlowThemePreview(false) {
     QuickMaintenanceContent(
         viewState = QuickMaintenanceViewState(
             isCleaning = true,
@@ -233,7 +233,7 @@ private fun PreviewCleaning() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun PreviewWaterAlarm() = GeeFlowTheme(true) {
+private fun PreviewWaterAlarm() = GeeFlowThemePreview(true) {
     QuickMaintenanceContent(
         viewState = QuickMaintenanceViewState(waterLevelAlarm = true),
         onEvent = {},

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.disabled
 
 @Composable
@@ -41,7 +42,7 @@ fun GeeFlowNavigationListItem(
 
 @Composable
 @Preview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     GeeFlowNavigationListItem(
         title = "Navigation List Item",
         subtitle = "Subtitle describing the navigation option.",
@@ -50,7 +51,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @Preview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     GeeFlowNavigationListItem(
         title = "Navigation List Item",
         subtitle = "Subtitle describing the navigation option.",

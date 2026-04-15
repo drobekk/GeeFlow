@@ -4,6 +4,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
@@ -27,7 +28,11 @@ import dev.drobek.geeflow.domain.user.usecase.GetAppearanceSettingsUseCase
 import dev.drobek.geeflow.navigation.NavFeature
 import dev.drobek.geeflow.platform.FullScreenEffect
 import dev.drobek.geeflow.platform.KeepScreenOnEffect
+import dev.drobek.geeflow.platform.ThemeModeEffect
+import dev.drobek.geeflow.platform.getThemeProvider
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.colorscheme.espressoColorScheme
+import dev.drobek.geeflow.ui.theme.colorscheme.monoColorScheme
 import kotlinx.serialization.modules.plus
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
@@ -39,19 +44,37 @@ fun App(closeApp: () -> Unit) {
     KoinApplication(koinConfiguration<GeeFlowApp>()) {
         val getAppearanceSettings = koinInject<GetAppearanceSettingsUseCase>()
         val appearance by getAppearanceSettings().collectAsStateWithLifecycle(AppearanceSettings())
-        val darkTheme = when (appearance.darkMode) {
+        val darkMode = when (appearance.darkMode) {
             DarkMode.SYSTEM -> isSystemInDarkTheme()
             DarkMode.LIGHT -> false
             DarkMode.DARK -> true
         }
+
         GeeFlowTheme(
-            darkTheme = darkTheme,
-            useSystemTheme = appearance.appTheme == AppTheme.SYSTEM,
+            darkMode = darkMode,
+            colorScheme = getColorScheme(appearance, darkMode),
         ) {
+            ThemeModeEffect(darkTheme = darkMode)
             KeepScreenOnEffect(appearance.keepScreenOn)
             FullScreenEffect(appearance.fullScreenMode)
             RootNavigation(closeApp)
         }
+    }
+}
+
+@Composable
+private fun getColorScheme(
+    appearance: AppearanceSettings,
+    darkMode: Boolean,
+): ColorScheme {
+    val systemThemeProvider = remember { getThemeProvider() }
+    val systemTheme = systemThemeProvider.getSystemColorScheme(darkMode)
+
+    return when (appearance.appTheme) {
+        AppTheme.ESPRESSO -> espressoColorScheme(darkMode)
+        AppTheme.MONO -> monoColorScheme(darkMode)
+        AppTheme.SYSTEM if systemTheme != null -> systemTheme
+        else -> espressoColorScheme(darkMode)
     }
 }
 

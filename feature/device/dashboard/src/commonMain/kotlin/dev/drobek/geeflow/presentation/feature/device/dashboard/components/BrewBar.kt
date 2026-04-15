@@ -38,6 +38,7 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashb
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_avg
 import geeflow.core.ui.generated.resources.unit_bar
@@ -265,7 +266,7 @@ private val previewVisibleCharts = setOf(
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     BrewBar(
         brew = previewBrew,
         isBrewing = true,
@@ -276,7 +277,7 @@ private fun PreviewLight() = GeeFlowTheme(false) {
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     BrewBar(
         brew = previewBrew,
         isBrewing = false,

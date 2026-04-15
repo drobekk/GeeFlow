@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +55,7 @@ import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.isWidthLarge
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
+import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_brew_boiler
 import geeflow.core.ui.generated.resources.common_pressure
 import geeflow.core.ui.generated.resources.common_steam_boiler
@@ -251,6 +253,7 @@ private fun BoilerSection(
         checked = viewState.pulseHeatingEnabled,
         onCheckedChanged = { onEvent(PulseHeatingToggled(it)) },
         modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(),
     )
 }
 
@@ -372,12 +375,12 @@ private fun previewViewState() = BrewingSettingsViewState(applyButtonVisible = t
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowTheme(false) {
+private fun PreviewLight() = GeeFlowThemePreview(false) {
     BrewSettingsContent(previewViewState())
 }
 
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowTheme(true) {
+private fun PreviewDark() = GeeFlowThemePreview(true) {
     BrewSettingsContent(previewViewState())
 }
