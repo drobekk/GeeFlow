@@ -14,6 +14,7 @@ kotlin {
             implementation(projects.core.navigation)
             implementation(projects.core.presentation)
             implementation(projects.core.ui)
+            implementation(projects.domain.brew)
             implementation(projects.domain.user)
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptiveLayout)

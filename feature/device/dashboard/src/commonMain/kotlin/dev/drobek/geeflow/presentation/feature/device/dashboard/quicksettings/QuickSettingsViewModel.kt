@@ -6,6 +6,7 @@ import dev.drobek.geeflow.core.presentation.launch
 import dev.drobek.geeflow.core.presentation.launchCatching
 import dev.drobek.geeflow.data.device.model.DeviceState
 import dev.drobek.geeflow.data.device.model.DeviceState.BoilerType
+import dev.drobek.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import dev.drobek.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import dev.drobek.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import dev.drobek.geeflow.navigation.NavEvent
@@ -32,6 +33,7 @@ import org.koin.core.annotation.KoinViewModel
 internal class QuickSettingsViewModel(
     @InjectedParam val arguments: QuickSettings,
     private val observeDeviceState: ObserveDeviceStateUseCase,
+    private val getDeviceConstraints: GetDeviceConstraintsUseCase,
     private val setBoilerSettings: SetBoilerSettingsUseCase,
 ) : BaseViewModel<QuickSettingsViewState, QuickSettingsViewModelEvent>(QuickSettingsViewState()) {
 
@@ -43,6 +45,13 @@ internal class QuickSettingsViewModel(
 
     private fun loadMachineState() {
         launch {
+            val constraints = getDeviceConstraints(arguments.deviceId)
+            modify {
+                copy(
+                    brewBoiler = brewBoiler.copy(tempList = constraints.brewTempRange.map { it.toString() }),
+                    steamBoiler = steamBoiler.copy(tempList = constraints.steamTempRange.map { it.toString() }),
+                )
+            }
             observeDeviceState(arguments.deviceId)
                 .withIndex()
                 .collect {

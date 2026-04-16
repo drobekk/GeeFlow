@@ -6,28 +6,31 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.data.user.model.AppTheme
 import dev.drobek.geeflow.data.user.model.DarkMode
 import dev.drobek.geeflow.platform.getThemeProvider
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent
+import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.AppThemeChanged
+import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeChanged
+import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DialogDismissed
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsViewState.Dialog
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.titleRes
-import geeflow.core.ui.generated.resources.common_cancel
+import dev.drobek.geeflow.ui.components.GeeFlowDialog
+import dev.drobek.geeflow.ui.components.GeeFlowDialogTopBar
+import dev.drobek.geeflow.ui.components.VerticalSpacer
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode
 import org.jetbrains.compose.resources.stringResource
-import geeflow.core.ui.generated.resources.Res as CoreRes
 
 @Composable
 internal fun AppearanceDialogs(
@@ -40,16 +43,16 @@ internal fun AppearanceDialogs(
         Dialog.DarkMode -> {
             DarkModeDialog(
                 currentDarkMode = currentDarkMode,
-                onDarkModeSelected = { onEvent(AppearanceSettingsEvent.DarkModeChanged(it)) },
-                onDismiss = { onEvent(AppearanceSettingsEvent.DialogDismissed) },
+                onDarkModeSelected = { onEvent(DarkModeChanged(it)) },
+                onDismiss = { onEvent(DialogDismissed) },
             )
         }
 
         Dialog.AppTheme -> {
             AppThemeDialog(
                 currentAppTheme = currentAppTheme,
-                onAppThemeSelected = { onEvent(AppearanceSettingsEvent.AppThemeChanged(it)) },
-                onDismiss = { onEvent(AppearanceSettingsEvent.DialogDismissed) },
+                onAppThemeSelected = { onEvent(AppThemeChanged(it)) },
+                onDismiss = { onEvent(DialogDismissed) },
             )
         }
 
@@ -67,7 +70,6 @@ private fun DarkModeDialog(
     options = DarkMode.entries,
     selectedOption = currentDarkMode,
     optionLabel = { stringResource(it.titleRes) },
-    cancelLabel = stringResource(CoreRes.string.common_cancel),
     onOptionSelected = onDarkModeSelected,
     onDismiss = onDismiss,
 )
@@ -87,7 +89,6 @@ internal fun AppThemeDialog(
         },
         selectedOption = currentAppTheme,
         optionLabel = { stringResource(it.titleRes) },
-        cancelLabel = stringResource(CoreRes.string.common_cancel),
         onOptionSelected = onAppThemeSelected,
         onDismiss = onDismiss,
     )
@@ -99,44 +100,47 @@ private fun <T> OptionPickerDialog(
     options: List<T>,
     selectedOption: T,
     optionLabel: @Composable (T) -> String,
-    cancelLabel: String,
     onOptionSelected: (T) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column {
-                options.forEach { option ->
-                    val label = optionLabel(option)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = option == selectedOption,
-                                onClick = { onOptionSelected(option) },
-                                role = Role.RadioButton,
-                            )
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
+    GeeFlowDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            GeeFlowDialogTopBar(
+                title = title,
+                onCloseClick = onDismiss,
+            )
+            VerticalSpacer(16.dp)
+            options.forEach { option ->
+                val label = optionLabel(option)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.large)
+                        .selectable(
                             selected = option == selectedOption,
-                            onClick = null,
+                            onClick = { onOptionSelected(option) },
+                            role = Role.RadioButton,
                         )
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 16.dp),
-                        )
-                    }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = option == selectedOption,
+                        onClick = null,
+                    )
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 16.dp),
+                    )
                 }
             }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(cancelLabel) }
-        },
-    )
+            VerticalSpacer(16.dp)
+        }
+    }
 }

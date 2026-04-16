@@ -10,4 +10,5 @@ interface BrewProfileRepository {
     fun getBrewProfileById(id: Long): BrewProfile?
     fun removeBrewProfile(id: Long)
     fun updateBrewProfilesPositions(profiles: List<BrewProfile>)
+    fun resetProfilesForUser(userId: Long)
 }

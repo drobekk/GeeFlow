@@ -53,6 +53,13 @@ class BrewProfileRepositoryImpl(
         refresh()
     }
 
+    override fun resetProfilesForUser(userId: Long) {
+        brewsDao.getBrewProfilesByUserId(userId).forEach { profile ->
+            brewsDao.deleteBrewProfile(profile.id)
+        }
+        addDefaultProfiles(userId)
+    }
+
     private fun refresh() {
         _brewProfiles.value = brewsDao.getAllBrewProfiles()
     }

@@ -32,6 +32,17 @@
     <string name="user_settings_appearance_keep_screen_on">Keep Screen On</string>
     <string name="user_settings_appearance_keep_screen_on_description">Prevent screen from turning off during brew</string>
 
+    <!-- Brewing Preferences Settings -->
+    <string name="user_settings_brewing_preferences_title">Brewing Preferences</string>
+    <string name="user_settings_brewing_auto_connect">Auto-connect</string>
+    <string name="user_settings_brewing_auto_connect_description">Connect to your machine when you return to the app</string>
+    <string name="user_settings_brewing_temperature_unit">Temperature Unit</string>
+    <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
+    <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>
+    <string name="user_settings_brewing_restore_default_profiles">Restore Default Profiles</string>
+    <string name="user_settings_brewing_restore_default_profiles_description">Reset brewing profiles to factory settings</string>
+    <string name="user_settings_brewing_restore_default_profiles_confirmation">This will reset all brewing profiles to their factory defaults. This action cannot be undone.</string>
+
     <!-- About Settings -->
     <string name="user_settings_about_title">About</string>
     <string name="user_settings_about_privacy_policy">Privacy Policy</string>

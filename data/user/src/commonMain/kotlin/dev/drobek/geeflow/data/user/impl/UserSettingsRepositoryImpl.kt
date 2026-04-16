@@ -10,6 +10,7 @@ import dev.drobek.geeflow.data.user.UserSettingsRepository
 import dev.drobek.geeflow.data.user.model.AppTheme
 import dev.drobek.geeflow.data.user.model.ChartType
 import dev.drobek.geeflow.data.user.model.DarkMode
+import dev.drobek.geeflow.data.user.model.TemperatureUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
@@ -24,6 +25,8 @@ class UserSettingsRepositoryImpl(
     private val appThemeKey = stringPreferencesKey("app_theme")
     private val fullScreenModeKey = booleanPreferencesKey("full_screen_mode")
     private val keepScreenOnKey = booleanPreferencesKey("keep_screen_on")
+    private val autoConnectKey = booleanPreferencesKey("auto_connect")
+    private val temperatureUnitKey = stringPreferencesKey("temperature_unit")
 
     override val visibleCharts: Flow<Set<ChartType>> = dataStore.data.map { preferences ->
         val stringSet = preferences[visibleChartsKey]
@@ -53,6 +56,16 @@ class UserSettingsRepositoryImpl(
         preferences[keepScreenOnKey] ?: false
     }
 
+    override val autoConnect: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[autoConnectKey] ?: true
+    }
+
+    override val temperatureUnit: Flow<TemperatureUnit> = dataStore.data.map { preferences ->
+        preferences[temperatureUnitKey]
+            ?.let { TemperatureUnit.entries.find { entry -> entry.name == it } }
+            ?: TemperatureUnit.CELSIUS
+    }
+
     override suspend fun setVisibleCharts(types: Set<ChartType>) {
         dataStore.edit { preferences ->
             preferences[visibleChartsKey] = types.map { it.name }.toSet()
@@ -80,6 +93,18 @@ class UserSettingsRepositoryImpl(
     override suspend fun setKeepScreenOn(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[keepScreenOnKey] = enabled
+        }
+    }
+
+    override suspend fun setAutoConnect(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[autoConnectKey] = enabled
+        }
+    }
+
+    override suspend fun setTemperatureUnit(unit: TemperatureUnit) {
+        dataStore.edit { preferences ->
+            preferences[temperatureUnitKey] = unit.name
         }
     }
 }

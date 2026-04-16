@@ -3,6 +3,7 @@ package dev.drobek.geeflow.presentation.feature.device.dashboard.quickmaintenanc
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -184,7 +185,7 @@ private fun Buttons(
 ) = Row(
     modifier = Modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween,
+    horizontalArrangement = spacedBy(16.dp, alignment = Alignment.End),
 ) {
     TextButton(
         onClick = { onEvent(QuickMaintenanceEvent.MoreSettingsClicked(isExpanded)) },

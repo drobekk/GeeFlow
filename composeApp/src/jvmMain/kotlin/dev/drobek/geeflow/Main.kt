@@ -12,6 +12,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
@@ -25,7 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 
 fun main() = application {
     var isFullscreen by remember { mutableStateOf(false) }
-    val state = rememberWindowState(placement = WindowPlacement.Floating)
+    val state = rememberWindowState(placement = WindowPlacement.Floating, size = DpSize(1000.dp, 650.dp))
 
     key(isFullscreen) {
         Window(

@@ -1,8 +1,8 @@
 package dev.drobek.geeflow.presentation.feature.device.dashboard.quicksettings
 
 data class QuickSettingsViewState(
-    val brewBoiler: Boiler = Boiler(tempList = (0..110).map { it.toString() }),
-    val steamBoiler: Boiler = Boiler(tempList = (0..140).map { it.toString() }),
+    val brewBoiler: Boiler = Boiler(),
+    val steamBoiler: Boiler = Boiler(),
     val applying: Boolean = false,
 ) {
     data class Boiler(

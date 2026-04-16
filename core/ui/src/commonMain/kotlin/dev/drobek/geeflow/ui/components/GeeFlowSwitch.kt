@@ -72,7 +72,7 @@ fun GeeFlowSwitch(
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .wrapContentHeight(Alignment.CenterVertically),
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = if (!checked) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = FontWeight.Bold,
             color = offTextColor,
             textAlign = TextAlign.Center,
         )
@@ -88,7 +88,7 @@ fun GeeFlowSwitch(
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .wrapContentHeight(Alignment.CenterVertically),
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = FontWeight.Bold,
             color = onTextColor,
             textAlign = TextAlign.Center,
         )

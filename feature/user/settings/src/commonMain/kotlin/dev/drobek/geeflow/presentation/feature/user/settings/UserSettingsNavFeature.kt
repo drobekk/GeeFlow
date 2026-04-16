@@ -13,6 +13,8 @@ import dev.drobek.geeflow.presentation.feature.user.settings.about.AboutViewMode
 import dev.drobek.geeflow.presentation.feature.user.settings.about.licenses.LicensesListScreen
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsScreen
 import dev.drobek.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsViewModel
+import dev.drobek.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesScreen
+import dev.drobek.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesViewModel
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsDetailsPlaceholder
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsScreen
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsViewModel
@@ -21,6 +23,9 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Single
+
+@Serializable
+internal object BrewingPreferencesSettings : NavKey
 
 @Serializable
 internal object AppearanceSettings : NavKey
@@ -41,6 +46,11 @@ internal class UserSettingsNavFeature : NavFeature {
             UserSettingsScreen(viewModel, navigator)
         }
 
+        entry<BrewingPreferencesSettings>(metadata = detailPane()) {
+            val viewModel = koinViewModel<BrewingPreferencesViewModel>()
+            BrewingPreferencesScreen(viewModel, navigator)
+        }
+
         entry<AppearanceSettings>(metadata = detailPane()) {
             val viewModel = koinViewModel<AppearanceSettingsViewModel>()
             AppearanceSettingsScreen(viewModel, navigator)
@@ -59,6 +69,7 @@ internal class UserSettingsNavFeature : NavFeature {
     override val serializerModule: SerializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(UserSettings::class, UserSettings.serializer())
+            subclass(BrewingPreferencesSettings::class, BrewingPreferencesSettings.serializer())
             subclass(AppearanceSettings::class, AppearanceSettings.serializer())
             subclass(AboutSettings::class, AboutSettings.serializer())
             subclass(LicensesList::class, LicensesList.serializer())

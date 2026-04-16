@@ -7,6 +7,7 @@ import dev.drobek.geeflow.navigation.destination.UserList
 import dev.drobek.geeflow.navigation.destination.UserSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.AboutSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.AppearanceSettings
+import dev.drobek.geeflow.presentation.feature.user.settings.BrewingPreferencesSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ItemClicked
@@ -41,6 +42,7 @@ internal class UserSettingsViewModel(
         BackClicked -> popTo(UserSettings, inclusive = true)
         ChangeUserClicked -> navigateTo(UserList)
         is ItemClicked -> when (event.item) {
+            is Item.BrewingPreferences -> navigateTo(BrewingPreferencesSettings)
             is Item.AppearanceDisplay -> navigateTo(AppearanceSettings)
             is Item.About -> navigateTo(AboutSettings)
             else -> Unit

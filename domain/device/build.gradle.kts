@@ -14,6 +14,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.data.device)
             api(projects.core.domain)
+            implementation(projects.data.user)
             implementation(libs.kermit)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
