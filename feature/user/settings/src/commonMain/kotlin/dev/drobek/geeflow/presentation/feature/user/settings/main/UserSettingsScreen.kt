@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
+import dev.drobek.geeflow.presentation.feature.user.settings.AboutSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.AppearanceSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
@@ -76,6 +77,7 @@ internal fun UserSettingsScreen(
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val selectedIndex = when (navigator.getCurrentDestination()) {
         is AppearanceSettings -> viewState.items.indexOfFirst { it is Item.AppearanceDisplay }
+        is AboutSettings -> viewState.items.indexOfFirst { it is Item.About }
         else -> null
     }.takeIf { it != null && it >= 0 }
 

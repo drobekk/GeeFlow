@@ -23,6 +23,7 @@
     <string name="user_settings_appearance_app_theme">App Theme</string>
     <string name="user_settings_appearance_app_theme_espresso">Espresso</string>
     <string name="user_settings_appearance_app_theme_mono">Mono</string>
+    <string name="user_settings_appearance_app_theme_rose">Rose</string>
     <string name="user_settings_appearance_app_theme_system">System theme</string>
     <string name="user_settings_appearance_language">Language</string>
     <string name="user_settings_appearance_language_description">Change app language in system settings</string>

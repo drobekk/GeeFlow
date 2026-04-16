@@ -10,6 +10,7 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -33,6 +34,7 @@ import dev.drobek.geeflow.platform.getThemeProvider
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.colorscheme.espressoColorScheme
 import dev.drobek.geeflow.ui.theme.colorscheme.monoColorScheme
+import dev.drobek.geeflow.ui.theme.colorscheme.roseColorScheme
 import kotlinx.serialization.modules.plus
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
@@ -43,7 +45,10 @@ import org.koin.plugin.module.dsl.koinConfiguration
 fun App(closeApp: () -> Unit) {
     KoinApplication(koinConfiguration<GeeFlowApp>()) {
         val getAppearanceSettings = koinInject<GetAppearanceSettingsUseCase>()
-        val appearance by getAppearanceSettings().collectAsStateWithLifecycle(AppearanceSettings())
+        val appearance by getAppearanceSettings().collectAsStateWithLifecycle(
+            initialValue = AppearanceSettings(),
+            minActiveState = Lifecycle.State.CREATED,
+        )
         val darkMode = when (appearance.darkMode) {
             DarkMode.SYSTEM -> isSystemInDarkTheme()
             DarkMode.LIGHT -> false
@@ -73,6 +78,7 @@ private fun getColorScheme(
     return when (appearance.appTheme) {
         AppTheme.ESPRESSO -> espressoColorScheme(darkMode)
         AppTheme.MONO -> monoColorScheme(darkMode)
+        AppTheme.ROSE -> roseColorScheme(darkMode)
         AppTheme.SYSTEM if systemTheme != null -> systemTheme
         else -> espressoColorScheme(darkMode)
     }
