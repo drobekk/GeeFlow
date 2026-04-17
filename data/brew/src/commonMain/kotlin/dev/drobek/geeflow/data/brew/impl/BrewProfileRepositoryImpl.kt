@@ -26,11 +26,13 @@ class BrewProfileRepositoryImpl(
         refresh()
     }
 
-    override fun getBrewProfilesForUser(userId: Long): List<BrewProfile> {
+    override fun getBrewProfilesForUser(userId: Long): List<BrewProfile> =
+        brewsDao.getBrewProfilesByUserId(userId)
+
+    override fun seedDefaultProfilesIfEmpty(userId: Long) {
         if (brewsDao.getBrewProfilesByUserId(userId).isEmpty()) {
             addDefaultProfiles(userId)
         }
-        return brewsDao.getBrewProfilesByUserId(userId)
     }
 
     override fun getBrewProfileById(id: Long): BrewProfile? = brewsDao.getBrewProfileById(id)

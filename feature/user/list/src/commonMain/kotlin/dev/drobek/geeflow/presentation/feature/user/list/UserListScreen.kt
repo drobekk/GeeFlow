@@ -19,8 +19,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,6 +45,7 @@ import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.feature.user.list.generated.resources.Res
+import geeflow.feature.user.list.generated.resources.user_list_screen_add_profile
 import geeflow.feature.user.list.generated.resources.user_list_screen_empty
 import geeflow.feature.user.list.generated.resources.user_list_screen_subtitle
 import geeflow.feature.user.list.generated.resources.user_list_screen_title
@@ -74,6 +77,14 @@ private fun UserListContent(
         scrollBehavior = scrollBehavior,
         navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
         navIconClick = { onEvent(UserListEvent.BackClicked) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onEvent(UserListEvent.AddClicked) }) {
+                Icon(
+                    painter = rememberVectorPainter(Icons.Filled.Add),
+                    contentDescription = stringResource(Res.string.user_list_screen_add_profile),
+                )
+            }
+        },
         content = {
             UserList(
                 users = viewState.users,

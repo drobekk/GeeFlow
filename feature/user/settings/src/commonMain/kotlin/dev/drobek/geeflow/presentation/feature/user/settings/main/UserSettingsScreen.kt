@@ -41,6 +41,7 @@ import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.user.settings.AboutSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.AppearanceSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.BrewingPreferencesSettings
+import dev.drobek.geeflow.presentation.feature.user.settings.ProfileSettings
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ItemClicked
@@ -77,6 +78,7 @@ internal fun UserSettingsScreen(
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val selectedIndex = when (navigator.getCurrentDestination()) {
+        is ProfileSettings -> viewState.items.indexOfFirst { it is Item.Profile }
         is BrewingPreferencesSettings -> viewState.items.indexOfFirst { it is Item.BrewingPreferences }
         is AppearanceSettings -> viewState.items.indexOfFirst { it is Item.AppearanceDisplay }
         is AboutSettings -> viewState.items.indexOfFirst { it is Item.About }

@@ -13,6 +13,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.core.domain)
             api(projects.data.user)
+            implementation(projects.data.brew)
             implementation(libs.kotlinx.coroutines.core)
         }
     }

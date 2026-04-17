@@ -15,6 +15,9 @@ SELECT * FROM users WHERE id = ?;
 insertUser:
 INSERT OR REPLACE INTO users(id, name, photoUri, isSelected, favoriteDeviceId) VALUES (?, ?, ?, ?, ?);
 
+lastInsertId:
+SELECT last_insert_rowid();
+
 deleteById:
 DELETE FROM users WHERE id = ?;
 
@@ -26,3 +29,6 @@ UPDATE users SET isSelected = 1 WHERE id = ?;
 
 setFavoriteDevice:
 UPDATE users SET favoriteDeviceId = ? WHERE id = ?;
+
+updateName:
+UPDATE users SET name = ? WHERE id = ?;

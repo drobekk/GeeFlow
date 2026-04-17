@@ -18,11 +18,16 @@ import dev.drobek.geeflow.presentation.feature.user.settings.brewing.BrewingPref
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsDetailsPlaceholder
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsScreen
 import dev.drobek.geeflow.presentation.feature.user.settings.main.UserSettingsViewModel
+import dev.drobek.geeflow.presentation.feature.user.settings.profile.ProfileSettingsScreen
+import dev.drobek.geeflow.presentation.feature.user.settings.profile.ProfileSettingsViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Single
+
+@Serializable
+internal object ProfileSettings : NavKey
 
 @Serializable
 internal object BrewingPreferencesSettings : NavKey
@@ -44,6 +49,11 @@ internal class UserSettingsNavFeature : NavFeature {
         entry<UserSettings>(metadata = listPane(detailPlaceholder = { UserSettingsDetailsPlaceholder() })) {
             val viewModel = koinViewModel<UserSettingsViewModel>()
             UserSettingsScreen(viewModel, navigator)
+        }
+
+        entry<ProfileSettings>(metadata = detailPane()) {
+            val viewModel = koinViewModel<ProfileSettingsViewModel>()
+            ProfileSettingsScreen(viewModel, navigator)
         }
 
         entry<BrewingPreferencesSettings>(metadata = detailPane()) {
@@ -69,6 +79,7 @@ internal class UserSettingsNavFeature : NavFeature {
     override val serializerModule: SerializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(UserSettings::class, UserSettings.serializer())
+            subclass(ProfileSettings::class, ProfileSettings.serializer())
             subclass(BrewingPreferencesSettings::class, BrewingPreferencesSettings.serializer())
             subclass(AppearanceSettings::class, AppearanceSettings.serializer())
             subclass(AboutSettings::class, AboutSettings.serializer())

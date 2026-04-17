@@ -22,20 +22,30 @@ class UserRepositoryImpl(
         refresh()
     }
 
-    override fun addUser(user: User) {
-        usersDao.insertUser(user)
+    override fun addUser(user: User): Long {
+        val id = usersDao.insertUser(user)
         refresh()
+        return id
     }
 
     override fun getUserById(id: Long): User? = usersDao.getUserById(id)
 
     override fun removeUser(id: Long) {
+        val wasSelected = usersDao.getUserById(id)?.isSelected == true
         usersDao.deleteUser(id)
+        if (wasSelected) {
+            usersDao.getAllUsers().firstOrNull()?.let { usersDao.setSelectedUser(it.id) }
+        }
         refresh()
     }
 
     override fun setSelectedUser(id: Long) {
         usersDao.setSelectedUser(id)
+        refresh()
+    }
+
+    override fun renameUser(id: Long, name: String) {
+        usersDao.updateName(id, name)
         refresh()
     }
 

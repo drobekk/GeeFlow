@@ -1,5 +1,6 @@
 plugins {
     id("kmp.feature")
+    alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.koin.compiler)
 }
 

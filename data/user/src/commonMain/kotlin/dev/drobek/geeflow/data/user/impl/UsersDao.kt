@@ -16,7 +16,7 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         .selectById(id, ::mapToUser)
         .executeAsOneOrNull()
 
-    fun insertUser(user: User) {
+    fun insertUser(user: User): Long {
         dbQuery.insertUser(
             id = if (user.id == 0L) null else user.id,
             name = user.name,
@@ -24,6 +24,7 @@ class UsersDao(databaseProvider: DatabaseProvider) {
             isSelected = if (user.isSelected) 1L else 0L,
             favoriteDeviceId = user.favoriteDeviceId,
         )
+        return dbQuery.lastInsertId().executeAsOne()
     }
 
     fun deleteUser(id: Long) {
@@ -39,6 +40,10 @@ class UsersDao(databaseProvider: DatabaseProvider) {
 
     fun setFavoriteDevice(userId: Long, deviceId: Long?) {
         dbQuery.setFavoriteDevice(deviceId, userId)
+    }
+
+    fun updateName(id: Long, name: String) {
+        dbQuery.updateName(name, id)
     }
 
     private fun mapToUser(

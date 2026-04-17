@@ -7,6 +7,18 @@
     <!-- Items -->
     <string name="user_settings_profile">Profile</string>
     <string name="user_settings_profile_description">Name, photo and account</string>
+
+    <!-- Profile Settings -->
+    <string name="user_settings_profile_title">Profile</string>
+    <string name="user_settings_profile_change_name">Change Name</string>
+    <string name="user_settings_profile_change_name_description">Update your profile name</string>
+    <string name="user_settings_profile_change_picture">Change Picture</string>
+    <string name="user_settings_profile_change_picture_description">Update your profile picture</string>
+    <string name="user_settings_profile_delete">Delete Profile</string>
+    <string name="user_settings_profile_delete_description">Remove this profile permanently</string>
+    <string name="user_settings_profile_delete_confirmation">Are you sure you want to delete this profile? This action cannot be undone.</string>
+    <string name="user_settings_profile_rename_title">Change Name</string>
+    <string name="user_settings_profile_rename_name_hint">Name</string>
     <string name="user_settings_brewing_preferences">Brewing Preferences</string>
     <string name="user_settings_brewing_preferences_description">Units, auto-connect and profiles</string>
     <string name="user_settings_appearance">Appearance &amp; Display</string>

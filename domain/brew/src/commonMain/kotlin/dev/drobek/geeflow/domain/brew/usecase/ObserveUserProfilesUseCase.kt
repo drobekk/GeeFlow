@@ -15,7 +15,7 @@ class ObserveUserProfilesUseCase(
     operator fun invoke(): Flow<List<BrewProfile>> = combine(
         getSelectedUserUseCase(),
         brewProfileRepository.brewProfiles,
-    ) { user, _ ->
-        user?.id?.let { brewProfileRepository.getBrewProfilesForUser(it) }.orEmpty()
+    ) { user, profiles ->
+        profiles.filter { it.userId == user?.id }
     }
 }

@@ -3,4 +3,11 @@
     <string name="user_list_screen_title">Users</string>
     <string name="user_list_screen_subtitle">Select a user profile</string>
     <string name="user_list_screen_empty">No users found.</string>
+    <string name="user_list_screen_add_profile">Add Profile</string>
+
+    <!-- Add user screen -->
+    <string name="user_list_add_profile_title">Add Profile</string>
+    <string name="user_list_add_profile_subtitle">Create a new user profile</string>
+    <string name="user_list_add_profile_name_hint">Name</string>
+    <string name="user_list_add_profile_save">Save</string>
 </resources>
