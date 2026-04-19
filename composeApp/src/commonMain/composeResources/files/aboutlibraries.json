@@ -2027,10 +2027,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-runtime",
-            "artifactVersion": "1.1.0-alpha05",
+            "artifactVersion": "1.1.0-rc01",
             "name": "Androidx Navigation 3 Runtime",
             "description": "Provides the building blocks for a Compose first Navigation solution that easily supports extensions.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.0-alpha05",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.0-rc01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2052,10 +2052,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.1.0-alpha05",
+            "artifactVersion": "1.1.0-rc01",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.0-alpha05",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.0-rc01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -3276,10 +3276,10 @@
             ]
         },
         {
-            "uniqueId": "dev.bluefalcon:blue-falcon",
-            "artifactVersion": "2.5.4",
-            "name": "dev.bluefalcon",
-            "description": "Bluetooth Multiplatform Library",
+            "uniqueId": "dev.bluefalcon:blue-falcon-core",
+            "artifactVersion": "3.1.0",
+            "name": "Blue Falcon Core",
+            "description": "Core module for Blue Falcon - A Bluetooth Low Energy Kotlin Multiplatform library",
             "website": "https://github.com/Reedyuk/blue-falcon",
             "developers": [
                 {
@@ -3287,12 +3287,81 @@
                 }
             ],
             "scm": {
-                "connection": "scm:git:git://git@github.com:reedyuk/blue-falcon.git",
-                "developerConnection": "scm:git:ssh://git@github.com:reedyuk/blue-falcon.git",
+                "connection": "scm:git:git://github.com/Reedyuk/blue-falcon.git",
+                "developerConnection": "scm:git:ssh://git@github.com/Reedyuk/blue-falcon.git",
                 "url": "https://github.com/Reedyuk/blue-falcon"
             },
             "licenses": [
-                "MIT"
+                "Apache-2.0"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
+            "uniqueId": "dev.bluefalcon:blue-falcon-engine-android",
+            "artifactVersion": "3.1.0",
+            "name": "Blue Falcon Android Engine",
+            "description": "Android BLE engine for Blue Falcon",
+            "website": "https://github.com/Reedyuk/blue-falcon",
+            "developers": [
+                {
+                    "name": "Andrew Reed"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:git://github.com/Reedyuk/blue-falcon.git",
+                "developerConnection": "scm:git:ssh://git@github.com/Reedyuk/blue-falcon.git",
+                "url": "https://github.com/Reedyuk/blue-falcon"
+            },
+            "licenses": [
+                "Apache-2.0"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
+            "uniqueId": "dev.bluefalcon:blue-falcon-engine-ios",
+            "artifactVersion": "3.1.0",
+            "name": "Blue Falcon iOS Engine",
+            "description": "iOS BLE engine for Blue Falcon",
+            "website": "https://github.com/Reedyuk/blue-falcon",
+            "developers": [
+                {
+                    "name": "Andrew Reed"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:git://github.com/Reedyuk/blue-falcon.git",
+                "developerConnection": "scm:git:ssh://git@github.com/Reedyuk/blue-falcon.git",
+                "url": "https://github.com/Reedyuk/blue-falcon"
+            },
+            "licenses": [
+                "Apache-2.0"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
+            "uniqueId": "dev.bluefalcon:blue-falcon-engine-windows",
+            "artifactVersion": "3.1.0",
+            "name": "Blue Falcon Windows Engine",
+            "description": "Windows BLE engine for Blue Falcon",
+            "website": "https://github.com/Reedyuk/blue-falcon",
+            "developers": [
+                {
+                    "name": "Andrew Reed"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:git://github.com/Reedyuk/blue-falcon.git",
+                "developerConnection": "scm:git:ssh://git@github.com/Reedyuk/blue-falcon.git",
+                "url": "https://github.com/Reedyuk/blue-falcon"
+            },
+            "licenses": [
+                "Apache-2.0"
             ],
             "funding": [
                 
@@ -3654,10 +3723,10 @@
         },
         {
             "uniqueId": "org.jetbrains.androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.1.0-alpha04",
+            "artifactVersion": "1.1.0-rc01",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
-            "website": "https://github.com/JetBrains/compose-jb",
+            "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
                     "name": "Compose Multiplatform Team",
@@ -3665,9 +3734,9 @@
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
+                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
+                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
+                "url": "https://github.com/JetBrains/compose-multiplatform"
             },
             "licenses": [
                 "Apache-2.0"
@@ -5238,14 +5307,6 @@
             "internalHash": "EPL-1.0",
             "spdxId": "EPL-1.0",
             "hash": "EPL-1.0"
-        },
-        "MIT": {
-            "name": "MIT License",
-            "url": "https://spdx.org/licenses/MIT.html",
-            "content": "MIT License\n\nCopyright (c) <year> <copyright holders>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
-            "internalHash": "MIT",
-            "spdxId": "MIT",
-            "hash": "MIT"
         }
     }
 }

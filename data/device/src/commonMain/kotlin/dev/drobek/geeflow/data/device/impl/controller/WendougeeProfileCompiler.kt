@@ -4,13 +4,22 @@ import dev.drobek.geeflow.data.brew.model.BrewProfile
 import dev.drobek.geeflow.data.brew.model.Condition
 import dev.drobek.geeflow.data.brew.model.ProfileMode
 import dev.drobek.geeflow.data.brew.model.ProfileStep
-import dev.drobek.geeflow.data.device.ble.ModbusCrcCalculator
 
-data class ModbusCommand(val payload: ByteArray, val expectedFc: Byte, val regHi: Byte, val regLo: Byte)
+/**
+ * One Modbus register write that makes up part of a profile upload. The controller
+ * dispatches these to [dev.drobek.geeflow.data.device.ble.modbus.ModbusSession]
+ * — framing, CRC, and ACK matching live there.
+ */
+sealed interface ProfileWrite {
+    val register: Int
+
+    data class Single(override val register: Int, val value: Int) : ProfileWrite
+    data class Multiple(override val register: Int, val values: List<Int>) : ProfileWrite
+}
 
 class WendougeeProfileCompiler {
 
-    fun buildProfileUploadCommands(profile: BrewProfile, isBinding: Boolean = false): List<ModbusCommand> {
+    fun buildProfileWrites(profile: BrewProfile, isBinding: Boolean = false): List<ProfileWrite> {
         val isWeight = profile.finishCondition is Condition.Weight
         val targetValue = when (val cond = profile.finishCondition) {
             is Condition.Weight -> cond.target
@@ -22,20 +31,20 @@ class WendougeeProfileCompiler {
             ProfileMode.FreeVariable -> FV_FREE_MODE
         }
         return if (profile.mode == ProfileMode.FreeVariable) {
-            buildFreeVariableCommands(profile, realMode, isBinding, isWeight, targetValue)
+            buildFreeVariableWrites(profile, realMode, isBinding, isWeight, targetValue)
         } else {
-            buildConstantModeCommands(profile, realMode, isBinding, isWeight, targetValue)
+            buildConstantModeWrites(profile, realMode, isBinding, isWeight, targetValue)
         }
     }
 
-    private fun buildFreeVariableCommands(
+    private fun buildFreeVariableWrites(
         profile: BrewProfile,
         realMode: Int,
         isBinding: Boolean,
         isWeight: Boolean,
         targetValue: Float,
-    ): List<ModbusCommand> {
-        val commands = mutableListOf<ModbusCommand>()
+    ): List<ProfileWrite> {
+        val writes = mutableListOf<ProfileWrite>()
         val points = resampleSteps(profile.steps, RESAMPLE_COUNT, RESAMPLE_INTERVAL)
 
         val registers = WendougeeRegisters.FV_MEMORY_REGIONS
@@ -55,26 +64,26 @@ class WendougeeProfileCompiler {
                     else -> 0
                 }
             }
-            commands.add(buildWriteMultiple(reg, values))
+            writes.add(ProfileWrite.Multiple(reg, values))
         }
 
-        commands.add(buildWriteMultiple(WendougeeRegisters.FV_FINISH_CONDITION, listOf(if (isWeight) 0 else 1)))
+        writes.add(ProfileWrite.Multiple(WendougeeRegisters.FV_FINISH_CONDITION, listOf(if (isWeight) 0 else 1)))
         val modeRegister = if (isBinding) WendougeeRegisters.BOUND_PROFILE_MODE else WendougeeRegisters.FV_PROFILE_MODE
-        commands.add(buildWriteSingle(modeRegister, realMode))
-        commands.add(buildWriteSingle(WendougeeRegisters.FV_OFFSET_ZEROING, 0))
-        commands.add(buildWriteSingle(WendougeeRegisters.FV_TARGET_VALUE, targetValue.toInt()))
-        commands.add(buildWriteSingle(WendougeeRegisters.FV_AUTO_LINK, if (profile.autoLinkOpen) 1 else 0))
-        return commands
+        writes.add(ProfileWrite.Single(modeRegister, realMode))
+        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_OFFSET_ZEROING, 0))
+        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_TARGET_VALUE, targetValue.toInt()))
+        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_AUTO_LINK, if (profile.autoLinkOpen) 1 else 0))
+        return writes
     }
 
-    private fun buildConstantModeCommands(
+    private fun buildConstantModeWrites(
         profile: BrewProfile,
         realMode: Int,
         isBinding: Boolean,
         isWeight: Boolean,
         targetValue: Float,
-    ): List<ModbusCommand> {
-        val commands = mutableListOf<ModbusCommand>()
+    ): List<ProfileWrite> {
+        val writes = mutableListOf<ProfileWrite>()
         val startReg = if (isBinding) WendougeeRegisters.CONSTANT_MODE_BOUND_BASE else WendougeeRegisters.CONSTANT_MODE_BASE
 
         val headerValues = listOf(
@@ -86,7 +95,7 @@ class WendougeeProfileCompiler {
             if (isWeight) targetValue.toInt() else 0,
             if (profile.autoLinkOpen) 1 else 0,
         )
-        commands.add(buildWriteMultiple(startReg, headerValues))
+        writes.add(ProfileWrite.Multiple(startReg, headerValues))
 
         data class MachineStep(
             val time: Int,
@@ -116,53 +125,13 @@ class WendougeeProfileCompiler {
                 if (isLast) 1 else 0,
                 if (step.isFlowPriority) 1 else 0,
             )
-            commands.add(buildWriteMultiple(currentReg, stepValues))
+            writes.add(ProfileWrite.Multiple(currentReg, stepValues))
             currentReg += STEP_REGISTER_SIZE
         }
 
         val modeRegister = if (isBinding) WendougeeRegisters.BOUND_PROFILE_MODE else WendougeeRegisters.FV_PROFILE_MODE
-        commands.add(buildWriteSingle(modeRegister, realMode))
-        return commands
-    }
-
-    private fun buildWriteSingle(reg: Int, value: Int): ModbusCommand {
-        val regHi = (reg ushr BYTE_SHIFT).toByte()
-        val regLo = (reg and BYTE_MASK).toByte()
-        val header = byteArrayOf(
-            DEVICE_ADDRESS,
-            FC_WRITE_SINGLE,
-            regHi,
-            regLo,
-            (value ushr BYTE_SHIFT).toByte(),
-            (value and BYTE_MASK).toByte(),
-        )
-        return ModbusCommand(header + ModbusCrcCalculator.calculateCRC(header), FC_WRITE_SINGLE, regHi, regLo)
-    }
-
-    fun buildWriteMultiple(reg: Int, values: List<Int>): ModbusCommand {
-        val regHi = (reg ushr BYTE_SHIFT).toByte()
-        val regLo = (reg and BYTE_MASK).toByte()
-        val num = values.size
-        val byteCount = num * 2
-
-        val header = byteArrayOf(
-            DEVICE_ADDRESS,
-            FC_WRITE_MULTIPLE,
-            regHi,
-            regLo,
-            (num ushr BYTE_SHIFT).toByte(),
-            (num and BYTE_MASK).toByte(),
-            byteCount.toByte(),
-        )
-
-        val data = ByteArray(byteCount)
-        values.forEachIndexed { i, v ->
-            data[i * 2] = (v ushr BYTE_SHIFT).toByte()
-            data[i * 2 + 1] = (v and BYTE_MASK).toByte()
-        }
-
-        val payload = header + data
-        return ModbusCommand(payload + ModbusCrcCalculator.calculateCRC(payload), FC_WRITE_MULTIPLE, regHi, regLo)
+        writes.add(ProfileWrite.Single(modeRegister, realMode))
+        return writes
     }
 
     private data class ResampledPoint(val pressure: Float, val flow: Float)
@@ -195,11 +164,6 @@ class WendougeeProfileCompiler {
     }
 
     companion object {
-        private const val BYTE_SHIFT = 8
-        private const val BYTE_MASK = 0xFF
-        private const val DEVICE_ADDRESS: Byte = 0x01
-        private const val FC_WRITE_SINGLE: Byte = 0x06
-        private const val FC_WRITE_MULTIPLE: Byte = 0x10
         private const val SENSOR_SCALE_FACTOR = 10f
         private const val FV_FREE_MODE = 4
         private const val RESAMPLE_COUNT = 128

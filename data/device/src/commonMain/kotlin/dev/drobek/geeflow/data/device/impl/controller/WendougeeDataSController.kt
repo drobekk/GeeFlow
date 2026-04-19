@@ -1,13 +1,18 @@
+@file:Suppress("TooManyFunctions")
+@file:OptIn(kotlin.uuid.ExperimentalUuidApi::class)
+
 package dev.drobek.geeflow.data.device.impl.controller
 
 import co.touchlab.kermit.Logger
+import dev.bluefalcon.core.BlueFalcon
+import dev.bluefalcon.core.BluetoothCharacteristic
+import dev.bluefalcon.core.BluetoothPeripheral
+import dev.bluefalcon.core.BluetoothPeripheralState
 import dev.drobek.geeflow.data.brew.model.BrewProfile
 import dev.drobek.geeflow.data.brew.model.ProfileMode
 import dev.drobek.geeflow.data.device.DeviceController
-import dev.drobek.geeflow.data.device.ble.BleClient
-import dev.drobek.geeflow.data.device.ble.BleConnectException
-import dev.drobek.geeflow.data.device.ble.BleConnectionState
-import dev.drobek.geeflow.data.device.ble.ModbusBleClient
+import dev.drobek.geeflow.data.device.ble.modbus.ModbusPlugin
+import dev.drobek.geeflow.data.device.ble.modbus.ModbusSession
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_OFF
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_ON
 import dev.drobek.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_OFF
@@ -39,6 +44,7 @@ import dev.drobek.geeflow.data.device.model.SmartScale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,16 +54,19 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.annotation.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class WendougeeDataSController(
     private val scope: CoroutineScope,
-    private val bleClient: BleClient,
+    private val blueFalcon: BlueFalcon,
+    private val modbusPlugin: ModbusPlugin,
     private val discoverer: WendougeeBleDeviceDiscoverer,
 ) : DeviceController {
 
@@ -98,7 +107,6 @@ class WendougeeDataSController(
 
     var logPolling: Boolean = false
 
-    private val modbus = ModbusBleClient(bleClient, DATA_UUID_SUFFIX, DATA_UUID_SUFFIX)
     private val frameParser = WendougeeFrameParser(
         onStateUpdate = { update -> _deviceState.update { it.update() } },
         onScaleFound = { scale ->
@@ -117,82 +125,17 @@ class WendougeeDataSController(
 
     private var connectJob: Job? = null
     private var watchdogJob: Job? = null
+    private var notificationJob: Job? = null
     private var heartbeatTimeoutJob: Job? = null
 
-    companion object {
-        private const val TAG = "WendougeeController"
-        private const val BLE_TRACE_TAG = "WendougeeBle"
+    private var session: Session? = null
 
-        const val DATA_UUID_SUFFIX = "2b10"
-        const val CTRL_UUID_SUFFIX = "2c10"
-
-        private const val POLLING_INTERVAL_MS = 200L
-        private const val BREW_PULSE_MS = 100L
-        private const val HEARTBEAT_TIMEOUT_MS = 10_000L
-
-        private const val MTU_SIZE = 512
-        private const val MTU_TIMEOUT_MS = 4_000L
-        private const val MTU_RETRY_DELAY_MS = 200L
-        private const val POST_MTU_DELAY_MS = 500L
-        private const val CHARS_READY_TIMEOUT_MS = 10_000L
-        private const val CHARS_RETRY_DELAY_MS = 200L
-        private const val POST_CHARS_DELAY_MS = 300L
-        private const val INIT_CONFIG_DELAY_MS = 300L
-        private const val INIT_SCALE_DELAY_MS = 400L
-        private const val SCALE_STATUS_DELAY_MS = 100L
-        private const val SCALE_LIST_DELAY_MS = 200L
-        private const val POST_INIT_DELAY_MS = 300L
-        private const val POLL_BETWEEN_DELAY_MS = 30L
-        private const val POLL_TIMEOUT_MS = 800L
-        private const val FC_COIL_WRITE: Byte = 0x05
-        private const val SENSOR_SCALE_FACTOR = 10
-        private const val BREW_MAX_TEMP = 110
-        private const val STEAM_MAX_TEMP = 140
-        private const val PADDLE_PRESSURE_MAX_INT = 120
-        private const val PADDLE_TIME_MAX = 60
-        private const val CLEANING_TIME_MAX = 60
-        private const val CLEANING_REST_MAX = 60
-        private const val CLEANING_COUNT_MAX = 10
-        private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
-        private const val COIL_MANUAL_BREW = 0x9A
-        private const val COIL_SHORT_PRESS = 0x96
-        private const val COIL_CLEANING = 0x9B
-        private const val COIL_PROFILE_FREE = 0x9E
-        private const val SCALE_FRAME_DATA_OFFSET = 7
-        private const val SCALE_FRAME_CMD_IDX = 4
-        private const val BYTE_SHIFT = 8
-        private const val BYTE_MASK = 0xFF
-        private const val SCALE_FRAME_CHECKSUM_SALT = 0x53
-        private const val HEX_RADIX = 16
-        private const val SCALE_CMD_CONNECT = 0x80
-        private const val SCALE_CMD_DISCONNECT = 0x87
-        private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
-        private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
-        private val SCALE_FRAME_PREFIX = byteArrayOf(0xFF.toByte(), 0x55.toByte(), 0xFF.toByte(), 0xFF.toByte())
-
-        private fun toHexString(arr: ByteArray): String = arr.joinToString("") {
-            (it.toInt() and BYTE_MASK).toString(HEX_RADIX).padStart(2, '0')
-        }
-
-        private fun buildScaleFrame(cmd: Int, name: String): ByteArray {
-            val nameBytes = name.encodeToByteArray()
-            val len = nameBytes.size
-            val buffer = ByteArray(SCALE_FRAME_DATA_OFFSET + len)
-            SCALE_FRAME_PREFIX.copyInto(buffer)
-            buffer[SCALE_FRAME_CMD_IDX] = cmd.toByte()
-            buffer[SCALE_FRAME_CMD_IDX + 1] = (len ushr BYTE_SHIFT).toByte()
-            buffer[SCALE_FRAME_CMD_IDX + 2] = (len and BYTE_MASK).toByte()
-            nameBytes.copyInto(buffer, destinationOffset = SCALE_FRAME_DATA_OFFSET)
-            var sum = 0
-            for (i in SCALE_FRAME_CMD_IDX until buffer.size) sum += buffer[i].toInt() and BYTE_MASK
-            return buffer + ((sum + SCALE_FRAME_CHECKSUM_SALT) and BYTE_MASK).toByte()
-        }
-    }
-
-    init {
-        observeIncomingData()
-        observeBleDisconnects()
-    }
+    private class Session(
+        val peripheral: BluetoothPeripheral,
+        val dataChar: BluetoothCharacteristic,
+        val ctrlChar: BluetoothCharacteristic,
+        val modbus: ModbusSession,
+    )
 
     private fun onHeartbeatReceived() {
         if (!_deviceState.value.smartScaleEnabled) return
@@ -201,40 +144,6 @@ class WendougeeDataSController(
         heartbeatTimeoutJob = scope.launch {
             delay(HEARTBEAT_TIMEOUT_MS)
             _deviceState.update { it.copy(smartScaleSearchActive = false) }
-        }
-    }
-
-    private fun observeIncomingData() {
-        scope.launch {
-            bleClient.incomingData.collect { cd ->
-                if (cd.value.isNotEmpty()) {
-                    val channel = if (cd.uuid.contains(CTRL_UUID_SUFFIX)) "CTRL" else "DATA"
-                    frameParser.handleIncomingFrame(cd.value, channel)
-                }
-            }
-        }
-    }
-
-    /**
-     * Watchdog: if BLE drops unexpectedly while connecting or connected, cancel the
-     * connect job and reset state. Does NOT start initialization — that's driven
-     * imperatively from [connect].
-     */
-    private fun observeBleDisconnects() {
-        watchdogJob = scope.launch {
-            bleClient.connectionState.collect { state ->
-                if (state is BleConnectionState.Disconnected) {
-                    val ours = _deviceState.value.connectionStatus
-                    if (ours == ConnectionStatus.Connecting ||
-                        ours == ConnectionStatus.Synchronizing ||
-                        ours == ConnectionStatus.Connected
-                    ) {
-                        Logger.withTag(TAG).w { "BLE dropped unexpectedly during $ours — resetting" }
-                        connectJob?.cancel()
-                        resetToDisconnected()
-                    }
-                }
-            }
         }
     }
 
@@ -247,131 +156,188 @@ class WendougeeDataSController(
             try {
                 _deviceState.update { it.copy(connectionStatus = ConnectionStatus.Connecting) }
 
-                val resolvedId = connectViaBle(ble)
-                if (resolvedId != ble.peripheralId) {
-                    Logger.withTag(TAG).i { "peripheralId changed: ${ble.peripheralId} → $resolvedId" }
-                    _resolvedConnection.emit(ble.copy(peripheralId = resolvedId))
+                val peripheral = resolvePeripheral(ble)
+                if (peripheral.uuid != ble.peripheralId) {
+                    Logger.withTag(TAG).i { "peripheralId changed: ${ble.peripheralId} → ${peripheral.uuid}" }
+                    _resolvedConnection.emit(ble.copy(peripheralId = peripheral.uuid))
                 }
+
+                blueFalcon.connect(peripheral)
+
+                val (dataChar, ctrlChar) = awaitCharacteristics(peripheral)
+                    ?: run {
+                        Logger.withTag(TAG).e { "Characteristics not ready — aborting connect" }
+                        blueFalcon.disconnect(peripheral)
+                        resetToDisconnected()
+                        return@launch
+                    }
+
+                tryChangeMtu(peripheral)
+
+                blueFalcon.notifyCharacteristic(peripheral, dataChar, notify = true)
+                blueFalcon.notifyCharacteristic(peripheral, ctrlChar, notify = true)
+
+                val modbus = modbusPlugin.session(
+                    peripheral = peripheral,
+                    requestCharacteristic = dataChar,
+                    responseCharacteristic = dataChar,
+                    unitId = MODBUS_UNIT_ID,
+                )
+                val active = Session(peripheral, dataChar, ctrlChar, modbus)
+                session = active
+
+                startObservingNotifications(active)
+                startWatchdog(peripheral)
 
                 _deviceState.update { it.copy(connectionStatus = ConnectionStatus.Synchronizing) }
 
-                if (!sendInitCommands()) return@launch
+                sendInitCommands(active)
 
                 _deviceState.update { it.copy(connectionStatus = ConnectionStatus.Connected) }
                 Logger.withTag(TAG).i { "Connected and ready" }
 
-                while (isActive) {
-                    runCatching { pollLongOnce() }
-                        .onFailure { Logger.withTag(TAG).w(it) { "Poll long missed" } }
-                    delay(POLL_BETWEEN_DELAY_MS)
-                    runCatching { pollShortOnce() }
-                        .onFailure { Logger.withTag(TAG).w(it) { "Poll short missed" } }
-                    delay(POLLING_INTERVAL_MS)
-                }
+                runPollingLoop(active)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Logger.withTag(TAG).e(e) { "Connect flow failed" }
-                bleClient.disconnect()
+                session?.peripheral?.let { runCatching { blueFalcon.disconnect(it) } }
                 resetToDisconnected()
             }
         }
     }
 
-    private suspend fun sendInitCommands(): Boolean {
-        val mtuSet = withTimeoutOrNull(MTU_TIMEOUT_MS) {
-            while (isActive) {
-                if (bleClient.changeMTU(MTU_SIZE)) break
-                delay(MTU_RETRY_DELAY_MS)
-            }
-            true
-        }
-        if (mtuSet == null) Logger.withTag(TAG).w { "MTU negotiation timed out" }
-        delay(POST_MTU_DELAY_MS)
-
-        val charsReady = withTimeoutOrNull(CHARS_READY_TIMEOUT_MS) {
-            while (isActive) {
-                val dataReady = bleClient.notifyCharacteristic(DATA_UUID_SUFFIX, true)
-                val ctrlReady = bleClient.notifyCharacteristic(CTRL_UUID_SUFFIX, true)
-                if (dataReady && ctrlReady) return@withTimeoutOrNull true
-                delay(CHARS_RETRY_DELAY_MS)
-            }
-            false
-        }
-        if (charsReady != true) {
-            Logger.withTag(TAG).e { "Characteristics not ready — aborting connect" }
-            bleClient.disconnect()
-            resetToDisconnected()
-            return false
-        }
-        delay(POST_CHARS_DELAY_MS)
-
-        write(DATA_UUID_SUFFIX, CMD_READ_CONFIG_LONG)
-        delay(INIT_CONFIG_DELAY_MS)
-        write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_QUERY)
-        delay(INIT_SCALE_DELAY_MS)
-        write(CTRL_UUID_SUFFIX, CMD_START_STREAMING)
-        if (_deviceState.value.smartScaleEnabled) {
-            delay(SCALE_STATUS_DELAY_MS)
-            write(CTRL_UUID_SUFFIX, CMD_SCALE_STATUS_REQUEST)
-            delay(SCALE_LIST_DELAY_MS)
-            write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
-        }
-        delay(POST_INIT_DELAY_MS)
-
-        pollLongOnce()
-        pollShortOnce()
-        return true
-    }
-
     /**
-     * 1) Try direct connect by saved [ble.peripheralId].
-     * 2) On failure, scan for a peripheral whose MAC (parsed from advertisement name
-     *    by [WendougeeBleDeviceDiscoverer]) matches [ble.macAddress].
-     *
-     * Returns the peripheralId that was actually used to connect.
+     * 1) Try saved peripheralId via [BlueFalcon.retrievePeripheral].
+     * 2) On miss, scan and match by advertised MAC (parsed from the advertisement name
+     *    by [WendougeeBleDeviceDiscoverer]).
      */
-    private suspend fun connectViaBle(ble: DeviceConnection.Ble): String {
-        runCatching { bleClient.connect(ble.peripheralId) }
-            .onSuccess { return ble.peripheralId }
-            .onFailure {
-                Logger.withTag(TAG).w(it) {
-                    "Direct connect by saved peripheralId=${ble.peripheralId} failed; scanning for MAC=${ble.macAddress}"
-                }
-            }
-
-        val newId = scanForMacInName(ble.macAddress, timeoutMs = 12_000L)
-            ?: throw BleConnectException("Device with MAC ${ble.macAddress} not found via scan")
-        bleClient.connect(newId)
-        return newId
+    private suspend fun resolvePeripheral(ble: DeviceConnection.Ble): BluetoothPeripheral {
+        blueFalcon.retrievePeripheral(ble.peripheralId)?.let { return it }
+        Logger.withTag(TAG).w {
+            "Peripheral ${ble.peripheralId} not in cache; scanning for MAC=${ble.macAddress}"
+        }
+        return scanForMac(ble.macAddress, timeoutMs = SCAN_TIMEOUT_MS)
+            ?: error("Device with MAC ${ble.macAddress} not found via scan")
     }
 
-    private suspend fun scanForMacInName(targetMac: String, timeoutMs: Long): String? {
-        bleClient.startScan()
+    private suspend fun scanForMac(targetMac: String, timeoutMs: Long): BluetoothPeripheral? {
+        val scanJob = scope.launch { blueFalcon.scan() }
         return try {
             withTimeoutOrNull(timeoutMs) {
-                bleClient.discoveredDevices
+                blueFalcon.peripherals
                     .mapNotNull { set ->
-                        set.firstOrNull { ble ->
-                            discoverer.macAddressOf(BleAdvertisement(ble.peripheralId, ble.name)) == targetMac
-                        }?.peripheralId
+                        set.firstOrNull { p ->
+                            discoverer.macAddressOf(BleAdvertisement(p.uuid, p.name)) == targetMac
+                        }
                     }
                     .first()
             }
         } finally {
-            bleClient.stopScan()
+            scanJob.cancel()
+            blueFalcon.stopScanning()
+        }
+    }
+
+    private suspend fun awaitCharacteristics(
+        peripheral: BluetoothPeripheral,
+    ): Pair<BluetoothCharacteristic, BluetoothCharacteristic>? = withTimeoutOrNull(CHARS_READY_TIMEOUT_MS) {
+        while (isActive) {
+            val data = peripheral.findBySuffix(DATA_UUID_SUFFIX)
+            val ctrl = peripheral.findBySuffix(CTRL_UUID_SUFFIX)
+            if (data != null && ctrl != null) {
+                delay(POST_CHARS_DELAY_MS)
+                return@withTimeoutOrNull data to ctrl
+            }
+            delay(CHARS_RETRY_DELAY_MS)
+        }
+        null
+    }
+
+    private suspend fun tryChangeMtu(peripheral: BluetoothPeripheral) {
+        val result = withTimeoutOrNull(MTU_TIMEOUT_MS) {
+            runCatching { blueFalcon.changeMTU(peripheral, MTU_SIZE) }
+        }
+        if (result == null || result.isFailure) {
+            Logger.withTag(TAG).w { "MTU negotiation failed or timed out" }
+        }
+        delay(POST_MTU_DELAY_MS)
+    }
+
+    private fun startObservingNotifications(active: Session) {
+        notificationJob?.cancel()
+        notificationJob = scope.launch {
+            merge(
+                active.dataChar.notifications.labeled("DATA"),
+                active.ctrlChar.notifications.labeled("CTRL"),
+            ).collect { (channel, bytes) ->
+                if (bytes.isNotEmpty()) frameParser.handleIncomingFrame(bytes, channel)
+            }
+        }
+    }
+
+    private fun startWatchdog(peripheral: BluetoothPeripheral) {
+        watchdogJob?.cancel()
+        watchdogJob = scope.launch {
+            while (isActive) {
+                delay(WATCHDOG_INTERVAL_MS)
+                if (blueFalcon.connectionState(peripheral) == BluetoothPeripheralState.Disconnected) {
+                    val ours = _deviceState.value.connectionStatus
+                    if (ours != ConnectionStatus.Disconnected) {
+                        Logger.withTag(TAG).w { "BLE dropped unexpectedly during $ours — resetting" }
+                        connectJob?.cancel()
+                        resetToDisconnected()
+                    }
+                    break
+                }
+            }
+        }
+    }
+
+    private suspend fun sendInitCommands(active: Session) {
+        write(active, active.dataChar, CMD_READ_CONFIG_LONG)
+        delay(INIT_CONFIG_DELAY_MS)
+        write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
+        delay(INIT_SCALE_DELAY_MS)
+        write(active, active.ctrlChar, CMD_START_STREAMING)
+        if (_deviceState.value.smartScaleEnabled) {
+            delay(SCALE_STATUS_DELAY_MS)
+            write(active, active.ctrlChar, CMD_SCALE_STATUS_REQUEST)
+            delay(SCALE_LIST_DELAY_MS)
+            write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
+        }
+        delay(POST_INIT_DELAY_MS)
+
+        pollLongOnce(active)
+        pollShortOnce(active)
+    }
+
+    private suspend fun runPollingLoop(active: Session) {
+        while (currentCoroutineIsActive()) {
+            runCatching { pollLongOnce(active) }
+                .onFailure { Logger.withTag(TAG).w(it) { "Poll long missed" } }
+            delay(POLL_BETWEEN_DELAY_MS)
+            runCatching { pollShortOnce(active) }
+                .onFailure { Logger.withTag(TAG).w(it) { "Poll short missed" } }
+            delay(POLLING_INTERVAL_MS)
         }
     }
 
     override fun disconnect() {
         Logger.withTag(TAG).i { "Disconnecting" }
         connectJob?.cancel()
-        bleClient.disconnect()
-        // resetToDisconnected will be called by the watchdog when BLE state changes to Disconnected
+        val p = session?.peripheral
+        scope.launch {
+            if (p != null) runCatching { blueFalcon.disconnect(p) }
+            resetToDisconnected()
+        }
     }
 
     private fun resetToDisconnected() {
         heartbeatTimeoutJob?.cancel()
+        watchdogJob?.cancel()
+        notificationJob?.cancel()
+        session = null
         _deviceState.update {
             it.copy(
                 connectionStatus = ConnectionStatus.Disconnected,
@@ -385,19 +351,19 @@ class WendougeeDataSController(
         _foundScales.value = emptyList()
     }
 
-    private suspend fun pollLongOnce() {
-        modbus.sendCustomCommandAndWaitForPrefix(
+    private suspend fun pollLongOnce(active: Session) {
+        active.modbus.sendAndAwaitPrefix(
             payload = CMD_POLLING_LONG,
             expectedPrefix = POLL_LONG_PREFIX,
-            timeoutMs = POLL_TIMEOUT_MS,
+            timeout = POLL_TIMEOUT_MS.milliseconds,
         )
     }
 
-    private suspend fun pollShortOnce() {
-        modbus.sendCustomCommandAndWaitForPrefix(
+    private suspend fun pollShortOnce(active: Session) {
+        active.modbus.sendAndAwaitPrefix(
             payload = CMD_POLLING_SHORT,
             expectedPrefix = POLL_SHORT_PREFIX,
-            timeoutMs = POLL_TIMEOUT_MS,
+            timeout = POLL_TIMEOUT_MS.milliseconds,
         )
     }
 
@@ -415,7 +381,7 @@ class WendougeeDataSController(
         }
         val stateValue = if (enabled) 0x00 else 0x01
 
-        modbus.writeSingleRegister(targetRegister, stateValue)
+        requireSession().modbus.writeSingleRegister(targetRegister, stateValue)
 
         Logger.withTag(
             TAG,
@@ -436,10 +402,9 @@ class WendougeeDataSController(
             Logger.withTag(TAG).e { "Temperature $temp out of safe range!" }
             return
         }
-
         if (_deviceState.value.config?.targetSteamTemp?.toInt() == temp) return
 
-        modbus.writeSingleRegister(WendougeeRegisters.STEAM_TEMPERATURE, temp)
+        requireSession().modbus.writeSingleRegister(WendougeeRegisters.STEAM_TEMPERATURE, temp)
         Logger.withTag(TAG).i { "Steam temperature set to $temp°C confirmed" }
         _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
@@ -454,7 +419,7 @@ class WendougeeDataSController(
         }
         if (_deviceState.value.config?.targetBrewTemp?.toInt() == temp) return
 
-        modbus.writeSingleRegister(WendougeeRegisters.BREW_TEMPERATURE, temp)
+        requireSession().modbus.writeSingleRegister(WendougeeRegisters.BREW_TEMPERATURE, temp)
         Logger.withTag(TAG).i { "Brew temperature set to $temp°C confirmed" }
         _deviceState.update { currentState ->
             val config = currentState.config ?: return@update currentState
@@ -501,7 +466,7 @@ class WendougeeDataSController(
         if (_deviceState.value.config?.heatingMode == heatingMode) return
 
         val modeValue = if (heatingMode == HeatingMode.FullSpeed) 0x01 else 0x00
-        modbus.writeSingleRegister(WendougeeRegisters.HEATING_MODE, modeValue)
+        requireSession().modbus.writeSingleRegister(WendougeeRegisters.HEATING_MODE, modeValue)
         Logger.withTag(TAG).i { "Heating mode set to $heatingMode confirmed" }
         _deviceState.update { it.copy(config = it.config?.copy(heatingMode = heatingMode)) }
     }
@@ -509,7 +474,10 @@ class WendougeeDataSController(
     override suspend fun setManualBrewPressure(pressure: Float) {
         if (_deviceState.value.config?.manualBrewPressure == pressure) return
 
-        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_PRESSURE, listOf((pressure * SENSOR_SCALE_FACTOR).toInt()))
+        requireSession().modbus.writeMultipleRegisters(
+            WendougeeRegisters.MANUAL_BREW_PRESSURE,
+            listOf((pressure * SENSOR_SCALE_FACTOR).toInt()),
+        )
         Logger.withTag(TAG).d { "Manual brew pressure set to $pressure bar confirmed" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
@@ -520,7 +488,10 @@ class WendougeeDataSController(
     override suspend fun setManualBrewTime(timeSec: Float) {
         if (_deviceState.value.config?.manualBrewTimeSec == timeSec) return
 
-        modbus.writeMultipleRegisters(WendougeeRegisters.MANUAL_BREW_TIME, listOf((timeSec * SENSOR_SCALE_FACTOR).toInt()))
+        requireSession().modbus.writeMultipleRegisters(
+            WendougeeRegisters.MANUAL_BREW_TIME,
+            listOf((timeSec * SENSOR_SCALE_FACTOR).toInt()),
+        )
         Logger.withTag(TAG).d { "Manual brew time set to $timeSec s confirmed" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
@@ -529,6 +500,7 @@ class WendougeeDataSController(
     }
 
     override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
+        val modbus = requireSession().modbus
         modbus.writeMultipleRegisters(WendougeeRegisters.CLEANING_TIME, listOf((timeSec * SENSOR_SCALE_FACTOR).toInt()))
         modbus.writeMultipleRegisters(
             WendougeeRegisters.CLEANING_STANDBY_TIME,
@@ -546,7 +518,7 @@ class WendougeeDataSController(
 
     override suspend fun setWaterAlarm(enabled: Boolean) {
         if (_deviceState.value.config?.waterAlarmEnabled == enabled) return
-        modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
+        requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
         Logger.withTag(TAG).d { "Water alarm set to $enabled" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
@@ -554,25 +526,25 @@ class WendougeeDataSController(
         }
     }
 
-    private suspend fun sendModbusPulse(onCommand: ByteArray, offCommand: ByteArray, label: String, regHi: Byte, regLo: Byte) {
-        modbus.writeAndAwaitModbus(onCommand, FC_COIL_WRITE, regHi, regLo)
+    private suspend fun sendModbusPulse(
+        onCommand: ByteArray,
+        offCommand: ByteArray,
+        label: String,
+        regHi: Byte,
+        regLo: Byte,
+    ) {
+        val modbus = requireSession().modbus
+        val matcher = ModbusSession.AddressMatcher(hi = regHi, lo = regLo)
+        modbus.sendAndAwaitFc(onCommand, FC_COIL_WRITE, matcher)
         delay(BREW_PULSE_MS)
-        modbus.writeAndAwaitModbus(offCommand, FC_COIL_WRITE, regHi, regLo)
+        modbus.sendAndAwaitFc(offCommand, FC_COIL_WRITE, matcher)
         Logger.withTag(TAG).d { "$label pulse completed and confirmed" }
     }
 
     override suspend fun startProfileBrewing(profile: BrewProfile) {
         Logger.withTag(TAG).i { "Starting profile brew: ${profile.name}" }
 
-        val commands = profileCompiler.buildProfileUploadCommands(profile)
-        for (cmd in commands) {
-            modbus.writeAndAwaitModbus(
-                cmd.payload,
-                expectedFc = cmd.expectedFc,
-                expectedRegHi = cmd.regHi,
-                expectedRegLo = cmd.regLo,
-            )
-        }
+        applyProfileWrites(profile, isBinding = false)
 
         Logger.withTag(TAG).d { "Profile uploaded, triggering brew pulse" }
         if (profile.mode == ProfileMode.FreeVariable) {
@@ -591,43 +563,48 @@ class WendougeeDataSController(
     override suspend fun bindProfile(profile: BrewProfile) {
         Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
 
-        val commands = profileCompiler.buildProfileUploadCommands(profile, isBinding = true)
-        for (cmd in commands) {
-            modbus.writeAndAwaitModbus(
-                cmd.payload,
-                expectedFc = cmd.expectedFc,
-                expectedRegHi = cmd.regHi,
-                expectedRegLo = cmd.regLo,
-            )
-        }
+        applyProfileWrites(profile, isBinding = true)
 
         Logger.withTag(
             TAG,
         ).d { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
-        modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
+        requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
+    }
+
+    private suspend fun applyProfileWrites(profile: BrewProfile, isBinding: Boolean) {
+        val modbus = requireSession().modbus
+        for (w in profileCompiler.buildProfileWrites(profile, isBinding)) {
+            when (w) {
+                is ProfileWrite.Single -> modbus.writeSingleRegister(w.register, w.value)
+                is ProfileWrite.Multiple -> modbus.writeMultipleRegisters(w.register, w.values)
+            }
+        }
     }
 
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
         Logger.withTag(TAG).i { "Smart scale connectivity: $enabled" }
         _deviceState.update { it.copy(smartScaleEnabled = enabled) }
+        val active = requireSession()
         if (enabled) {
             _foundScales.value = emptyList()
-            write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_ON)
+            write(active, active.ctrlChar, CMD_SCALE_SEARCH_ON)
             delay(SCALE_SEARCH_AFTER_ENABLE_DELAY_MS)
-            write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
+            write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
         } else {
-            write(CTRL_UUID_SUFFIX, CMD_SCALE_SEARCH_OFF)
+            write(active, active.ctrlChar, CMD_SCALE_SEARCH_OFF)
         }
     }
 
     override suspend fun requestSmartScaleList() {
         Logger.withTag(TAG).d { "Requesting smart scale list..." }
-        write(CTRL_UUID_SUFFIX, CMD_SCALE_LIST_REQUEST)
+        val active = requireSession()
+        write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
     }
 
     override suspend fun connectSmartScale(name: String) {
         Logger.withTag(TAG).i { "Connecting smart scale: $name" }
-        write(CTRL_UUID_SUFFIX, buildScaleFrame(SCALE_CMD_CONNECT, name))
+        val active = requireSession()
+        write(active, active.ctrlChar, buildScaleFrame(SCALE_CMD_CONNECT, name))
     }
 
     override suspend fun disconnectSmartScale() {
@@ -636,12 +613,109 @@ class WendougeeDataSController(
             return
         }
         Logger.withTag(TAG).i { "Disconnecting smart scale: $name" }
-        write(CTRL_UUID_SUFFIX, buildScaleFrame(SCALE_CMD_DISCONNECT, name))
+        val active = requireSession()
+        write(active, active.ctrlChar, buildScaleFrame(SCALE_CMD_DISCONNECT, name))
     }
 
-    private suspend fun write(uuid: String, data: ByteArray) {
-        val channel = if (uuid.contains(CTRL_UUID_SUFFIX)) "CTRL" else "DATA"
+    private suspend fun write(
+        active: Session,
+        characteristic: BluetoothCharacteristic,
+        data: ByteArray,
+    ) {
+        val channel = if (characteristic === active.ctrlChar) "CTRL" else "DATA"
         Logger.withTag(BLE_TRACE_TAG).v { "→ [$channel] ${toHexString(data)} (${data.size}B)" }
-        bleClient.writeCharacteristic(uuid, data)
+        blueFalcon.writeCharacteristic(active.peripheral, characteristic, data, WRITE_TYPE_NO_RESPONSE)
+    }
+
+    private fun requireSession(): Session =
+        session ?: error("WendougeeDataSController: no active BLE session (not connected)")
+
+    private fun BluetoothPeripheral.findBySuffix(suffix: String): BluetoothCharacteristic? =
+        characteristics.firstOrNull { it.uuid.toString().lowercase().contains(suffix) }
+
+    private fun kotlinx.coroutines.flow.Flow<ByteArray>.labeled(
+        channel: String,
+    ): kotlinx.coroutines.flow.Flow<Pair<String, ByteArray>> =
+        kotlinx.coroutines.flow.flow { collect { emit(channel to it) } }
+
+    private suspend fun currentCoroutineIsActive(): Boolean {
+        val job = currentCoroutineContext()[Job]
+        return job?.isActive ?: true
+    }
+
+    companion object {
+        private const val TAG = "WendougeeController"
+        private const val BLE_TRACE_TAG = "WendougeeBle"
+
+        const val DATA_UUID_SUFFIX = "2b10"
+        const val CTRL_UUID_SUFFIX = "2c10"
+
+        private const val POLLING_INTERVAL_MS = 200L
+        private const val BREW_PULSE_MS = 100L
+        private const val HEARTBEAT_TIMEOUT_MS = 10_000L
+
+        private const val MTU_SIZE = 512
+        private const val MTU_TIMEOUT_MS = 4_000L
+        private const val POST_MTU_DELAY_MS = 500L
+        private const val CHARS_READY_TIMEOUT_MS = 10_000L
+        private const val CHARS_RETRY_DELAY_MS = 200L
+        private const val POST_CHARS_DELAY_MS = 300L
+        private const val INIT_CONFIG_DELAY_MS = 300L
+        private const val INIT_SCALE_DELAY_MS = 400L
+        private const val SCALE_STATUS_DELAY_MS = 100L
+        private const val SCALE_LIST_DELAY_MS = 200L
+        private const val POST_INIT_DELAY_MS = 300L
+        private const val POLL_BETWEEN_DELAY_MS = 30L
+        private const val POLL_TIMEOUT_MS = 800L
+        private const val SCAN_TIMEOUT_MS = 12_000L
+        private const val WATCHDOG_INTERVAL_MS = 1_000L
+        private const val FC_COIL_WRITE: Byte = 0x05
+        private const val MODBUS_UNIT_ID: Byte = 0x01
+        private const val SENSOR_SCALE_FACTOR = 10
+        private const val BREW_MAX_TEMP = 110
+        private const val STEAM_MAX_TEMP = 140
+        private const val PADDLE_PRESSURE_MAX_INT = 120
+        private const val PADDLE_TIME_MAX = 60
+        private const val CLEANING_TIME_MAX = 60
+        private const val CLEANING_REST_MAX = 60
+        private const val CLEANING_COUNT_MAX = 10
+        private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
+        private const val COIL_MANUAL_BREW = 0x9A
+        private const val COIL_SHORT_PRESS = 0x96
+        private const val COIL_CLEANING = 0x9B
+        private const val COIL_PROFILE_FREE = 0x9E
+        private const val SCALE_FRAME_DATA_OFFSET = 7
+        private const val SCALE_FRAME_CMD_IDX = 4
+        private const val BYTE_SHIFT = 8
+        private const val BYTE_MASK = 0xFF
+        private const val SCALE_FRAME_CHECKSUM_SALT = 0x53
+        private const val HEX_RADIX = 16
+        private const val SCALE_CMD_CONNECT = 0x80
+        private const val SCALE_CMD_DISCONNECT = 0x87
+
+        /** WRITE_TYPE_NO_RESPONSE on Android; ignored on iOS/Windows. */
+        private const val WRITE_TYPE_NO_RESPONSE = 2
+
+        private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
+        private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
+        private val SCALE_FRAME_PREFIX = byteArrayOf(0xFF.toByte(), 0x55.toByte(), 0xFF.toByte(), 0xFF.toByte())
+
+        private fun toHexString(arr: ByteArray): String = arr.joinToString("") {
+            (it.toInt() and BYTE_MASK).toString(HEX_RADIX).padStart(2, '0')
+        }
+
+        private fun buildScaleFrame(cmd: Int, name: String): ByteArray {
+            val nameBytes = name.encodeToByteArray()
+            val len = nameBytes.size
+            val buffer = ByteArray(SCALE_FRAME_DATA_OFFSET + len)
+            SCALE_FRAME_PREFIX.copyInto(buffer)
+            buffer[SCALE_FRAME_CMD_IDX] = cmd.toByte()
+            buffer[SCALE_FRAME_CMD_IDX + 1] = (len ushr BYTE_SHIFT).toByte()
+            buffer[SCALE_FRAME_CMD_IDX + 2] = (len and BYTE_MASK).toByte()
+            nameBytes.copyInto(buffer, destinationOffset = SCALE_FRAME_DATA_OFFSET)
+            var sum = 0
+            for (i in SCALE_FRAME_CMD_IDX until buffer.size) sum += buffer[i].toInt() and BYTE_MASK
+            return buffer + ((sum + SCALE_FRAME_CHECKSUM_SALT) and BYTE_MASK).toByte()
+        }
     }
 }

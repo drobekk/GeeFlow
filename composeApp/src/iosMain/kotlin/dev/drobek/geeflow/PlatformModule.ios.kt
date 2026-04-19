@@ -2,13 +2,15 @@ package dev.drobek.geeflow
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import dev.bluefalcon.BlueFalcon
+import dev.bluefalcon.core.BlueFalcon
+import dev.bluefalcon.engine.ios.IosEngine
 import dev.drobek.geeflow.core.datastore.createIosDataStore
 import dev.drobek.geeflow.data.db.DatabaseDriverFactory
 import dev.drobek.geeflow.data.db.NativeDatabaseDriverFactory
+import dev.drobek.geeflow.data.device.ble.modbus.ModbusPlugin
+import dev.drobek.geeflow.data.device.ble.modbus.installModbus
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
-import platform.UIKit.UIApplication
 
 @Module
 actual class PlatformModule {
@@ -19,5 +21,11 @@ actual class PlatformModule {
     fun dataStore(): DataStore<Preferences> = createIosDataStore()
 
     @Single
-    fun blueFalcon(): BlueFalcon = BlueFalcon(null, UIApplication.sharedApplication)
+    fun modbusPlugin(): ModbusPlugin = installModbus()
+
+    @Single
+    fun blueFalcon(modbusPlugin: ModbusPlugin): BlueFalcon = BlueFalcon {
+        engine = IosEngine()
+        install(modbusPlugin)
+    }
 }

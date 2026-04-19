@@ -44,7 +44,6 @@ kotlin {
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptiveLayout)
             implementation(libs.jetbrains.material3.adaptiveNavigation3)
-            implementation(libs.blue.falcon)
             implementation(libs.kermit)
         }
         commonTest.dependencies {
@@ -53,9 +52,14 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.blue.falcon.engine.windows)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
+            implementation(libs.blue.falcon.engine.android)
+        }
+        iosMain.dependencies {
+            implementation(libs.blue.falcon.engine.ios)
         }
     }
 }

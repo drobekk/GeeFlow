@@ -16,7 +16,7 @@ kotlin {
             api(projects.data.brew)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.blue.falcon)
+            api(libs.blue.falcon.core)
             implementation(libs.kermit)
         }
     }

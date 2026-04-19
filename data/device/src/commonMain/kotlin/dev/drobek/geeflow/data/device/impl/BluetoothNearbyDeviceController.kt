@@ -1,11 +1,12 @@
 package dev.drobek.geeflow.data.device.impl
 
 import co.touchlab.kermit.Logger
+import dev.bluefalcon.core.BlueFalcon
+import dev.bluefalcon.core.BluetoothPeripheral
+import dev.drobek.geeflow.data.device.DiscoveredBleDevice
 import dev.drobek.geeflow.data.device.NearbyDevicesController
-import dev.drobek.geeflow.data.device.ble.BleClient
 import dev.drobek.geeflow.data.device.impl.discovery.BleAdvertisement
 import dev.drobek.geeflow.data.device.impl.discovery.BleDeviceDiscoverer
-import dev.drobek.geeflow.data.device.model.Device
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,29 +17,27 @@ import org.koin.core.annotation.Singleton
 
 @Singleton
 class BluetoothNearbyDeviceController(
-    private val bleClient: BleClient,
+    private val blueFalcon: BlueFalcon,
     private val discoverers: List<BleDeviceDiscoverer>,
     private val scope: CoroutineScope,
 ) : NearbyDevicesController {
 
-    private val _discoveredDevices = MutableStateFlow<Set<Device>>(emptySet())
-    override val discoveredDevices: StateFlow<Set<Device>> = _discoveredDevices.asStateFlow()
+    private val _discoveredDevices = MutableStateFlow<Set<DiscoveredBleDevice>>(emptySet())
+    override val discoveredDevices: StateFlow<Set<DiscoveredBleDevice>> =
+        _discoveredDevices.asStateFlow()
 
-    private var collectorJob: Job? = null
+    private var scanJob: Job? = null
 
     override fun startScanning() {
         Logger.d { "Start scanning for nearby Bluetooth devices" }
+        scanJob?.cancel()
         _discoveredDevices.value = emptySet()
-        bleClient.startScan()
-        collectorJob?.cancel()
-        collectorJob = scope.launch {
-            bleClient.discoveredDevices.collect { bleSet ->
-                _discoveredDevices.value = bleSet
-                    .mapNotNull { ble ->
-                        discoverers.firstNotNullOfOrNull {
-                            it.tryRecognise(BleAdvertisement(ble.peripheralId, ble.name))
-                        }
-                    }
+        blueFalcon.clearPeripherals()
+        scanJob = scope.launch {
+            launch { blueFalcon.scan() }
+            blueFalcon.peripherals.collect { peripherals ->
+                _discoveredDevices.value = peripherals
+                    .mapNotNull { peripheral -> recognise(peripheral) }
                     .toSet()
             }
         }
@@ -46,7 +45,18 @@ class BluetoothNearbyDeviceController(
 
     override fun stopScanning() {
         Logger.d { "Stop scanning" }
-        collectorJob?.cancel()
-        bleClient.stopScan()
+        scanJob?.cancel()
+        scanJob = null
+        scope.launch { blueFalcon.stopScanning() }
+    }
+
+    private fun recognise(peripheral: BluetoothPeripheral): DiscoveredBleDevice? {
+        val advertisement = BleAdvertisement(
+            peripheralId = peripheral.uuid,
+            name = peripheral.name,
+        )
+        val device = discoverers.firstNotNullOfOrNull { it.tryRecognise(advertisement) }
+            ?: return null
+        return DiscoveredBleDevice(device = device, peripheral = peripheral)
     }
 }

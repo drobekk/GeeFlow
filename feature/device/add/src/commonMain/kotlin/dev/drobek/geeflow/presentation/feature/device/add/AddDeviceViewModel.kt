@@ -3,6 +3,7 @@ package dev.drobek.geeflow.presentation.feature.device.add
 import dev.drobek.geeflow.core.presentation.BaseViewModel
 import dev.drobek.geeflow.core.presentation.Platform
 import dev.drobek.geeflow.core.presentation.launch
+import dev.drobek.geeflow.data.device.DiscoveredBleDevice
 import dev.drobek.geeflow.data.device.NearbyDevicesController
 import dev.drobek.geeflow.data.device.model.Device
 import dev.drobek.geeflow.data.device.model.DeviceConnection
@@ -88,17 +89,18 @@ internal class AddDeviceViewModel(
     }
 
     private fun onDeviceClicked(id: String) {
-        val device = nearbyDevicesController.discoveredDevices.value
-            .find { (it.connection as? DeviceConnection.Ble)?.peripheralId == id }
+        val discovered = nearbyDevicesController.discoveredDevices.value
+            .find { (it.device.connection as? DeviceConnection.Ble)?.peripheralId == id }
             ?: return
-        addDeviceAndNavigate(device)
+        addDeviceAndNavigate(discovered.device)
     }
 
-    private fun onDevicesFound(devices: Set<Device>) {
+    private fun onDevicesFound(devices: Set<DiscoveredBleDevice>) {
         (viewState.value.method as? NearbyDevices)?.let {
-            val items = devices.mapNotNull { device ->
-                val ble = device.connection as? DeviceConnection.Ble ?: return@mapNotNull null
-                DeviceItem(id = ble.peripheralId, name = device.name)
+            val items = devices.mapNotNull { discovered ->
+                val ble = discovered.device.connection as? DeviceConnection.Ble
+                    ?: return@mapNotNull null
+                DeviceItem(id = ble.peripheralId, name = discovered.device.name)
             }
             modify { copy(method = it.copy(devices = items)) }
         }
