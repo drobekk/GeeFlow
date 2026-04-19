@@ -46,6 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -53,6 +54,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
@@ -164,6 +166,13 @@ class WendougeeDataSController(
 
                 blueFalcon.connect(peripheral)
 
+                if (!awaitConnected(peripheral)) {
+                    Logger.withTag(TAG).e { "Connection did not reach Connected state — aborting" }
+                    runCatching { blueFalcon.disconnect(peripheral) }
+                    resetToDisconnected()
+                    return@launch
+                }
+
                 val (dataChar, ctrlChar) = awaitCharacteristics(peripheral)
                     ?: run {
                         Logger.withTag(TAG).e { "Characteristics not ready — aborting connect" }
@@ -208,12 +217,14 @@ class WendougeeDataSController(
     }
 
     /**
-     * 1) Try saved peripheralId via [BlueFalcon.retrievePeripheral].
-     * 2) On miss, scan and match by advertised MAC (parsed from the advertisement name
-     *    by [WendougeeBleDeviceDiscoverer]).
+     * On Android, BlueFalcon's engine only populates service/characteristic data on peripherals
+     * already present in its `peripherals` StateFlow. `retrievePeripheral()` hands back a detached
+     * instance, so callbacks silently drop updates — we must use a scan-cached instance instead.
+     * 1) Reuse the cached peripheral if still present (e.g. from pairing's scan or a prior session).
+     * 2) Otherwise scan for the MAC (which registers the peripheral in the engine cache).
      */
     private suspend fun resolvePeripheral(ble: DeviceConnection.Ble): BluetoothPeripheral {
-        blueFalcon.retrievePeripheral(ble.peripheralId)?.let { return it }
+        blueFalcon.peripherals.value.firstOrNull { it.uuid == ble.peripheralId }?.let { return it }
         Logger.withTag(TAG).w {
             "Peripheral ${ble.peripheralId} not in cache; scanning for MAC=${ble.macAddress}"
         }
@@ -239,10 +250,44 @@ class WendougeeDataSController(
         }
     }
 
+    private suspend fun awaitConnected(peripheral: BluetoothPeripheral): Boolean =
+        withTimeoutOrNull(CONNECT_TIMEOUT_MS) {
+            while (isActive) {
+                if (blueFalcon.connectionState(peripheral) == BluetoothPeripheralState.Connected) {
+                    return@withTimeoutOrNull true
+                }
+                delay(CONNECT_RETRY_DELAY_MS)
+            }
+            false
+        } ?: false
+
     private suspend fun awaitCharacteristics(
         peripheral: BluetoothPeripheral,
     ): Pair<BluetoothCharacteristic, BluetoothCharacteristic>? = withTimeoutOrNull(CHARS_READY_TIMEOUT_MS) {
+        // Windows BLE needs a brief settle after Connected before the first GATT op.
+        delay(POST_CONNECT_SETTLE_MS)
+        // Android auto-discovers after connect; Windows/iOS require explicit calls.
+        Logger.withTag(TAG).d { "Triggering discoverServices" }
+        runCatching { blueFalcon.discoverServices(peripheral) }
+            .onFailure { Logger.withTag(TAG).w(it) { "discoverServices threw" } }
+        val requested = mutableSetOf<String>()
+        var lastServiceCount = -1
+        var lastCharCount = -1
         while (isActive) {
+            for (service in peripheral.services) {
+                if (requested.add(service.uuid.toString())) {
+                    Logger.withTag(TAG).d { "discoverCharacteristics for ${service.uuid}" }
+                    runCatching { blueFalcon.discoverCharacteristics(peripheral, service) }
+                        .onFailure { Logger.withTag(TAG).w(it) { "discoverCharacteristics threw" } }
+                }
+            }
+            val services = peripheral.services.size
+            val chars = peripheral.characteristics.size
+            if (services != lastServiceCount || chars != lastCharCount) {
+                Logger.withTag(TAG).d { "services=$services chars=$chars" }
+                lastServiceCount = services
+                lastCharCount = chars
+            }
             val data = peripheral.findBySuffix(DATA_UUID_SUFFIX)
             val ctrl = peripheral.findBySuffix(CTRL_UUID_SUFFIX)
             if (data != null && ctrl != null) {
@@ -633,10 +678,9 @@ class WendougeeDataSController(
     private fun BluetoothPeripheral.findBySuffix(suffix: String): BluetoothCharacteristic? =
         characteristics.firstOrNull { it.uuid.toString().lowercase().contains(suffix) }
 
-    private fun kotlinx.coroutines.flow.Flow<ByteArray>.labeled(
+    private fun Flow<ByteArray>.labeled(
         channel: String,
-    ): kotlinx.coroutines.flow.Flow<Pair<String, ByteArray>> =
-        kotlinx.coroutines.flow.flow { collect { emit(channel to it) } }
+    ): Flow<Pair<String, ByteArray>> = flow { collect { emit(channel to it) } }
 
     private suspend fun currentCoroutineIsActive(): Boolean {
         val job = currentCoroutineContext()[Job]
@@ -658,6 +702,9 @@ class WendougeeDataSController(
         private const val MTU_TIMEOUT_MS = 4_000L
         private const val POST_MTU_DELAY_MS = 500L
         private const val CHARS_READY_TIMEOUT_MS = 10_000L
+        private const val CONNECT_TIMEOUT_MS = 10_000L
+        private const val CONNECT_RETRY_DELAY_MS = 100L
+        private const val POST_CONNECT_SETTLE_MS = 500L
         private const val CHARS_RETRY_DELAY_MS = 200L
         private const val POST_CHARS_DELAY_MS = 300L
         private const val INIT_CONFIG_DELAY_MS = 300L

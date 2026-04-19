@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.JavaExec
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -21,6 +22,7 @@ kotlin {
             linkerOpts("-lsqlite3", "-lz")
         }
     }
+
 
     sourceSets {
         commonMain.dependencies {
@@ -91,11 +93,21 @@ tasks.configureEach {
     }
 }
 
+val nativeLibPath: String? = (project.findProperty("nativeArch") as String?)
+    ?.let { "${project.projectDir}/resources/$it" }
+
+tasks.withType<JavaExec>().configureEach {
+    nativeLibPath?.let { systemProperty("java.library.path", it) }
+}
+
 compose.desktop {
     application {
         mainClass = "dev.drobek.geeflow.MainKt"
 
+        nativeLibPath?.let { jvmArgs += "-Djava.library.path=$it" }
+
         nativeDistributions {
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "dev.drobek.geeflow"
             packageVersion = "1.0.0"
