@@ -4,12 +4,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -58,6 +60,7 @@ fun App(closeApp: () -> Unit) {
         GeeFlowTheme(
             darkMode = darkMode,
             colorScheme = getColorScheme(appearance, darkMode),
+            modifier = Modifier.fillMaxSize(),
         ) {
             ThemeModeEffect(darkTheme = darkMode)
             KeepScreenOnEffect(appearance.keepScreenOn)

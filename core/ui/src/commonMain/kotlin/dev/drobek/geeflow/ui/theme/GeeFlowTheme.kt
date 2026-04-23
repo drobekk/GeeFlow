@@ -1,6 +1,5 @@
 package dev.drobek.geeflow.ui.theme
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,6 +13,7 @@ import dev.drobek.geeflow.ui.theme.colorscheme.espressoColorScheme
 fun GeeFlowTheme(
     darkMode: Boolean,
     colorScheme: ColorScheme,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     val spacing = if (isWidthExpanded()) expandedSpacing() else compactSpacing()
@@ -28,7 +28,7 @@ fun GeeFlowTheme(
             typography = geeFlowTypography(),
             content = {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = modifier,
                     color = colorScheme.surface,
                     content = content,
                 )

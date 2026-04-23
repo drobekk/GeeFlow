@@ -23,9 +23,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_off
 import geeflow.core.ui.generated.resources.common_on
@@ -97,19 +98,10 @@ fun GeeFlowSwitch(
 
 private const val DisabledAlpha = 0.38f
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@Preview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    Row(Modifier.width(200.dp)) {
-        GeeFlowSwitch(checked = false, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(16.dp))
-        GeeFlowSwitch(checked = true, onCheckedChange = {}, modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-@Preview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+@GeeFlowComponentPreview
+private fun Preview() {
     Row(Modifier.width(200.dp)) {
         GeeFlowSwitch(checked = false, onCheckedChange = {}, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(16.dp))

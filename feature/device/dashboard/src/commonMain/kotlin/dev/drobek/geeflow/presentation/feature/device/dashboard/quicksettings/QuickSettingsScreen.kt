@@ -29,7 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.Navigator
@@ -42,7 +43,7 @@ import dev.drobek.geeflow.ui.components.GeeFlowSwitch
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.core.ui.generated.resources.common_brew_boiler
 import geeflow.core.ui.generated.resources.common_confirm
 import geeflow.core.ui.generated.resources.common_steam_boiler
@@ -220,9 +221,10 @@ private fun Buttons(
     )
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@Preview
-private fun QuickSettingsPreviewLight() = GeeFlowThemePreview(false) {
+@PreviewLightDark
+private fun QuickSettingsPreviewLight() {
     QuickSettingsContent(
         viewState = QuickSettingsViewState(
             steamBoiler = Boiler(
@@ -240,23 +242,3 @@ private fun QuickSettingsPreviewLight() = GeeFlowThemePreview(false) {
     )
 }
 
-@Composable
-@Preview
-private fun QuickSettingsPreviewDark() = GeeFlowThemePreview(true) {
-    QuickSettingsContent(
-        viewState = QuickSettingsViewState(
-            steamBoiler = Boiler(
-                enabled = false,
-                actualTemp = 122.0f,
-                selectedTemp = "125",
-            ),
-            brewBoiler = Boiler(
-                enabled = true,
-                actualTemp = 93.5f,
-                selectedTemp = "93",
-            ),
-            applying = true,
-        ),
-        onEvent = {},
-    )
-}
