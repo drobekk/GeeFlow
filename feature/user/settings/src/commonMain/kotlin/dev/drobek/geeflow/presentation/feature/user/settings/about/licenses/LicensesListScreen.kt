@@ -1,6 +1,8 @@
 package dev.drobek.geeflow.presentation.feature.user.settings.about.licenses
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.plus
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -13,6 +15,8 @@ import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import dev.drobek.geeflow.navigation.NavEvent
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
+import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.theme.GeeFlowTheme
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_about_licenses
 import org.jetbrains.compose.resources.stringResource
@@ -26,17 +30,19 @@ internal fun LicensesListScreen(
     val libraries by produceLibraries {
         Res.readBytes("files/aboutlibraries.json").decodeToString()
     }
+    val modifier = if(!isWidthExpanded()) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier
     GeeFlowScaffold(
         title = stringResource(Res.string.user_settings_about_licenses),
         subtitle = null,
         navIconClick = { navigator.navigate(NavEvent.Back) },
         scrollBehavior = scrollBehavior,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier,
         content = { paddingValues ->
             LibrariesContainer(
                 libraries = libraries,
-                contentPadding = paddingValues,
-                modifier = Modifier.fillMaxSize(),
+                contentPadding = paddingValues + PaddingValues(vertical = GeeFlowTheme.spacing.contentVertical),
+                modifier = Modifier
+                    .fillMaxSize(),
             )
         },
     )

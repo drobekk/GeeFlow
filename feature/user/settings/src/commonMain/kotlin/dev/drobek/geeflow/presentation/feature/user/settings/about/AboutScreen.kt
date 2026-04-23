@@ -39,6 +39,7 @@ import geeflow.feature.user.settings.generated.resources.user_settings_about_sou
 import geeflow.feature.user.settings.generated.resources.user_settings_about_source_code_description
 import geeflow.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.feature.user.settings.generated.resources.user_settings_about_version
+import dev.drobek.geeflow.BuildKonfig
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -140,7 +141,7 @@ private fun AboutContent(
         )
         GeeFlowListItem(
             title = stringResource(Res.string.user_settings_about_version),
-            subtitle = "1.0.0", // TODO Get version from BuildKonfig lib
+            subtitle = BuildKonfig.APP_VERSION,
             modifier = Modifier
                 .fillMaxWidth(),
         )

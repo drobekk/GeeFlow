@@ -8,6 +8,7 @@ dependencies {
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.compose.compiler.gradlePlugin)
     compileOnly(libs.sqldelight.gradlePlugin)
+    implementation(libs.buildKonfig.gradlePlugin)
     implementation(libs.detekt.gradlePlugin)
 }
 
@@ -47,6 +48,10 @@ gradlePlugin {
         register("detekt") {
             id = "detekt"
             implementationClass = "dev.drobek.geeflow.buildlogic.DetektConventionPlugin"
+        }
+        register("kmpBuildKonfig") {
+            id = "kmp.buildkonfig"
+            implementationClass = "dev.drobek.geeflow.buildlogic.KmpBuildKonfigConventionPlugin"
         }
     }
 }

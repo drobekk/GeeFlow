@@ -76,28 +76,22 @@ koinCompiler {
     debugLogs = false
 }
 
-aboutLibraries {
-    export {
-        outputPath = file("src/commonMain/composeResources/files/aboutlibraries.json")
-        prettyPrint = true
-    }
-    library {
-        duplicationMode = com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
-    }
-}
-
-tasks.configureEach {
-    if (name.contains("generateComposeResClass", ignoreCase = true) ||
-        name.contains("copyNonXmlValueResources", ignoreCase = true)) {
-        dependsOn("exportLibraryDefinitions")
-    }
-}
 
 val nativeLibPath: String? = (project.findProperty("nativeArch") as String?)
     ?.let { "${project.projectDir}/resources/$it" }
 
 tasks.withType<JavaExec>().configureEach {
     nativeLibPath?.let { systemProperty("java.library.path", it) }
+}
+
+aboutLibraries {
+    export {
+        outputPath = file("../feature/user/settings/src/commonMain/composeResources/files/aboutlibraries.json")
+        prettyPrint = true
+    }
+    library {
+        duplicationMode = com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
+    }
 }
 
 compose.desktop {
@@ -109,8 +103,8 @@ compose.desktop {
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "dev.drobek.geeflow"
-            packageVersion = "1.0.0"
+            packageName = libs.versions.appPackageName.get()
+            packageVersion = libs.versions.appVersion.get()
         }
     }
 }

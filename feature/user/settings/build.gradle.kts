@@ -4,6 +4,14 @@ plugins {
     alias(libs.plugins.koin.compiler)
 }
 
+tasks.configureEach {
+    if (name.contains("generateComposeResClass", ignoreCase = true) ||
+        name.contains("copyNonXmlValueResources", ignoreCase = true)
+    ) {
+        dependsOn(":composeApp:exportLibraryDefinitions")
+    }
+}
+
 koinCompiler {
     compileSafety = false
 }
