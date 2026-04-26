@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,8 +52,8 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.Profile
 import dev.drobek.geeflow.ui.EventsDispatcher
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.disabled
 import kotlinx.coroutines.launch
 
@@ -345,27 +346,19 @@ private enum class CompactDashboardPage {
     Profiles
 }
 
-@Composable
-private fun DeviceDashboardPreview(isDark: Boolean) {
-    val state = remember { mutableStateOf(getMockDeviceDashboardViewState()) }
-    val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
-    GeeFlowThemePreview(isDark) {
-        DeviceDashboardContent(
-            viewState = state.value,
-            profileListViewState = getMockProfileListViewState(),
-            onProfileListEvent = {},
-            pagerState = pagerState,
-        )
-    }
-}
-
 private const val MainColumnWeight = 0.7f
 private const val SideColumnWeight = 0.3f
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = DeviceDashboardPreview(false)
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = DeviceDashboardPreview(true)
+private fun Preview() {
+    val state = remember { mutableStateOf(getMockDeviceDashboardViewState()) }
+    val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
+    DeviceDashboardContent(
+        viewState = state.value,
+        profileListViewState = getMockProfileListViewState(),
+        onProfileListEvent = {},
+        pagerState = pagerState,
+    )
+}

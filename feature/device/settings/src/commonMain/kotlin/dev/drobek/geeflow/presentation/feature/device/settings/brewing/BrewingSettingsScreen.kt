@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.NavigatorEffect
@@ -53,9 +54,9 @@ import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.isWidthLarge
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_brew_boiler
 import geeflow.core.ui.generated.resources.common_pressure
 import geeflow.core.ui.generated.resources.common_steam_boiler
@@ -373,14 +374,9 @@ private fun BoilerHeader(
 @Composable
 private fun previewViewState() = BrewingSettingsViewState(applyButtonVisible = true)
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    BrewSettingsContent(previewViewState())
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+private fun Preview() {
     BrewSettingsContent(previewViewState())
 }

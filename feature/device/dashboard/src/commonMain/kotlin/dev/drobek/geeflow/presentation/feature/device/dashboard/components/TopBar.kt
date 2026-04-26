@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.AlarmClicked
@@ -70,8 +71,8 @@ import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Pressure
 import dev.drobek.geeflow.ui.icons.Steam
 import dev.drobek.geeflow.ui.icons.Temperature
-import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.core.ui.generated.resources.common_settings
 import geeflow.feature.device.dashboard.generated.resources.Res
 import geeflow.feature.device.dashboard.generated.resources.device_dashboard_alarm
@@ -396,9 +397,10 @@ private fun ParameterItem(
 
 private const val WarningAnimationMs = 500
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
+@GeeFlowComponentPreview
+private fun Preview() {
     var alarmOn by remember { mutableStateOf(false) }
     TopBar(
         device = Device(
@@ -414,21 +416,5 @@ private fun PreviewLight() = GeeFlowThemePreview(false) {
         onEvent = {
             alarmOn = !alarmOn
         },
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
-    TopBar(
-        device = Device(
-            name = "Wendougee Data-S",
-            brewBoilerTemp = "93°",
-            steamBoilerTemp = "125°",
-            pressure = "9.0",
-            connectionStatus = Device.ConnectionStatus.Connected,
-            smartScaleConnected = true,
-            alarm = true,
-        ),
     )
 }

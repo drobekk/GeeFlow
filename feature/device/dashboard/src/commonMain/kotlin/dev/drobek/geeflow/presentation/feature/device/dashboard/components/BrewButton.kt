@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.components.GeeFlowLogoShape
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
@@ -52,8 +53,8 @@ import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Logo
 import dev.drobek.geeflow.ui.icons.Manual
 import dev.drobek.geeflow.ui.modifier.conditional
-import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_stop
 import org.jetbrains.compose.resources.stringResource
@@ -210,23 +211,11 @@ private fun BrewingContent(
 private const val TransitionDurationMs = 300
 private const val LogoVisibleThreshold = 0.01f
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
+@GeeFlowComponentPreview
+private fun Preview() {
     var isBrewing by remember { mutableStateOf(false) }
-    BrewButton(
-        isBrewing = isBrewing,
-        onManualClick = {},
-        onFlowClick = { isBrewing = true },
-        onManualFlowClick = {},
-        onStopClick = { isBrewing = false },
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
-    var isBrewing by remember { mutableStateOf(true) }
     BrewButton(
         isBrewing = isBrewing,
         onManualClick = {},

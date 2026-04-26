@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.NavigatorEffect
@@ -52,9 +53,9 @@ import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.common_connect
 import geeflow.core.ui.generated.resources.common_disconnect
 import geeflow.feature.device.settings.generated.resources.Res
@@ -276,28 +277,9 @@ private fun ScaleConnectionButton(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewDisabled() = GeeFlowThemePreview(false) {
+private fun Preview() {
     ConnectivitySettingsContent(ConnectivitySettingsViewState(smartScaleEnabled = false))
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewSearching() = GeeFlowThemePreview(false) {
-    ConnectivitySettingsContent(ConnectivitySettingsViewState(smartScaleEnabled = true, scales = emptyList()))
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewWithScales() = GeeFlowThemePreview(false) {
-    ConnectivitySettingsContent(
-        ConnectivitySettingsViewState(
-            smartScaleEnabled = true,
-            scales = listOf(
-                ScaleViewItem("Bookoo Themis Ultra", ScaleConnectionStatus.Disconnected),
-                ScaleViewItem("Acaia Lunar", ScaleConnectionStatus.Connected),
-            ),
-        ),
-    )
 }

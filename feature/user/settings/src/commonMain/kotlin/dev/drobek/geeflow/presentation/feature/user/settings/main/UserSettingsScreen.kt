@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.Navigator
@@ -52,9 +53,9 @@ import dev.drobek.geeflow.ui.components.WaveDivider
 import dev.drobek.geeflow.ui.components.scrollFade
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.WaveOrientation
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import dev.drobek.geeflow.ui.theme.compactSpacing
 import geeflow.core.ui.generated.resources.common_go_back
 import geeflow.feature.user.settings.generated.resources.Res
@@ -268,14 +269,9 @@ private fun previewViewState() = UserSettingsViewState(
     ),
 )
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
+private fun Preview() {
     Content(previewViewState(), selectedIndex = 2)
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
-    Content(previewViewState())
 }

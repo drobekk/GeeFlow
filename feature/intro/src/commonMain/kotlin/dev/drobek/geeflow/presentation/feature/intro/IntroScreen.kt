@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
@@ -37,8 +38,8 @@ import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Logo
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.conditional
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.app_name
 import geeflow.core.ui.generated.resources.common_confirm
 import geeflow.core.ui.generated.resources.common_user_name
@@ -153,14 +154,9 @@ private fun Form(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    IntroScreenContent()
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+private fun Preview() {
     IntroScreenContent()
 }

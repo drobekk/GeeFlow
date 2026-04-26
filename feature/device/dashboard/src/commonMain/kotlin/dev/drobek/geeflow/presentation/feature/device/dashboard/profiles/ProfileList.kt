@@ -65,6 +65,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType.Companion.LongPress
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
 import dev.drobek.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
@@ -73,8 +74,8 @@ import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.SwipeToRevealBoxValue
 import dev.drobek.geeflow.ui.components.rememberSwipeToRevealBoxState
 import dev.drobek.geeflow.ui.modifier.squareSize
-import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.disabled
 import geeflow.feature.device.dashboard.generated.resources.Res
 import geeflow.feature.device.dashboard.generated.resources.profile_list_bind
@@ -515,19 +516,10 @@ private fun ProfileItemContent(
 
 private const val FocusDelayMs = 150L
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    ProfileList(
-        viewState = getMockProfileListViewState(),
-        onEvent = {},
-        modifier = Modifier.padding(16.dp),
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+@GeeFlowComponentPreview
+private fun Preview() {
     ProfileList(
         viewState = getMockProfileListViewState(),
         onEvent = {},

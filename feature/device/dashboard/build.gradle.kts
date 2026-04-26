@@ -24,7 +24,6 @@ kotlin {
             implementation(libs.vico.compose.m3)
             implementation(libs.reorderable)
             implementation(libs.kermit)
-            implementation(libs.compose.uiToolingPreview)
         }
     }
 }

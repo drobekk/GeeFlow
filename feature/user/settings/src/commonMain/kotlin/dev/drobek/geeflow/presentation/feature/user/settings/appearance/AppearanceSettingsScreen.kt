@@ -15,8 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.drobek.geeflow.data.user.model.AppTheme
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.platform.isFullScreenSupported
@@ -32,9 +32,9 @@ import dev.drobek.geeflow.ui.components.GeeFlowNavigationListItem
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.components.GeeFlowToggleListItem
 import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode
@@ -201,20 +201,12 @@ private fun AppearanceContent(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
+private fun Preview() {
     Content(
         viewState = AppearanceSettingsViewState(),
         isLanguageSupported = true,
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
-    Content(
-        viewState = AppearanceSettingsViewState(appTheme = AppTheme.SYSTEM),
-        isLanguageSupported = false,
     )
 }

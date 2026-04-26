@@ -20,7 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.drobek.geeflow.navigation.Navigator
@@ -30,7 +30,8 @@ import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.modifier.WaveOrientation
 import dev.drobek.geeflow.ui.modifier.waveBackground
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.core.ui.generated.resources.common_close
 import geeflow.core.ui.generated.resources.common_cycle
 import geeflow.core.ui.generated.resources.common_flush
@@ -218,9 +219,10 @@ private fun Buttons(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@Preview
-private fun PreviewCleaning() = GeeFlowThemePreview(false) {
+@GeeFlowScreenPreview
+private fun Preview() {
     QuickMaintenanceContent(
         viewState = QuickMaintenanceViewState(
             isCleaning = true,
@@ -228,15 +230,6 @@ private fun PreviewCleaning() = GeeFlowThemePreview(false) {
             restProgress = QuickMaintenanceViewState.Progress(0, 5),
             cycleProgress = QuickMaintenanceViewState.Progress(1, 3),
         ),
-        onEvent = {},
-    )
-}
-
-@Composable
-@Preview
-private fun PreviewWaterAlarm() = GeeFlowThemePreview(true) {
-    QuickMaintenanceContent(
-        viewState = QuickMaintenanceViewState(waterLevelAlarm = true),
         onEvent = {},
     )
 }

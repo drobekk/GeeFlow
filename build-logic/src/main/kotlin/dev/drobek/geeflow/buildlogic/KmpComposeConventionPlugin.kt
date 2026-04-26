@@ -29,6 +29,7 @@ class KmpComposeConventionPlugin : Plugin<Project> {
                     implementation(libs.findLibrary("compose-components-resources").get())
                     implementation(libs.findLibrary("androidx-lifecycle-viewmodelCompose").get())
                     implementation(libs.findLibrary("androidx-lifecycle-runtimeCompose").get())
+                    implementation(libs.findLibrary("compose-uiToolingPreview").get())
                 }
                 androidMain.dependencies {
                     implementation(libs.findLibrary("androidx-compose-ui-tooling").get())

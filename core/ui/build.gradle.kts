@@ -12,7 +12,6 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material.icons.extended)
-            implementation(libs.compose.uiToolingPreview)
         }
         androidMain.dependencies {
             implementation(libs.androidx.appcompat)

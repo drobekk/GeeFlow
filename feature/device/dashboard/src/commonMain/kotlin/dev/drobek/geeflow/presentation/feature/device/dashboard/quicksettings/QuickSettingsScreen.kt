@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,6 +43,7 @@ import dev.drobek.geeflow.ui.components.HorizontalSpacer
 import dev.drobek.geeflow.ui.components.VerticalSpacer
 import dev.drobek.geeflow.ui.isWidthExpanded
 import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
+import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.core.ui.generated.resources.common_brew_boiler
 import geeflow.core.ui.generated.resources.common_confirm
 import geeflow.core.ui.generated.resources.common_steam_boiler
@@ -223,8 +223,8 @@ private fun Buttons(
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@PreviewLightDark
-private fun QuickSettingsPreviewLight() {
+@GeeFlowScreenPreview
+private fun Preview() {
     QuickSettingsContent(
         viewState = QuickSettingsViewState(
             steamBoiler = Boiler(
@@ -241,4 +241,3 @@ private fun QuickSettingsPreviewLight() {
         onEvent = {},
     )
 }
-

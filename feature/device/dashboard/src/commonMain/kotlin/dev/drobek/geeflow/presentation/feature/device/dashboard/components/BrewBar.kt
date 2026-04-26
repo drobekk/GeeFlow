@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
@@ -36,9 +37,9 @@ import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashb
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Weight
 import dev.drobek.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.WeightRate
 import dev.drobek.geeflow.presentation.feature.device.dashboard.model.ChartData
-import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_avg
 import geeflow.core.ui.generated.resources.unit_bar
@@ -264,23 +265,13 @@ private val previewVisibleCharts = setOf(
     WeightRate,
 )
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
+@GeeFlowComponentPreview
+private fun Preview() {
     BrewBar(
         brew = previewBrew,
         isBrewing = true,
-        visibleCharts = previewVisibleCharts,
-        onToggle = {},
-    )
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
-    BrewBar(
-        brew = previewBrew,
-        isBrewing = false,
         visibleCharts = previewVisibleCharts,
         onToggle = {},
     )

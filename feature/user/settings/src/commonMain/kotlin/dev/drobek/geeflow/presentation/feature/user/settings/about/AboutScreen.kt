@@ -16,6 +16,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.tooling.preview.PreviewWrapper
+import dev.drobek.geeflow.BuildKonfig
 import dev.drobek.geeflow.navigation.Navigator
 import dev.drobek.geeflow.navigation.NavigatorEffect
 import dev.drobek.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClicked
@@ -26,9 +28,9 @@ import dev.drobek.geeflow.ui.components.GeeFlowListItem
 import dev.drobek.geeflow.ui.components.GeeFlowNavigationListItem
 import dev.drobek.geeflow.ui.components.GeeFlowScaffold
 import dev.drobek.geeflow.ui.isWidthExpanded
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowScreenPreview
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_about_description
 import geeflow.feature.user.settings.generated.resources.user_settings_about_licenses
@@ -39,7 +41,6 @@ import geeflow.feature.user.settings.generated.resources.user_settings_about_sou
 import geeflow.feature.user.settings.generated.resources.user_settings_about_source_code_description
 import geeflow.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.feature.user.settings.generated.resources.user_settings_about_version
-import dev.drobek.geeflow.BuildKonfig
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -148,14 +149,9 @@ private fun AboutContent(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    Content()
-}
-
-@Composable
-@GeeFlowScreenPreview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+private fun Preview() {
     Content()
 }

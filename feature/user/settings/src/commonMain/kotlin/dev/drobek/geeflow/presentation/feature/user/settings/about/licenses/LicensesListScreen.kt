@@ -30,7 +30,7 @@ internal fun LicensesListScreen(
     val libraries by produceLibraries {
         Res.readBytes("files/aboutlibraries.json").decodeToString()
     }
-    val modifier = if(!isWidthExpanded()) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier
+    val modifier = if (!isWidthExpanded()) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier
     GeeFlowScaffold(
         title = stringResource(Res.string.user_settings_about_licenses),
         subtitle = null,

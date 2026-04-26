@@ -14,11 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import dev.drobek.geeflow.ui.icons.GeeFlowIcon
 import dev.drobek.geeflow.ui.icons.Person
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 
 @Composable
 fun GeeFlowUserAvatar(
@@ -43,14 +44,9 @@ fun GeeFlowUserAvatar(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@Preview(widthDp = 60, heightDp = 60)
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    GeeFlowUserAvatar(modifier = Modifier.requiredSize(56.dp))
-}
-
-@Composable
-@Preview(widthDp = 60, heightDp = 60)
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+@GeeFlowComponentPreview
+private fun Preview() {
     GeeFlowUserAvatar(modifier = Modifier.requiredSize(56.dp))
 }

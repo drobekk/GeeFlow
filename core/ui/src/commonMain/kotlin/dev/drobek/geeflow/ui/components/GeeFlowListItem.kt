@@ -9,10 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import dev.drobek.geeflow.ui.theme.GeeFlowTheme
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
 
 @Composable
 fun GeeFlowListItem(
@@ -46,23 +47,15 @@ fun GeeFlowListItem(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@Preview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
+@GeeFlowComponentPreview
+private fun Preview() {
     GeeFlowListItem(
         title = "List Item Title",
         subtitle = "List Item Subtitle",
         trailingContent = {
             Text("Trailing")
         },
-    )
-}
-
-@Composable
-@Preview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
-    GeeFlowListItem(
-        title = "List Item Title",
-        subtitle = "List Item Subtitle",
     )
 }

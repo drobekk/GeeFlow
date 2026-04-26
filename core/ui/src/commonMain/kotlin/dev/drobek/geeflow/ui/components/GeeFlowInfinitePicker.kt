@@ -40,10 +40,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.drobek.geeflow.ui.theme.GeeFlowThemePreview
+import dev.drobek.geeflow.ui.theme.GeeFlowComponentPreview
+import dev.drobek.geeflow.ui.theme.GeeFlowPreviewWrapper
 import kotlinx.coroutines.launch
 
 @Composable
@@ -276,23 +277,10 @@ private fun PickerSearchField(
 
 private const val VisibleItemsCount = 3
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-@Preview
-private fun PreviewLight() = GeeFlowThemePreview(false) {
-    Box(Modifier.padding(16.dp)) {
-        GeeFlowInfinitePicker(
-            items = (100..126).map { it.toString() },
-            selected = "110",
-            onSelectionChanged = {},
-            keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-            hint = "Enter",
-        )
-    }
-}
-
-@Composable
-@Preview
-private fun PreviewDark() = GeeFlowThemePreview(true) {
+@GeeFlowComponentPreview
+private fun Preview() {
     Box(Modifier.padding(16.dp)) {
         GeeFlowInfinitePicker(
             items = (100..126).map { it.toString() },
