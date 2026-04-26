@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -28,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
@@ -146,6 +151,7 @@ private fun ExpandedContent(
     snackbarHostState: SnackbarHostState,
     onEvent: (MaintenanceSettingsEvent) -> Unit,
 ) {
+    val paddingEndInsets = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LayoutDirection.Ltr)
     Box(modifier = Modifier.fillMaxSize()) {
         if (isWidthLarge()) {
             Row(
@@ -156,6 +162,7 @@ private fun ExpandedContent(
                         horizontal = GeeFlowTheme.spacing.contentHorizontal,
                         vertical = GeeFlowTheme.spacing.contentVertical,
                     )
+                    .padding(end = paddingEndInsets)
                     .systemBarsPadding()
                     .padding(bottom = SettingsApplyFabPadding),
             ) {
@@ -182,11 +189,16 @@ private fun ExpandedContent(
             loading = viewState.applyButtonLoading,
             visible = viewState.applyButtonVisible,
             onClick = { onEvent(MaintenanceSettingsEvent.ApplyClicked) },
-            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding(),
+            modifier = Modifier.align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(end = paddingEndInsets),
         )
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.systemBarsPadding().align(Alignment.BottomCenter),
+            modifier = Modifier
+                .systemBarsPadding()
+                .padding(end = paddingEndInsets)
+                .align(Alignment.BottomCenter),
         )
     }
 }

@@ -2,6 +2,10 @@ package app.geeflow.presentation.feature.user.settings.about
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.LayoutDirection
 import app.geeflow.BuildKonfig
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
@@ -103,13 +108,15 @@ private fun CompactContent(
 private fun ExpandedContent(
     onEvent: (AboutEvent) -> Unit,
 ) {
+    val paddingEndInsets = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LayoutDirection.Ltr)
     AboutContent(
         onEvent = onEvent,
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .systemBarsPadding()
-            .padding(vertical = GeeFlowTheme.spacing.contentVertical),
+            .padding(vertical = GeeFlowTheme.spacing.contentVertical)
+            .padding(end = paddingEndInsets),
     )
 }
 

@@ -2,6 +2,10 @@ package app.geeflow.presentation.feature.user.settings.brewing
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
@@ -106,6 +111,7 @@ private fun ExpandedContent(
     viewState: BrewingPreferencesViewState,
     onEvent: (BrewingPreferencesEvent) -> Unit,
 ) {
+    val paddingEndInsets = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LayoutDirection.Ltr)
     BrewingContent(
         viewState = viewState,
         onEvent = onEvent,
@@ -113,7 +119,8 @@ private fun ExpandedContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .systemBarsPadding()
-            .padding(vertical = GeeFlowTheme.spacing.contentVertical),
+            .padding(vertical = GeeFlowTheme.spacing.contentVertical)
+            .padding(end = paddingEndInsets),
     )
 }
 

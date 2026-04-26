@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
@@ -115,6 +117,7 @@ private fun ExpandedContent(
     selectedIndex: Int?,
     onEvent: (UserSettingsEvent) -> Unit,
 ) {
+    val startPaddingInset = WindowInsets.displayCutout.asPaddingValues().calculateLeftPadding(LayoutDirection.Ltr)
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
     Row(Modifier.fillMaxSize()) {
@@ -125,7 +128,9 @@ private fun ExpandedContent(
                 navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
                 navIconContentDescription = stringResource(CoreRes.string.common_go_back),
                 navIconClick = { onEvent(BackClicked) },
-                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(start = startPaddingInset),
                 scrollBehavior = scrollBehavior,
             )
             LazyColumn(
@@ -135,6 +140,7 @@ private fun ExpandedContent(
                     .weight(1f)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(start = startPaddingInset)
                     .scrollFade(listState = listState, color = MaterialTheme.colorScheme.surfaceContainer),
                 contentPadding = WindowInsets.navigationBars.asPaddingValues(),
             ) {
