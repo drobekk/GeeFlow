@@ -12,7 +12,7 @@ koinCompiler {
 sqldelight {
     databases {
         create("AppDatabase") {
-            packageName.set("dev.drobek.geeflow.data.db")
+            packageName.set("app.geeflow.data.db")
         }
     }
 }

@@ -1,0 +1,19 @@
+package app.geeflow.presentation.feature.device.dashboard.profiles
+
+import app.geeflow.presentation.feature.device.dashboard.model.ChartData
+
+data class ProfileListViewState(
+    val profiles: List<Profile> = emptyList(),
+    val smartScaleConnected: Boolean = false,
+) {
+    data class Profile(
+        val id: String,
+        val number: String,
+        val name: String,
+        val description: String,
+        val brewByWeight: Boolean,
+        val bound: Boolean = false,
+        val selected: Boolean = false,
+        val targetData: Map<Float, ChartData> = emptyMap(),
+    )
+}

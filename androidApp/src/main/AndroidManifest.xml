@@ -24,7 +24,7 @@
         android:localeConfig="@xml/locales_config"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity
-            android:name="dev.drobek.geeflow.MainActivity"
+            android:name="app.geeflow.MainActivity"
             android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>

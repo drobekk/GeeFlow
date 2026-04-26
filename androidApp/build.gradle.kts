@@ -14,7 +14,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.drobek.geeflow.android"
+    namespace = "app.geeflow.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

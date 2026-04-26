@@ -5,7 +5,7 @@
             <option name="executionName" />
             <option name="externalProjectPath" value="$PROJECT_DIR$/composeApp" />
             <option name="externalSystemIdString" value="GRADLE" />
-            <option name="scriptParameters" value="-DmainClass=dev.drobek.geeflow.MainKt --quiet" />
+            <option name="scriptParameters" value="-DmainClass=app.geeflow.MainKt --quiet" />
             <option name="taskDescriptions">
                 <list />
             </option>

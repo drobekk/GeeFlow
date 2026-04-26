@@ -1,3 +1,0 @@
-package dev.drobek.geeflow.presentation.feature.device.dashboard.quickmaintenance
-
-sealed interface QuickMaintenanceViewModelEvent

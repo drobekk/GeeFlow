@@ -1,0 +1,3 @@
+package app.geeflow.presentation.feature.device.settings.connectivity
+
+sealed interface ConnectivitySettingsViewModelEvent

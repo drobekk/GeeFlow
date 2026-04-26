@@ -96,7 +96,7 @@ aboutLibraries {
 
 compose.desktop {
     application {
-        mainClass = "dev.drobek.geeflow.MainKt"
+        mainClass = "app.geeflow.MainKt"
 
         nativeLibPath?.let { jvmArgs += "-Djava.library.path=$it" }
 

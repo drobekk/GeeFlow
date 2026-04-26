@@ -23,35 +23,35 @@ gradlePlugin {
     plugins {
         register("kmpLibrary") {
             id = "kmp.library"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpLibraryConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpLibraryConventionPlugin"
         }
         register("kmpCompose") {
             id = "kmp.compose"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpComposeConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpComposeConventionPlugin"
         }
         register("kmpFeature") {
             id = "kmp.feature"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpFeatureConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpFeatureConventionPlugin"
         }
         register("kmpKoin") {
             id = "kmp.koin"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpKoinConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpKoinConventionPlugin"
         }
         register("kmpSqldelight") {
             id = "kmp.sqldelight"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpSqlDelightConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpSqlDelightConventionPlugin"
         }
         register("kmpAndroid") {
             id = "kmp.android"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpAndroidConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpAndroidConventionPlugin"
         }
         register("detekt") {
             id = "detekt"
-            implementationClass = "dev.drobek.geeflow.buildlogic.DetektConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.DetektConventionPlugin"
         }
         register("kmpBuildKonfig") {
             id = "kmp.buildkonfig"
-            implementationClass = "dev.drobek.geeflow.buildlogic.KmpBuildKonfigConventionPlugin"
+            implementationClass = "app.geeflow.buildlogic.KmpBuildKonfigConventionPlugin"
         }
     }
 }

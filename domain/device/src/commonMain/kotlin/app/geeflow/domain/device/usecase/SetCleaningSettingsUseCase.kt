@@ -1,0 +1,17 @@
+package app.geeflow.domain.device.usecase
+
+import app.geeflow.data.device.DeviceControllerProvider
+import org.koin.core.annotation.Factory
+
+@Factory
+class SetCleaningSettingsUseCase(private val provider: DeviceControllerProvider) {
+    suspend operator fun invoke(
+        deviceId: Long,
+        timeSec: Float,
+        restSec: Float,
+        count: Int,
+    ) = with(provider.getController(deviceId)) {
+        requireConnected(deviceId)
+        setCleaningSettings(timeSec, restSec, count)
+    }
+}
