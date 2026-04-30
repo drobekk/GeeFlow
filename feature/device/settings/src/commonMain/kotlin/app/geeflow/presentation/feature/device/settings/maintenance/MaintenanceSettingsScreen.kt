@@ -4,16 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
@@ -53,6 +46,7 @@ import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.isWidthLarge
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -151,7 +145,6 @@ private fun ExpandedContent(
     snackbarHostState: SnackbarHostState,
     onEvent: (MaintenanceSettingsEvent) -> Unit,
 ) {
-    val paddingEndInsets = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LayoutDirection.Ltr)
     Box(modifier = Modifier.fillMaxSize()) {
         if (isWidthLarge()) {
             Row(
@@ -162,8 +155,7 @@ private fun ExpandedContent(
                         horizontal = GeeFlowTheme.spacing.contentHorizontal,
                         vertical = GeeFlowTheme.spacing.contentVertical,
                     )
-                    .padding(end = paddingEndInsets)
-                    .systemBarsPadding()
+                    .geeFlowInsetsEndPadding()
                     .padding(bottom = SettingsApplyFabPadding),
             ) {
                 Column(modifier = Modifier.weight(1f)) {
@@ -181,7 +173,7 @@ private fun ExpandedContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .systemBarsPadding()
+                    .geeFlowInsetsEndPadding()
                     .padding(bottom = SettingsApplyFabPadding),
             )
         }
@@ -190,14 +182,12 @@ private fun ExpandedContent(
             visible = viewState.applyButtonVisible,
             onClick = { onEvent(MaintenanceSettingsEvent.ApplyClicked) },
             modifier = Modifier.align(Alignment.BottomEnd)
-                .navigationBarsPadding()
-                .padding(end = paddingEndInsets),
+                .geeFlowInsetsEndPadding(),
         )
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
-                .systemBarsPadding()
-                .padding(end = paddingEndInsets)
+                .geeFlowInsetsEndPadding()
                 .align(Alignment.BottomCenter),
         )
     }

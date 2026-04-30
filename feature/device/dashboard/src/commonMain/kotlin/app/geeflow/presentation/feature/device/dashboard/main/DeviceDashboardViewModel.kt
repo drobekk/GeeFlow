@@ -36,6 +36,23 @@ import app.geeflow.platform.permissions.PermissionBluetoothScan
 import app.geeflow.platform.permissions.PermissionsController
 import app.geeflow.presentation.feature.device.dashboard.QuickMaintenance
 import app.geeflow.presentation.feature.device.dashboard.QuickSettings
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.AlarmClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.BrewClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.CleaningClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectedDevicesClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectionButtonClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DeviceClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DialogDismissed
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.FlowControlClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ManualBrewClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.OpenSystemSettingsClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.PermissionDialogResumed
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ProfileSelected
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.QuickSettingsClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.Resumed
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.StopBrewClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ToggleChartVisibility
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.UserClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
@@ -78,29 +95,25 @@ internal class DeviceDashboardViewModel(
 
     @Suppress("CyclomaticComplexMethod")
     fun handleEvent(event: DeviceDashboardEvent) = when (event) {
-        is DeviceDashboardEvent.ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
-        is DeviceDashboardEvent.ConnectionButtonClicked -> toggleConnection()
-        is DeviceDashboardEvent.DeviceClicked -> navigate(To(DeviceList))
-        is DeviceDashboardEvent.QuickSettingsClicked -> withDeviceConnected {
-            navigate(To(QuickSettings(args.deviceId)))
-        }
-
-        is DeviceDashboardEvent.UserClicked -> navigate(To(UserSettings))
-        is DeviceDashboardEvent.ConnectedDevicesClicked -> withDeviceConnected {
+        is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
+        is ConnectionButtonClicked -> toggleConnection()
+        is DeviceClicked -> navigate(To(DeviceList))
+        is QuickSettingsClicked -> withDeviceConnected { navigate(To(QuickSettings(args.deviceId))) }
+        is UserClicked -> navigate(To(UserSettings))
+        is ConnectedDevicesClicked -> withDeviceConnected {
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
         }
-
-        is DeviceDashboardEvent.CleaningClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
-        is DeviceDashboardEvent.DialogDismissed -> modify { copy(dialog = null) }
-        is DeviceDashboardEvent.OpenSystemSettingsClicked -> permissionsController.openAppSettings()
-        is DeviceDashboardEvent.ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
-        is DeviceDashboardEvent.StopBrewClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
-        is DeviceDashboardEvent.FlowControlClicked -> Unit // TODO
-        is DeviceDashboardEvent.BrewClicked -> startProfile()
-        is DeviceDashboardEvent.PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
-        is DeviceDashboardEvent.ProfileSelected -> onProfileSelected(event.id)
-        is DeviceDashboardEvent.Resumed -> connect()
-        is DeviceDashboardEvent.AlarmClicked -> navigate(To(QuickMaintenance(args.deviceId)))
+        is CleaningClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
+        is DialogDismissed -> modify { copy(dialog = null) }
+        is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
+        is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
+        is StopBrewClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
+        is FlowControlClicked -> Unit // TODO
+        is BrewClicked -> startProfile()
+        is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
+        is ProfileSelected -> onProfileSelected(event.id)
+        is Resumed -> connect()
+        is AlarmClicked -> navigate(To(QuickMaintenance(args.deviceId)))
     }
 
     private fun toggleConnection() {

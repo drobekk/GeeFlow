@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.minus
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -26,10 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.modifier.WaveOrientation
-import app.geeflow.ui.modifier.conditional
+import app.geeflow.ui.modifier.geeFlowInsets
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_go_back
 import org.jetbrains.compose.resources.stringResource
@@ -49,29 +52,40 @@ fun GeeFlowScaffold(
     contentColor: Color = contentColorFor(containerColor),
     scrollBehavior: TopAppBarScrollBehavior? = null,
     modifier: Modifier = Modifier,
-    contentWindowInsets: WindowInsets = WindowInsets.systemBars,
+    contentWindowInsets: WindowInsets = WindowInsets.geeFlowInsets,
     content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
-    val topBar: @Composable () -> Unit = {
+    val topBarExpanded: @Composable () -> Unit = {
         GeeFlowTopBar(
             title = title,
             subtitle = subtitle,
             navIconPainter = navIconPainter,
-            scrollBehavior = scrollBehavior.takeIf { !isWidthExpanded() },
+            scrollBehavior = null,
             navIconContentDescription = navIconContentDescription,
             navIconClick = navIconClick,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceContainer)
-                .conditional(
-                    condition = isWidthExpanded(),
-                    ifTrue = { widthIn(max = 300.dp) },
-                    ifFalse = { fillMaxWidth() },
-                ),
+                .widthIn(max = 300.dp),
         )
     }
+
+    val topBarCompact: @Composable () -> Unit = {
+        GeeFlowTopBar(
+            title = title,
+            subtitle = subtitle,
+            navIconPainter = navIconPainter,
+            scrollBehavior = scrollBehavior,
+            navIconContentDescription = navIconContentDescription,
+            navIconClick = navIconClick,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .fillMaxWidth(),
+        )
+    }
+
     if (isWidthExpanded()) {
         GeeFlowScaffoldExpanded(
-            topBar = topBar,
+            topBar = topBarExpanded,
             snackbarHost = snackbarHost,
             floatingActionButton = floatingActionButton,
             floatingActionButtonPosition = floatingActionButtonPosition,
@@ -83,7 +97,7 @@ fun GeeFlowScaffold(
         )
     } else {
         GeeFlowScaffoldCompact(
-            topBar = topBar,
+            topBar = topBarCompact,
             snackbarHost = snackbarHost,
             floatingActionButton = floatingActionButton,
             floatingActionButtonPosition = floatingActionButtonPosition,
@@ -106,7 +120,7 @@ fun GeeFlowScaffold(
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = contentColorFor(containerColor),
     modifier: Modifier = Modifier,
-    contentWindowInsets: WindowInsets = WindowInsets.systemBars,
+    contentWindowInsets: WindowInsets = WindowInsets.geeFlowInsets,
     content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
     if (isWidthExpanded()) {
@@ -146,7 +160,7 @@ fun GeeFlowScaffoldExpanded(
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = contentColorFor(containerColor),
     modifier: Modifier = Modifier,
-    contentWindowInsets: WindowInsets = WindowInsets.systemBars,
+    contentWindowInsets: WindowInsets = WindowInsets.geeFlowInsets,
     content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) = Scaffold(
     modifier = modifier,
@@ -156,7 +170,12 @@ fun GeeFlowScaffoldExpanded(
     contentColor = contentColor,
     content = { paddingValues ->
         Row {
-            Box(modifier = Modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.surfaceContainer)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .background(color = MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(start = contentWindowInsets.asPaddingValues().calculateStartPadding(LayoutDirection.Ltr)),
+            ) {
                 topBar()
             }
             WaveDivider(
@@ -164,7 +183,8 @@ fun GeeFlowScaffoldExpanded(
                 orientation = WaveOrientation.Vertical,
             )
             Box {
-                content(paddingValues)
+                val startPadding = contentWindowInsets.asPaddingValues().calculateStartPadding(LayoutDirection.Ltr)
+                content(paddingValues - PaddingValues(start = startPadding))
                 Box(
                     Modifier
                         .align(

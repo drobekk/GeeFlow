@@ -60,6 +60,7 @@ import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceClicke
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRemoveClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceSetAsDefaultClicked
 import app.geeflow.ui.components.GeeFlowScaffold
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -250,10 +251,12 @@ private fun AddButton(
     modifier: Modifier = Modifier,
     onEvent: (DeviceListEvent) -> Unit,
 ) = FloatingActionButton(
-    modifier = modifier.padding(
-        horizontal = GeeFlowTheme.spacing.fabHorizontal,
-        vertical = GeeFlowTheme.spacing.fabVertical,
-    ),
+    modifier = modifier
+        .padding(
+            horizontal = GeeFlowTheme.spacing.fabHorizontal,
+            vertical = GeeFlowTheme.spacing.fabVertical,
+        )
+        .geeFlowInsetsEndPadding(),
     onClick = { onEvent(DeviceListEvent.AddDeviceClicked) },
     content = {
         Icon(

@@ -14,13 +14,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.lerp
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -48,6 +51,40 @@ fun GeeFlowTopBar(
         MaterialTheme.typography.titleLarge,
         collapsedFraction,
     )
+
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val subtitleStyle = MaterialTheme.typography.bodyLarge
+
+    if (scrollBehavior != null) {
+        SideEffect {
+            val titleHeightPx = textMeasurer.measure(title, style = titleStyle).size.height
+            val subtitleHeightPx = if (subtitle != null) textMeasurer.measure(subtitle, style = subtitleStyle).size.height else 0
+
+            // The layout is dynamic but we can estimate the heights perfectly since text size is fixed and does not wrap.
+            val iconHeightPx = with(density) { 48.dp.roundToPx() }
+            val topPaddingPx = with(density) { 16.dp.roundToPx() }
+            val bottomPaddingExpandedPx = with(density) { 32.dp.roundToPx() }
+            val bottomPaddingCollapsedPx = with(density) { 16.dp.roundToPx() }
+            val spacingPx = with(density) { 8.dp.roundToPx() }
+
+            val expandedTitleYPx = topPaddingPx + iconHeightPx + spacingPx
+            val expandedSubtitleYPx = expandedTitleYPx + titleHeightPx + spacingPx
+
+            val expandedHeightPx = if (subtitle != null) {
+                expandedSubtitleYPx + subtitleHeightPx + bottomPaddingExpandedPx
+            } else {
+                expandedTitleYPx + titleHeightPx + bottomPaddingExpandedPx
+            }
+
+            val collapsedHeightPx = iconHeightPx + topPaddingPx + bottomPaddingCollapsedPx
+            val heightLimit = (collapsedHeightPx - expandedHeightPx).toFloat()
+
+            if (scrollBehavior.state.heightOffsetLimit != heightLimit) {
+                scrollBehavior.state.heightOffsetLimit = heightLimit
+            }
+        }
+    }
 
     Layout(
         modifier = modifier
@@ -131,11 +168,6 @@ fun GeeFlowTopBar(
             collapsedFraction,
         ).roundToInt()
         val currentHeight = lerp(expandedHeight.toFloat(), collapsedHeight.toFloat(), collapsedFraction).roundToInt()
-
-        val heightLimit = (collapsedHeight - expandedHeight).toFloat()
-        if (scrollBehavior != null && scrollBehavior.state.heightOffsetLimit != heightLimit) {
-            scrollBehavior.state.heightOffsetLimit = heightLimit
-        }
 
         layout(constraints.maxWidth, currentHeight) {
             iconPlaceable.placeRelative(0, topPadding)

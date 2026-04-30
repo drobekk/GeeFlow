@@ -9,8 +9,8 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import app.geeflow.data.user.UserSettingsRepository
 import app.geeflow.data.user.model.AppTheme
 import app.geeflow.data.user.model.ChartType
-import app.geeflow.data.user.model.DarkMode
 import app.geeflow.data.user.model.TemperatureUnit
+import app.geeflow.data.user.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
@@ -27,10 +27,10 @@ class UserSettingsRepositoryImpl(
             ?: setOf(ChartType.PRESSURE, ChartType.FLOW_RATE, ChartType.WEIGHT_RATE)
     }
 
-    override fun darkMode(userId: Long): Flow<DarkMode> = dataStore.data.map { preferences ->
+    override fun darkMode(userId: Long): Flow<ThemeMode> = dataStore.data.map { preferences ->
         preferences[darkModeKey(userId)]
-            ?.let { DarkMode.entries.find { entry -> entry.name == it } }
-            ?: DarkMode.SYSTEM
+            ?.let { ThemeMode.entries.find { entry -> entry.name == it } }
+            ?: ThemeMode.SYSTEM
     }
 
     override fun appTheme(userId: Long): Flow<AppTheme> = dataStore.data.map { preferences ->
@@ -63,7 +63,7 @@ class UserSettingsRepositoryImpl(
         }
     }
 
-    override suspend fun setDarkMode(userId: Long, mode: DarkMode) {
+    override suspend fun setDarkMode(userId: Long, mode: ThemeMode) {
         dataStore.edit { preferences ->
             preferences[darkModeKey(userId)] = mode.name
         }

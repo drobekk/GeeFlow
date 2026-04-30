@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.ui.components.GeeFlowScaffold
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -79,7 +80,15 @@ private fun UserListContent(
         navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
         navIconClick = { onEvent(UserListEvent.BackClicked) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onEvent(UserListEvent.AddClicked) }) {
+            FloatingActionButton(
+                modifier = Modifier
+                    .padding(
+                        horizontal = GeeFlowTheme.spacing.fabHorizontal,
+                        vertical = GeeFlowTheme.spacing.fabVertical,
+                    )
+                    .geeFlowInsetsEndPadding(),
+                onClick = { onEvent(UserListEvent.AddClicked) },
+            ) {
                 Icon(
                     painter = rememberVectorPainter(Icons.Filled.Add),
                     contentDescription = stringResource(Res.string.user_list_screen_add_profile),

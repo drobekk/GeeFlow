@@ -2,14 +2,9 @@ package app.geeflow.presentation.feature.user.settings.brewing
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
@@ -33,6 +27,7 @@ import app.geeflow.ui.components.GeeFlowNavigationListItem
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.isWidthExpanded
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -111,16 +106,14 @@ private fun ExpandedContent(
     viewState: BrewingPreferencesViewState,
     onEvent: (BrewingPreferencesEvent) -> Unit,
 ) {
-    val paddingEndInsets = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LayoutDirection.Ltr)
     BrewingContent(
         viewState = viewState,
         onEvent = onEvent,
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .systemBarsPadding()
             .padding(vertical = GeeFlowTheme.spacing.contentVertical)
-            .padding(end = paddingEndInsets),
+            .geeFlowInsetsEndPadding(),
     )
 }
 

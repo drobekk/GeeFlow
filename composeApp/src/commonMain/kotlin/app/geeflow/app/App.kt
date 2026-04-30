@@ -25,7 +25,6 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import app.geeflow.app.navigation.AppNavigator
 import app.geeflow.app.navigation.GetInitialDestinationUseCase
 import app.geeflow.data.user.model.AppTheme
-import app.geeflow.data.user.model.DarkMode
 import app.geeflow.domain.user.model.AppearanceSettings
 import app.geeflow.domain.user.usecase.GetAppearanceSettingsUseCase
 import app.geeflow.navigation.NavFeature
@@ -34,6 +33,7 @@ import app.geeflow.platform.KeepScreenOnEffect
 import app.geeflow.platform.ThemeModeEffect
 import app.geeflow.platform.getThemeProvider
 import app.geeflow.ui.theme.GeeFlowTheme
+import app.geeflow.ui.theme.ThemeMode
 import app.geeflow.ui.theme.colorscheme.espressoColorScheme
 import app.geeflow.ui.theme.colorscheme.monoColorScheme
 import app.geeflow.ui.theme.colorscheme.roseColorScheme
@@ -42,6 +42,7 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.plugin.module.dsl.koinConfiguration
+import app.geeflow.data.user.model.ThemeMode as UserThemeMode
 
 @Composable
 fun App(closeApp: () -> Unit) {
@@ -51,10 +52,10 @@ fun App(closeApp: () -> Unit) {
             initialValue = AppearanceSettings(),
             minActiveState = Lifecycle.State.CREATED,
         )
-        val darkMode = when (appearance.darkMode) {
-            DarkMode.SYSTEM -> isSystemInDarkTheme()
-            DarkMode.LIGHT -> false
-            DarkMode.DARK -> true
+        val darkMode = when (appearance.themeMode) {
+            UserThemeMode.SYSTEM -> isSystemInDarkTheme()
+            UserThemeMode.LIGHT -> false
+            UserThemeMode.DARK -> true
         }
 
         GeeFlowTheme(
@@ -62,12 +63,18 @@ fun App(closeApp: () -> Unit) {
             colorScheme = getColorScheme(appearance, darkMode),
             modifier = Modifier.fillMaxSize(),
         ) {
-            ThemeModeEffect(darkTheme = darkMode)
+            ThemeModeEffect(appearance.themeMode.mapToUiMode())
             KeepScreenOnEffect(appearance.keepScreenOn)
             FullScreenEffect(appearance.fullScreenMode)
             RootNavigation(closeApp)
         }
     }
+}
+
+private fun UserThemeMode.mapToUiMode() = when (this) {
+    UserThemeMode.SYSTEM -> ThemeMode.System
+    UserThemeMode.LIGHT -> ThemeMode.Light
+    UserThemeMode.DARK -> ThemeMode.Dark
 }
 
 @Composable

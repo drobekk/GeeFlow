@@ -1,7 +1,7 @@
 package app.geeflow.presentation.feature.user.settings.appearance
 
 import app.geeflow.data.user.model.AppTheme
-import app.geeflow.data.user.model.DarkMode
+import app.geeflow.data.user.model.ThemeMode
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme_espresso
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme_mono
@@ -12,11 +12,11 @@ import geeflow.feature.user.settings.generated.resources.user_settings_appearanc
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode_system
 import org.jetbrains.compose.resources.StringResource
 
-internal val DarkMode.titleRes: StringResource
+internal val ThemeMode.titleRes: StringResource
     get() = when (this) {
-        DarkMode.SYSTEM -> Res.string.user_settings_appearance_dark_mode_system
-        DarkMode.LIGHT -> Res.string.user_settings_appearance_dark_mode_light
-        DarkMode.DARK -> Res.string.user_settings_appearance_dark_mode_dark
+        ThemeMode.SYSTEM -> Res.string.user_settings_appearance_dark_mode_system
+        ThemeMode.LIGHT -> Res.string.user_settings_appearance_dark_mode_light
+        ThemeMode.DARK -> Res.string.user_settings_appearance_dark_mode_dark
     }
 
 internal val AppTheme.titleRes: StringResource

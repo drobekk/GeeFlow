@@ -31,7 +31,7 @@ internal class AppearanceSettingsViewModel(
             getAppearanceSettings().collect { settings ->
                 modify {
                     copy(
-                        darkMode = settings.darkMode,
+                        themeMode = settings.themeMode,
                         appTheme = settings.appTheme,
                         fullScreenMode = settings.fullScreenMode,
                         keepScreenOn = settings.keepScreenOn,

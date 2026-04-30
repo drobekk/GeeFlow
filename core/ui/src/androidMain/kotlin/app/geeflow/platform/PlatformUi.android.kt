@@ -9,8 +9,12 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
@@ -21,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.window.core.layout.WindowSizeClass
+import app.geeflow.ui.theme.ThemeMode
 
 actual fun getThemeProvider() = object : ThemeProvider {
     @Composable
@@ -35,7 +40,7 @@ actual fun getThemeProvider() = object : ThemeProvider {
 }
 
 @Composable
-actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfo(true).windowSizeClass
+actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
 
 @Composable
 actual fun KeepScreenOnEffect(enabled: Boolean) {
@@ -52,20 +57,31 @@ actual fun KeepScreenOnEffect(enabled: Boolean) {
 }
 
 @Composable
-actual fun ThemeModeEffect(darkTheme: Boolean) {
-    val mode = if (darkTheme) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+actual fun ThemeModeEffect(themeMode: ThemeMode) {
+    val mode = when (themeMode) {
+        ThemeMode.System -> MODE_NIGHT_FOLLOW_SYSTEM
+        ThemeMode.Light -> MODE_NIGHT_NO
+        ThemeMode.Dark -> MODE_NIGHT_YES
+    }
     if (AppCompatDelegate.getDefaultNightMode() != mode) {
         AppCompatDelegate.setDefaultNightMode(mode)
     }
 
+    val isActuallyDark = when (themeMode) {
+        ThemeMode.System -> isSystemInDarkTheme()
+        ThemeMode.Light -> false
+        ThemeMode.Dark -> true
+    }
+
     val view = LocalView.current
     val context = LocalContext.current
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (context as? Activity)?.window
             if (window != null) {
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isActuallyDark
+                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !isActuallyDark
             }
         }
     }

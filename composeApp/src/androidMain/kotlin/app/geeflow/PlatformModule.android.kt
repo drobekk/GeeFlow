@@ -4,14 +4,14 @@ import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import dev.bluefalcon.core.BlueFalcon
-import dev.bluefalcon.core.Logger
-import dev.bluefalcon.engine.android.AndroidEngine
 import app.geeflow.core.datastore.createAndroidDataStore
 import app.geeflow.data.db.AndroidDatabaseDriverFactory
 import app.geeflow.data.db.DatabaseDriverFactory
 import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.installModbus
+import dev.bluefalcon.core.BlueFalcon
+import dev.bluefalcon.core.Logger
+import dev.bluefalcon.engine.android.AndroidEngine
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single

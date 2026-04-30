@@ -120,7 +120,11 @@ private fun ExpandedContent(
     val startPaddingInset = WindowInsets.displayCutout.asPaddingValues().calculateLeftPadding(LayoutDirection.Ltr)
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
-    Row(Modifier.fillMaxSize()) {
+    Row(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
         Column(Modifier.weight(1f)) {
             GeeFlowTopBar(
                 title = viewState.deviceName,

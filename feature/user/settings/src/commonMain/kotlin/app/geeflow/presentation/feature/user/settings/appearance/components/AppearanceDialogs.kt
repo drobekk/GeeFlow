@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import app.geeflow.data.user.model.AppTheme
-import app.geeflow.data.user.model.DarkMode
+import app.geeflow.data.user.model.ThemeMode
 import app.geeflow.platform.getThemeProvider
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.AppThemeChanged
@@ -35,14 +35,14 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun AppearanceDialogs(
     dialog: Dialog?,
-    currentDarkMode: DarkMode,
+    currentThemeMode: ThemeMode,
     currentAppTheme: AppTheme,
     onEvent: (AppearanceSettingsEvent) -> Unit,
 ) {
     when (dialog) {
         Dialog.DarkMode -> {
             DarkModeDialog(
-                currentDarkMode = currentDarkMode,
+                currentThemeMode = currentThemeMode,
                 onDarkModeSelected = { onEvent(DarkModeChanged(it)) },
                 onDismiss = { onEvent(DialogDismissed) },
             )
@@ -62,13 +62,13 @@ internal fun AppearanceDialogs(
 
 @Composable
 private fun DarkModeDialog(
-    currentDarkMode: DarkMode,
-    onDarkModeSelected: (DarkMode) -> Unit,
+    currentThemeMode: ThemeMode,
+    onDarkModeSelected: (ThemeMode) -> Unit,
     onDismiss: () -> Unit,
 ) = OptionPickerDialog(
     title = stringResource(Res.string.user_settings_appearance_dark_mode),
-    options = DarkMode.entries,
-    selectedOption = currentDarkMode,
+    options = ThemeMode.entries,
+    selectedOption = currentThemeMode,
     optionLabel = { stringResource(it.titleRes) },
     onOptionSelected = onDarkModeSelected,
     onDismiss = onDismiss,

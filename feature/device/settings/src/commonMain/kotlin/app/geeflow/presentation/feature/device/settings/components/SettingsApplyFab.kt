@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.components.HorizontalSpacer
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_apply
@@ -40,10 +41,12 @@ internal fun SettingsApplyFab(
     modifier = modifier,
 ) {
     FloatingActionButton(
-        modifier = Modifier.padding(
-            horizontal = GeeFlowTheme.spacing.fabHorizontal,
-            vertical = GeeFlowTheme.spacing.fabVertical,
-        ),
+        modifier = Modifier
+            .padding(
+                horizontal = GeeFlowTheme.spacing.fabHorizontal,
+                vertical = GeeFlowTheme.spacing.fabVertical,
+            )
+            .geeFlowInsetsEndPadding(),
         onClick = { if (!loading) onClick() },
     ) {
         AnimatedContent(

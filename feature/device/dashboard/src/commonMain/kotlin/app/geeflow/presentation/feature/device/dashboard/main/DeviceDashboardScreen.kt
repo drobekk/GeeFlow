@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.main
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +52,7 @@ import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListVie
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.isWidthExpanded
+import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.disabled
@@ -155,7 +156,11 @@ private fun ExpandedDashboard(
     onProfileListEvent: (ProfileListEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.systemBarsPadding()) {
+    Box(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.background)
+            .geeFlowInsetsPadding(),
+    ) {
         Row(Modifier.fillMaxSize()) {
             Column(modifier = Modifier.weight(MainColumnWeight).padding(start = 16.dp)) {
                 val selectedProfile = profileListViewState.profiles.find { it.selected }
@@ -230,6 +235,7 @@ private fun CompactDashboard(
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding(),

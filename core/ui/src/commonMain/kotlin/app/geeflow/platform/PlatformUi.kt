@@ -3,6 +3,7 @@ package app.geeflow.platform
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.window.core.layout.WindowSizeClass
+import app.geeflow.ui.theme.ThemeMode
 
 expect fun getThemeProvider(): ThemeProvider
 
@@ -16,7 +17,7 @@ expect fun KeepScreenOnEffect(enabled: Boolean)
 expect fun FullScreenEffect(enabled: Boolean)
 
 @Composable
-expect fun ThemeModeEffect(darkTheme: Boolean)
+expect fun ThemeModeEffect(themeMode: ThemeMode)
 
 @Composable
 expect fun rememberLanguageSettingsLauncher(): (() -> Unit)?

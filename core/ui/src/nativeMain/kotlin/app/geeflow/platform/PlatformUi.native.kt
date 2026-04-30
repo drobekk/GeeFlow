@@ -1,9 +1,10 @@
 package app.geeflow.platform
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.window.core.layout.WindowSizeClass
+import app.geeflow.ui.theme.ThemeMode
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
@@ -14,7 +15,7 @@ import platform.UIKit.setStatusBarHidden
 actual fun getThemeProvider() = object : ThemeProvider {}
 
 @Composable
-actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfo(true).windowSizeClass
+actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
 
 @Composable
 actual fun KeepScreenOnEffect(enabled: Boolean) = Unit
@@ -28,11 +29,11 @@ actual fun FullScreenEffect(enabled: Boolean) {
 }
 
 @Composable
-actual fun ThemeModeEffect(darkTheme: Boolean) {
-    UIApplication.sharedApplication.keyWindow?.overrideUserInterfaceStyle = if (darkTheme) {
-        UIUserInterfaceStyle.UIUserInterfaceStyleDark
-    } else {
-        UIUserInterfaceStyle.UIUserInterfaceStyleLight
+actual fun ThemeModeEffect(themeMode: ThemeMode) {
+    UIApplication.sharedApplication.keyWindow?.overrideUserInterfaceStyle = when (themeMode) {
+        ThemeMode.System -> UIUserInterfaceStyle.UIUserInterfaceStyleUnspecified
+        ThemeMode.Light -> UIUserInterfaceStyle.UIUserInterfaceStyleLight
+        ThemeMode.Dark -> UIUserInterfaceStyle.UIUserInterfaceStyleDark
     }
 }
 

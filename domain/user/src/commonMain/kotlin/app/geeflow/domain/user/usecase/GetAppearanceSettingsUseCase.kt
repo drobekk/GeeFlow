@@ -26,7 +26,7 @@ class GetAppearanceSettingsUseCase(
                 repository.keepScreenOn(userId),
             ) { darkMode, appTheme, fullScreenMode, keepScreenOn ->
                 AppearanceSettings(
-                    darkMode = darkMode,
+                    themeMode = darkMode,
                     appTheme = appTheme,
                     fullScreenMode = fullScreenMode,
                     keepScreenOn = keepScreenOn,

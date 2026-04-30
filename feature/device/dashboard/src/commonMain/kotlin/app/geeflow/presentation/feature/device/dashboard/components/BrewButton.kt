@@ -52,7 +52,6 @@ import app.geeflow.ui.icons.FlowControl
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Logo
 import app.geeflow.ui.icons.Manual
-import app.geeflow.ui.modifier.conditional
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.core.ui.generated.resources.Res
@@ -114,7 +113,7 @@ fun BrewButton(
                 fadeIn(tween(TransitionDurationMs)) togetherWith fadeOut(tween(TransitionDurationMs))
             },
             modifier = Modifier
-                .conditional(condition = isBrewing, ifTrue = { clickable(onClick = onStopClick, role = Role.Button) })
+                .clickable(enabled = isBrewing, onClick = onStopClick, role = Role.Button)
                 .height(50.dp),
             contentAlignment = Alignment.Center,
         ) {

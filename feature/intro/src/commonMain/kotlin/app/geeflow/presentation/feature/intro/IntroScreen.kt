@@ -3,13 +3,11 @@ package app.geeflow.presentation.feature.intro
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -24,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -37,7 +36,7 @@ import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Logo
 import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.conditional
+import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.core.ui.generated.resources.app_name
@@ -81,15 +80,22 @@ private fun IntroScreenContent(
 
 @Composable
 private fun Logo(modifier: Modifier = Modifier) {
+    val expanded = isWidthExpanded()
     Column(
         modifier = modifier
-            .conditional(
-                condition = isWidthExpanded(),
-                ifTrue = { fillMaxHeight() },
-                ifFalse = { fillMaxWidth() },
-            )
+            .layout { measurable, constraints ->
+                val resolvedConstraints = if (expanded) {
+                    constraints.copy(minHeight = constraints.maxHeight)
+                } else {
+                    constraints.copy(minWidth = constraints.maxWidth)
+                }
+                val placeable = measurable.measure(resolvedConstraints)
+                layout(placeable.width, placeable.height) {
+                    placeable.placeRelative(0, 0)
+                }
+            }
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .statusBarsPadding()
+            .geeFlowInsetsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

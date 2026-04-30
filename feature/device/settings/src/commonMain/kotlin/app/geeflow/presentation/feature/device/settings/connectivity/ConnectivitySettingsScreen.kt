@@ -7,16 +7,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -43,7 +39,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.NavigatorEffect
@@ -57,6 +52,7 @@ import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.isWidthExpanded
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -98,14 +94,12 @@ private fun ConnectivitySettingsContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     if (isWidthExpanded()) {
-        val paddingEndInsets = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LayoutDirection.Ltr)
         CompactContent(
             viewState = viewState,
             onEvent = onEvent,
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
-                .padding(end = paddingEndInsets),
+                .geeFlowInsetsEndPadding(),
         )
     } else {
         GeeFlowScaffold(

@@ -58,6 +58,7 @@ import app.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.QrC
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.VerticalSpacer
+import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -184,10 +185,12 @@ private fun FloatingActionButton(
     onEvent: (AddDeviceEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) = FloatingActionButton(
-    modifier = modifier.padding(
-        horizontal = GeeFlowTheme.spacing.fabHorizontal,
-        vertical = GeeFlowTheme.spacing.fabVertical,
-    ),
+    modifier = modifier
+        .padding(
+            horizontal = GeeFlowTheme.spacing.fabHorizontal,
+            vertical = GeeFlowTheme.spacing.fabVertical,
+        )
+        .geeFlowInsetsEndPadding(),
     onClick = {
         when (viewState.method) {
             is NearbyDevices -> onEvent(ShowQrCodeScannerClicked)
