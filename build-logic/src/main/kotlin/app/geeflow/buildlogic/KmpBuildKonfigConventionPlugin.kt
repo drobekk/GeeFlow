@@ -5,6 +5,7 @@ import com.codingfeline.buildkonfig.gradle.BuildKonfigExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import java.io.File
 
 class KmpBuildKonfigConventionPlugin : Plugin<Project> {
 
@@ -26,15 +27,18 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
         }
 
         val root = rootProject
+        // Resolve to String at configuration time — Project cannot be serialized by config cache
+        val xcConfigFilePath = root.layout.projectDirectory
+            .file("iosApp/Configuration/Version.xcconfig").asFile.absolutePath
         val xcConfigTask = if (root.tasks.names.contains("generateVersionXcconfig")) {
             root.tasks.named("generateVersionXcconfig")
         } else {
             root.tasks.register("generateVersionXcconfig") {
                 doLast {
-                    root.file("iosApp/Configuration/Version.xcconfig").writeText(
+                    File(xcConfigFilePath).writeText(
                         "// Generated — do not edit. Change app-version in libs.versions.toml.\n" +
                             "MARKETING_VERSION = $appVersion\n" +
-                            "CURRENT_PROJECT_VERSION = $appVersionCode\n"
+                            "CURRENT_PROJECT_VERSION = $appVersionCode\n",
                     )
                 }
             }

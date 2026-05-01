@@ -17,14 +17,18 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         .executeAsOneOrNull()
 
     fun insertUser(user: User): Long {
-        dbQuery.insertUser(
-            id = if (user.id == 0L) null else user.id,
-            name = user.name,
-            photoUri = user.photoUri,
-            isSelected = if (user.isSelected) 1L else 0L,
-            favoriteDeviceId = user.favoriteDeviceId,
-        )
-        return dbQuery.lastInsertId().executeAsOne()
+        var id = 0L
+        dbQuery.transaction {
+            dbQuery.insertUser(
+                id = if (user.id == 0L) null else user.id,
+                name = user.name,
+                photoUri = user.photoUri,
+                isSelected = if (user.isSelected) 1L else 0L,
+                favoriteDeviceId = user.favoriteDeviceId,
+            )
+            id = dbQuery.lastInsertId().executeAsOne()
+        }
+        return id
     }
 
     fun deleteUser(id: Long) {

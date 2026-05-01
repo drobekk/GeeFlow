@@ -15,9 +15,10 @@ class AddUserUseCase(
             User(
                 name = name,
                 photoUri = photoUri,
-                isSelected = isSelected,
+                isSelected = false,
             ),
         )
+        if (isSelected) userRepository.setSelectedUser(userId)
         brewProfileRepository.seedDefaultProfilesIfEmpty(userId)
     }
 }

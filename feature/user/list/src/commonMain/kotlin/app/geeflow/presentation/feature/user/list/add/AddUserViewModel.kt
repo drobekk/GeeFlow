@@ -15,7 +15,7 @@ internal class AddUserViewModel(
     fun handleEvent(event: AddUserEvent) = when (event) {
         is BackClicked -> navigate(NavEvent.Back)
         is SaveNameClicked -> {
-            addUser(event.name.trim())
+            addUser(event.name.trim(), isSelected = true)
             navigate(NavEvent.Back)
         }
     }
