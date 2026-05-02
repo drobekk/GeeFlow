@@ -5,7 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
-import app.geeflow.ui.theme.colorscheme.espressoColorScheme
+import app.geeflow.ui.theme.colorscheme.EspressoSeed
+import com.materialkolor.PaletteStyle
+import com.materialkolor.rememberDynamicColorScheme
 
 @Preview(
     name = "Compact",
@@ -49,7 +51,11 @@ class GeeFlowPreviewWrapper : PreviewWrapperProvider {
         val isSystemInDarkTheme = isSystemInDarkTheme()
         GeeFlowTheme(
             darkMode = isSystemInDarkTheme,
-            colorScheme = espressoColorScheme(isSystemInDarkTheme),
+            colorScheme = rememberDynamicColorScheme(
+                seedColor = EspressoSeed,
+                isDark = isSystemInDarkTheme,
+                style = PaletteStyle.TonalSpot,
+            ),
             content = content,
         )
     }

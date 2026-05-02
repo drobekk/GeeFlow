@@ -15,7 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.geeflow.data.user.model.AppTheme
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.platform.isFullScreenSupported
@@ -23,9 +25,11 @@ import app.geeflow.platform.isKeepScreenOnSupported
 import app.geeflow.platform.rememberLanguageSettingsLauncher
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.AppThemeClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.BackClicked
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.CustomColorClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.FullScreenChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnChanged
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleClicked
 import app.geeflow.presentation.feature.user.settings.appearance.components.AppearanceDialogs
 import app.geeflow.ui.components.GeeFlowNavigationListItem
 import app.geeflow.ui.components.GeeFlowScaffold
@@ -37,6 +41,8 @@ import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_app_theme
+import geeflow.feature.user.settings.generated.resources.user_settings_appearance_custom_color
+import geeflow.feature.user.settings.generated.resources.user_settings_appearance_custom_color_description
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_dark_mode
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_description
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_full_screen
@@ -45,6 +51,7 @@ import geeflow.feature.user.settings.generated.resources.user_settings_appearanc
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_keep_screen_on_description
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_language
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_language_description
+import geeflow.feature.user.settings.generated.resources.user_settings_appearance_palette_style
 import geeflow.feature.user.settings.generated.resources.user_settings_appearance_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -69,6 +76,8 @@ internal fun AppearanceSettingsScreen(
         dialog = viewState.dialog,
         currentThemeMode = viewState.themeMode,
         currentAppTheme = viewState.appTheme,
+        currentPaletteStyle = viewState.paletteStyle,
+        currentCustomSeedColor = viewState.customSeedColor,
         onEvent = viewModel::handleEvent,
     )
 }
@@ -171,6 +180,26 @@ private fun AppearanceContent(
                 .fillMaxWidth()
                 .clickable { onEvent(AppThemeClicked) },
         )
+        if (viewState.appTheme != AppTheme.SYSTEM) {
+            GeeFlowNavigationListItem(
+                title = stringResource(Res.string.user_settings_appearance_palette_style),
+                subtitle = stringResource(viewState.paletteStyle.titleRes),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp)
+                    .clickable { onEvent(PaletteStyleClicked) },
+            )
+        }
+        if (viewState.appTheme == AppTheme.CUSTOM) {
+            GeeFlowNavigationListItem(
+                title = stringResource(Res.string.user_settings_appearance_custom_color),
+                subtitle = stringResource(Res.string.user_settings_appearance_custom_color_description),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp)
+                    .clickable { onEvent(CustomColorClicked) },
+            )
+        }
         if (isLanguageSupported) {
             GeeFlowNavigationListItem(
                 title = stringResource(Res.string.user_settings_appearance_language),

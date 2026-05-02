@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -24,6 +25,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.geeflow.app.navigation.AppNavigator
 import app.geeflow.app.navigation.GetInitialDestinationUseCase
+import app.geeflow.data.user.model.AppPaletteStyle
 import app.geeflow.data.user.model.AppTheme
 import app.geeflow.domain.user.model.AppearanceSettings
 import app.geeflow.domain.user.usecase.GetAppearanceSettingsUseCase
@@ -34,11 +36,15 @@ import app.geeflow.platform.ThemeModeEffect
 import app.geeflow.platform.getThemeProvider
 import app.geeflow.ui.theme.GeeFlowTheme
 import app.geeflow.ui.theme.ThemeMode
-import app.geeflow.ui.theme.colorscheme.espressoColorScheme
-import app.geeflow.ui.theme.colorscheme.monoColorScheme
-import app.geeflow.ui.theme.colorscheme.roseColorScheme
+import app.geeflow.ui.theme.colorscheme.EmeraldSeed
+import app.geeflow.ui.theme.colorscheme.EspressoSeed
+import app.geeflow.ui.theme.colorscheme.RoseSeed
+import app.geeflow.ui.theme.colorscheme.SapphireSeed
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicColorScheme
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.serialization.modules.plus
 import org.koin.compose.KoinApplication
@@ -94,13 +100,28 @@ private fun getColorScheme(
     val systemThemeProvider = remember { getThemeProvider() }
     val systemTheme = systemThemeProvider.getSystemColorScheme(darkMode)
 
-    return when (appearance.appTheme) {
-        AppTheme.ESPRESSO -> espressoColorScheme(darkMode)
-        AppTheme.MONO -> monoColorScheme(darkMode)
-        AppTheme.ROSE -> roseColorScheme(darkMode)
-        AppTheme.SYSTEM if systemTheme != null -> systemTheme
-        else -> espressoColorScheme(darkMode)
+    val seedColor = when (appearance.appTheme) {
+        AppTheme.ESPRESSO -> EspressoSeed
+        AppTheme.SAPPHIRE -> SapphireSeed
+        AppTheme.EMERALD -> EmeraldSeed
+        AppTheme.ROSE -> RoseSeed
+        AppTheme.CUSTOM -> Color(appearance.customSeedColor)
+        AppTheme.SYSTEM -> if (systemTheme != null) return systemTheme else EspressoSeed
     }
+
+    return rememberDynamicColorScheme(
+        seedColor = seedColor,
+        isDark = darkMode,
+        style = appearance.paletteStyle.toPaletteStyle(),
+        specVersion = ColorSpec.SpecVersion.SPEC_2025,
+    )
+}
+
+private fun AppPaletteStyle.toPaletteStyle() = when (this) {
+    AppPaletteStyle.TONAL_SPOT -> PaletteStyle.TonalSpot
+    AppPaletteStyle.NEUTRAL -> PaletteStyle.Neutral
+    AppPaletteStyle.VIBRANT -> PaletteStyle.Vibrant
+    AppPaletteStyle.EXPRESSIVE -> PaletteStyle.Expressive
 }
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)

@@ -20,17 +20,23 @@ class GetAppearanceSettingsUseCase(
         .mapNotNull { it?.id }
         .flatMapLatest { userId ->
             combine(
-                repository.darkMode(userId),
-                repository.appTheme(userId),
+                combine(
+                    repository.darkMode(userId),
+                    repository.appTheme(userId),
+                    repository.paletteStyle(userId),
+                    repository.customSeedColor(userId),
+                ) { darkMode, appTheme, paletteStyle, customSeedColor ->
+                    AppearanceSettings(
+                        themeMode = darkMode,
+                        appTheme = appTheme,
+                        paletteStyle = paletteStyle,
+                        customSeedColor = customSeedColor,
+                    )
+                },
                 repository.fullScreenMode(userId),
                 repository.keepScreenOn(userId),
-            ) { darkMode, appTheme, fullScreenMode, keepScreenOn ->
-                AppearanceSettings(
-                    themeMode = darkMode,
-                    appTheme = appTheme,
-                    fullScreenMode = fullScreenMode,
-                    keepScreenOn = keepScreenOn,
-                )
+            ) { settings, fullScreenMode, keepScreenOn ->
+                settings.copy(fullScreenMode = fullScreenMode, keepScreenOn = keepScreenOn)
             }
         }
 }

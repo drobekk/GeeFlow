@@ -31,6 +31,7 @@ kotlin {
             implementation(libs.aboutLibraries.compose.m3)
             implementation(libs.aboutLibraries.core)
             implementation(libs.filekit.dialogs.compose)
+            implementation(libs.compose.colorpicker)
             implementation(libs.kermit)
         }
     }

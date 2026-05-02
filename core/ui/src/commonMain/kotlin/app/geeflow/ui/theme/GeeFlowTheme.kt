@@ -7,7 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.theme.colorscheme.espressoColorScheme
+import app.geeflow.ui.theme.colorscheme.EspressoSeed
+import com.materialkolor.PaletteStyle
+import com.materialkolor.rememberDynamicColorScheme
 
 @Composable
 fun GeeFlowTheme(
@@ -44,7 +46,11 @@ fun GeeFlowThemePreview(
 ) {
     GeeFlowTheme(
         darkMode = darkMode,
-        colorScheme = espressoColorScheme(darkMode),
+        colorScheme = rememberDynamicColorScheme(
+            seedColor = EspressoSeed,
+            isDark = darkMode,
+            style = PaletteStyle.TonalSpot,
+        ),
         content = content,
     )
 }

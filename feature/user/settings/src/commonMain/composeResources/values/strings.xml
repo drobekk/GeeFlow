@@ -34,7 +34,8 @@
     <string name="user_settings_appearance_dark_mode_dark">Dark</string>
     <string name="user_settings_appearance_app_theme">App Theme</string>
     <string name="user_settings_appearance_app_theme_espresso">Espresso</string>
-    <string name="user_settings_appearance_app_theme_mono">Mono</string>
+    <string name="user_settings_appearance_app_theme_sapphire">Sapphire</string>
+    <string name="user_settings_appearance_app_theme_emerald">Emerald</string>
     <string name="user_settings_appearance_app_theme_rose">Rose</string>
     <string name="user_settings_appearance_app_theme_system">System theme</string>
     <string name="user_settings_appearance_language">Language</string>
@@ -43,6 +44,14 @@
     <string name="user_settings_appearance_full_screen_description">Hide system bars while using the app</string>
     <string name="user_settings_appearance_keep_screen_on">Keep Screen On</string>
     <string name="user_settings_appearance_keep_screen_on_description">Prevent screen from turning off during brew</string>
+    <string name="user_settings_appearance_app_theme_custom">Custom</string>
+    <string name="user_settings_appearance_custom_color">Custom Color</string>
+    <string name="user_settings_appearance_custom_color_description">Tap to pick a seed color</string>
+    <string name="user_settings_appearance_palette_style">Style</string>
+    <string name="user_settings_appearance_palette_style_tonal_spot">Tonal Spot</string>
+    <string name="user_settings_appearance_palette_style_neutral">Neutral</string>
+    <string name="user_settings_appearance_palette_style_vibrant">Vibrant</string>
+    <string name="user_settings_appearance_palette_style_expressive">Expressive</string>
 
     <!-- Brewing Preferences Settings -->
     <string name="user_settings_brewing_preferences_title">Brewing Preferences</string>

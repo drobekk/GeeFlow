@@ -4,9 +4,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import app.geeflow.data.user.UserSettingsRepository
+import app.geeflow.data.user.model.AppPaletteStyle
 import app.geeflow.data.user.model.AppTheme
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.data.user.model.TemperatureUnit
@@ -37,6 +39,16 @@ class UserSettingsRepositoryImpl(
         preferences[appThemeKey(userId)]
             ?.let { AppTheme.entries.find { entry -> entry.name == it } }
             ?: AppTheme.ESPRESSO
+    }
+
+    override fun paletteStyle(userId: Long): Flow<AppPaletteStyle> = dataStore.data.map { preferences ->
+        preferences[paletteStyleKey(userId)]
+            ?.let { AppPaletteStyle.entries.find { entry -> entry.name == it } }
+            ?: AppPaletteStyle.TONAL_SPOT
+    }
+
+    override fun customSeedColor(userId: Long): Flow<Int> = dataStore.data.map { preferences ->
+        preferences[customSeedColorKey(userId)] ?: DefaultCustomSeedColor
     }
 
     override fun fullScreenMode(userId: Long): Flow<Boolean> = dataStore.data.map { preferences ->
@@ -75,6 +87,18 @@ class UserSettingsRepositoryImpl(
         }
     }
 
+    override suspend fun setPaletteStyle(userId: Long, style: AppPaletteStyle) {
+        dataStore.edit { preferences ->
+            preferences[paletteStyleKey(userId)] = style.name
+        }
+    }
+
+    override suspend fun setCustomSeedColor(userId: Long, colorArgb: Int) {
+        dataStore.edit { preferences ->
+            preferences[customSeedColorKey(userId)] = colorArgb
+        }
+    }
+
     override suspend fun setFullScreenMode(userId: Long, enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[fullScreenModeKey(userId)] = enabled
@@ -108,6 +132,8 @@ class UserSettingsRepositoryImpl(
             preferences.remove(keepScreenOnKey(userId))
             preferences.remove(autoConnectKey(userId))
             preferences.remove(temperatureUnitKey(userId))
+            preferences.remove(paletteStyleKey(userId))
+            preferences.remove(customSeedColorKey(userId))
         }
     }
 
@@ -116,8 +142,14 @@ class UserSettingsRepositoryImpl(
     private fun visibleChartsKey(userId: Long) = stringSetPreferencesKey(key("visible_charts", userId))
     private fun darkModeKey(userId: Long) = stringPreferencesKey(key("dark_mode", userId))
     private fun appThemeKey(userId: Long) = stringPreferencesKey(key("app_theme", userId))
+    private fun paletteStyleKey(userId: Long) = stringPreferencesKey(key("palette_style", userId))
+    private fun customSeedColorKey(userId: Long) = intPreferencesKey(key("custom_seed_color", userId))
     private fun fullScreenModeKey(userId: Long) = booleanPreferencesKey(key("full_screen_mode", userId))
     private fun keepScreenOnKey(userId: Long) = booleanPreferencesKey(key("keep_screen_on", userId))
     private fun autoConnectKey(userId: Long) = booleanPreferencesKey(key("auto_connect", userId))
     private fun temperatureUnitKey(userId: Long) = stringPreferencesKey(key("temperature_unit", userId))
+
+    companion object {
+        private const val DefaultCustomSeedColor = 0xFF1E88E5.toInt()
+    }
 }

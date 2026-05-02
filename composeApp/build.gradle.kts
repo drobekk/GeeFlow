@@ -49,6 +49,7 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.coil.compose)
             implementation(libs.filekit.coil)
+            implementation(libs.materialKolor)
         }
         commonTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)

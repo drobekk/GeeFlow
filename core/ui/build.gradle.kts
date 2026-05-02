@@ -14,6 +14,7 @@ kotlin {
             implementation(libs.compose.material.icons.extended)
             implementation(libs.filekit.coil)
             implementation(libs.coil.compose)
+            implementation(libs.materialKolor)
         }
         androidMain.dependencies {
             implementation(libs.androidx.appcompat)

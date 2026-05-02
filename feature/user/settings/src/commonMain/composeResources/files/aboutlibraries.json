@@ -2814,6 +2814,29 @@
             ]
         },
         {
+            "uniqueId": "com.github.ajalt.colormath:colormath-jvm",
+            "artifactVersion": "3.6.1",
+            "name": "Colormath",
+            "description": "Multiplatform color space conversions for Kotlin",
+            "website": "https://github.com/ajalt/colormath/",
+            "developers": [
+                {
+                    "name": "AJ Alt"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:git://github.com/ajalt/colormath.git",
+                "developerConnection": "scm:git:ssh://git@github.com/ajalt/colormath.git",
+                "url": "https://github.com/ajalt/colormath/"
+            },
+            "licenses": [
+                "MIT"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
             "uniqueId": "com.github.hypfvieh:dbus-java-core",
             "artifactVersion": "5.2.0",
             "name": "dbus-java-core",
@@ -2854,6 +2877,29 @@
             },
             "licenses": [
                 "MIT"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
+            "uniqueId": "com.github.skydoves:colorpicker-compose-android",
+            "artifactVersion": "1.1.3",
+            "name": "colorpicker-compose",
+            "description": "Jetpack Compose color picker for getting colors from any images by tapping on the desired color.",
+            "website": "https://github.com/skydoves/colorpicker-compose/",
+            "developers": [
+                {
+                    "name": "Jaewoong Eum"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:git://github.com/skydoves/colorpicker-compose.git",
+                "developerConnection": "scm:git:git://github.com/skydoves/colorpicker-compose.git",
+                "url": "https://github.com/skydoves/colorpicker-compose/"
+            },
+            "licenses": [
+                "Apache-2.0"
             ],
             "funding": [
                 
@@ -3233,6 +3279,29 @@
             ]
         },
         {
+            "uniqueId": "com.materialkolor:material-color-utilities-android",
+            "artifactVersion": "5.0.0-alpha07",
+            "name": "MaterialKolor",
+            "description": "Material You dynamic color for Compose Multiplatform",
+            "website": "https://github.com/jordond/materialkolor",
+            "developers": [
+                {
+                    "name": "Jordon de Hoog"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:https://github.com/jordond/materialkolor.git",
+                "developerConnection": "scm:git:git@github.com:jordond/materialkolor.git",
+                "url": "https://github.com/jordond/materialkolor"
+            },
+            "licenses": [
+                "MIT"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-core-android",
             "artifactVersion": "14.1.0",
             "name": "AboutLibraries Compose UI Library",
@@ -3434,6 +3503,29 @@
                 "connection": "scm:git:git://github.com/Reedyuk/blue-falcon.git",
                 "developerConnection": "scm:git:ssh://git@github.com/Reedyuk/blue-falcon.git",
                 "url": "https://github.com/Reedyuk/blue-falcon"
+            },
+            "licenses": [
+                "Apache-2.0"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
+            "uniqueId": "dev.drewhamilton.poko:poko-annotations-jvm",
+            "artifactVersion": "0.21.2",
+            "name": "Poko Annotations",
+            "description": "A Kotlin compiler plugin for generating equals, hashCode, and toString for plain old Kotlin objects.",
+            "website": "https://github.com/drewhamilton/Poko",
+            "developers": [
+                {
+                    "name": "Drew Hamilton"
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:github.com/drewhamilton/Poko.git",
+                "developerConnection": "scm:git:ssh://github.com/drewhamilton/Poko.git",
+                "url": "https://github.com/drewhamilton/Poko/tree/main"
             },
             "licenses": [
                 "Apache-2.0"
@@ -4114,7 +4206,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.annotation-internal:annotation",
-            "artifactVersion": "1.9.3",
+            "artifactVersion": "1.10.0",
             "name": "Annotation",
             "description": "Provides source annotations for tooling and readability.",
             "website": "https://github.com/JetBrains/compose-jb",
@@ -4138,7 +4230,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.collection-internal:collection",
-            "artifactVersion": "1.9.3",
+            "artifactVersion": "1.11.0-alpha03",
             "name": "collections",
             "description": "Standalone efficient collections.",
             "website": "https://github.com/JetBrains/compose-jb",
@@ -4596,30 +4688,6 @@
                 "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
                 "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
                 "url": "https://github.com/JetBrains/compose-multiplatform"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
-            "uniqueId": "org.jetbrains.compose.ui:ui-backhandler-android",
-            "artifactVersion": "1.9.3",
-            "name": "Compose Multiplatform BackHandler",
-            "description": "Provides BackHandler in Compose Multiplatform projects",
-            "website": "https://github.com/JetBrains/compose-jb",
-            "developers": [
-                {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
             },
             "licenses": [
                 "Apache-2.0"
