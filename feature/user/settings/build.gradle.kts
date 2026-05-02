@@ -30,6 +30,8 @@ kotlin {
             implementation(libs.compose.material.icons.extended)
             implementation(libs.aboutLibraries.compose.m3)
             implementation(libs.aboutLibraries.core)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.kermit)
         }
     }
 }

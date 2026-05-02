@@ -12,5 +12,6 @@ interface UserRepository {
     fun removeUser(id: Long)
     fun setSelectedUser(id: Long)
     fun renameUser(id: Long, name: String)
+    fun updatePhotoUri(id: Long, uri: String?)
     fun setFavoriteDevice(userId: Long, deviceId: Long?)
 }

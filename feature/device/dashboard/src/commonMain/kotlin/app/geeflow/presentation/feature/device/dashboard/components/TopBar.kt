@@ -89,6 +89,7 @@ import geeflow.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun TopBar(
     device: Device,
+    photoFileName: String? = null,
     onEvent: (DeviceDashboardEvent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -97,6 +98,7 @@ internal fun TopBar(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         GeeFlowUserAvatar(
+            photoFileName = photoFileName,
             modifier = Modifier.size(48.dp),
             onClick = { onEvent(UserClicked) },
         )

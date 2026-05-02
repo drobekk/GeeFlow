@@ -47,6 +47,8 @@ kotlin {
             implementation(libs.compose.material3.adaptiveLayout)
             implementation(libs.jetbrains.material3.adaptiveNavigation3)
             implementation(libs.kermit)
+            implementation(libs.coil.compose)
+            implementation(libs.filekit.coil)
         }
         commonTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)

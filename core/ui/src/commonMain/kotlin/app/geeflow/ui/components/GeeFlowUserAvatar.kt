@@ -10,23 +10,29 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Person
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
+import coil3.compose.AsyncImage
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.div
+import io.github.vinceglb.filekit.filesDir
 
 @Composable
 fun GeeFlowUserAvatar(
+    photoFileName: String? = null,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    // TODO Load avatar from uri
     Box(
         modifier = modifier
             .clip(CircleShape)
@@ -35,12 +41,22 @@ fun GeeFlowUserAvatar(
             .background(MaterialTheme.colorScheme.surfaceContainer),
         contentAlignment = Alignment.BottomCenter,
     ) {
-        Icon(
-            painter = rememberVectorPainter(GeeFlowIcon.Person),
-            modifier = Modifier.fillMaxSize(),
-            tint = MaterialTheme.colorScheme.outlineVariant,
-            contentDescription = null,
-        )
+        if (photoFileName != null) {
+            val file = remember(photoFileName) { FileKit.filesDir / photoFileName }
+            AsyncImage(
+                model = file,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().clip(CircleShape),
+            )
+        } else {
+            Icon(
+                painter = rememberVectorPainter(GeeFlowIcon.Person),
+                modifier = Modifier.fillMaxSize(),
+                tint = MaterialTheme.colorScheme.outlineVariant,
+                contentDescription = null,
+            )
+        }
     }
 }
 

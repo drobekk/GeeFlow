@@ -37,6 +37,9 @@ import app.geeflow.ui.theme.ThemeMode
 import app.geeflow.ui.theme.colorscheme.espressoColorScheme
 import app.geeflow.ui.theme.colorscheme.monoColorScheme
 import app.geeflow.ui.theme.colorscheme.roseColorScheme
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.serialization.modules.plus
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
@@ -46,6 +49,12 @@ import app.geeflow.data.user.model.ThemeMode as UserThemeMode
 
 @Composable
 fun App(closeApp: () -> Unit) {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .components { addPlatformFileSupport() }
+            .build()
+    }
+
     KoinApplication(koinConfiguration<GeeFlowApp>()) {
         val getAppearanceSettings = koinInject<GetAppearanceSettingsUseCase>()
         val appearance by getAppearanceSettings().collectAsStateWithLifecycle(

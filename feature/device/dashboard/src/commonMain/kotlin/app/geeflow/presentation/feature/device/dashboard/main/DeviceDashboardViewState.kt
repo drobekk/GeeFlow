@@ -24,6 +24,7 @@ data class DeviceDashboardViewState(
     data class User(
         val id: String = "",
         val name: String = "",
+        val photoFileName: String? = null,
     )
 
     data class Brew(

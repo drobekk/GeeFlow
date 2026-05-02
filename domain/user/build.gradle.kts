@@ -15,6 +15,7 @@ kotlin {
             api(projects.data.user)
             implementation(projects.data.brew)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.filekit.core)
         }
     }
 }

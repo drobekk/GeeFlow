@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.ui.components.GeeFlowScaffold
+import app.geeflow.ui.components.GeeFlowUserAvatar
 import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
@@ -138,14 +139,19 @@ private fun UserItem(
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(onClick = { onEvent(UserListEvent.UserClicked(user)) })
-            .padding(start = 24.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
+            .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        GeeFlowUserAvatar(
+            photoFileName = user.photoFileName,
+            modifier = Modifier.size(40.dp),
+        )
         Text(
             text = user.name,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
         )
         if (user.selected) {
             Icon(
@@ -178,8 +184,8 @@ private fun Preview() {
     UserListContent(
         UserListViewState(
             users = listOf(
-                UserListViewState.User(id = 1L, name = "Barista", selected = true),
-                UserListViewState.User(id = 2L, name = "Guest", selected = false),
+                UserListViewState.User(id = 1L, name = "Barista", selected = true, photoFileName = null),
+                UserListViewState.User(id = 2L, name = "Guest", selected = false, photoFileName = null),
             ),
         ),
     )

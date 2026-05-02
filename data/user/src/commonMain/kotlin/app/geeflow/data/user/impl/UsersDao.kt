@@ -50,6 +50,10 @@ class UsersDao(databaseProvider: DatabaseProvider) {
         dbQuery.updateName(name, id)
     }
 
+    fun updatePhotoUri(id: Long, uri: String?) {
+        dbQuery.updatePhotoUri(uri, id)
+    }
+
     private fun mapToUser(
         id: Long,
         name: String,

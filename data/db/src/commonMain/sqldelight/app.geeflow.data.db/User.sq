@@ -32,3 +32,6 @@ UPDATE users SET favoriteDeviceId = ? WHERE id = ?;
 
 updateName:
 UPDATE users SET name = ? WHERE id = ?;
+
+updatePhotoUri:
+UPDATE users SET photoUri = ? WHERE id = ?;

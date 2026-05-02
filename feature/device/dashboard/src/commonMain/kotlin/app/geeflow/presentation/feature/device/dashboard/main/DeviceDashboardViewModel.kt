@@ -22,6 +22,7 @@ import app.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
 import app.geeflow.domain.exception.DeviceNotConnectedException
+import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent.To
@@ -80,6 +81,7 @@ internal class DeviceDashboardViewModel(
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val getBrewProfileUseCase: GetBrewProfileUseCase,
+    private val getSelectedUser: GetSelectedUserUseCase,
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
     private var selectedProfileId: String? = null
@@ -91,6 +93,7 @@ internal class DeviceDashboardViewModel(
         launch { observeDeviceState(args.deviceId).collect { state -> updateMachineStateUi(state) } }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
         launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
+        launch { getSelectedUser().collect { u -> modify { copy(user = user.copy(photoFileName = u?.photoUri)) } } }
     }
 
     @Suppress("CyclomaticComplexMethod")

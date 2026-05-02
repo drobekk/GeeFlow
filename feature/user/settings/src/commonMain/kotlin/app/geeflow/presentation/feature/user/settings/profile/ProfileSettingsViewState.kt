@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.user.settings.profile
 data class ProfileSettingsViewState(
     val userId: Long = 0L,
     val name: String = "",
+    val photoFileName: String? = null,
     val dialog: Dialog? = null,
 ) {
     sealed interface Dialog {

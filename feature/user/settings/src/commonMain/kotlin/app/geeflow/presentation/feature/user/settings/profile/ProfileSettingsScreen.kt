@@ -15,6 +15,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -22,8 +23,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.BackClicked
+import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.ChangePictureClicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.DeleteClicked
+import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.PhotoFilePicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.RenameClicked
+import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsViewModelEvent.OpenPhotoPicker
+import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowNavigationListItem
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.isWidthExpanded
@@ -40,6 +45,10 @@ import geeflow.feature.user.settings.generated.resources.user_settings_profile_d
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_delete_description
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_description
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_title
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.readBytes
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -48,8 +57,21 @@ internal fun ProfileSettingsScreen(
     navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
 
     NavigatorEffect(navigator, viewModel.navEvent)
+
+    val photoPicker = rememberFilePickerLauncher(type = FileKitType.Image) { file ->
+        coroutineScope.launch {
+            file?.readBytes()?.let { viewModel.handleEvent(PhotoFilePicked(it)) }
+        }
+    }
+
+    EventsDispatcher(viewModel.events) { event ->
+        when (event) {
+            OpenPhotoPicker -> photoPicker.launch()
+        }
+    }
 
     Content(viewState = viewState, onEvent = viewModel::handleEvent)
 
@@ -129,8 +151,9 @@ private fun SettingsContent(
         GeeFlowNavigationListItem(
             title = stringResource(Res.string.user_settings_profile_change_picture),
             subtitle = stringResource(Res.string.user_settings_profile_change_picture_description),
-            enabled = false,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onEvent(ChangePictureClicked) },
         )
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
             GeeFlowNavigationListItem(

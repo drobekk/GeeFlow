@@ -166,6 +166,7 @@ private fun ExpandedDashboard(
                 val selectedProfile = profileListViewState.profiles.find { it.selected }
                 TopBar(
                     device = viewState.device,
+                    photoFileName = viewState.user.photoFileName,
                     onEvent = onEvent,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -242,6 +243,7 @@ private fun CompactDashboard(
         topBar = {
             TopBar(
                 device = viewState.device,
+                photoFileName = viewState.user.photoFileName,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()

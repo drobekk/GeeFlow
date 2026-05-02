@@ -7,5 +7,6 @@ data class UserListViewState(
         val id: Long,
         val name: String,
         val selected: Boolean,
+        val photoFileName: String? = null,
     )
 }

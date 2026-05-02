@@ -27,6 +27,7 @@ internal class UserListViewModel(
                             id = user.id,
                             name = user.name,
                             selected = user.isSelected,
+                            photoFileName = user.photoUri,
                         )
                     },
                 )

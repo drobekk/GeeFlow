@@ -23,31 +23,35 @@ import app.geeflow.ui.icons.AppLogo
 import app.geeflow.ui.icons.GeeFlowIcon
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.app_name
+import io.github.vinceglb.filekit.FileKit
 import org.jetbrains.compose.resources.stringResource
 
-fun main() = application {
-    var isFullscreen by remember { mutableStateOf(false) }
-    val state = rememberWindowState(placement = WindowPlacement.Floating, size = DpSize(1000.dp, 650.dp))
+fun main() {
+    FileKit.init(appId = "app.geeflow")
+    application {
+        var isFullscreen by remember { mutableStateOf(false) }
+        val state = rememberWindowState(placement = WindowPlacement.Floating, size = DpSize(1000.dp, 650.dp))
 
-    key(isFullscreen) {
-        Window(
-            onCloseRequest = ::exitApplication,
-            state = state,
-            title = stringResource(Res.string.app_name),
-            icon = rememberVectorPainter(GeeFlowIcon.AppLogo),
-            undecorated = isFullscreen,
-            onKeyEvent = { event ->
-                handleFullscreenKey(event) {
-                    isFullscreen = !isFullscreen
-                    state.placement = if (isFullscreen) {
-                        WindowPlacement.Fullscreen
-                    } else {
-                        WindowPlacement.Floating
+        key(isFullscreen) {
+            Window(
+                onCloseRequest = ::exitApplication,
+                state = state,
+                title = stringResource(Res.string.app_name),
+                icon = rememberVectorPainter(GeeFlowIcon.AppLogo),
+                undecorated = isFullscreen,
+                onKeyEvent = { event ->
+                    handleFullscreenKey(event) {
+                        isFullscreen = !isFullscreen
+                        state.placement = if (isFullscreen) {
+                            WindowPlacement.Fullscreen
+                        } else {
+                            WindowPlacement.Floating
+                        }
                     }
-                }
-            },
-        ) {
-            App { exitApplication() }
+                },
+            ) {
+                App { exitApplication() }
+            }
         }
     }
 }

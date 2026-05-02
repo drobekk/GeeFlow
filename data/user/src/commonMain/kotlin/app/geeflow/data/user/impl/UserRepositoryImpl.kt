@@ -49,6 +49,11 @@ class UserRepositoryImpl(
         refresh()
     }
 
+    override fun updatePhotoUri(id: Long, uri: String?) {
+        usersDao.updatePhotoUri(id, uri)
+        refresh()
+    }
+
     override fun setFavoriteDevice(userId: Long, deviceId: Long?) {
         usersDao.setFavoriteDevice(userId, deviceId)
         refresh()
