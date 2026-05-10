@@ -47,7 +47,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -55,9 +54,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -150,6 +147,7 @@ class WendougeeDataSController(
         }
     }
 
+    @Suppress("LongMethod")
     override fun connect(device: Device) {
         val ble = device.connection as? DeviceConnection.Ble
             ?: error("WendougeeDataSController requires DeviceConnection.Ble")
@@ -164,6 +162,12 @@ class WendougeeDataSController(
                     Logger.withTag(TAG).i { "peripheralId changed: ${ble.peripheralId} → ${peripheral.uuid}" }
                     _resolvedConnection.emit(ble.copy(peripheralId = peripheral.uuid))
                 }
+
+                // Flush any stale GATT from a prior session. Without this, Android's addGatt()
+                // guard silently drops the new handle if the old onConnectionStateChange(DISCONNECTED)
+                // hasn't fired yet — subsequent writes go to the dead GATT and no-op.
+                runCatching { blueFalcon.disconnect(peripheral) }
+                delay(STALE_GATT_SETTLE_MS)
 
                 blueFalcon.connect(peripheral)
 
@@ -184,6 +188,11 @@ class WendougeeDataSController(
 
                 tryChangeMtu(peripheral)
 
+                // Disable notifications before enabling to guarantee the CCCD 0x0000 → 0x0001
+                // write reaches the device on every connection regardless of cached BLE stack state.
+                blueFalcon.notifyCharacteristic(peripheral, dataChar, notify = false)
+                blueFalcon.notifyCharacteristic(peripheral, ctrlChar, notify = false)
+                delay(NOTIFY_RESET_DELAY_MS)
                 blueFalcon.notifyCharacteristic(peripheral, dataChar, notify = true)
                 blueFalcon.notifyCharacteristic(peripheral, ctrlChar, notify = true)
 
@@ -269,9 +278,7 @@ class WendougeeDataSController(
     private suspend fun awaitCharacteristics(
         peripheral: BluetoothPeripheral,
     ): Pair<BluetoothCharacteristic, BluetoothCharacteristic>? = withTimeoutOrNull(CHARS_READY_TIMEOUT_MS) {
-        // Windows BLE needs a brief settle after Connected before the first GATT op.
         delay(POST_CONNECT_SETTLE_MS)
-        // Android auto-discovers after connect; Windows/iOS require explicit calls.
         Logger.withTag(TAG).d { "Triggering discoverServices" }
         runCatching { blueFalcon.discoverServices(peripheral) }
             .onFailure { Logger.withTag(TAG).w(it) { "discoverServices threw" } }
@@ -295,10 +302,7 @@ class WendougeeDataSController(
             }
             val data = peripheral.findBySuffix(DATA_UUID_SUFFIX)
             val ctrl = peripheral.findBySuffix(CTRL_UUID_SUFFIX)
-            if (data != null && ctrl != null) {
-                delay(POST_CHARS_DELAY_MS)
-                return@withTimeoutOrNull data to ctrl
-            }
+            if (data != null && ctrl != null) return@withTimeoutOrNull data to ctrl
             delay(CHARS_RETRY_DELAY_MS)
         }
         null
@@ -316,12 +320,22 @@ class WendougeeDataSController(
 
     private fun startObservingNotifications(active: Session) {
         notificationJob?.cancel()
+        val dataUuid = active.dataChar.uuid
+        val ctrlUuid = active.ctrlChar.uuid
         notificationJob = scope.launch {
-            merge(
-                active.dataChar.notifications.labeled("DATA"),
-                active.ctrlChar.notifications.labeled("CTRL"),
-            ).collect { (channel, bytes) ->
-                if (bytes.isNotEmpty()) frameParser.handleIncomingFrame(bytes, channel)
+            // Route by characteristic UUID via the engine's global notification bus rather than
+            // the instance-keyed BluetoothCharacteristic.notifications SharedFlow. This survives
+            // a late-firing onServicesDiscovered that replaces _servicesFlow with new instances.
+            blueFalcon.engine.characteristicNotifications.collect { notification ->
+                if (notification.peripheral.uuid != active.peripheral.uuid) return@collect
+                val bytes = notification.value
+                if (bytes.isEmpty()) return@collect
+                val channel = when (notification.characteristic.uuid) {
+                    ctrlUuid -> "CTRL"
+                    dataUuid -> "DATA"
+                    else -> return@collect
+                }
+                frameParser.handleIncomingFrame(bytes, channel)
             }
         }
     }
@@ -674,7 +688,7 @@ class WendougeeDataSController(
         data: ByteArray,
     ) {
         val channel = if (characteristic === active.ctrlChar) "CTRL" else "DATA"
-        Logger.withTag(BLE_TRACE_TAG).v { "→ [$channel] ${toHexString(data)} (${data.size}B)" }
+        Logger.withTag(BLE_TRACE_TAG).v { ">> [$channel] ${toHexString(data)} (${data.size}B)" }
         blueFalcon.writeCharacteristic(active.peripheral, characteristic, data, WRITE_TYPE_NO_RESPONSE)
     }
 
@@ -683,10 +697,6 @@ class WendougeeDataSController(
 
     private fun BluetoothPeripheral.findBySuffix(suffix: String): BluetoothCharacteristic? =
         characteristics.firstOrNull { it.uuid.toString().lowercase().contains(suffix) }
-
-    private fun Flow<ByteArray>.labeled(
-        channel: String,
-    ): Flow<Pair<String, ByteArray>> = flow { collect { emit(channel to it) } }
 
     private suspend fun currentCoroutineIsActive(): Boolean {
         val job = currentCoroutineContext()[Job]
@@ -712,13 +722,14 @@ class WendougeeDataSController(
         private const val CONNECT_RETRY_DELAY_MS = 100L
         private const val POST_CONNECT_SETTLE_MS = 500L
         private const val CHARS_RETRY_DELAY_MS = 200L
-        private const val POST_CHARS_DELAY_MS = 300L
+        private const val STALE_GATT_SETTLE_MS = 300L
         private const val CCCD_SETTLE_DELAY_MS = 200L
         private const val INIT_CONFIG_DELAY_MS = 300L
         private const val INIT_SCALE_DELAY_MS = 400L
         private const val SCALE_STATUS_DELAY_MS = 100L
         private const val SCALE_LIST_DELAY_MS = 200L
         private const val POST_INIT_DELAY_MS = 300L
+        private const val NOTIFY_RESET_DELAY_MS = 100L
         private const val POLL_BETWEEN_DELAY_MS = 30L
         private const val POLL_TIMEOUT_MS = 800L
         private const val INIT_POLL_TIMEOUT_MS = 3000L

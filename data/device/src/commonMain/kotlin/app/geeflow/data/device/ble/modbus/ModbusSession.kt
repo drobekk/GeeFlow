@@ -131,10 +131,12 @@ class ModbusSession internal constructor(
         withTimeout(timeout) {
             coroutineScope {
                 val ack = async {
-                    responseCharacteristic.notifications.first { value ->
-                        value.size >= expectedPrefix.size &&
-                            value.sliceArray(expectedPrefix.indices).contentEquals(expectedPrefix)
-                    }
+                    client.engine.characteristicNotifications.first { n ->
+                        n.peripheral.uuid == peripheral.uuid &&
+                            n.characteristic.uuid == responseCharacteristic.uuid &&
+                            n.value.size >= expectedPrefix.size &&
+                            n.value.sliceArray(expectedPrefix.indices).contentEquals(expectedPrefix)
+                    }.value
                 }
                 yield()
                 client.writeCharacteristic(
@@ -170,9 +172,11 @@ class ModbusSession internal constructor(
             coroutineScope {
                 val exceptionFc = (expectedFc.toInt() or ModbusFunctionCode.EXCEPTION_MASK.toInt()).toByte()
                 val ack = async {
-                    responseCharacteristic.notifications.first { value ->
-                        matchResponse(value, expectedFc, exceptionFc, addressMatcher)
-                    }
+                    client.engine.characteristicNotifications.first { n ->
+                        n.peripheral.uuid == peripheral.uuid &&
+                            n.characteristic.uuid == responseCharacteristic.uuid &&
+                            matchResponse(n.value, expectedFc, exceptionFc, addressMatcher)
+                    }.value
                 }
                 yield()
                 client.writeCharacteristic(

@@ -146,10 +146,9 @@ private fun ProgressItem(
     unit: String,
     modifier: Modifier = Modifier,
 ) {
-    val targetProgress = if (target > 0) current.toFloat() / target else 0f
     val animatedProgress by animateFloatAsState(
-        targetValue = targetProgress,
-        animationSpec = tween(durationMillis = 1200, easing = LinearEasing),
+        targetValue = if (target > 0) current.toFloat() / target else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
         label = "CleaningProgress",
     )
 

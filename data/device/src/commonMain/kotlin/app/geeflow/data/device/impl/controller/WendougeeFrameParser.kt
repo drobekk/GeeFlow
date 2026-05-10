@@ -69,7 +69,7 @@ class WendougeeFrameParser(
     fun handleIncomingFrame(data: ByteArray, channel: String) {
         val polling = isPollingFrame(data)
         if (!polling || shouldLogPolling()) {
-            Logger.withTag(BLE_TRACE_TAG).v { "← [$channel] ${toHexString(data)} (${data.size}B)" }
+            Logger.withTag(BLE_TRACE_TAG).v { "<< [$channel] ${toHexString(data)} (${data.size}B)" }
         }
         if (isProprietaryFrame(data)) {
             parseProprietaryFrame(data)
