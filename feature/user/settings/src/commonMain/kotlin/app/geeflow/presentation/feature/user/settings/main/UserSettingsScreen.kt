@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -249,7 +250,10 @@ private fun SettingsItem(
             )
         }
         if (item is Item.Profile) {
-            TextButton(onClick = { onEvent(ChangeUserClicked) }) {
+            TextButton(
+                onClick = { onEvent(ChangeUserClicked) },
+                colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
+            ) {
                 Text(text = stringResource(Res.string.user_settings_change))
             }
         }

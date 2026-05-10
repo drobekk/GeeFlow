@@ -14,6 +14,9 @@
     <string name="user_settings_profile_change_name_description">Update your profile name</string>
     <string name="user_settings_profile_change_picture">Change Picture</string>
     <string name="user_settings_profile_change_picture_description">Update your profile picture</string>
+    <string name="user_settings_profile_remove_picture">Remove Picture</string>
+    <string name="user_settings_profile_remove_picture_description">Remove your current profile picture</string>
+    <string name="user_settings_profile_remove_picture_confirmation">Are you sure you want to remove your profile picture?</string>
     <string name="user_settings_profile_delete">Delete Profile</string>
     <string name="user_settings_profile_delete_description">Remove this profile permanently</string>
     <string name="user_settings_profile_delete_confirmation">Are you sure you want to delete this profile? This action cannot be undone.</string>

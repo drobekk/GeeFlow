@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.DeleteConfirmed
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.DialogDismissed
+import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.RemovePhotoConfirmed
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.RenameConfirmed
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsViewState.Dialog
 import app.geeflow.ui.components.GeeFlowDialog
@@ -25,6 +26,8 @@ import geeflow.core.ui.generated.resources.common_confirm
 import geeflow.feature.user.settings.generated.resources.Res
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_delete
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_delete_confirmation
+import geeflow.feature.user.settings.generated.resources.user_settings_profile_remove_picture
+import geeflow.feature.user.settings.generated.resources.user_settings_profile_remove_picture_confirmation
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_rename_name_hint
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_rename_title
 import org.jetbrains.compose.resources.stringResource
@@ -40,6 +43,10 @@ internal fun ProfileSettingsDialogs(
         Dialog.Rename -> RenameDialog(
             currentName = currentName,
             onConfirm = { onEvent(RenameConfirmed(it)) },
+            onDismiss = { onEvent(DialogDismissed) },
+        )
+        Dialog.RemovePhoto -> RemovePhotoDialog(
+            onConfirm = { onEvent(RemovePhotoConfirmed) },
             onDismiss = { onEvent(DialogDismissed) },
         )
         Dialog.Delete -> DeleteDialog(
@@ -79,6 +86,35 @@ private fun RenameDialog(
             Button(
                 onClick = { onConfirm(nameState.text.toString()) },
                 enabled = nameState.text.isNotBlank(),
+                modifier = Modifier.align(Alignment.End),
+            ) {
+                Text(stringResource(CoreRes.string.common_confirm))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RemovePhotoDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    GeeFlowDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            GeeFlowDialogTopBar(
+                title = stringResource(Res.string.user_settings_profile_remove_picture),
+                onCloseClick = onDismiss,
+            )
+            VerticalSpacer(24.dp)
+            Text(stringResource(Res.string.user_settings_profile_remove_picture_confirmation))
+            VerticalSpacer(24.dp)
+            Button(
+                onClick = onConfirm,
                 modifier = Modifier.align(Alignment.End),
             ) {
                 Text(stringResource(CoreRes.string.common_confirm))

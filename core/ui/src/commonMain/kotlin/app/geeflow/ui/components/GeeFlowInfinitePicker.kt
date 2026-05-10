@@ -92,6 +92,12 @@ fun GeeFlowInfinitePicker(
         if (isDragged) isEditing = false
     }
 
+    LaunchedEffect(selected, items) {
+        if (items.getOrNull(centerIndex % items.size) != selected) {
+            listState.scrollToItem(initialIndex)
+        }
+    }
+
     LaunchedEffect(listState.isScrollInProgress) {
         if (!listState.isScrollInProgress) {
             val selectedItem = items[centerIndex % items.size]

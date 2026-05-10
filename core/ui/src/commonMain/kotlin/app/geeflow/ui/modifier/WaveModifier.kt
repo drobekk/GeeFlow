@@ -3,7 +3,6 @@ package app.geeflow.ui.modifier
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -19,24 +18,14 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 fun Modifier.waveBackground(
-    targetProgress: Float,
+    progress: Float,
     color: Color,
     orientation: WaveOrientation = WaveOrientation.Horizontal,
     waves: Float = 1.2f,
     amplitude: Dp = 4.dp,
     durationMillis: Int = 3000,
-    progressAnimationDurationMillis: Int = 1000,
     reversed: Boolean = false,
 ): Modifier = composed {
-    val progress by animateFloatAsState(
-        targetValue = targetProgress,
-        animationSpec = tween(
-            durationMillis = if (targetProgress == 0f) 300 else progressAnimationDurationMillis,
-            easing = LinearEasing,
-        ),
-        label = "WaveProgressAnimation",
-    )
-
     val infiniteTransition = rememberInfiniteTransition(label = "waveTransition")
 
     val phase by infiniteTransition.animateFloat(

@@ -27,7 +27,6 @@ import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_settings_applied
 import geeflow.core.ui.generated.resources.error_generic
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.withIndex
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -66,16 +65,17 @@ internal class BrewingSettingsViewModel(
                     paddle = paddle.copy(pressureList = pressureList, timeList = timeList),
                 )
             }
+            var configApplied = false
             observeDeviceState(arguments.deviceId)
-                .withIndex()
-                .collect {
-                    if (it.index == 0) {
-                        updateViewState(it.value)
+                .collect { state ->
+                    if (!configApplied && state.config != null) {
+                        configApplied = true
+                        updateViewState(state)
                     } else {
                         modify {
                             copy(
-                                brewBoiler = brewBoiler.copy(actualTemp = it.value.brewBoilerTemp ?: 0f),
-                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f),
+                                brewBoiler = brewBoiler.copy(actualTemp = state.brewBoilerTemp ?: 0f),
+                                steamBoiler = steamBoiler.copy(actualTemp = state.steamBoilerTemp ?: 0f),
                             )
                         }
                     }

@@ -24,7 +24,6 @@ import co.touchlab.kermit.Logger
 import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.error_generic
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.withIndex
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -52,16 +51,17 @@ internal class QuickSettingsViewModel(
                     steamBoiler = steamBoiler.copy(tempList = constraints.steamTempRange.map { it.toString() }),
                 )
             }
+            var configApplied = false
             observeDeviceState(arguments.deviceId)
-                .withIndex()
-                .collect {
-                    if (it.index == 0) {
-                        updateMachineState(it.value)
+                .collect { state ->
+                    if (!configApplied && state.config != null) {
+                        configApplied = true
+                        updateMachineState(state)
                     } else {
                         modify {
                             copy(
-                                brewBoiler = brewBoiler.copy(actualTemp = it.value.brewBoilerTemp ?: 0f),
-                                steamBoiler = steamBoiler.copy(actualTemp = it.value.steamBoilerTemp ?: 0f),
+                                brewBoiler = brewBoiler.copy(actualTemp = state.brewBoilerTemp ?: 0f),
+                                steamBoiler = steamBoiler.copy(actualTemp = state.steamBoilerTemp ?: 0f),
                             )
                         }
                     }

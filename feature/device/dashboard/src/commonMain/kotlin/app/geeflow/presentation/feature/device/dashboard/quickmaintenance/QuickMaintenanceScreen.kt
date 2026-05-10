@@ -1,6 +1,9 @@
 package app.geeflow.presentation.feature.device.dashboard.quickmaintenance
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -144,17 +147,21 @@ private fun ProgressItem(
     modifier: Modifier = Modifier,
 ) {
     val targetProgress = if (target > 0) current.toFloat() / target else 0f
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = tween(durationMillis = 1200, easing = LinearEasing),
+        label = "CleaningProgress",
+    )
 
     Column(
         modifier = modifier
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .waveBackground(
-                targetProgress = targetProgress,
+                progress = animatedProgress,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                 amplitude = 2.dp,
                 orientation = WaveOrientation.Vertical,
-                progressAnimationDurationMillis = 1000,
             )
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

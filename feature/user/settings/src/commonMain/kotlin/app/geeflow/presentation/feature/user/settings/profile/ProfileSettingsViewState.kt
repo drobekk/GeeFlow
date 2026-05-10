@@ -8,6 +8,7 @@ data class ProfileSettingsViewState(
 ) {
     sealed interface Dialog {
         data object Rename : Dialog
+        data object RemovePhoto : Dialog
         data object Delete : Dialog
     }
 }

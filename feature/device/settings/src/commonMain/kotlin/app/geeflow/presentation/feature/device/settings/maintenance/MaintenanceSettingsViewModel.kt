@@ -22,7 +22,7 @@ import geeflow.core.ui.generated.resources.Res
 import geeflow.core.ui.generated.resources.common_settings_applied
 import geeflow.core.ui.generated.resources.error_generic
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -64,9 +64,8 @@ internal class MaintenanceSettingsViewModel(
                 )
             }
             observeDeviceState(arguments.deviceId)
-                .firstOrNull()
-                ?.let(::updateViewState)
-                ?: showError(IllegalStateException("Device not connected?"))
+                .first { it.config != null }
+                .let(::updateViewState)
         }
     }
 

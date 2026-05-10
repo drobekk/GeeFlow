@@ -44,6 +44,7 @@ import dev.bluefalcon.core.BluetoothPeripheralState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -206,6 +207,10 @@ class WendougeeDataSController(
                 Logger.withTag(TAG).i { "Connected and ready" }
 
                 runPollingLoop(active)
+            } catch (e: TimeoutCancellationException) {
+                Logger.withTag(TAG).e { "Connect timed out during ${_deviceState.value.connectionStatus}" }
+                session?.peripheral?.let { runCatching { blueFalcon.disconnect(it) } }
+                resetToDisconnected()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -340,6 +345,7 @@ class WendougeeDataSController(
     }
 
     private suspend fun sendInitCommands(active: Session) {
+        delay(CCCD_SETTLE_DELAY_MS)
         write(active, active.dataChar, CMD_READ_CONFIG_LONG)
         delay(INIT_CONFIG_DELAY_MS)
         write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
@@ -353,8 +359,8 @@ class WendougeeDataSController(
         }
         delay(POST_INIT_DELAY_MS)
 
-        pollLongOnce(active)
-        pollShortOnce(active)
+        pollLongOnce(active, timeout = INIT_POLL_TIMEOUT_MS)
+        pollShortOnce(active, timeout = INIT_POLL_TIMEOUT_MS)
     }
 
     private suspend fun runPollingLoop(active: Session) {
@@ -396,19 +402,19 @@ class WendougeeDataSController(
         _foundScales.value = emptyList()
     }
 
-    private suspend fun pollLongOnce(active: Session) {
+    private suspend fun pollLongOnce(active: Session, timeout: Long = POLL_TIMEOUT_MS) {
         active.modbus.sendAndAwaitPrefix(
             payload = CMD_POLLING_LONG,
             expectedPrefix = POLL_LONG_PREFIX,
-            timeout = POLL_TIMEOUT_MS.milliseconds,
+            timeout = timeout.milliseconds,
         )
     }
 
-    private suspend fun pollShortOnce(active: Session) {
+    private suspend fun pollShortOnce(active: Session, timeout: Long = POLL_TIMEOUT_MS) {
         active.modbus.sendAndAwaitPrefix(
             payload = CMD_POLLING_SHORT,
             expectedPrefix = POLL_SHORT_PREFIX,
-            timeout = POLL_TIMEOUT_MS.milliseconds,
+            timeout = timeout.milliseconds,
         )
     }
 
@@ -707,6 +713,7 @@ class WendougeeDataSController(
         private const val POST_CONNECT_SETTLE_MS = 500L
         private const val CHARS_RETRY_DELAY_MS = 200L
         private const val POST_CHARS_DELAY_MS = 300L
+        private const val CCCD_SETTLE_DELAY_MS = 200L
         private const val INIT_CONFIG_DELAY_MS = 300L
         private const val INIT_SCALE_DELAY_MS = 400L
         private const val SCALE_STATUS_DELAY_MS = 100L
@@ -714,6 +721,7 @@ class WendougeeDataSController(
         private const val POST_INIT_DELAY_MS = 300L
         private const val POLL_BETWEEN_DELAY_MS = 30L
         private const val POLL_TIMEOUT_MS = 800L
+        private const val INIT_POLL_TIMEOUT_MS = 3000L
         private const val SCAN_TIMEOUT_MS = 12_000L
         private const val WATCHDOG_INTERVAL_MS = 1_000L
         private const val FC_COIL_WRITE: Byte = 0x05

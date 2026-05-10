@@ -33,7 +33,7 @@ fun WaveDivider(
                 },
             )
             .waveBackground(
-                targetProgress = 0.5f,
+                progress = 0.5f,
                 color = color,
                 amplitude = amplitude,
                 orientation = orientation,

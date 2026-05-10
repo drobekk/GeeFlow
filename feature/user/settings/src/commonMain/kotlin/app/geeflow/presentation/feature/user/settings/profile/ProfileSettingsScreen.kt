@@ -26,6 +26,7 @@ import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEve
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.ChangePictureClicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.DeleteClicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.PhotoFilePicked
+import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.RemovePhotoClicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.RenameClicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsViewModelEvent.OpenPhotoPicker
 import app.geeflow.ui.EventsDispatcher
@@ -44,6 +45,8 @@ import geeflow.feature.user.settings.generated.resources.user_settings_profile_c
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_delete
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_delete_description
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_description
+import geeflow.feature.user.settings.generated.resources.user_settings_profile_remove_picture
+import geeflow.feature.user.settings.generated.resources.user_settings_profile_remove_picture_description
 import geeflow.feature.user.settings.generated.resources.user_settings_profile_title
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -88,7 +91,7 @@ private fun Content(
     onEvent: (ProfileSettingsEvent) -> Unit = {},
 ) {
     if (isWidthExpanded()) {
-        ExpandedContent(onEvent = onEvent)
+        ExpandedContent(viewState = viewState, onEvent = onEvent)
     } else {
         CompactContent(viewState = viewState, onEvent = onEvent)
     }
@@ -109,6 +112,7 @@ private fun CompactContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { paddingValues ->
             SettingsContent(
+                viewState = viewState,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxSize()
@@ -122,6 +126,7 @@ private fun CompactContent(
 
 @Composable
 private fun ExpandedContent(
+    viewState: ProfileSettingsViewState,
     onEvent: (ProfileSettingsEvent) -> Unit,
 ) {
     Column(
@@ -131,12 +136,13 @@ private fun ExpandedContent(
             .padding(vertical = GeeFlowTheme.spacing.contentVertical)
             .geeFlowInsetsEndPadding(),
     ) {
-        SettingsContent(onEvent = onEvent)
+        SettingsContent(viewState = viewState, onEvent = onEvent)
     }
 }
 
 @Composable
 private fun SettingsContent(
+    viewState: ProfileSettingsViewState,
     onEvent: (ProfileSettingsEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -155,6 +161,15 @@ private fun SettingsContent(
                 .fillMaxWidth()
                 .clickable { onEvent(ChangePictureClicked) },
         )
+        if (viewState.photoFileName != null) {
+            GeeFlowNavigationListItem(
+                title = stringResource(Res.string.user_settings_profile_remove_picture),
+                subtitle = stringResource(Res.string.user_settings_profile_remove_picture_description),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onEvent(RemovePhotoClicked) },
+            )
+        }
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
             GeeFlowNavigationListItem(
                 title = stringResource(Res.string.user_settings_profile_delete),
