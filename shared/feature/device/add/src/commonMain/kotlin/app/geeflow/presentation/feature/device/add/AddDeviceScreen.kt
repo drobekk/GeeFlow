@@ -167,18 +167,19 @@ private fun Content(
 
     AnimatedContent(
         modifier = Modifier.fillMaxSize(),
-        targetState = viewState.method::class,
+        targetState = viewState.method,
+        contentKey = { it::class },
     ) { method ->
         when (method) {
-            NearbyDevices::class -> NearbyDevicesList(
-                model = viewState.method as NearbyDevices,
+            is NearbyDevices -> NearbyDevicesList(
+                model = method,
                 onEvent = onEvent,
                 contentPadding = contentPadding,
                 modifier = modifier,
             )
 
-            QrCodeScanner::class -> Scanner(
-                model = viewState.method as QrCodeScanner,
+            is QrCodeScanner -> Scanner(
+                model = method,
                 onEvent = onEvent,
                 contentPadding = contentPadding,
             )
