@@ -17,8 +17,8 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
         val appPackageName = libs.findVersion("appPackageName").get().requiredVersion
 
         extensions.configure<BuildKonfigExtension> {
-            packageName = appPackageName
-            exposeObjectWithName = "BuildKonfig"
+            packageName.set(appPackageName)
+            exposeObjectWithName.set("BuildKonfig")
             defaultConfigs {
                 buildConfigField(FieldSpec.Type.STRING, "APP_VERSION", appVersion)
                 buildConfigField(FieldSpec.Type.STRING, "APP_VERSION_CODE", appVersionCode)
