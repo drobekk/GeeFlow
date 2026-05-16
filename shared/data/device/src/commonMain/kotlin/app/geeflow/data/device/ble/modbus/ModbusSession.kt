@@ -228,7 +228,6 @@ class ModbusSession internal constructor(
         private const val ADDRESS_HI_IDX = 2
         private const val ADDRESS_LO_IDX = 3
 
-        /** WRITE_TYPE_NO_RESPONSE on Android, ignored on iOS/desktop. Matches legacy client. */
-        private const val DEFAULT_WRITE_TYPE = 2
+        private const val DEFAULT_WRITE_TYPE = 1
     }
 }

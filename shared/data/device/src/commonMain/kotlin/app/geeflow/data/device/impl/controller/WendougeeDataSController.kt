@@ -759,8 +759,7 @@ class WendougeeDataSController(
         private const val SCALE_CMD_CONNECT = 0x80
         private const val SCALE_CMD_DISCONNECT = 0x87
 
-        /** WRITE_TYPE_NO_RESPONSE on Android; ignored on iOS/Windows. */
-        private const val WRITE_TYPE_NO_RESPONSE = 2
+        private const val WRITE_TYPE_NO_RESPONSE = 1
 
         private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
         private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
