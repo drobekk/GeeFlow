@@ -42,11 +42,14 @@ internal class UserSettingsViewModel(
     fun handleEvent(event: UserSettingsEvent) = when (event) {
         BackClicked -> popTo(UserSettings, inclusive = true)
         ChangeUserClicked -> navigateTo(UserList)
-        is ItemClicked -> when (event.item) {
-            is Item.Profile -> navigateTo(ProfileSettings)
-            is Item.BrewingPreferences -> navigateTo(BrewingPreferencesSettings)
-            is Item.AppearanceDisplay -> navigateTo(AppearanceSettings)
-            is Item.About -> navigateTo(AboutSettings)
+        is ItemClicked -> {
+            popTo(UserSettings, false)
+            when (event.item) {
+                is Item.Profile -> navigateTo(ProfileSettings)
+                is Item.BrewingPreferences -> navigateTo(BrewingPreferencesSettings)
+                is Item.AppearanceDisplay -> navigateTo(AppearanceSettings)
+                is Item.About -> navigateTo(AboutSettings)
+            }
         }
     }
 

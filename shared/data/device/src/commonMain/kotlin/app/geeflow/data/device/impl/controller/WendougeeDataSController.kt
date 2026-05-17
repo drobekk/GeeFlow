@@ -362,6 +362,7 @@ class WendougeeDataSController(
         delay(CCCD_SETTLE_DELAY_MS)
         write(active, active.dataChar, CMD_READ_CONFIG_LONG)
         delay(INIT_CONFIG_DELAY_MS)
+        readWaterAlarmRegister(active)
         write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
         delay(INIT_SCALE_DELAY_MS)
         write(active, active.ctrlChar, CMD_START_STREAMING)
@@ -375,6 +376,17 @@ class WendougeeDataSController(
 
         pollLongOnce(active, timeout = INIT_POLL_TIMEOUT_MS)
         pollShortOnce(active, timeout = INIT_POLL_TIMEOUT_MS)
+    }
+
+    private suspend fun readWaterAlarmRegister(active: Session) {
+        val enabled = runCatching {
+            active.modbus.readHoldingRegisters(WendougeeRegisters.WATER_ALARM, 1).first() != 0
+        }.getOrNull() ?: return
+        Logger.withTag(TAG).i { "Water alarm enabled=$enabled" }
+        _deviceState.update { state ->
+            val config = state.config ?: return@update state
+            state.copy(config = config.copy(waterAlarmEnabled = enabled))
+        }
     }
 
     private suspend fun runPollingLoop(active: Session) {
@@ -406,11 +418,13 @@ class WendougeeDataSController(
         _deviceState.update {
             it.copy(
                 connectionStatus = ConnectionStatus.Disconnected,
+                config = null,
                 pressure = null,
                 steamBoilerTemp = null,
                 brewBoilerTemp = null,
                 smartScale = null,
                 smartScaleSearchActive = false,
+                waterLevelAlarm = false,
             )
         }
         _foundScales.value = emptyList()

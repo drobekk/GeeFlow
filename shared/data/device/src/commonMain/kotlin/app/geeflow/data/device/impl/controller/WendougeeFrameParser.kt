@@ -205,7 +205,6 @@ class WendougeeFrameParser(
             val manualBrewPressure = dataU16be(ConfigFrame.MANUAL_BREW_PRESSURE) / SENSOR_SCALE_FACTOR
 
             val isFullSpeedHeating = dataU16be(ConfigFrame.HEATING_MODE) == 1
-            val waterAlarm = dataU16be(ConfigFrame.WATER_ALARM) == 1
 
             Logger.withTag(TAG).i {
                 "Config: brew=${targetBrew.toInt()}°C steam=${targetSteam.toInt()}°C" +
@@ -213,8 +212,7 @@ class WendougeeFrameParser(
                     "steam=${if (isSteamBoilerEnabled) "ON" else "OFF"}" +
                     " | heating=${if (isFullSpeedHeating) "FullSpeed" else "Pulse"}" +
                     " | manual=${manualBrewTimeSec}s@${manualBrewPressure}bar" +
-                    " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×$cleaningCount" +
-                    " | waterAlarm=$waterAlarm"
+                    " | cleaning=${cleaningTimeSec}s×${cleaningStandbySec}s×$cleaningCount"
             }
 
             onStateUpdate {
@@ -230,7 +228,7 @@ class WendougeeFrameParser(
                         cleaningTimeSec = cleaningTimeSec,
                         cleaningStandbySec = cleaningStandbySec,
                         cleaningCount = cleaningCount,
-                        waterAlarmEnabled = waterAlarm,
+                        waterAlarmEnabled = false, // set by readWaterAlarmRegister after config frame
                     ),
                 )
             }
@@ -321,7 +319,6 @@ class WendougeeFrameParser(
         const val MANUAL_BREW_TIME = 34
         const val MANUAL_BREW_PRESSURE = 38
         const val HEATING_MODE = 44
-        const val WATER_ALARM = 52
         const val MIN_HEADER_SIZE = 3 + 74 + 2
     }
 

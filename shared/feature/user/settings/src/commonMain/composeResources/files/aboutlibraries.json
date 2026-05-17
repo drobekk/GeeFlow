@@ -4300,7 +4300,7 @@
             ]
         },
         {
-            "uniqueId": "org.jetbrains.compose.desktop:desktop-jvm-macos-arm64",
+            "uniqueId": "org.jetbrains.compose.desktop:desktop-jvm-windows-x64",
             "artifactVersion": "1.11.0",
             "name": "Compose Desktop",
             "description": "Compose Desktop",
@@ -5365,9 +5365,9 @@
             ]
         },
         {
-            "uniqueId": "org.jetbrains.skiko:skiko-awt-runtime-macos-arm64",
+            "uniqueId": "org.jetbrains.skiko:skiko-awt-runtime-windows-x64",
             "artifactVersion": "0.144.6",
-            "name": "Skiko JVM Runtime for MacOS Arm64",
+            "name": "Skiko JVM Runtime for Windows X64",
             "description": "Kotlin Skia bindings",
             "website": "https://www.github.com/JetBrains/skiko",
             "developers": [

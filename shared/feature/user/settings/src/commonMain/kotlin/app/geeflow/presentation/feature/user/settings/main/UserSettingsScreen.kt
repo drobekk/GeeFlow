@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.user.settings.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -151,24 +152,22 @@ private fun ExpandedContent(
             ) {
                 itemsIndexed(viewState.items) { index, item ->
                     val selected = index == selectedIndex
+                    val borderModifier = if (selected) {
+                        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
+                    } else {
+                        Modifier
+                    }
                     SettingsItem(
                         item = item,
                         onEvent = onEvent,
-                        backgroundColor = if (selected) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.background
-                        },
-                        contentColor = if (selected) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
+                        backgroundColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .padding(
                                 horizontal = compactSpacing().contentHorizontal,
                                 vertical = 8.dp,
                             )
+                            .then(borderModifier)
                             .clip(MaterialTheme.shapes.large),
                     )
                 }
@@ -252,7 +251,10 @@ private fun SettingsItem(
         if (item is Item.Profile) {
             TextButton(
                 onClick = { onEvent(ChangeUserClicked) },
-                colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
             ) {
                 Text(text = stringResource(Res.string.user_settings_change))
             }
