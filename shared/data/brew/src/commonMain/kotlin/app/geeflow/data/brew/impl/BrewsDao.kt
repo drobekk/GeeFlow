@@ -1,11 +1,8 @@
 package app.geeflow.data.brew.impl
 
 import app.geeflow.data.brew.model.BrewProfile
-import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.ProfileMode
-import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.db.DatabaseProvider
-import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Singleton
 
 @Singleton
@@ -27,9 +24,9 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
             name = brewProfile.name,
             description = brewProfile.description,
             mode = brewProfile.mode.name,
-            finishCondition = Json.encodeToString(brewProfile.finishCondition),
+            finishCondition = ConditionAdapter.encode(brewProfile.finishCondition),
             autoLinkOpen = if (brewProfile.autoLinkOpen) 1L else 0L,
-            steps = Json.encodeToString(brewProfile.steps),
+            steps = ProfileStepsAdapter.encode(brewProfile.steps),
             position = brewProfile.position.toLong(),
         )
     }
@@ -55,9 +52,9 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         name = name,
         description = description,
         mode = ProfileMode.valueOf(mode),
-        finishCondition = Json.decodeFromString<Condition>(finishCondition),
+        finishCondition = ConditionAdapter.decode(finishCondition),
         autoLinkOpen = autoLinkOpen != 0L,
-        steps = Json.decodeFromString<List<ProfileStep>>(steps),
+        steps = ProfileStepsAdapter.decode(steps),
         position = position.toInt(),
     )
 }

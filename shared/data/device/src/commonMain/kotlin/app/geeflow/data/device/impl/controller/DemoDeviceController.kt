@@ -346,6 +346,73 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         }
     }
 
+    private var freeVarFlowTarget = DEFAULT_FREE_VAR_FLOW
+
+    override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
+        _deviceState.update {
+            it.copy(brewStatus = DeviceState.BrewStatus.FreeVariable, pressure = 0f, weight = 0f, volume = 0f)
+        }
+        scope.launch {
+            val dtSec = BREW_TICK_MS / MS_PER_SECOND
+            var pressure = 0f
+            var flowRate = 0f
+            var elapsedMs = 0L
+            while (_deviceState.value.brewStatus == DeviceState.BrewStatus.FreeVariable) {
+                delay(BREW_TICK_MS)
+                elapsedMs += BREW_TICK_MS
+                if (isFlow) {
+                    val target = freeVarFlowTarget
+                    flowRate = approach(flowRate, target, PRESSURE_RAMP)
+                    pressure = (flowRate / MAX_FLOW * PRESSURE_RANGE + FLOW_THRESHOLD_PRESSURE).coerceIn(0f, MAX_PRESSURE)
+                } else {
+                    val target = _deviceState.value.config?.manualBrewPressure ?: DEFAULT_FREE_VAR_PRESSURE
+                    pressure = approach(pressure, target, PRESSURE_RAMP)
+                    flowRate = if (pressure > FLOW_THRESHOLD_PRESSURE) {
+                        ((pressure - FLOW_THRESHOLD_PRESSURE) / PRESSURE_RANGE * MAX_FLOW).coerceIn(0f, MAX_FLOW)
+                    } else {
+                        0f
+                    }
+                }
+                val weightActive = elapsedMs >= WEIGHT_ACTIVE_DELAY_MS
+                val weightRate = if (weightActive) flowRate * WEIGHT_FLOW_RATIO else 0f
+                _deviceState.update { state ->
+                    state.copy(
+                        pressure = pressure,
+                        flowRate = flowRate,
+                        weightRate = weightRate,
+                        volume = (state.volume ?: 0f) + flowRate * dtSec,
+                        weight = (state.weight ?: 0f) + weightRate * dtSec,
+                        time = (elapsedMs / BREW_TICK_MS).toInt(),
+                    )
+                }
+            }
+        }
+    }
+
+    override suspend fun stopFreeVariableBrewing() {
+        _deviceState.update {
+            it.copy(
+                brewStatus = DeviceState.BrewStatus.Idle,
+                pressure = 0f,
+                weight = null,
+                volume = null,
+                flowRate = null,
+                weightRate = null,
+            )
+        }
+    }
+
+    override suspend fun setFreeBrewPressureTarget(pressure: Float) {
+        _deviceState.update { state ->
+            val config = state.config ?: return
+            state.copy(config = config.copy(manualBrewPressure = pressure))
+        }
+    }
+
+    override suspend fun setFreeBrewFlowTarget(flow: Float) {
+        freeVarFlowTarget = flow
+    }
+
     override suspend fun bindProfile(profile: BrewProfile) = Unit
 
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
@@ -418,5 +485,14 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         private const val SCALE_SEARCH_DELAY_MS = 2000L
         private const val SCALE_SEARCH_DURATION_MS = 8000L
         private const val SCALE_CONNECT_DELAY_MS = 1500L
+
+        private const val DEFAULT_FREE_VAR_PRESSURE = 6f
+        private const val DEFAULT_FREE_VAR_FLOW = 6f
+
+        private fun approach(current: Float, target: Float, step: Float): Float = if (current < target) {
+            (current + step).coerceAtMost(target)
+        } else {
+            (current - step).coerceAtLeast(target)
+        }
     }
 }

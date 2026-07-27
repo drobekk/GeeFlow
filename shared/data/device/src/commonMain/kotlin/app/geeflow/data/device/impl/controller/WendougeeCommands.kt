@@ -16,10 +16,13 @@ object WendougeeCommands {
     val CMD_SCALE_SEARCH_QUERY = "ff55ffff9a0000ed".decodeHex()
 
     val CMD_POLLING_LONG = "0103057C001484D1".decodeHex()
-    val CMD_POLLING_SHORT = "010100B600079C2E".decodeHex()
+    val CMD_POLLING_SHORT = "010100b60018dde6".decodeHex()
 
     val CMD_MANUAL_ON = "0105009aff00ac15".decodeHex()
     val CMD_MANUAL_OFF = "0105009a0000ede5".decodeHex()
+
+    val CMD_FREE_VAR_ON = "0105009dff001dd4".decodeHex()
+    val CMD_FREE_VAR_OFF = "0105009d00005c24".decodeHex()
 
     val CMD_SHORT_PRESS_ON = "01050096ff006c16".decodeHex()
     val CMD_SHORT_PRESS_OFF = "0105009600002de6".decodeHex()

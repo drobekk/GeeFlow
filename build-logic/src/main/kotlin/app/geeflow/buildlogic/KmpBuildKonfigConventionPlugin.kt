@@ -26,6 +26,12 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
             }
         }
 
+        tasks.configureEach {
+            if (name.startsWith("prepareAndroid") && name.endsWith("ArtProfile")) {
+                dependsOn("generateBuildKonfig")
+            }
+        }
+
         val root = rootProject
         // Resolve to String at configuration time — Project cannot be serialized by config cache
         val xcConfigFilePath = root.layout.projectDirectory

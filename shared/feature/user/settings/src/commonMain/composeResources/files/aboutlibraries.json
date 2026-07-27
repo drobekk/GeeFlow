@@ -3421,7 +3421,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-core-android",
-            "artifactVersion": "3.3.0",
+            "artifactVersion": "3.6.1",
             "name": "Blue Falcon Core",
             "description": "Core module for Blue Falcon - A Bluetooth Low Energy Kotlin Multiplatform library",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3444,7 +3444,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-android-android",
-            "artifactVersion": "3.3.0",
+            "artifactVersion": "3.6.1",
             "name": "Blue Falcon Android Engine",
             "description": "Android BLE engine for Blue Falcon",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3467,7 +3467,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-ios",
-            "artifactVersion": "3.3.0",
+            "artifactVersion": "3.6.1",
             "name": "Blue Falcon iOS Engine",
             "description": "iOS BLE engine for Blue Falcon",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3490,7 +3490,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-macos-jvm-jvm",
-            "artifactVersion": "3.3.0",
+            "artifactVersion": "3.6.1",
             "name": "Blue Falcon macOS JVM Engine",
             "description": "macOS BLE engine for Blue Falcon \u2014 JVM/Compose Desktop via JNI + CoreBluetooth",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3513,7 +3513,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-windows-jvm",
-            "artifactVersion": "3.3.0",
+            "artifactVersion": "3.6.1",
             "name": "Blue Falcon Windows Engine",
             "description": "Windows BLE engine for Blue Falcon",
             "website": "https://github.com/Reedyuk/blue-falcon",

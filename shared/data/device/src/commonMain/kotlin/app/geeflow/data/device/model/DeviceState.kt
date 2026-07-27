@@ -41,6 +41,7 @@ data class DeviceState(
     enum class BrewStatus {
         Manual,
         Profile,
+        FreeVariable,
         Cleaning,
         Idle,
     }

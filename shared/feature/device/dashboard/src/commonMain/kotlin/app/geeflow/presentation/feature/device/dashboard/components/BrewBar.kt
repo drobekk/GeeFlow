@@ -16,8 +16,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +61,7 @@ internal fun BrewBar(
     visibleCharts: Set<DashboardChartType>,
     onToggle: (DashboardChartType) -> Unit,
     modifier: Modifier = Modifier,
+    onRename: (() -> Unit)? = null,
 ) {
     val lastPoint = brew.data.values.lastOrNull()
 
@@ -86,11 +92,14 @@ internal fun BrewBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
         ) {
-            Text(
-                text = brew.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = brew.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                onRename?.let { RenameButton(onRename) }
+            }
             Text(
                 text = "${brew.time}s",
                 style = MaterialTheme.typography.bodyMedium,
@@ -163,6 +172,20 @@ internal fun BrewBar(
                 onToggle = onToggle,
             )
         }
+    }
+}
+
+@Composable
+private fun RenameButton(onRename: () -> Unit) {
+    IconButton(
+        onClick = onRename,
+        modifier = Modifier.padding(horizontal = 8.dp).size(32.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Edit,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
@@ -274,5 +297,6 @@ private fun Preview() {
         isBrewing = true,
         visibleCharts = previewVisibleCharts,
         onToggle = {},
+        onRename = {},
     )
 }

@@ -41,7 +41,9 @@ class ObserveBrewDataUseCase(
 
     private fun accumulateBrewData(acc: Accumulator, state: DeviceState): Accumulator {
         val status = state.brewStatus
-        val currentlyBrewing = status == DeviceState.BrewStatus.Manual || status == DeviceState.BrewStatus.Profile
+        val currentlyBrewing = status == DeviceState.BrewStatus.Manual ||
+            status == DeviceState.BrewStatus.Profile ||
+            status == DeviceState.BrewStatus.FreeVariable
 
         if (currentlyBrewing) {
             val now = Clock.System.now()

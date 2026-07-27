@@ -22,7 +22,8 @@ class WendougeeFrameParser(
         private const val MODBUS_FC_STATUS = 0x01
         private const val TELEMETRY_BYTE_COUNT = 0x28
         private const val CONFIG_BYTE_COUNT = 0x4A
-        private const val STATUS_MASK_PROFILE = 0x03
+        private const val STATUS_MASK_PROFILE_BYTE0 = 0x03
+        private const val STATUS_MASK_PROFILE_BYTE1 = 0x08
         private const val STATUS_MASK_MANUAL = 0x10
         private const val STATUS_MASK_CLEANING = 0x20
         private const val SENSOR_SCALE_FACTOR = 10f
@@ -61,8 +62,9 @@ class WendougeeFrameParser(
         const val PROP_DATA_START = 7
         const val PROP_MIN_PARSE_SIZE = 8
         const val POLLING_MIN_SIZE = 5
-        const val STATUS_MIN_SIZE = 4
+        const val STATUS_MIN_SIZE = 5
         const val STATUS_BYTE_OFFSET = 3
+        const val STATUS_BYTE2_OFFSET = 4
         const val SCALE_ACTIVE_FLAG = 0x04
     }
 
@@ -239,15 +241,18 @@ class WendougeeFrameParser(
 
     private fun parseShortStatusFrame(payload: ByteArray) {
         if (payload.size < FrameOffsets.STATUS_MIN_SIZE) return
-        val statusByte = payload[FrameOffsets.STATUS_BYTE_OFFSET].toInt() and BYTE_MASK
-        val isProfile = (statusByte and STATUS_MASK_PROFILE) != 0
-        val isManual = (statusByte and STATUS_MASK_MANUAL) != 0
-        val isCleaning = (statusByte and STATUS_MASK_CLEANING) != 0
+        val statusByte0 = payload[FrameOffsets.STATUS_BYTE_OFFSET].toInt() and BYTE_MASK
+        val statusByte1 = payload[FrameOffsets.STATUS_BYTE2_OFFSET].toInt() and BYTE_MASK
+        val isManual = (statusByte0 and STATUS_MASK_MANUAL) != 0
+        val isCleaning = (statusByte0 and STATUS_MASK_CLEANING) != 0
+        val isProfile = (statusByte0 and STATUS_MASK_PROFILE_BYTE0) != 0
+        val isFreeVariable = (statusByte1 and STATUS_MASK_PROFILE_BYTE1) != 0
 
         val brewStatus = when {
             isManual -> BrewStatus.Manual
-            isProfile -> BrewStatus.Profile
             isCleaning -> BrewStatus.Cleaning
+            isFreeVariable -> BrewStatus.FreeVariable
+            isProfile -> BrewStatus.Profile
             else -> BrewStatus.Idle
         }
         onStateUpdate { copy(brewStatus = brewStatus) }

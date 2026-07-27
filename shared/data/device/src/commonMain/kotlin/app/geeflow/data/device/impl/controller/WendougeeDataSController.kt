@@ -10,6 +10,8 @@ import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.ModbusSession
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_OFF
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_ON
+import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_FREE_VAR_OFF
+import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_FREE_VAR_ON
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_OFF
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_ON
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_LONG
@@ -108,7 +110,9 @@ class WendougeeDataSController(
     var logPolling: Boolean = false
 
     private val frameParser = WendougeeFrameParser(
-        onStateUpdate = { update -> _deviceState.update { it.update() } },
+        onStateUpdate = { update ->
+            _deviceState.update { currentState -> currentState.update() }
+        },
         onScaleFound = { scale ->
             _foundScales.update { current ->
                 if (current.any { it.name == scale.name }) {
@@ -520,6 +524,39 @@ class WendougeeDataSController(
         }
     }
 
+    override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
+        if (_deviceState.value.brewStatus == BrewStatus.Idle) {
+            Logger.withTag(TAG).i { "Starting free variable brew (isFlow=$isFlow)..." }
+            requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_PREPARE, FREE_VAR_PREPARE_VALUE)
+            requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_MODE, if (isFlow) 1 else 0,)
+            sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew", 0x00, COIL_FREE_VAR_BREW.toByte())
+            requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, listOf(0, 0))
+        }
+    }
+
+    override suspend fun stopFreeVariableBrewing() {
+        if (_deviceState.value.brewStatus == BrewStatus.FreeVariable) {
+            Logger.withTag(TAG).i { "Stopping free variable brew..." }
+            sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew Stop", 0x00, COIL_FREE_VAR_BREW.toByte())
+        }
+    }
+
+    override suspend fun setFreeBrewPressureTarget(pressure: Float) {
+        requireSession().modbus.writeMultipleRegisters(
+            WendougeeRegisters.FREE_VAR_TARGET_BASE,
+            listOf((pressure * SENSOR_SCALE_FACTOR).toInt(), 0),
+        )
+        Logger.withTag(TAG).d { "Free variable pressure target set to $pressure bar" }
+    }
+
+    override suspend fun setFreeBrewFlowTarget(flow: Float) {
+        requireSession().modbus.writeMultipleRegisters(
+            WendougeeRegisters.FREE_VAR_TARGET_BASE,
+            listOf(0, (flow * SENSOR_SCALE_FACTOR).toInt()),
+        )
+        Logger.withTag(TAG).d { "Free variable flow target set to $flow ml/s" }
+    }
+
     override suspend fun stopProfileBrewing() {
         if (_deviceState.value.brewStatus == BrewStatus.Profile) {
             Logger.withTag(TAG).i { "Stopping profile brew cycle..." }
@@ -761,6 +798,8 @@ class WendougeeDataSController(
         private const val CLEANING_COUNT_MAX = 10
         private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
         private const val COIL_MANUAL_BREW = 0x9A
+        private const val COIL_FREE_VAR_BREW = 0x9D
+        private const val FREE_VAR_PREPARE_VALUE = 4
         private const val COIL_SHORT_PRESS = 0x96
         private const val COIL_CLEANING = 0x9B
         private const val COIL_PROFILE_FREE = 0x9E

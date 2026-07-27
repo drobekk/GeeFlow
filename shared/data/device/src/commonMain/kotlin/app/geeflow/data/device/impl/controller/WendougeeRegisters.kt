@@ -8,9 +8,14 @@ object WendougeeRegisters {
     const val BREW_TEMPERATURE = 0x0009
     const val HEATING_MODE = 0x0016
 
-    // Manual Brew Settings
+    // Manual Brew Settings (button preset)
     const val MANUAL_BREW_TIME = 0x0011
     const val MANUAL_BREW_PRESSURE = 0x0013
+
+    // Free Variable Brew - live target (2 registers: [pressure*10, 0] or [0, flow*10])
+    const val FREE_VAR_TARGET_BASE = 0x058B
+    const val FREE_VAR_PREPARE = 0x000F
+    const val FREE_VAR_MODE = 0x05B3 // 0 = pressure, 1 = flow
 
     // Maintenance
     const val CLEANING_TIME = 0x0000

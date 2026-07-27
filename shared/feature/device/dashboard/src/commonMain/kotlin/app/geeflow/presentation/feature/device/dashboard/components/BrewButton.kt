@@ -66,6 +66,22 @@ fun BrewButton(
     onManualFlowClick: () -> Unit,
     onStopClick: () -> Unit,
     modifier: Modifier = Modifier,
+    startIcon: @Composable () -> Unit = {
+        Icon(
+            painter = rememberVectorPainter(GeeFlowIcon.Manual),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    },
+    endIcon: @Composable () -> Unit = {
+        Icon(
+            painter = rememberVectorPainter(GeeFlowIcon.FlowControl),
+            contentDescription = null,
+            modifier = Modifier.size(28.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    },
 ) {
     val firstColor by animateColorAsState(
         if (isBrewing) {
@@ -121,6 +137,8 @@ fun BrewButton(
             BrewContent(
                 onManualClick = onManualClick,
                 onManualFlowClick = onManualFlowClick,
+                startIcon = startIcon,
+                endIcon = endIcon,
                 modifier = Modifier.visible(!it),
             )
         }
@@ -153,6 +171,8 @@ fun BrewButton(
 private fun BrewContent(
     onManualClick: () -> Unit,
     onManualFlowClick: () -> Unit,
+    startIcon: @Composable () -> Unit,
+    endIcon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -167,12 +187,7 @@ private fun BrewContent(
                 .fillMaxSize()
                 .weight(1f),
         ) {
-            Icon(
-                painter = rememberVectorPainter(GeeFlowIcon.Manual),
-                modifier = Modifier.size(20.dp),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            startIcon()
         }
         HorizontalSpacer(1f)
         IconButton(
@@ -181,12 +196,7 @@ private fun BrewContent(
                 .fillMaxSize()
                 .weight(1f),
         ) {
-            Icon(
-                painter = rememberVectorPainter(GeeFlowIcon.FlowControl),
-                modifier = Modifier.size(28.dp),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            endIcon()
         }
     }
 }

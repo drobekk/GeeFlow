@@ -21,6 +21,15 @@
     <string name="settings_quick_title">Quick settings</string>
     <string name="settings_quick_more">More settings</string>
 
+    <!-- Free Control Screen -->
+    <string name="free_control_screen_title">Freehand profile</string>
+    <string name="free_control_default_profile_name">New freehand profile</string>
+    <string name="free_control_mode_flow">Flow</string>
+    <string name="free_control_save">Save</string>
+    <string name="free_control_rename_dialog_title">Rename profile</string>
+    <string name="free_control_rename_dialog_name">Profile name</string>
+    <string name="free_control_profile_saved">Profile saved</string>
+
     <!-- Quick Maintenance Dialog -->
     <string name="quick_maintenance_title">Maintenance</string>
     <string name="quick_maintenance_start">Start cleaning</string>

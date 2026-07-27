@@ -7,9 +7,12 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import app.geeflow.navigation.NavFeature
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.destination.DeviceDashboard
+import app.geeflow.navigation.destination.FreeControl
 import app.geeflow.platform.permissions.BindEffect
 import app.geeflow.platform.permissions.PermissionsControllerFactory
 import app.geeflow.platform.permissions.rememberPermissionsControllerFactory
+import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlScreen
+import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlViewModel
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardScreen
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
@@ -51,6 +54,10 @@ internal class DeviceDashboardNavFeature : NavFeature {
             val viewModel = koinViewModel<QuickMaintenanceViewModel> { parametersOf(it) }
             QuickMaintenanceScreen(viewModel, navigator)
         }
+        entry<FreeControl> {
+            val viewModel = koinViewModel<FreeControlViewModel> { parametersOf(it) }
+            FreeControlScreen(viewModel, navigator)
+        }
     }
 
     override val serializerModule: SerializersModule = SerializersModule {
@@ -58,6 +65,7 @@ internal class DeviceDashboardNavFeature : NavFeature {
             subclass(DeviceDashboard::class, DeviceDashboard.serializer())
             subclass(QuickSettings::class, QuickSettings.serializer())
             subclass(QuickMaintenance::class, QuickMaintenance.serializer())
+            subclass(FreeControl::class, FreeControl.serializer())
         }
     }
 }

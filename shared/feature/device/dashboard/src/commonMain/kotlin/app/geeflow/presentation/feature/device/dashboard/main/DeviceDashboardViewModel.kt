@@ -30,6 +30,7 @@ import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.navigation.destination.DeviceList
 import app.geeflow.navigation.destination.DeviceSettings
 import app.geeflow.navigation.destination.DeviceSettings.EntryPoint
+import app.geeflow.navigation.destination.FreeControl
 import app.geeflow.navigation.destination.UserSettings
 import app.geeflow.platform.permissions.DeniedException
 import app.geeflow.platform.permissions.PermissionBluetoothConnect
@@ -111,7 +112,7 @@ internal class DeviceDashboardViewModel(
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
         is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
         is StopBrewClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
-        is FlowControlClicked -> Unit // TODO
+        is FlowControlClicked -> navigate(To(FreeControl(args.deviceId)))
         is BrewClicked -> startProfile()
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
         is ProfileSelected -> onProfileSelected(event.id)
@@ -165,6 +166,7 @@ internal class DeviceDashboardViewModel(
             val newBrewStatus = when (state.brewStatus) {
                 BrewStatus.Manual -> Device.BrewStatus.Manual
                 BrewStatus.Profile -> Device.BrewStatus.Profile
+                BrewStatus.FreeVariable -> Device.BrewStatus.Profile
                 else -> Device.BrewStatus.Idle
             }
             copy(

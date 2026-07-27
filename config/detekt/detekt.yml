@@ -57,6 +57,7 @@ style:
     ignoreAnnotated:
       - 'Preview'
       - 'GeeFlowScreenPreview'
+      - 'GeeFlowComponentPreview'
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
   UnusedPrivateFunction:
