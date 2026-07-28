@@ -17,15 +17,24 @@ class SaveFreeVariableProfileUseCase(
 ) {
     suspend operator fun invoke(session: BrewSession, name: String, isFlow: Boolean) {
         val userId = getSelectedUserUseCase().first()?.id ?: error("no user selected")
-        val steps = session.dataPoints.entries
-            .sortedBy { it.key }
-            .map { (timeSec, point) ->
-                if (isFlow) {
-                    ProfileStep.Flow(timeSec.toInt(), point.flowRate)
-                } else {
-                    ProfileStep.Pressure(timeSec.toInt(), point.pressure)
-                }
+        // dataPoints is keyed by absolute elapsed seconds at 0.1s resolution (see
+        // ObserveBrewDataUseCase.TICKS_PER_SECOND), but ProfileStep.time is a duration
+        // relative to the previous step (see WendougeeProfileCompiler, DemoDeviceController,
+        // ProfileListViewModel) — collapse to one point per whole second, then convert
+        // each entry's absolute second into the delta until the next one.
+        val pointBySecond = session.dataPoints.entries
+            .groupBy { it.key.toInt() }
+            .mapValues { (_, entries) -> entries.maxBy { it.key }.value }
+        val seconds = pointBySecond.keys.sorted()
+        val steps = seconds.mapIndexed { index, second ->
+            val point = pointBySecond.getValue(second)
+            val duration = seconds.getOrNull(index + 1)?.minus(second) ?: DEFAULT_STEP_DURATION_SEC
+            if (isFlow) {
+                ProfileStep.Flow(duration, point.flowRate)
+            } else {
+                ProfileStep.Pressure(duration, point.pressure)
             }
+        }
         val profile = BrewProfile(
             userId = userId,
             name = name,
@@ -35,5 +44,9 @@ class SaveFreeVariableProfileUseCase(
             steps = steps,
         )
         brewProfileRepository.addBrewProfile(profile)
+    }
+
+    private companion object {
+        private const val DEFAULT_STEP_DURATION_SEC = 1
     }
 }

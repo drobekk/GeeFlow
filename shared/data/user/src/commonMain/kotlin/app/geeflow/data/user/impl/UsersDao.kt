@@ -1,12 +1,12 @@
 package app.geeflow.data.user.impl
 
-import app.geeflow.data.db.DatabaseProvider
+import app.geeflow.data.user.db.AppDatabase
 import app.geeflow.data.user.model.User
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class UsersDao(databaseProvider: DatabaseProvider) {
-    private val dbQuery = databaseProvider.database.userQueries
+class UsersDao(database: AppDatabase) {
+    private val dbQuery = database.userQueries
 
     fun getAllUsers() = dbQuery
         .selectAll(::mapToUser)

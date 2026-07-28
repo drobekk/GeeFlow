@@ -1,0 +1,3 @@
+-- This module owns no tables of its own; it merges the schemas of
+-- data/user, data/device, and data/brew (declared via `dependency(...)`
+-- in build.gradle.kts) into one physical AppDatabase.

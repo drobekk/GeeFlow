@@ -1,4 +1,4 @@
-package app.geeflow.data.db
+package app.geeflow.app.db
 
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver

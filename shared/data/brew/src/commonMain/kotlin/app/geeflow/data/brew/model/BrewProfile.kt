@@ -1,5 +1,6 @@
 package app.geeflow.data.brew.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,21 +21,26 @@ sealed interface ProfileStep {
     val time: Int
 
     @Serializable
+    @SerialName("pressure")
     data class Pressure(override val time: Int, val pressure: Float) : ProfileStep
 
     @Serializable
+    @SerialName("flow")
     data class Flow(override val time: Int, val flow: Float) : ProfileStep
 
     @Serializable
+    @SerialName("wait")
     data class Wait(override val time: Int) : ProfileStep
 }
 
 @Serializable
 sealed interface Condition {
     @Serializable
+    @SerialName("weight")
     data class Weight(val target: Float) : Condition
 
     @Serializable
+    @SerialName("volume")
     data class Volume(val target: Float) : Condition
 }
 

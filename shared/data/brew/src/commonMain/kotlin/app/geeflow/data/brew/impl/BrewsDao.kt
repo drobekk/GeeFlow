@@ -1,13 +1,15 @@
 package app.geeflow.data.brew.impl
 
+import app.geeflow.data.brew.db.AppDatabase
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.ProfileMode
-import app.geeflow.data.db.DatabaseProvider
+import app.geeflow.data.brew.model.ProfileStep
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class BrewsDao(databaseProvider: DatabaseProvider) {
-    private val dbQuery = databaseProvider.database.brewProfileQueries
+class BrewsDao(database: AppDatabase) {
+    private val dbQuery = database.brewProfileQueries
 
     fun getAllBrewProfiles() = dbQuery.selectAll(::mapToBrewProfile).executeAsList()
 
@@ -23,10 +25,10 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
             userId = brewProfile.userId,
             name = brewProfile.name,
             description = brewProfile.description,
-            mode = brewProfile.mode.name,
-            finishCondition = ConditionAdapter.encode(brewProfile.finishCondition),
+            mode = brewProfile.mode,
+            finishCondition = brewProfile.finishCondition,
             autoLinkOpen = if (brewProfile.autoLinkOpen) 1L else 0L,
-            steps = ProfileStepsAdapter.encode(brewProfile.steps),
+            steps = brewProfile.steps,
             position = brewProfile.position.toLong(),
         )
     }
@@ -41,20 +43,20 @@ class BrewsDao(databaseProvider: DatabaseProvider) {
         userId: Long,
         name: String,
         description: String,
-        mode: String,
-        finishCondition: String,
+        mode: ProfileMode,
+        finishCondition: Condition,
         autoLinkOpen: Long,
-        steps: String,
+        steps: List<ProfileStep>,
         position: Long,
     ): BrewProfile = BrewProfile(
         id = id,
         userId = userId,
         name = name,
         description = description,
-        mode = ProfileMode.valueOf(mode),
-        finishCondition = ConditionAdapter.decode(finishCondition),
+        mode = mode,
+        finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen != 0L,
-        steps = ProfileStepsAdapter.decode(steps),
+        steps = steps,
         position = position.toInt(),
     )
 }

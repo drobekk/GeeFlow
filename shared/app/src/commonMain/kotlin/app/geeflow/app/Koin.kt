@@ -1,8 +1,8 @@
 package app.geeflow.app
 
 import app.geeflow.PlatformModule
+import app.geeflow.app.db.AppDatabaseModule
 import app.geeflow.data.brew.DataBrewModule
-import app.geeflow.data.db.DataDbModule
 import app.geeflow.data.device.DataDeviceModule
 import app.geeflow.data.user.DataUserModule
 import app.geeflow.domain.brew.DomainBrewModule
@@ -31,7 +31,7 @@ class GeeFlowApp
 @Module(
     includes = [
         PlatformModule::class,
-        DataDbModule::class,
+        AppDatabaseModule::class,
         DataBrewModule::class,
         DataUserModule::class,
         DataDeviceModule::class,

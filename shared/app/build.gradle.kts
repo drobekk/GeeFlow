@@ -1,9 +1,21 @@
 plugins {
     id("kmp.feature")
+    id("kmp.sqldelight")
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.koin.compiler)
     alias(libs.plugins.aboutLibraries)
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("app.geeflow.app.db")
+            dependency(project(":shared:data:user"))
+            dependency(project(":shared:data:device"))
+            dependency(project(":shared:data:brew"))
+        }
+    }
 }
 
 kotlin {
@@ -28,7 +40,6 @@ kotlin {
             api(projects.shared.core.navigation)
             api(projects.shared.core.presentation)
             api(projects.shared.core.ui)
-            api(projects.shared.data.db)
             api(projects.shared.data.brew)
             api(projects.shared.data.user)
             api(projects.shared.data.device)

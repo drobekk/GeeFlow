@@ -4,9 +4,9 @@ import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import app.geeflow.app.db.AndroidDatabaseDriverFactory
+import app.geeflow.app.db.DatabaseDriverFactory
 import app.geeflow.core.datastore.createAndroidDataStore
-import app.geeflow.data.db.AndroidDatabaseDriverFactory
-import app.geeflow.data.db.DatabaseDriverFactory
 import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.installModbus
 import dev.bluefalcon.core.BlueFalcon

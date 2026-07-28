@@ -2,10 +2,10 @@ package app.geeflow
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import app.geeflow.app.db.DatabaseDriverFactory
+import app.geeflow.app.db.JvmDatabaseDriverFactory
 import app.geeflow.core.datastore.createJvmDataStore
 import app.geeflow.core.presentation.Platform
-import app.geeflow.data.db.DatabaseDriverFactory
-import app.geeflow.data.db.JvmDatabaseDriverFactory
 import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.installModbus
 import app.geeflow.platform.JvmPlatform

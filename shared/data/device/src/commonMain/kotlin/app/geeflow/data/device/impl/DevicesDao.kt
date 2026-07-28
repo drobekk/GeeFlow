@@ -2,14 +2,14 @@
 
 package app.geeflow.data.device.impl
 
-import app.geeflow.data.db.DatabaseProvider
+import app.geeflow.data.device.db.AppDatabase
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class DevicesDao(databaseProvider: DatabaseProvider) {
-    private val dbQuery = databaseProvider.database.deviceQueries
+class DevicesDao(database: AppDatabase) {
+    private val dbQuery = database.deviceQueries
 
     fun getAllDevices(): List<Device> = dbQuery
         .selectAll(::mapToDevice)
