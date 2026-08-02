@@ -22,7 +22,7 @@ val GeeFlowIcon.Flow: ImageVector
                 fill = SolidColor(Color.Black),
                 fillAlpha = 0f,
                 stroke = SolidColor(Color.Black),
-                strokeLineWidth = 6.45f
+                strokeLineWidth = 4.45f
             ) {
                 moveTo(28f, 6.562f)
                 curveTo(28f, 6.562f, 44.123f, 27.965f, 44.123f, 33.316f)

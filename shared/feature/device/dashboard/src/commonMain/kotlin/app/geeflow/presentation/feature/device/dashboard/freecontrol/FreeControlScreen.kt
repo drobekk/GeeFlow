@@ -69,24 +69,17 @@ import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_cancel
 import geeflow.shared.core.ui.generated.resources.common_confirm
 import geeflow.shared.core.ui.generated.resources.common_go_back
+import geeflow.shared.core.ui.generated.resources.common_save
 import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.core.ui.generated.resources.unit_milliliters_per_second
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_default_profile_name
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_rename_dialog_name
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_rename_dialog_title
-import geeflow.shared.feature.device.dashboard.generated.resources.free_control_save
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_screen_title
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
-
-private const val PressureMin = 0f
-private const val PressureMax = 12f
-private const val FlowMin = 0f
-private const val FlowMax = 8f
-private val SliderColumnWidth = 112.dp
-private val SliderHeight = 72.dp
 
 @Composable
 internal fun FreeControlScreen(
@@ -162,7 +155,7 @@ private fun ExpandedLayout(
         },
     )
     val sliderColor = if (isPressure) pressureColor else flowColor
-    val sliderRange = if (isPressure) PressureMin..PressureMax else FlowMin..FlowMax
+    val sliderRange = if (isPressure) viewState.pressureRange else viewState.flowRange
 
     Row(
         modifier = Modifier
@@ -262,7 +255,7 @@ private fun CompactLayout(
         },
     )
     val sliderColor = if (isPressure) pressureColor else flowColor
-    val sliderRange = if (isPressure) PressureMin..PressureMax else FlowMin..FlowMax
+    val sliderRange = if (isPressure) viewState.pressureRange else viewState.flowRange
 
     Scaffold(
         modifier = Modifier
@@ -370,7 +363,7 @@ private fun FreeControlTopBar(
             enabled = sessionCompleted && brewStatus == FreeBrewStatus.Idle,
             modifier = Modifier.padding(end = 8.dp),
         ) {
-            Text(stringResource(Res.string.free_control_save))
+            Text(stringResource(CoreRes.string.common_save))
         }
     }
 }
@@ -409,6 +402,9 @@ private fun RenameProfileDialog(
     )
 }
 
+private val SliderColumnWidth = 112.dp
+private val SliderHeight = 72.dp
+
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
@@ -420,6 +416,8 @@ private fun Preview() {
             mode = ControlMode.Pressure,
             pressureTarget = 6.0f,
             flowTarget = 3.5f,
+            pressureRange = 0f..12f,
+            flowRange = 0f..8f,
             brewStatus = FreeBrewStatus.Idle,
             sessionCompleted = false,
             visibleCharts = setOf(

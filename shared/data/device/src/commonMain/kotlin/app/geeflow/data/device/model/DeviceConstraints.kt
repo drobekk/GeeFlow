@@ -8,4 +8,6 @@ data class DeviceConstraints(
     val cleaningTimeRange: IntRange,
     val cleaningRestRange: IntRange,
     val cleaningCountRange: IntRange,
+    val pressureRange: ClosedFloatingPointRange<Float>,
+    val flowRange: ClosedFloatingPointRange<Float>,
 )

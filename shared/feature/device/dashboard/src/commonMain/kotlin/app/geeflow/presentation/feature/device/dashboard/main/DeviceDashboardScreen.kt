@@ -95,6 +95,7 @@ internal fun DeviceDashboardScreen(
     }
 
     NavigatorEffect(navigator, viewModel.navEvent)
+    NavigatorEffect(navigator, profileListViewModel.navEvent)
 
     EventsDispatcher(viewModel.events) {
         when (it) {

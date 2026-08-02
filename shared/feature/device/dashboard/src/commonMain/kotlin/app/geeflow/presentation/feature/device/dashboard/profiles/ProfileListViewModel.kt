@@ -6,7 +6,6 @@ import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
-import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.DeleteProfileUseCase
 import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
@@ -14,7 +13,8 @@ import app.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import app.geeflow.domain.brew.usecase.UpdateBrewProfilesPositionsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
-import app.geeflow.presentation.feature.device.dashboard.model.ChartData
+import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
+import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
@@ -63,9 +63,9 @@ internal class ProfileListViewModel(
     fun handleEvent(event: ProfileListEvent) = when (event) {
         is ProfileSelected -> setSelectedProfileId(event.id)
         is HistoryClicked -> Unit // TODO
-        is AddProfileClicked -> Unit // TODO
+        is AddProfileClicked -> navigateTo(ProfileEditor(args.deviceId))
         is BindProfileClicked -> bindProfile(event.id)
-        is EditProfileClicked -> Unit // TODO
+        is EditProfileClicked -> navigateTo(ProfileEditor(args.deviceId, event.id.toLongOrNull()))
         is RemoveProfileClicked -> removeProfile(event.id)
         is Reordered -> reorderProfiles(event.from, event.to)
     }
@@ -130,48 +130,6 @@ internal class ProfileListViewModel(
             is Condition.Volume -> "${cond.target.toInt()}ml"
         }
 
-        data class StepEvent(val time: Float, val pressure: Float, val flow: Float)
-
-        val events = mutableListOf<StepEvent>()
-        var currentTime = 0f
-        var currentPressure = 0f
-        var currentFlow = 0f
-
-        for (step in profile.steps) {
-            val nextPressure = when (step) {
-                is ProfileStep.Pressure -> step.pressure
-                is ProfileStep.Wait -> 0f
-                else -> currentPressure
-            }
-            val nextFlow = when (step) {
-                is ProfileStep.Flow -> step.flow
-                is ProfileStep.Wait -> 0f
-                else -> currentFlow
-            }
-            events.add(StepEvent(currentTime, nextPressure, nextFlow))
-            currentPressure = nextPressure
-            currentFlow = nextFlow
-            currentTime += step.time.toFloat()
-        }
-
-        val totalTicks = (currentTime * TickScale).toInt()
-        val targetData = buildMap(totalTicks + 1) {
-            for (tick in 0..totalTicks) {
-                val t = tick / TickScale.toFloat()
-                val event = events.lastOrNull { it.time <= t } ?: events.first()
-                put(
-                    key = t,
-                    value = ChartData(
-                        pressure = event.pressure,
-                        weight = 0f,
-                        weightPerSecond = 0f,
-                        volume = 0f,
-                        volumePerSecond = event.flow,
-                    ),
-                )
-            }
-        }
-
         return ProfileListViewState.Profile(
             id = profile.id.toString(),
             number = (index + 1).toString(),
@@ -180,9 +138,7 @@ internal class ProfileListViewModel(
             brewByWeight = profile.finishCondition is Condition.Weight,
             bound = bound,
             selected = selected,
-            targetData = targetData,
+            targetData = profile.steps.toTargetData(),
         )
     }
 }
-
-private const val TickScale = 10

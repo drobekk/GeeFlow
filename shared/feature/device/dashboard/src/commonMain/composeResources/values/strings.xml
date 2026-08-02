@@ -25,10 +25,31 @@
     <string name="free_control_screen_title">Freehand profile</string>
     <string name="free_control_default_profile_name">New freehand profile</string>
     <string name="free_control_mode_flow">Flow</string>
-    <string name="free_control_save">Save</string>
     <string name="free_control_rename_dialog_title">Rename profile</string>
     <string name="free_control_rename_dialog_name">Profile name</string>
     <string name="free_control_profile_saved">Profile saved</string>
+
+    <!-- Profile Editor -->
+    <string name="profile_editor_default_name">New profile</string>
+    <string name="profile_editor_description">%1$d steps • %2$d sec</string>
+    <string name="profile_editor_rename_title">Rename profile</string>
+    <string name="profile_editor_rename_name">Profile name</string>
+    <string name="profile_editor_add_step">Add step</string>
+    <string name="profile_editor_remove_step">Remove step</string>
+    <string name="profile_editor_end_step">End</string>
+    <string name="profile_editor_step_type_title">Add step</string>
+    <string name="profile_editor_step_flow">Flow</string>
+    <string name="profile_editor_step_pressure">Pressure</string>
+    <string name="profile_editor_step_wait">Wait</string>
+    <string name="profile_editor_step_time">Time (max %1$d sec)</string>
+    <string name="profile_editor_step_value_flow">Flow (ml/s)</string>
+    <string name="profile_editor_step_value_pressure">Pressure (bar)</string>
+    <string name="profile_editor_finish_volume">Volume</string>
+    <string name="profile_editor_finish_weight">Weight</string>
+    <string name="profile_editor_finish_title_volume">Target volume</string>
+    <string name="profile_editor_finish_title_weight">Target weight</string>
+    <string name="profile_editor_finish_value_volume">Volume (ml)</string>
+    <string name="profile_editor_finish_value_weight">Weight (g)</string>
 
     <!-- Quick Maintenance Dialog -->
     <string name="quick_maintenance_title">Maintenance</string>

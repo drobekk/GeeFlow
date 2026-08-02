@@ -12,6 +12,8 @@ data class FreeControlViewState(
     val mode: ControlMode = ControlMode.Pressure,
     val pressureTarget: Float = 6.0f,
     val flowTarget: Float = 6.0f,
+    val pressureRange: ClosedFloatingPointRange<Float> = 0f..0f,
+    val flowRange: ClosedFloatingPointRange<Float> = 0f..0f,
     val brew: Brew = Brew(),
     val brewStatus: FreeBrewStatus = FreeBrewStatus.Idle,
     val sessionCompleted: Boolean = false,

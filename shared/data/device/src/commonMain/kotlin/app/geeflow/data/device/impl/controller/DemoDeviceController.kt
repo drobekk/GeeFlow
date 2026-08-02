@@ -46,6 +46,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         cleaningTimeRange = 1..CLEANING_TIME_MAX,
         cleaningRestRange = 1..CLEANING_REST_MAX,
         cleaningCountRange = 1..CLEANING_COUNT_MAX,
+        pressureRange = 0f..BREW_PRESSURE_MAX,
+        flowRange = 0f..BREW_FLOW_MAX,
     )
 
     override val capabilities: Set<DeviceCapability> = setOf(
@@ -465,6 +467,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         private const val STEAM_MAX_TEMP = 140
         private const val PADDLE_PRESSURE_MAX_INT = 120
         private const val PADDLE_TIME_MAX = 60
+        private const val BREW_PRESSURE_MAX = 12f
+        private const val BREW_FLOW_MAX = 8f
         private const val CLEANING_TIME_MAX = 60
         private const val CLEANING_REST_MAX = 60
         private const val CLEANING_COUNT_MAX = 10

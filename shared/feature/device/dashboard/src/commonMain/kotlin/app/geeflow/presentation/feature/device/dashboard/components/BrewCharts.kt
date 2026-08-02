@@ -40,7 +40,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineCom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
-import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer.AreaFill
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer.LineFill
@@ -281,7 +281,7 @@ private fun BrewDataChart(
 
     LaunchedEffect(xValues, chartSeries, target) {
         producer.runTransaction {
-            lineSeries {
+            lineModel {
                 chartSeries.forEach { s ->
                     if (xValues.isNotEmpty()) {
                         series(x = xValues, y = s.yValues)
@@ -368,7 +368,7 @@ private fun BrewChart(
                 ),
                 rangeProvider = CartesianLayerRangeProvider.fixed(minX = 0.0, maxX = maxX, minY = 0.0, maxY = maxY),
             ),
-            getXStep = { getXStep(maxX) },
+            getXStep = { _, _, _ -> getXStep(maxX) },
             marker = marker,
             markerVisibilityListener = markerVisibilityListener,
             markerController = CartesianMarkerController.rememberShowOnPress(consumeMoveEvents = true),

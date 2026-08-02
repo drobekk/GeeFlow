@@ -6,8 +6,10 @@
     <string name="common_close">Close</string>
     <string name="common_confirm">Confirm</string>
     <string name="common_apply">Apply</string>
+    <string name="common_save">Save</string>
     <string name="common_more">More</string>
     <string name="common_remove">Remove</string>
+    <string name="common_delete">Delete</string>
     <string name="common_favourite">Favourite</string>
     <string name="common_settings">Settings</string>
     <string name="common_stop">Stop</string>

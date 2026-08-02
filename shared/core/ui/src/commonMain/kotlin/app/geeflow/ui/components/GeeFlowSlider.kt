@@ -1,6 +1,7 @@
 package app.geeflow.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import kotlin.math.pow
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 private val SliderShape = RoundedCornerShape(12.dp)
 
@@ -43,6 +45,8 @@ fun GeeFlowSlider(
     color: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
     vertical: Boolean = false,
+    allowDecimal: Boolean = true,
+    onClick: (() -> Unit)? = null,
 ) {
     val fraction = ((value - valueRange.start) / (valueRange.endInclusive - valueRange.start)).coerceIn(0f, 1f)
     val fillColor = if (enabled) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
@@ -50,7 +54,7 @@ fun GeeFlowSlider(
     val valueStyle = MaterialTheme.typography.titleLarge
     val unitStyle = MaterialTheme.typography.labelSmall
     val textColor = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-    val valueLabel = value.formatSliderValue()
+    val valueLabel = value.formatSliderValue(allowDecimal)
 
     val updatedOnValueChange by rememberUpdatedState(onValueChange)
 
@@ -85,18 +89,21 @@ fun GeeFlowSlider(
             )
             .then(
                 if (enabled) {
-                    Modifier.pointerInput(valueRange, vertical) {
-                        detectDragGestures { change, _ ->
-                            val newFraction = if (vertical) {
-                                1f - change.position.y / size.height
-                            } else {
-                                change.position.x / size.width
+                    Modifier
+                        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                        .pointerInput(valueRange, vertical) {
+                            detectDragGestures { change, _ ->
+                                val newFraction = if (vertical) {
+                                    1f - change.position.y / size.height
+                                } else {
+                                    change.position.x / size.width
+                                }
+                                updatedOnValueChange(
+                                    valueRange.start +
+                                        newFraction.coerceIn(0f, 1f) * (valueRange.endInclusive - valueRange.start),
+                                )
                             }
-                            updatedOnValueChange(
-                                valueRange.start + newFraction.coerceIn(0f, 1f) * (valueRange.endInclusive - valueRange.start),
-                            )
                         }
-                    }
                 } else {
                     Modifier
                 },
@@ -144,7 +151,8 @@ fun GeeFlowSlider(
     }
 }
 
-private fun Float.formatSliderValue(): String {
+private fun Float.formatSliderValue(allowDecimal: Boolean): String {
+    if (!allowDecimal) return roundToInt().toString()
     val factor = 10f.pow(1)
     return (round(this * factor) / factor).toString()
 }

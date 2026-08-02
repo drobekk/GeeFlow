@@ -15,6 +15,8 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlViewModel
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardScreen
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewModel
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorScreen
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
 import app.geeflow.presentation.feature.device.dashboard.quickmaintenance.QuickMaintenanceScreen
 import app.geeflow.presentation.feature.device.dashboard.quickmaintenance.QuickMaintenanceViewModel
@@ -34,6 +36,9 @@ internal data class QuickSettings(val deviceId: Long) : NavKey
 
 @Serializable
 internal data class QuickMaintenance(val deviceId: Long) : NavKey
+
+@Serializable
+internal data class ProfileEditor(val deviceId: Long, val profileId: Long? = null) : NavKey
 
 @Single
 internal class DeviceDashboardNavFeature : NavFeature {
@@ -58,6 +63,10 @@ internal class DeviceDashboardNavFeature : NavFeature {
             val viewModel = koinViewModel<FreeControlViewModel> { parametersOf(it) }
             FreeControlScreen(viewModel, navigator)
         }
+        entry<ProfileEditor> {
+            val viewModel = koinViewModel<ProfileEditorViewModel> { parametersOf(it) }
+            ProfileEditorScreen(viewModel, navigator)
+        }
     }
 
     override val serializerModule: SerializersModule = SerializersModule {
@@ -66,6 +75,7 @@ internal class DeviceDashboardNavFeature : NavFeature {
             subclass(QuickSettings::class, QuickSettings.serializer())
             subclass(QuickMaintenance::class, QuickMaintenance.serializer())
             subclass(FreeControl::class, FreeControl.serializer())
+            subclass(ProfileEditor::class, ProfileEditor.serializer())
         }
     }
 }

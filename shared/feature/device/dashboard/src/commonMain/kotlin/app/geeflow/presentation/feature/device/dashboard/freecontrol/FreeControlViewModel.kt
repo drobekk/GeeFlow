@@ -11,6 +11,7 @@ import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.SaveFreeVariableProfileUseCase
+import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import app.geeflow.domain.device.usecase.GetDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.SetFreeBrewFlowUseCase
@@ -57,6 +58,7 @@ internal class FreeControlViewModel(
     private val setFreeBrewPressure: SetFreeBrewPressureUseCase,
     private val setFreeBrewFlow: SetFreeBrewFlowUseCase,
     private val saveFreeVariableProfile: SaveFreeVariableProfileUseCase,
+    private val getDeviceConstraints: GetDeviceConstraintsUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val appScope: CoroutineScope,
@@ -68,6 +70,10 @@ internal class FreeControlViewModel(
     init {
         val device = getDevice(args.deviceId)
         modify { copy(deviceName = device?.name.orEmpty()) }
+        launch {
+            val constraints = getDeviceConstraints(args.deviceId)
+            modify { copy(pressureRange = constraints.pressureRange, flowRange = constraints.flowRange) }
+        }
         launch { observeDeviceState(args.deviceId).collect(::updateFromDeviceState) }
         launch {
             observeBrewData(args.deviceId).collect { session ->
