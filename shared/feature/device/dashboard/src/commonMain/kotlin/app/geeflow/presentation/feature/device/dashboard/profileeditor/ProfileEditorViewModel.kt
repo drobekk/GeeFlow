@@ -13,7 +13,6 @@ import app.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase
-import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase.Companion.NEW_PROFILE_ID
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
@@ -206,7 +205,7 @@ internal class ProfileEditorViewModel(
     private fun editedProfile(): BrewProfile {
         val state = viewState.value
         return BrewProfile(
-            id = args.profileId ?: NEW_PROFILE_ID,
+            id = args.profileId ?: BrewProfile.NEW_ID,
             userId = 0,
             name = state.profileName,
             description = state.description,

@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
 
 /**
- * Creates a profile when [id] is [NEW_PROFILE_ID], otherwise updates the existing one, keeping the
+ * Creates a profile when [id] is [BrewProfile.NEW_ID], otherwise updates the existing one, keeping the
  * fields the editor does not expose (mode, auto link, position) untouched.
  */
 @Factory
@@ -40,9 +40,5 @@ class SaveBrewProfileUseCase(
             position = brewProfileRepository.getBrewProfilesForUser(userId).size,
         )
         brewProfileRepository.addBrewProfile(profile)
-    }
-
-    companion object {
-        const val NEW_PROFILE_ID = 0L
     }
 }

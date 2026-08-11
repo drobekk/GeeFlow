@@ -19,6 +19,8 @@
     <!-- Profile List -->
     <string name="profile_list_search">Search</string>
     <string name="profile_list_delete">Delete profile</string>
+    <string name="profile_list_duplicate">Duplicate profile</string>
+    <string name="profile_list_duplicate_name">%1$s (copy)</string>
     <string name="profile_list_bind">Bind profile</string>
     <string name="profile_list_show_history">Show brew history</string>
     <string name="profile_list_show_profiles">Show profiles</string>

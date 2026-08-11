@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BrewProfile(
-    val id: Long = 0,
+    val id: Long = NEW_ID,
     val userId: Long,
     val name: String,
     val description: String,
@@ -14,7 +14,11 @@ data class BrewProfile(
     val autoLinkOpen: Boolean = false,
     val steps: List<ProfileStep> = emptyList(),
     val position: Int = 0,
-)
+) {
+    companion object {
+        const val NEW_ID = 0L
+    }
+}
 
 @Serializable
 sealed interface ProfileStep {

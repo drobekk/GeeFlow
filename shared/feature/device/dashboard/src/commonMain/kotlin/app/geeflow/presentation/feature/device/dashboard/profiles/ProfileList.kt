@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
@@ -88,6 +89,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_add_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_bind
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_delete
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_duplicate
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_search
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_show_history
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_show_profiles
@@ -558,6 +560,17 @@ private fun ProfileItemRevealContent(
             Icon(
                 painter = rememberVectorPainter(Icons.Filled.Delete),
                 contentDescription = stringResource(Res.string.profile_list_delete),
+            )
+        }
+        IconButton(
+            onClick = { onEvent(ProfileListEvent.DuplicateProfileClicked(profile.id)) },
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.secondary,
+            ),
+        ) {
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.ContentCopy),
+                contentDescription = stringResource(Res.string.profile_list_duplicate),
             )
         }
         IconButton(

@@ -12,6 +12,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.DeleteProfileUseCase
+import app.geeflow.domain.brew.usecase.DuplicateProfileUseCase
 import app.geeflow.domain.brew.usecase.GetBrewHistoryDataUseCase
 import app.geeflow.domain.brew.usecase.GetBrewHistoryUseCase
 import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
@@ -24,6 +25,7 @@ import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.DuplicateProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryBrewSelected
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryClicked
@@ -44,6 +46,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual_badge
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile_badge
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_duplicate_name
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -64,6 +67,7 @@ internal class ProfileListViewModel(
     private val observeDeviceStateUseCase: ObserveDeviceStateUseCase,
     private val bindProfileUseCase: BindProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
+    private val duplicateProfileUseCase: DuplicateProfileUseCase,
     private val updateBrewProfilesPositionsUseCase: UpdateBrewProfilesPositionsUseCase,
     private val getBrewHistoryUseCase: GetBrewHistoryUseCase,
     private val getBrewHistoryDataUseCase: GetBrewHistoryDataUseCase,
@@ -102,6 +106,7 @@ internal class ProfileListViewModel(
         is AddProfileClicked -> navigateTo(ProfileEditor(args.deviceId))
         is BindProfileClicked -> bindProfile(event.id)
         is EditProfileClicked -> navigateTo(ProfileEditor(args.deviceId, event.id.toLongOrNull()))
+        is DuplicateProfileClicked -> duplicateProfile(event.id)
         is RemoveProfileClicked -> removeProfile(event.id)
         is Reordered -> reorderProfiles(event.from, event.to)
     }
@@ -208,6 +213,12 @@ internal class ProfileListViewModel(
         launch {
             updateBrewProfilesPositionsUseCase(reorderedDomainProfiles)
         }
+    }
+
+    private fun duplicateProfile(id: String) = launchCatching(::onError) {
+        val profileId = id.toLongOrNull() ?: return@launchCatching
+        val source = currentDomainProfiles.find { it.id == profileId } ?: return@launchCatching
+        duplicateProfileUseCase(profileId, getString(Res.string.profile_list_duplicate_name, source.name))
     }
 
     private fun removeProfile(id: String) = launchCatching(::onError) {
