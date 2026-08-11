@@ -30,11 +30,11 @@ import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.AddStepClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.BackClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DetailsConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DialogDismissed
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.EditDetailsClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetConfirmed
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.RenameClicked
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.RenameConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.SaveClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepRemoved
@@ -109,8 +109,10 @@ internal class ProfileEditorViewModel(
         is TestClicked -> testProfile()
         is StopClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
         is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
-        is RenameClicked -> modify { copy(dialog = ProfileEditorDialog.Rename) }
-        is RenameConfirmed -> modify { copy(profileName = event.name, dialog = null) }
+        is EditDetailsClicked -> modify { copy(dialog = ProfileEditorDialog.Details) }
+        is DetailsConfirmed -> modify {
+            copy(profileName = event.name, description = event.description, dialog = null)
+        }
         is AddStepClicked -> modify { copy(dialog = ProfileEditorDialog.StepTypePicker) }
         is StepTypeSelected -> showNewStepValues(event.type)
         is StepClicked -> showStepValues(event.id)
@@ -127,6 +129,7 @@ internal class ProfileEditorViewModel(
         modify {
             copy(
                 profileName = profile.name,
+                description = profile.description,
                 finishTarget = profile.finishCondition.toFinishTarget(),
             )
         }
@@ -206,7 +209,7 @@ internal class ProfileEditorViewModel(
             id = args.profileId ?: NEW_PROFILE_ID,
             userId = 0,
             name = state.profileName,
-            description = "",
+            description = state.description,
             finishCondition = state.finishTarget.toCondition(),
             steps = state.steps.map { it.toDomain() },
         )
@@ -227,18 +230,19 @@ internal class ProfileEditorViewModel(
         saveBrewProfile(
             id = profile.id,
             name = profile.name,
-            description = getString(
-                Res.string.profile_editor_description,
-                profile.steps.size,
-                profile.steps.sumOf { it.time },
-            ),
+            description = profile.description.ifBlank {
+                getString(
+                    Res.string.profile_editor_description,
+                    profile.steps.size,
+                    profile.steps.sumOf { it.time },
+                )
+            },
             finishCondition = profile.finishCondition,
             steps = profile.steps,
         )
         navigate(NavEvent.Back)
     }
 
-    /** Keeps [ProfileEditorViewState.targetData] in sync with the steps the chart renders. */
     private fun updateSteps(block: List<Step>.() -> List<Step>) = modify {
         val updated = steps.block()
         copy(

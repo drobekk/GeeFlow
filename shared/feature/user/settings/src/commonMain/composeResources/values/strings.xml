@@ -60,7 +60,7 @@
     <string name="user_settings_brewing_preferences_title">Brewing Preferences</string>
     <string name="user_settings_brewing_auto_connect">Auto-connect</string>
     <string name="user_settings_brewing_auto_connect_description">Connect to your machine when you return to the app</string>
-    <string name="user_settings_brewing_skip_manual_history">Skip manual brews in history</string>
+    <string name="user_settings_brewing_skip_manual_history">Treat manual brews as flush</string>
     <string name="user_settings_brewing_skip_manual_history_description">Paddle long press (M) counts as a flush - no history entry, no chart</string>
     <string name="user_settings_brewing_temperature_unit">Temperature Unit</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>

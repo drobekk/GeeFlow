@@ -8,8 +8,8 @@ internal sealed interface ProfileEditorEvent {
     data object TestClicked : ProfileEditorEvent
     data object StopClicked : ProfileEditorEvent
     data class ToggleChartVisibility(val type: DashboardChartType) : ProfileEditorEvent
-    data object RenameClicked : ProfileEditorEvent
-    data class RenameConfirmed(val name: String) : ProfileEditorEvent
+    data object EditDetailsClicked : ProfileEditorEvent
+    data class DetailsConfirmed(val name: String, val description: String) : ProfileEditorEvent
     data object AddStepClicked : ProfileEditorEvent
     data class StepTypeSelected(val type: StepType) : ProfileEditorEvent
     data class StepClicked(val id: Long) : ProfileEditorEvent

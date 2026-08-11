@@ -49,8 +49,9 @@
     <!-- Profile Editor -->
     <string name="profile_editor_default_name">New profile</string>
     <string name="profile_editor_description">%1$d steps • %2$d sec</string>
-    <string name="profile_editor_rename_title">Rename profile</string>
-    <string name="profile_editor_rename_name">Profile name</string>
+    <string name="profile_editor_details_title">Profile details</string>
+    <string name="profile_editor_details_name">Profile name</string>
+    <string name="profile_editor_details_description">Description</string>
     <string name="profile_editor_test">Test</string>
     <string name="profile_editor_bound_requires_connection">This profile is bound to the machine. Connect it to save your changes.</string>
     <string name="profile_editor_add_step">Add step</string>

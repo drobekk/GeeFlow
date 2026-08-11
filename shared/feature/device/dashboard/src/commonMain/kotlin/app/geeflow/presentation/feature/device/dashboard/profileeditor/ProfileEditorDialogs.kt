@@ -23,9 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DetailsConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DialogDismissed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetConfirmed
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.RenameConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepTypeSelected
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepValuesConfirmed
 import app.geeflow.ui.components.GeeFlowDialog
@@ -42,10 +42,11 @@ import geeflow.shared.core.ui.generated.resources.unit_grams
 import geeflow.shared.core.ui.generated.resources.unit_milliliters
 import geeflow.shared.core.ui.generated.resources.unit_milliliters_per_second
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_details_description
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_details_name
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_details_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_finish_title_volume
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_finish_title_weight
-import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_rename_name
-import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_rename_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_step_type_title
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -54,16 +55,15 @@ import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun ProfileEditorDialogs(
     dialog: ProfileEditorDialog,
+    viewState: ProfileEditorViewState,
     onEvent: (ProfileEditorEvent) -> Unit,
-    profileName: String,
-    pressureRange: ClosedFloatingPointRange<Float>,
-    flowRange: ClosedFloatingPointRange<Float>,
 ) {
     val onDismiss = { onEvent(DialogDismissed) }
     when (dialog) {
-        is ProfileEditorDialog.Rename -> RenameProfileDialog(
-            currentName = profileName,
-            onConfirm = { onEvent(RenameConfirmed(it)) },
+        is ProfileEditorDialog.Details -> ProfileDetailsDialog(
+            currentName = viewState.profileName,
+            currentDescription = viewState.description,
+            onConfirm = { name, description -> onEvent(DetailsConfirmed(name, description)) },
             onDismiss = onDismiss,
         )
 
@@ -74,7 +74,7 @@ internal fun ProfileEditorDialogs(
 
         is ProfileEditorDialog.StepValues -> StepValuesDialog(
             dialog = dialog,
-            valueRange = if (dialog.type == StepType.Pressure) pressureRange else flowRange,
+            valueRange = if (dialog.type == StepType.Pressure) viewState.pressureRange else viewState.flowRange,
             onConfirm = { time, value -> onEvent(StepValuesConfirmed(time, value)) },
             onDismiss = onDismiss,
         )
@@ -88,24 +88,35 @@ internal fun ProfileEditorDialogs(
 }
 
 @Composable
-private fun RenameProfileDialog(
+private fun ProfileDetailsDialog(
     currentName: String,
-    onConfirm: (String) -> Unit,
+    currentDescription: String,
+    onConfirm: (name: String, description: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val nameState = rememberTextFieldState(initialText = currentName)
+    val descriptionState = rememberTextFieldState(initialText = currentDescription)
     EditorDialog(
         onDismiss = onDismiss,
-        title = { GeeFlowDialogTopBar(stringResource(Res.string.profile_editor_rename_title), onDismiss) },
+        title = { GeeFlowDialogTopBar(stringResource(Res.string.profile_editor_details_title), onDismiss) },
     ) {
         GeeFlowOutlinedTextField(
             state = nameState,
             lineLimits = TextFieldLineLimits.SingleLine,
-            label = { Text(stringResource(Res.string.profile_editor_rename_name)) },
+            label = { Text(stringResource(Res.string.profile_editor_details_name)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        VerticalSpacer(12.dp)
+        GeeFlowOutlinedTextField(
+            state = descriptionState,
+            lineLimits = TextFieldLineLimits.SingleLine,
+            label = { Text(stringResource(Res.string.profile_editor_details_description)) },
             modifier = Modifier.fillMaxWidth(),
         )
         VerticalSpacer(24.dp)
-        ConfirmButton(enabled = nameState.text.isNotBlank()) { onConfirm(nameState.text.toString()) }
+        ConfirmButton(enabled = nameState.text.isNotBlank()) {
+            onConfirm(nameState.text.toString(), descriptionState.text.toString())
+        }
     }
 }
 

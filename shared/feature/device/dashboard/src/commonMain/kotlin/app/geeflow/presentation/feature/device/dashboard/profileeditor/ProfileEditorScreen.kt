@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -37,7 +35,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,7 +44,7 @@ import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.BackClicked
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.RenameClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.EditDetailsClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.SaveClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StopClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.TestClicked
@@ -64,7 +61,6 @@ import geeflow.shared.core.ui.generated.resources.common_go_back
 import geeflow.shared.core.ui.generated.resources.common_save
 import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
-import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_rename_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_test
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -99,10 +95,8 @@ internal fun ProfileEditorScreen(
     viewState.dialog?.let { dialog ->
         ProfileEditorDialogs(
             dialog = dialog,
+            viewState = viewState,
             onEvent = viewModel::handleEvent,
-            profileName = viewState.profileName,
-            pressureRange = viewState.pressureRange,
-            flowRange = viewState.flowRange,
         )
     }
 }
@@ -242,6 +236,7 @@ private fun EditorBrewBar(
     isBrewing = viewState.isBrewing,
     visibleCharts = viewState.visibleCharts,
     onToggle = { onEvent(ToggleChartVisibility(it)) },
+    onRename = { onEvent(EditDetailsClicked) },
     modifier = modifier,
 )
 
@@ -281,36 +276,12 @@ private fun ProfileEditorTopBar(
                 contentDescription = stringResource(CoreRes.string.common_go_back),
             )
         }
-        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = viewState.profileName,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            RenameButton(onClick = { onEvent(RenameClicked) })
-        }
-        HorizontalSpacer(8.dp)
+        HorizontalSpacer(1f)
         TestButton(isBrewing = viewState.isBrewing, canTest = viewState.canTest, onEvent = onEvent)
         HorizontalSpacer(8.dp)
         Button(onClick = { onEvent(SaveClicked) }, enabled = viewState.canSave) {
             Text(stringResource(CoreRes.string.common_save))
         }
-    }
-}
-
-@Composable
-private fun RenameButton(onClick: () -> Unit) {
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier.padding(horizontal = 8.dp).size(32.dp),
-    ) {
-        Icon(
-            painter = rememberVectorPainter(Icons.Filled.Edit),
-            contentDescription = stringResource(Res.string.profile_editor_rename_title),
-            modifier = Modifier.size(16.dp),
-        )
     }
 }
 

@@ -9,6 +9,7 @@ import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 internal data class ProfileEditorViewState(
     val profileName: String = "",
+    val description: String = "",
     val steps: List<Step> = emptyList(),
     val finishTarget: FinishTarget = FinishTarget(),
     val targetData: Map<Float, ChartData> = emptyMap(),
@@ -55,7 +56,7 @@ internal enum class FinishTargetType {
 }
 
 internal sealed interface ProfileEditorDialog {
-    data object Rename : ProfileEditorDialog
+    data object Details : ProfileEditorDialog
 
     data object StepTypePicker : ProfileEditorDialog
 
