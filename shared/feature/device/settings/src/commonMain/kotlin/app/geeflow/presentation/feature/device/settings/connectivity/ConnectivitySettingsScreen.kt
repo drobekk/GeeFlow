@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.device.settings.connectivity
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,12 +25,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,8 +52,10 @@ import app.geeflow.presentation.feature.device.settings.connectivity.Connectivit
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ScaleConnectionClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SmartScaleToggled
+import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleConnectionStatus
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleViewItem
+import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.components.HorizontalSpacer
@@ -58,6 +66,7 @@ import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_connect
 import geeflow.shared.core.ui.generated.resources.common_disconnect
+import geeflow.shared.core.ui.generated.resources.common_ok
 import geeflow.shared.feature.device.settings.generated.resources.Res
 import geeflow.shared.feature.device.settings.generated.resources.device_dashboard_connecting
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity
@@ -68,6 +77,7 @@ import geeflow.shared.feature.device.settings.generated.resources.device_setting
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_smart_scale
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_smart_scale_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_smart_scale_info
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
@@ -77,13 +87,30 @@ internal fun ConnectivitySettingsScreen(
     navigator: app.geeflow.navigation.Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val acknowledge = stringResource(CoreRes.string.common_ok)
 
     ConnectivitySettingsContent(
         viewState = viewState,
+        snackbarHostState = snackbarHostState,
         onEvent = viewModel::handleEvent,
     )
 
     NavigatorEffect(navigator, viewModel.navEvent)
+
+    EventsDispatcher(viewModel.events) {
+        when (it) {
+            is ShowSnackbar -> coroutineScope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(
+                    message = it.message,
+                    actionLabel = acknowledge,
+                    duration = SnackbarDuration.Indefinite,
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,22 +118,29 @@ internal fun ConnectivitySettingsScreen(
 private fun ConnectivitySettingsContent(
     viewState: ConnectivitySettingsViewState,
     onEvent: (ConnectivitySettingsEvent) -> Unit = {},
+    snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val snackbarHost: @Composable () -> Unit = { SnackbarHost(snackbarHostState) }
+
     if (isWidthExpanded()) {
-        CompactContent(
-            viewState = viewState,
-            onEvent = onEvent,
-            modifier = Modifier
-                .fillMaxSize()
-                .geeFlowInsetsEndPadding(),
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            CompactContent(
+                viewState = viewState,
+                onEvent = onEvent,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .geeFlowInsetsEndPadding(),
+            )
+            Box(modifier = Modifier.align(Alignment.BottomCenter).geeFlowInsetsEndPadding()) { snackbarHost() }
+        }
     } else {
         GeeFlowScaffold(
             title = stringResource(Res.string.device_settings_connectivity),
             subtitle = stringResource(Res.string.device_settings_connectivity_description),
             navIconClick = { onEvent(CloseClicked) },
             scrollBehavior = scrollBehavior,
+            snackbarHost = snackbarHost,
             content = {
                 CompactContent(
                     viewState = viewState,

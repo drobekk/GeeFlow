@@ -439,8 +439,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
             delay(SCALE_SEARCH_DELAY_MS)
             if (!_deviceState.value.smartScaleEnabled) return@launch
             _foundScales.value = listOf(
-                SmartScale("Bookoo Themis Ultra", isConnected = false),
-                SmartScale("Acaia Lunar", isConnected = false),
+                SmartScale("Bookoo Themis", isConnected = false),
+                SmartScale(SLOW_SCALE_NAME, isConnected = false),
             )
             delay(SCALE_SEARCH_DURATION_MS)
             if (_deviceState.value.smartScaleEnabled) {
@@ -450,7 +450,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun connectSmartScale(name: String) {
-        delay(SCALE_CONNECT_DELAY_MS)
+        // The Acaia is deliberately slow to pair so the connection help hint can be exercised.
+        delay(if (name == SLOW_SCALE_NAME) SLOW_SCALE_CONNECT_DELAY_MS else SCALE_CONNECT_DELAY_MS)
         val scale = SmartScale(name, isConnected = true)
         _foundScales.update { scales -> scales.map { if (it.name == name) scale else it } }
         _deviceState.update { it.copy(smartScale = scale) }
@@ -489,6 +490,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         private const val SCALE_SEARCH_DELAY_MS = 2000L
         private const val SCALE_SEARCH_DURATION_MS = 8000L
         private const val SCALE_CONNECT_DELAY_MS = 1500L
+        private const val SLOW_SCALE_NAME = "Bookoo Themis Ultra"
+        private const val SLOW_SCALE_CONNECT_DELAY_MS = 8000L
 
         private const val DEFAULT_FREE_VAR_PRESSURE = 6f
         private const val DEFAULT_FREE_VAR_FLOW = 6f

@@ -16,9 +16,15 @@ import app.geeflow.presentation.feature.device.settings.connectivity.Connectivit
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ScaleConnectionClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SmartScaleToggled
+import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleConnectionStatus
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.ScaleViewItem
+import geeflow.shared.feature.device.settings.generated.resources.Res
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_scale_help
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
@@ -34,6 +40,7 @@ internal class ConnectivitySettingsViewModel(
 ) : BaseViewModel<ConnectivitySettingsViewState, ConnectivitySettingsViewModelEvent>(ConnectivitySettingsViewState()) {
 
     private var connectingScaleName: String? = null
+    private var connectionHelpJob: Job? = null
 
     init {
         observeState()
@@ -48,9 +55,9 @@ internal class ConnectivitySettingsViewModel(
                 .collect { (state, scales) ->
                     val connectedName = state.smartScale?.name
                     if (connectingScaleName != null && connectedName == connectingScaleName) {
-                        connectingScaleName = null
+                        stopConnecting()
                     }
-                    if (!state.smartScaleEnabled) connectingScaleName = null
+                    if (!state.smartScaleEnabled) stopConnecting()
                     modify {
                         copy(
                             smartScaleEnabled = state.smartScaleEnabled,
@@ -95,11 +102,26 @@ internal class ConnectivitySettingsViewModel(
                         },
                     )
                 }
+                awaitConnectionHelp()
                 launchCatching { connectSmartScale(arguments.deviceId, scaleName) }
             }
 
             ScaleConnectionStatus.Connecting -> Unit
         }
+    }
+
+    /** A scale that has not paired after a short wait usually needs the machine power-cycled. */
+    private fun awaitConnectionHelp() {
+        connectionHelpJob?.cancel()
+        connectionHelpJob = launch {
+            delay(CONNECTION_HELP_DELAY_MS)
+            emitEvent(ShowSnackbar(getString(Res.string.device_settings_connectivity_scale_help)))
+        }
+    }
+
+    private fun stopConnecting() {
+        connectingScaleName = null
+        connectionHelpJob?.cancel()
     }
 
     private fun SmartScale.toViewItem(connectingName: String?, connectedName: String?) = ScaleViewItem(
@@ -110,4 +132,8 @@ internal class ConnectivitySettingsViewModel(
             else -> ScaleConnectionStatus.Disconnected
         },
     )
+
+    private companion object {
+        const val CONNECTION_HELP_DELAY_MS = 5_000L
+    }
 }

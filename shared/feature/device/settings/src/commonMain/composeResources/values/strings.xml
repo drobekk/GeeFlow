@@ -26,6 +26,7 @@
     <string name="device_settings_connectivity_searching">Searching for compatible devices…</string>
     <string name="device_settings_connectivity_not_found">Not seeing your device?</string>
     <string name="device_settings_connectivity_rescan">Scan now</string>
+    <string name="device_settings_connectivity_scale_help">Still connecting? Turn the machine off and on again, then try connecting the scale once more.</string>
 
     <!-- Device Settings Brewing -->
     <string name="device_settings_brewing_boiler">Boiler</string>

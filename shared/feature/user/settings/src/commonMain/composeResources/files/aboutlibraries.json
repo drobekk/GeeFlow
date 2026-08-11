@@ -3398,7 +3398,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-core-android",
-            "artifactVersion": "3.6.1",
+            "artifactVersion": "3.7.0",
             "name": "Blue Falcon Core",
             "description": "Core module for Blue Falcon - A Bluetooth Low Energy Kotlin Multiplatform library",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3421,7 +3421,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-android-android",
-            "artifactVersion": "3.6.1",
+            "artifactVersion": "3.7.0",
             "name": "Blue Falcon Android Engine",
             "description": "Android BLE engine for Blue Falcon",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3444,7 +3444,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-ios",
-            "artifactVersion": "3.6.1",
+            "artifactVersion": "3.7.0",
             "name": "Blue Falcon iOS Engine",
             "description": "iOS BLE engine for Blue Falcon",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3467,7 +3467,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-macos-jvm-jvm",
-            "artifactVersion": "3.6.1",
+            "artifactVersion": "3.7.0",
             "name": "Blue Falcon macOS JVM Engine",
             "description": "macOS BLE engine for Blue Falcon \u2014 JVM/Compose Desktop via JNI + CoreBluetooth",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3490,7 +3490,7 @@
         },
         {
             "uniqueId": "dev.bluefalcon:blue-falcon-engine-windows-jvm",
-            "artifactVersion": "3.6.1",
+            "artifactVersion": "3.7.0",
             "name": "Blue Falcon Windows Engine",
             "description": "Windows BLE engine for Blue Falcon",
             "website": "https://github.com/Reedyuk/blue-falcon",
@@ -3628,7 +3628,7 @@
         },
         {
             "uniqueId": "io.github.kalinjul.easyqrscan:camerautils-android",
-            "artifactVersion": "0.7.1",
+            "artifactVersion": "0.7.2",
             "name": "camerautils",
             "description": "Compose Multiplatform Camera Utilities for Android/iOS",
             "website": "https://github.com/kalinjul/EasyQRScan",
@@ -3654,7 +3654,7 @@
         },
         {
             "uniqueId": "io.github.kalinjul.easyqrscan:scanner-android",
-            "artifactVersion": "0.7.1",
+            "artifactVersion": "0.7.2",
             "name": "scanner",
             "description": "Compose Multiplatform QR Code Scanner for Android/iOS",
             "website": "https://github.com/kalinjul/EasyQRScan",
@@ -3680,7 +3680,7 @@
         },
         {
             "uniqueId": "io.github.vinceglb:filekit-coil-android",
-            "artifactVersion": "0.14.2",
+            "artifactVersion": "0.15.0",
             "name": "FileKit",
             "description": "Files, Media, Folder Picker and File saver library for Kotlin Multiplatform and Compose Multiplatform",
             "website": "https://github.com/vinceglb/FileKit",
@@ -5118,7 +5118,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-datetime-jvm",
-            "artifactVersion": "0.7.1",
+            "artifactVersion": "0.8.0",
             "name": "kotlinx-datetime",
             "description": "Kotlin Datetime Library",
             "website": "https://github.com/Kotlin/kotlinx-datetime",
@@ -5140,7 +5140,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm",
-            "artifactVersion": "0.9.0",
+            "artifactVersion": "0.9.1",
             "name": "kotlinx-io-bytestring",
             "description": "IO support for Kotlin",
             "website": "https://github.com/Kotlin/kotlinx-io",
@@ -5162,7 +5162,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-io-core-jvm",
-            "artifactVersion": "0.9.0",
+            "artifactVersion": "0.9.1",
             "name": "kotlinx-io-core",
             "description": "IO support for Kotlin",
             "website": "https://github.com/Kotlin/kotlinx-io",
