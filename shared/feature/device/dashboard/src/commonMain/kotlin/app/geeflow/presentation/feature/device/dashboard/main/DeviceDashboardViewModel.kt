@@ -10,6 +10,7 @@ import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.model.DeviceState
+import app.geeflow.data.device.model.DeviceState.BoilerType
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
 import app.geeflow.data.device.model.isDemo
@@ -21,6 +22,7 @@ import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import app.geeflow.domain.device.usecase.GetDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import app.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
@@ -56,6 +58,7 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEve
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.PermissionDialogResumed
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ProfileSelected
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.QuickSettingsClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.QuickSettingsLongPressed
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.Resumed
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.StopBrewClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ToggleChartVisibility
@@ -68,6 +71,10 @@ import app.geeflow.presentation.feature.device.dashboard.model.toChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
 import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import co.touchlab.kermit.Logger
+import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_off
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_on
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import kotlin.math.pow
@@ -92,12 +99,14 @@ internal class DeviceDashboardViewModel(
     private val getSelectedUser: GetSelectedUserUseCase,
     private val saveBrewToHistory: SaveBrewToHistoryUseCase,
     private val getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
+    private val setBoilerSettings: SetBoilerSettingsUseCase,
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
     private var selectedProfileId: String? = null
     private var selectedProfileName: String? = null
     private var selectedProfileSteps: List<ProfileStep> = emptyList()
     private var machine: Machine? = null
+    private var deviceConfig: DeviceState.Config? = null
     private var brewInProgress = false
     private var skipManualBrews = true
 
@@ -117,6 +126,7 @@ internal class DeviceDashboardViewModel(
         is ConnectionButtonClicked -> toggleConnection()
         is DeviceClicked -> navigate(To(DeviceList))
         is QuickSettingsClicked -> withDeviceConnected { navigate(To(QuickSettings(args.deviceId))) }
+        is QuickSettingsLongPressed -> withDeviceConnected { toggleSteamBoiler() }
         is UserClicked -> navigate(To(UserSettings))
         is ConnectedDevicesClicked -> withDeviceConnected {
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
@@ -141,7 +151,7 @@ internal class DeviceDashboardViewModel(
             )
         }
         is Resumed -> connect()
-        is AlarmClicked -> navigate(To(QuickMaintenance(args.deviceId)))
+        is AlarmClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
     }
 
     private fun toggleConnection() {
@@ -185,6 +195,7 @@ internal class DeviceDashboardViewModel(
     }
 
     private fun updateMachineStateUi(state: DeviceState) {
+        deviceConfig = state.config
         val wasConnected = viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected
         val isNowConnected = state.connectionStatus == ConnectionStatus.Connected
         if (!wasConnected && isNowConnected && state.waterLevelAlarm) {
@@ -213,6 +224,29 @@ internal class DeviceDashboardViewModel(
                     alarm = state.waterLevelAlarm,
                 ),
             )
+        }
+    }
+
+    /**
+     * Keeps the machine's own target temperature — the long press is a power toggle, not a way to
+     * change how hot the steam boiler runs.
+     */
+    private fun toggleSteamBoiler() {
+        val config = deviceConfig ?: return
+        val enabled = !config.steamBoilerEnabled
+        launchCatching(::onError) {
+            setBoilerSettings(
+                deviceId = args.deviceId,
+                boilerType = BoilerType.Steam,
+                enabled = enabled,
+                temp = config.targetSteamTemp.toInt(),
+            )
+            val message = if (enabled) {
+                Res.string.device_dashboard_steam_boiler_on
+            } else {
+                Res.string.device_dashboard_steam_boiler_off
+            }
+            emitEvent(DeviceDashboardViewModelEvent.ShowSnackbar(getString(message)))
         }
     }
 

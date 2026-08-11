@@ -10,6 +10,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -62,6 +65,7 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEve
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectionButtonClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DeviceClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.QuickSettingsClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.QuickSettingsLongPressed
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.UserClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
 import app.geeflow.ui.components.GeeFlowUserAvatar
@@ -82,6 +86,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.device_dashbo
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_connecting
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_disconnected
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_synchronizing
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_toggle_steam_boiler
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
@@ -152,6 +157,7 @@ private fun ActionBar(
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             SettingsButton(
                 onClick = { onEvent(QuickSettingsClicked) },
+                onLongClick = { onEvent(QuickSettingsLongPressed) },
                 modifier = Modifier.clip(
                     MaterialTheme.shapes.large.copy(
                         topStart = CornerSize(0.dp),
@@ -208,21 +214,32 @@ private fun AlarmButton(
 @Composable
 private fun SettingsButton(
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
-) = Box(
-    modifier = modifier
-        .clickable(onClick = onClick)
-        .background(MaterialTheme.colorScheme.surfaceContainer)
-        .height(48.dp)
-        .padding(horizontal = 16.dp),
-    contentAlignment = Alignment.Center,
 ) {
-    Icon(
-        painter = rememberVectorPainter(Icons.Filled.Tune),
-        contentDescription = stringResource(CoreRes.string.common_settings),
-        modifier = Modifier.size(20.dp),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    val haptic = LocalHapticFeedback.current
+    Box(
+        modifier = modifier
+            .combinedClickable(
+                onClick = onClick,
+                onLongClickLabel = stringResource(Res.string.device_dashboard_toggle_steam_boiler),
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
+                },
+            )
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .height(48.dp)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = rememberVectorPainter(Icons.Filled.Tune),
+            contentDescription = stringResource(CoreRes.string.common_settings),
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable

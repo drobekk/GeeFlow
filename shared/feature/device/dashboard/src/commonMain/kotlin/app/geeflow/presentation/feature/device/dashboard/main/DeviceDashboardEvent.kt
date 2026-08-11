@@ -11,6 +11,7 @@ sealed interface DeviceDashboardEvent {
     data object StopBrewClicked : DeviceDashboardEvent
     data object BrewClicked : DeviceDashboardEvent
     data object QuickSettingsClicked : DeviceDashboardEvent
+    data object QuickSettingsLongPressed : DeviceDashboardEvent
     data object CleaningClicked : DeviceDashboardEvent
     data object ConnectedDevicesClicked : DeviceDashboardEvent
     data object ConnectionButtonClicked : DeviceDashboardEvent
