@@ -1,97 +1,87 @@
-This is a Kotlin Multiplatform project template targeting Android, iOS, Web, and Desktop (JVM), configured for Android Gradle Plugin 9.0.0.
+# GeeFlow
 
-* [/composeApp](./composeApp/src) contains the code shared across your Compose Multiplatform applications.
-  It includes several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code common to all targets.
-  - Other folders are for Kotlin code compiled only for the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder is the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting **Android**, **iOS**, and **Desktop (JVM)**.
 
-* [/iosApp](./iosApp/iosApp) contains the iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-* [/androidApp](./androidApp) contains the entry point for the Android application.
+## Supported Hardware
 
-### Build and Run Android Application
+Right now the only real machine supported and tested is the **Wendougee Data-S**. Other machines are not supported yet; the protocol is machine-specific and nothing else has been tried.
 
-To build and run the development version of the Android app, use the run configuration from the run widget in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-```
+A built-in **Demo** device is also available for preview purposes. It simulates a machine entirely in software, so you can explore the whole app (dashboard, profiles, charts, history) without owning any hardware. Add it from the *Add Device* screen.
 
-* on Windows
-```shell
-.\gradlew.bat :composeApp:assembleDebug
-```
+> [!WARNING]
+> **The BLE protocol used here was reverse engineered.** It is not based on any vendor documentation, SDK, or official specification, and it is neither endorsed nor supported by the manufacturer. This app sends commands directly to your machine's control board, including boiler temperature targets, heating modes, pressure and flow targets, and cleaning cycles.
+>
+> **Use it at your own risk.** It may damage your machine, void your warranty, or behave unpredictably after a firmware update. Never leave the machine running unattended while it is under app control.
 
+### Error Handling Limitation
 
+The error codes reported by the machine have **not** been mapped. The only fault the app currently recognizes and surfaces is the **low water level alarm**. Every other error condition the machine can report is unknown to the app and will pass silently. The app will not warn you, and may keep issuing commands as if nothing were wrong. If the machine behaves unexpectedly, check it with the manufacturer's own app, which can read the fault codes this app cannot.
 
-### Build and Run Desktop (JVM) Application
+## Features
 
-To build and run the development version of the desktop app, use the run configuration from the run widget in your IDE’s toolbar or run it directly from the terminal:
+**Brewing**
+- Manual brewing with configurable time and pressure
+- Profile brewing with multi-step pressure, flow, and wait stages (variable-pressure and constant-pressure modes)
+- Freehand ("free variable") brewing - steer pressure or flow live from a control screen, and optionally save the result as a profile
+- Finish conditions by target weight or target volume
+- Stop a brew at any time
 
-* on macOS/Linux
-```shell
-./gradlew :composeApp:run
+**Brew Profiles**
+- Create, edit, duplicate, delete, and reorder profiles
+- Visual profile editor with per-step editing and descriptions
+- Profiles are per-user; a set of defaults ships with the app and can be restored
+- Bind a profile to a device; once bound, edits are synced to the machine as you save them, and a failed sync aborts the save so the two never drift apart
 
-```
+**Live Monitoring**
+- Real-time dashboard: brew and steam boiler temperatures, pressure, flow rate, volume, weight, weight rate, and elapsed time
+- Live charts for pressure, flow rate, weight rate, volume, and weight, each of which can be hidden or shown at will
+- Brew history with the recorded curve and the profile steps as they were at brew time
 
+**Machine Control & Settings**
+- Brew and steam boiler targets, with independent on/off per boiler
+- Full-speed and pulse heating modes
+- Manual brew time and pressure defaults
+- Cleaning/backflush cycles with configurable duration, standby, and repeat count, plus start/stop and live cleaning status
+- Water alarm toggle
+- Quick settings and quick maintenance dialogs on the dashboard; long-press the quick settings button to toggle the steam boiler without opening anything
 
-* on Windows
-```shell
-.\gradlew.bat :composeApp:run
+**Smart Scale**
+- Scan for, connect, and disconnect a supported Bluetooth scale
+- Live weight and flow-by-weight feed into the dashboard, charts, and weight-based finish conditions
 
-```
+**Devices**
+- Pair via QR code or by scanning for nearby BLE devices
+- Multiple saved devices, with a favorite and optional auto-connect
+- Connection state surfaced throughout (connecting, synchronizing, connected)
 
+**Users & Personalization**
+- Multiple local user profiles, each with its own photo, brew profiles, history, and settings
+- Theming: light/dark/system, custom seed color, palette style
+- Celsius/Fahrenheit
+- Keep-screen-on, full-screen mode
+- Open-source license listing
 
+## Project Layout
 
-### Build and Run Web Application
+* [/shared](./shared) contains all shared Kotlin Multiplatform code, split into layered modules:
+  - `core/` - domain primitives, navigation contracts, presentation base classes, shared Compose UI, DataStore factory
+  - `data/` - SQLDelight database plus user, device, and brew repositories
+  - `domain/` - use cases for user, device, and brew flows
+  - `feature/` - screen-level modules (intro, user list/settings, device list/add/dashboard/settings)
+  - `permissions/` - platform permission handling
+  - `app/` - Koin wiring and the shared `App` entry point consumed by each platform launcher
+* [/androidApp](./androidApp) contains the Android application entry point.
+* [/desktopApp](./desktopApp) contains the Desktop (JVM) application entry point and packaging config.
+* [/iosApp](./iosApp) contains the iOS application entry point and any SwiftUI code.
+* [/build-logic](./build-logic) contains the Gradle convention plugins (`kmp.library`, `kmp.feature`, `kmp.compose`, `kmp.koin`, `kmp.sqldelight`, `kmp.android`) that all modules apply.
 
-To build and run the development version of the web app, use the run configuration from the run widget in your IDE's toolbar or run it directly from the terminal:
-
-* For the Wasm target (faster, modern browsers):
-* on macOS/Linux
-```shell
-./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-
-```
-
-
-* on Windows
-```shell
-.\gradlew.bat :composeApp:wasmJsBrowserDevelopmentRun
-
-```
-
-
-
-
-* For the JS target (slower, supports older browsers):
-* on macOS/Linux
-```shell
-./gradlew :composeApp:jsBrowserDevelopmentRun
-
-```
-
-
-* on Windows
-```shell
-.\gradlew.bat :composeApp:jsBrowserDevelopmentRun
-
-```
-
-
-
-
-
-### Build and Run iOS Application
-
-To build and run the development version of the iOS app, use the run configuration from the run widget in your IDE’s toolbar, or open the [/iosApp](https://www.google.com/search?q=./iosApp) directory in Xcode and run it from there.
+Within each shared module, `commonMain` holds code common to all targets and the remaining source sets hold platform-specific code (`androidMain`, `iosMain`, `jvmMain`).
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html) and
+[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform).
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](./LICENSE) file for details.
