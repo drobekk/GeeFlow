@@ -1,6 +1,7 @@
 package app.geeflow.domain.brew.usecase
 
 import app.geeflow.data.brew.BrewProfileRepository
+import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.DeviceRepository
 import app.geeflow.domain.device.usecase.requireConnected
@@ -13,10 +14,18 @@ class BindProfileUseCase(
     private val provider: DeviceControllerProvider,
 ) {
     @Throws(IllegalStateException::class)
-    suspend operator fun invoke(deviceId: Long, profileId: Long) = with(provider.getController(deviceId)) {
+    suspend operator fun invoke(deviceId: Long, profileId: Long) {
+        invoke(deviceId, checkNotNull(brewProfileRepository.getBrewProfileById(profileId)))
+    }
+
+    /**
+     * Binds [profile] as given rather than as stored, so an edit can be pushed to the machine before
+     * it is persisted and a failure here can abort the save.
+     */
+    @Throws(IllegalStateException::class)
+    suspend operator fun invoke(deviceId: Long, profile: BrewProfile) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
-        val profile = checkNotNull(brewProfileRepository.getBrewProfileById(profileId))
         bindProfile(profile)
-        deviceRepository.bindProfile(deviceId, profileId)
+        deviceRepository.bindProfile(deviceId, profile.id)
     }
 }

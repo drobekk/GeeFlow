@@ -5,6 +5,9 @@ import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 data class ProfileListViewState(
     val profiles: List<Profile> = emptyList(),
     val smartScaleConnected: Boolean = false,
+    val showHistory: Boolean = false,
+    val history: List<HistoryBrew> = emptyList(),
+    val historyLoading: Boolean = false,
 ) {
     data class Profile(
         val id: String,
@@ -15,5 +18,13 @@ data class ProfileListViewState(
         val bound: Boolean = false,
         val selected: Boolean = false,
         val targetData: Map<Float, ChartData> = emptyMap(),
+    )
+
+    data class HistoryBrew(
+        val id: String,
+        val badge: String,
+        val name: String,
+        val description: String,
+        val selected: Boolean = false,
     )
 }

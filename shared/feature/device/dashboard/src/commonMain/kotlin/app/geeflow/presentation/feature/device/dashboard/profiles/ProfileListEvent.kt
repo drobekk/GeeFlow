@@ -6,6 +6,9 @@ sealed interface ProfileListEvent {
     data class RemoveProfileClicked(val id: String) : ProfileListEvent
     data class BindProfileClicked(val id: String) : ProfileListEvent
     data class Reordered(val from: Int, val to: Int) : ProfileListEvent
+    data class SearchQueryChanged(val query: String) : ProfileListEvent
+    data class HistoryBrewSelected(val id: String) : ProfileListEvent
+    data object LoadMoreHistory : ProfileListEvent
     data object HistoryClicked : ProfileListEvent
     data object AddProfileClicked : ProfileListEvent
 }

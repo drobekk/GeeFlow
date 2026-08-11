@@ -36,17 +36,20 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,9 +68,12 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType.Companion.LongPress
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.HistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import app.geeflow.ui.components.GeeFlowSwipeToRevealBox
 import app.geeflow.ui.components.HorizontalSpacer
@@ -78,16 +84,19 @@ import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.disabled
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_empty
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_add_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_bind
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_delete
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_search
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_show_history
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_show_profiles
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun ProfileList(
     viewState: ProfileListViewState,
@@ -101,7 +110,6 @@ internal fun ProfileList(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ProfileListContent(
     viewState: ProfileListViewState,
@@ -114,6 +122,52 @@ private fun ProfileListContent(
     val topContentPadding by animateDpAsState(if (isSearchExpanded) 78.dp else 0.dp)
     val verticalBias by animateFloatAsState(if (isSearchExpanded) -1.0f else 1.0f)
 
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large),
+    ) {
+        if (viewState.showHistory) {
+            HistoryColumn(
+                history = viewState.history,
+                loading = viewState.historyLoading,
+                topContentPadding = topContentPadding,
+                onEvent = onEvent,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            ProfilesColumn(
+                viewState = viewState,
+                searchQuery = searchQuery,
+                topContentPadding = topContentPadding,
+                onEvent = onEvent,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        BottomBar(
+            searchQuery = searchQuery,
+            searchExpanded = isSearchExpanded,
+            historyShown = viewState.showHistory,
+            onSearchQueryChange = {
+                searchQuery = it
+                onEvent(ProfileListEvent.SearchQueryChanged(it))
+            },
+            onExpandedChange = { isSearchExpanded = it },
+            onEvent = onEvent,
+            modifier = Modifier.align(BiasAlignment(0.0f, verticalBias)),
+        )
+    }
+}
+
+@Composable
+private fun ProfilesColumn(
+    viewState: ProfileListViewState,
+    searchQuery: String,
+    topContentPadding: Dp,
+    onEvent: (ProfileListEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val filteredProfiles = remember(viewState.profiles, searchQuery) {
         if (searchQuery.isBlank()) {
             viewState.profiles
@@ -134,47 +188,136 @@ private fun ProfileListContent(
         },
     )
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large),
+    LazyColumn(
+        state = lazyListState,
+        modifier = modifier,
+        contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp),
     ) {
+        items(filteredProfiles, key = { it.id }) { profile ->
+            ReorderableItem(
+                state = reorderableState,
+                enabled = !profile.bound,
+                key = profile.id,
+            ) { isDragging ->
+                ProfileItem(
+                    profile = profile,
+                    smartScaleConnected = viewState.smartScaleConnected,
+                    onEvent = onEvent,
+                    isDragging = isDragging,
+                    modifier = Modifier
+                        .animateItem()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .longPressDraggableHandle(
+                            enabled = !profile.bound,
+                            onDragStarted = { haptic.performHapticFeedback(LongPress) },
+                        ),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Brews are fetched a page at a time — reaching [LoadMoreThreshold] items from the end asks the
+ * view model for the next page, which is a no-op once the whole history has been read.
+ */
+@Composable
+private fun HistoryColumn(
+    history: List<HistoryBrew>,
+    loading: Boolean,
+    topContentPadding: Dp,
+    onEvent: (ProfileListEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val lazyListState = rememberLazyListState()
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            lastVisible >= lazyListState.layoutInfo.totalItemsCount - LoadMoreThreshold
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore, history.size) {
+        if (shouldLoadMore && history.isNotEmpty()) onEvent(ProfileListEvent.LoadMoreHistory)
+    }
+
+    Box(modifier = modifier) {
         LazyColumn(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp),
         ) {
-            items(filteredProfiles, key = { it.id }) { profile ->
-                ReorderableItem(
-                    state = reorderableState,
-                    enabled = !profile.bound,
-                    key = profile.id,
-                ) { isDragging ->
-                    ProfileItem(
-                        profile = profile,
-                        smartScaleConnected = viewState.smartScaleConnected,
-                        onEvent = onEvent,
-                        isDragging = isDragging,
-                        modifier = Modifier
-                            .animateItem()
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .longPressDraggableHandle(
-                                enabled = !profile.bound,
-                                onDragStarted = { haptic.performHapticFeedback(LongPress) },
-                            ),
-                    )
-                }
+            items(history, key = { it.id }) { brew ->
+                HistoryItem(
+                    brew = brew,
+                    onClick = { onEvent(ProfileListEvent.HistoryBrewSelected(brew.id)) },
+                    modifier = Modifier.animateItem(),
+                )
             }
         }
-        BottomBar(
-            searchQuery = searchQuery,
-            searchExpanded = isSearchExpanded,
-            onSearchQueryChange = { searchQuery = it },
-            onExpandedChange = { isSearchExpanded = it },
-            onEvent = onEvent,
-            modifier = Modifier.align(BiasAlignment(0.0f, verticalBias)),
+        if (loading) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter))
+        }
+        if (history.isEmpty() && !loading) {
+            Text(
+                text = stringResource(Res.string.brew_history_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center).padding(horizontal = 24.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HistoryItem(
+    brew: HistoryBrew,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val backgroundColor = when {
+        brew.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> MaterialTheme.colorScheme.surfaceContainer
+    }
+    val badgeColor = when {
+        brew.selected -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val badgeTextColor = when {
+        brew.selected -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = brew.badge,
+            style = MaterialTheme.typography.titleSmall,
+            color = badgeTextColor,
+            modifier = Modifier
+                .background(badgeColor, CircleShape)
+                .squareSize()
+                .padding(horizontal = 12.dp, vertical = 6.dp),
         )
+        HorizontalSpacer(12.dp)
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = brew.name,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = brew.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -183,6 +326,7 @@ private fun ProfileListContent(
 private fun BottomBar(
     searchQuery: String,
     searchExpanded: Boolean,
+    historyShown: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onExpandedChange: (Boolean) -> Unit,
     onEvent: (ProfileListEvent) -> Unit,
@@ -223,7 +367,7 @@ private fun BottomBar(
                     .padding(horizontal = 6.dp),
             ) {
                 ToggleButton(
-                    checked = false,
+                    checked = historyShown,
                     shapes = ToggleButtonDefaults.shapes(
                         shape = CircleShape,
                         checkedShape = CircleShape,
@@ -232,17 +376,25 @@ private fun BottomBar(
                     onCheckedChange = { onEvent(ProfileListEvent.HistoryClicked) },
                 ) {
                     Icon(
-                        painter = rememberVectorPainter(Icons.Filled.History),
-                        contentDescription = null,
+                        painter = rememberVectorPainter(
+                            if (historyShown) Icons.Default.List else Icons.Filled.History,
+                        ),
+                        contentDescription = if (historyShown) {
+                            stringResource(Res.string.profile_list_show_profiles)
+                        } else {
+                            stringResource(Res.string.profile_list_show_history)
+                        },
                     )
                 }
-                IconButton(
-                    onClick = { onEvent(ProfileListEvent.AddProfileClicked) },
-                ) {
-                    Icon(
-                        painter = rememberVectorPainter(Icons.Filled.Add),
-                        contentDescription = null,
-                    )
+                AnimatedVisibility(!historyShown) {
+                    IconButton(
+                        onClick = { onEvent(ProfileListEvent.AddProfileClicked) },
+                    ) {
+                        Icon(
+                            painter = rememberVectorPainter(Icons.Filled.Add),
+                            contentDescription = stringResource(Res.string.profile_list_add_profile),
+                        )
+                    }
                 }
             }
         }
@@ -515,6 +667,7 @@ private fun ProfileItemContent(
 }
 
 private const val FocusDelayMs = 150L
+private const val LoadMoreThreshold = 5
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable

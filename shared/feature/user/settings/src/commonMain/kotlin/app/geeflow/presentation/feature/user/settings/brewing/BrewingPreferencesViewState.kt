@@ -5,6 +5,7 @@ import app.geeflow.data.user.model.TemperatureUnit
 data class BrewingPreferencesViewState(
     val autoConnect: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
+    val skipManualBrewHistory: Boolean = true,
     val dialog: Dialog? = null,
 ) {
     sealed interface Dialog {

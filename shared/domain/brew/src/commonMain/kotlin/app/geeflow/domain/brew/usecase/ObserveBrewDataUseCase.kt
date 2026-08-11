@@ -1,6 +1,7 @@
 package app.geeflow.domain.brew.usecase
 
 import app.geeflow.data.brew.model.BrewDataPoint
+import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
@@ -26,17 +27,21 @@ class ObserveBrewDataUseCase(
             .scan(Accumulator(), ::accumulateBrewData)
 
         return combine(scanFlow, getSelectedUserUseCase()) { acc, user ->
-            val isManual = acc.status == DeviceState.BrewStatus.Manual
             BrewSession(
                 userId = user?.id ?: 0L,
+                mode = acc.status.toBrewMode(),
                 elapsedSeconds = acc.timeInSeconds,
-                profileId = if (isManual) null else null, // TODO Get Profile Id
-                profileName = if (isManual) "M" else null,
                 startTime = acc.startTime,
                 inProgress = acc.isBrewing,
                 dataPoints = acc.data.toMap(),
             )
         }.distinctUntilChanged()
+    }
+
+    private fun DeviceState.BrewStatus.toBrewMode(): BrewMode = when (this) {
+        DeviceState.BrewStatus.Profile -> BrewMode.Profile
+        DeviceState.BrewStatus.FreeVariable -> BrewMode.Freehand
+        else -> BrewMode.Manual
     }
 
     private fun accumulateBrewData(acc: Accumulator, state: DeviceState): Accumulator {

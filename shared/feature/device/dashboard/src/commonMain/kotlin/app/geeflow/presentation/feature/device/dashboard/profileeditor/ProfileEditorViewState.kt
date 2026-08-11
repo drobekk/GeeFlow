@@ -1,5 +1,10 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.FlowRate
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Pressure
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.WeightRate
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 internal data class ProfileEditorViewState(
@@ -9,10 +14,14 @@ internal data class ProfileEditorViewState(
     val targetData: Map<Float, ChartData> = emptyMap(),
     val pressureRange: ClosedFloatingPointRange<Float> = 0f..0f,
     val flowRange: ClosedFloatingPointRange<Float> = 0f..0f,
+    val brew: Brew = Brew(),
+    val visibleCharts: Set<DashboardChartType> = setOf(Pressure, FlowRate, WeightRate),
+    val isBrewing: Boolean = false,
     val dialog: ProfileEditorDialog? = null,
 ) {
-    /** A profile made up of nothing but waits would never brew, so it cannot be saved. */
-    val canSave: Boolean = profileName.isNotBlank() && steps.any { it.type != StepType.Wait }
+    /** A profile made up of nothing but waits would never brew, so it can be neither tested nor saved. */
+    val canTest: Boolean = steps.any { it.type != StepType.Wait }
+    val canSave: Boolean = profileName.isNotBlank() && canTest
 
     data class Step(
         val id: Long,

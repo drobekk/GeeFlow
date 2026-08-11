@@ -33,8 +33,9 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.TargetChanged
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ToggleChartVisibility
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlViewModelEvent.ShowSnackbar
-import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
-import app.geeflow.presentation.feature.device.dashboard.model.ChartData
+import app.geeflow.presentation.feature.device.dashboard.model.toChartData
+import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
+import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_profile_saved
@@ -157,42 +158,11 @@ internal class FreeControlViewModel(
     }
 
     private fun brewSessionDataChanged(session: BrewSession) = modify {
-        copy(
-            brew = brew.copy(
-                time = session.elapsedSeconds,
-                data = session.dataPoints.mapValues { (_, point) ->
-                    ChartData(
-                        pressure = point.pressure,
-                        weight = point.weight,
-                        weightPerSecond = point.weightRate,
-                        volume = point.volume,
-                        volumePerSecond = point.flowRate,
-                    )
-                },
-            ),
-        )
+        copy(brew = brew.copy(time = session.elapsedSeconds, data = session.toChartData()))
     }
 
     private fun chartsVisibilityChanged(charts: Set<ChartType>) = modify {
-        copy(
-            visibleCharts = charts.map {
-                when (it) {
-                    ChartType.PRESSURE -> DashboardChartType.Pressure
-                    ChartType.FLOW_RATE -> DashboardChartType.FlowRate
-                    ChartType.WEIGHT_RATE -> DashboardChartType.WeightRate
-                    ChartType.VOLUME -> DashboardChartType.Volume
-                    ChartType.WEIGHT -> DashboardChartType.Weight
-                }
-            }.toSet(),
-        )
-    }
-
-    private fun DashboardChartType.toDomain() = when (this) {
-        DashboardChartType.Pressure -> ChartType.PRESSURE
-        DashboardChartType.FlowRate -> ChartType.FLOW_RATE
-        DashboardChartType.WeightRate -> ChartType.WEIGHT_RATE
-        DashboardChartType.Volume -> ChartType.VOLUME
-        DashboardChartType.Weight -> ChartType.WEIGHT
+        copy(visibleCharts = charts.toDashboard())
     }
 
     private fun onError(throwable: Throwable) {

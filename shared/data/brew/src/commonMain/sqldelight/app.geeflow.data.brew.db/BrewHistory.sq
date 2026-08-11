@@ -1,0 +1,53 @@
+import app.geeflow.data.brew.model.BrewDataPoint;
+import app.geeflow.data.brew.model.BrewMode;
+import app.geeflow.data.brew.model.ProfileStep;
+import kotlin.Float;
+import kotlin.collections.List;
+import kotlin.collections.Map;
+
+-- profileSteps is a snapshot rather than a lookup through profileId: the target curve shown next
+-- to a recorded brew has to be the one that brew actually followed, even after the profile is
+-- edited or deleted. It stays out of the samples blob because the list is cheap enough to page.
+CREATE TABLE brew_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId INTEGER NOT NULL,
+  profileId INTEGER,
+  profileName TEXT,
+  mode TEXT AS BrewMode NOT NULL DEFAULT 'Profile',
+  startedAt INTEGER NOT NULL,
+  durationSeconds INTEGER NOT NULL,
+  profileSteps TEXT AS List<ProfileStep> NOT NULL DEFAULT '[]',
+  dataPoints TEXT AS Map<Float, BrewDataPoint> NOT NULL,
+  FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX brew_history_user_started_idx ON brew_history(userId, startedAt);
+
+-- The samples column is deliberately left out: the list only needs metadata, and a page of
+-- curves would be orders of magnitude larger than the rows shown.
+selectPage:
+SELECT id, userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps
+FROM brew_history
+WHERE userId = :userId
+  AND (COALESCE(profileName, '') LIKE :pattern
+    OR mode LIKE :pattern
+    OR strftime('%Y-%m-%d %H:%M', startedAt / 1000, 'unixepoch', 'localtime') LIKE :pattern)
+ORDER BY startedAt DESC
+LIMIT :limit OFFSET :offset;
+
+selectDataPoints:
+SELECT dataPoints FROM brew_history WHERE id = ?;
+
+insertBrew:
+INSERT INTO brew_history(userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, dataPoints)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+trimHistory:
+DELETE FROM brew_history
+WHERE userId = :userId
+  AND id NOT IN (
+    SELECT id FROM brew_history WHERE userId = :userId ORDER BY startedAt DESC LIMIT :keep
+  );
+
+deleteById:
+DELETE FROM brew_history WHERE id = ?;

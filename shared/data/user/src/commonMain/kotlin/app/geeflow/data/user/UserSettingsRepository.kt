@@ -19,6 +19,7 @@ interface UserSettingsRepository {
     fun keepScreenOn(userId: Long): Flow<Boolean>
     fun autoConnect(userId: Long): Flow<Boolean>
     fun temperatureUnit(userId: Long): Flow<TemperatureUnit>
+    fun skipManualBrewHistory(userId: Long): Flow<Boolean>
     suspend fun setVisibleCharts(userId: Long, types: Set<ChartType>)
     suspend fun setDarkMode(userId: Long, mode: ThemeMode)
     suspend fun setAppTheme(userId: Long, theme: AppTheme)
@@ -28,5 +29,6 @@ interface UserSettingsRepository {
     suspend fun setKeepScreenOn(userId: Long, enabled: Boolean)
     suspend fun setAutoConnect(userId: Long, enabled: Boolean)
     suspend fun setTemperatureUnit(userId: Long, unit: TemperatureUnit)
+    suspend fun setSkipManualBrewHistory(userId: Long, enabled: Boolean)
     suspend fun clearUserSettings(userId: Long)
 }

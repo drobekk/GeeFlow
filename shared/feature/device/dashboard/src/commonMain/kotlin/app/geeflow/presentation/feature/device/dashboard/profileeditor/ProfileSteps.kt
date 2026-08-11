@@ -2,6 +2,7 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,7 +54,6 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.modifier.squareSize
-import app.geeflow.ui.theme.disabled
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_add_step
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_end_step
@@ -70,7 +70,7 @@ private val BadgeIconOffset = 8.dp
 private val BadgeIconPadding = 3.dp
 private val DraggingElevation = 6.dp
 private const val EndToggleIconFraction = 0.4f
-private const val SelectedContainerAlpha = 0.16f
+private val SelectedBorderWidth = 2.dp
 
 private const val AddStepKey = "add_step"
 private const val EndStepKey = "end_step"
@@ -287,17 +287,14 @@ private fun FinishTargetButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val contentColor by animateColorAsState(
-        if (selected) type.color() else MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    val containerColor by animateColorAsState(
-        if (selected) type.color().disabled(SelectedContainerAlpha) else MaterialTheme.colorScheme.surfaceContainer,
-    )
+    // Only the border carries the target's colour; the icon and labels stay in the normal palette.
+    val borderColor by animateColorAsState(if (selected) type.color() else Color.Transparent)
 
     Surface(
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
-        color = containerColor,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(SelectedBorderWidth, borderColor),
         modifier = modifier.height(EndToggleHeight),
     ) {
         Row(
@@ -307,7 +304,7 @@ private fun FinishTargetButton(
             Icon(
                 painter = rememberVectorPainter(type.icon()),
                 contentDescription = null,
-                tint = contentColor,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxHeight(EndToggleIconFraction).aspectRatio(1f),
             )
             HorizontalSpacer(8.dp)
@@ -315,14 +312,14 @@ private fun FinishTargetButton(
                 Text(
                     text = type.label(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = contentColor,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleSmall,
-                    color = contentColor,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

@@ -69,6 +69,10 @@ class UserSettingsRepositoryImpl(
             ?: TemperatureUnit.CELSIUS
     }
 
+    override fun skipManualBrewHistory(userId: Long): Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[skipManualBrewHistoryKey(userId)] ?: true
+    }
+
     override suspend fun setVisibleCharts(userId: Long, types: Set<ChartType>) {
         dataStore.edit { preferences ->
             preferences[visibleChartsKey(userId)] = types.map { it.name }.toSet()
@@ -123,6 +127,12 @@ class UserSettingsRepositoryImpl(
         }
     }
 
+    override suspend fun setSkipManualBrewHistory(userId: Long, enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[skipManualBrewHistoryKey(userId)] = enabled
+        }
+    }
+
     override suspend fun clearUserSettings(userId: Long) {
         dataStore.edit { preferences ->
             preferences.remove(visibleChartsKey(userId))
@@ -132,6 +142,7 @@ class UserSettingsRepositoryImpl(
             preferences.remove(keepScreenOnKey(userId))
             preferences.remove(autoConnectKey(userId))
             preferences.remove(temperatureUnitKey(userId))
+            preferences.remove(skipManualBrewHistoryKey(userId))
             preferences.remove(paletteStyleKey(userId))
             preferences.remove(customSeedColorKey(userId))
         }
@@ -148,6 +159,7 @@ class UserSettingsRepositoryImpl(
     private fun keepScreenOnKey(userId: Long) = booleanPreferencesKey(key("keep_screen_on", userId))
     private fun autoConnectKey(userId: Long) = booleanPreferencesKey(key("auto_connect", userId))
     private fun temperatureUnitKey(userId: Long) = stringPreferencesKey(key("temperature_unit", userId))
+    private fun skipManualBrewHistoryKey(userId: Long) = booleanPreferencesKey(key("skip_manual_brew_history", userId))
 
     companion object {
         private const val DefaultCustomSeedColor = 0xFF1E88E5.toInt()

@@ -6,7 +6,9 @@ import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
+import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
+import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
@@ -14,6 +16,7 @@ import app.geeflow.data.device.model.isDemo
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
+import app.geeflow.domain.brew.usecase.SaveBrewToHistoryUseCase
 import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import app.geeflow.domain.device.usecase.GetDeviceUseCase
@@ -23,6 +26,7 @@ import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
 import app.geeflow.domain.exception.DeviceNotConnectedException
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
+import app.geeflow.domain.user.usecase.GetSkipManualBrewHistoryUseCase
 import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent.To
@@ -46,6 +50,7 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEve
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DeviceClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DialogDismissed
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.FlowControlClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.HistoryBrewSelected
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ManualBrewClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.OpenSystemSettingsClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.PermissionDialogResumed
@@ -59,7 +64,9 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
-import app.geeflow.presentation.feature.device.dashboard.model.ChartData
+import app.geeflow.presentation.feature.device.dashboard.model.toChartData
+import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
+import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import co.touchlab.kermit.Logger
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -83,10 +90,16 @@ internal class DeviceDashboardViewModel(
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val getBrewProfileUseCase: GetBrewProfileUseCase,
     private val getSelectedUser: GetSelectedUserUseCase,
+    private val saveBrewToHistory: SaveBrewToHistoryUseCase,
+    private val getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
     private var selectedProfileId: String? = null
+    private var selectedProfileName: String? = null
+    private var selectedProfileSteps: List<ProfileStep> = emptyList()
     private var machine: Machine? = null
+    private var brewInProgress = false
+    private var skipManualBrews = true
 
     init {
         machine = getDevice(args.deviceId)
@@ -95,6 +108,7 @@ internal class DeviceDashboardViewModel(
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
         launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
         launch { getSelectedUser().collect { u -> modify { copy(user = user.copy(photoFileName = u?.photoUri)) } } }
+        launch { getSkipManualBrewHistory().collect { skipManualBrews = it } }
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -116,6 +130,16 @@ internal class DeviceDashboardViewModel(
         is BrewClicked -> startProfile()
         is PermissionDialogResumed -> withBluetoothPermissions { modify { copy(dialog = null) } }
         is ProfileSelected -> onProfileSelected(event.id)
+        is HistoryBrewSelected -> modify {
+            copy(
+                brew = Brew(
+                    name = event.name,
+                    time = event.durationSeconds,
+                    data = event.data,
+                    historyTarget = event.targetData,
+                ),
+            )
+        }
         is Resumed -> connect()
         is AlarmClicked -> navigate(To(QuickMaintenance(args.deviceId)))
     }
@@ -153,7 +177,11 @@ internal class DeviceDashboardViewModel(
         selectedProfileId
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
-            ?.let { modify { copy(brew = Brew(it.name)) } }
+            ?.let {
+                selectedProfileName = it.name
+                selectedProfileSteps = it.steps
+                modify { copy(brew = Brew(it.name)) }
+            }
     }
 
     private fun updateMachineStateUi(state: DeviceState) {
@@ -188,35 +216,39 @@ internal class DeviceDashboardViewModel(
         }
     }
 
-    private fun brewSessionDataChanged(session: BrewSession) = modify {
-        copy(
-            brew = brew.copy(
-                time = session.elapsedSeconds,
-                data = session.dataPoints.mapValues { (_, point) ->
-                    ChartData(
-                        pressure = point.pressure,
-                        weight = point.weight,
-                        weightPerSecond = point.weightRate,
-                        volume = point.volume,
-                        volumePerSecond = point.flowRate,
-                    )
-                },
-            ),
+    private fun brewSessionDataChanged(session: BrewSession) {
+        val wasBrewing = brewInProgress
+        brewInProgress = session.inProgress
+
+        if (session.mode == BrewMode.Manual && skipManualBrews) return
+
+        if (!wasBrewing && session.inProgress) {
+            modify { copy(brew = Brew(name = selectedProfileName.orEmpty())) }
+        }
+        modify {
+            copy(
+                brew = brew.copy(
+                    time = session.elapsedSeconds,
+                    data = session.toChartData(),
+                ),
+            )
+        }
+        if (wasBrewing && !session.inProgress) recordBrew(session)
+    }
+
+    /** Only profile brews carry a profile — manual and freehand shots are labelled from their mode. */
+    private fun recordBrew(session: BrewSession) = launchCatching(::onError) {
+        val isProfileBrew = session.mode == BrewMode.Profile
+        saveBrewToHistory(
+            session = session,
+            profileId = selectedProfileId?.toLongOrNull()?.takeIf { isProfileBrew },
+            profileName = selectedProfileName?.takeIf { isProfileBrew },
+            profileSteps = if (isProfileBrew) selectedProfileSteps else emptyList(),
         )
     }
 
     private fun chartsVisibilityChanged(charts: Set<ChartType>) = modify {
-        copy(
-            visibleCharts = charts.map {
-                when (it) {
-                    ChartType.PRESSURE -> DashboardChartType.Pressure
-                    ChartType.FLOW_RATE -> DashboardChartType.FlowRate
-                    ChartType.WEIGHT_RATE -> DashboardChartType.WeightRate
-                    ChartType.VOLUME -> DashboardChartType.Volume
-                    ChartType.WEIGHT -> DashboardChartType.Weight
-                }
-            }.toSet(),
-        )
+        copy(visibleCharts = charts.toDashboard())
     }
 
     private fun withBluetoothPermissions(block: suspend () -> Unit) = launch {

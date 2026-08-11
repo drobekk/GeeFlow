@@ -31,6 +31,12 @@ data class DeviceDashboardViewState(
         val name: String = "",
         val time: Int = 0,
         val data: Map<Float, ChartData> = getEmptyChartData(),
+        /**
+         * Target curve of a recorded brew being replayed. Non-null only while a history entry is
+         * shown, so the charts can overlay that brew's own profile instead of the selected one —
+         * an empty map means the recorded brew had no profile.
+         */
+        val historyTarget: Map<Float, ChartData>? = null,
     )
 
     data class Device(

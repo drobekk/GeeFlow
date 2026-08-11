@@ -7,6 +7,7 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.User
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.HistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import kotlin.math.cos
 import kotlin.math.sin
@@ -57,8 +58,18 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
     )
 }
 
-fun getMockProfileListViewState() = ProfileListViewState(
+fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewState(
     smartScaleConnected = true,
+    showHistory = showHistory,
+    history = List(12) { index ->
+        HistoryBrew(
+            id = index.toString(),
+            badge = if (index % 3 == 0) "M" else "P",
+            name = if (index % 3 == 0) "Manual brew" else "Light Roast",
+            description = "2026-08-0${index % 9 + 1} 08:${30 + index} • ${26 + index} s",
+            selected = index == 0,
+        )
+    },
     profiles = listOf(
         Profile(
             id = "1",

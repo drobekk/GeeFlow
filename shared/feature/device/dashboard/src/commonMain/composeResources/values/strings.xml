@@ -16,6 +16,19 @@
     <string name="profile_list_search">Search</string>
     <string name="profile_list_delete">Delete profile</string>
     <string name="profile_list_bind">Bind profile</string>
+    <string name="profile_list_show_history">Show brew history</string>
+    <string name="profile_list_show_profiles">Show profiles</string>
+    <string name="profile_list_add_profile">Add profile</string>
+
+    <!-- Brew History -->
+    <string name="brew_history_empty">No brews recorded yet</string>
+    <string name="brew_history_manual">Manual brew</string>
+    <string name="brew_history_freehand">Freehand brew</string>
+    <string name="brew_history_profile">Profile brew</string>
+    <string name="brew_history_manual_badge">M</string>
+    <string name="brew_history_freehand_badge">F</string>
+    <string name="brew_history_profile_badge">P</string>
+    <string name="brew_history_description">%1$s • %2$d s</string>
 
     <!-- Device Settings Quick -->
     <string name="settings_quick_title">Quick settings</string>
@@ -34,6 +47,8 @@
     <string name="profile_editor_description">%1$d steps • %2$d sec</string>
     <string name="profile_editor_rename_title">Rename profile</string>
     <string name="profile_editor_rename_name">Profile name</string>
+    <string name="profile_editor_test">Test</string>
+    <string name="profile_editor_bound_requires_connection">This profile is bound to the machine. Connect it to save your changes.</string>
     <string name="profile_editor_add_step">Add step</string>
     <string name="profile_editor_remove_step">Remove step</string>
     <string name="profile_editor_end_step">End</string>

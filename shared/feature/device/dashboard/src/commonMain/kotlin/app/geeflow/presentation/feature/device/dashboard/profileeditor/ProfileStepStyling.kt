@@ -67,8 +67,8 @@ internal fun FinishTargetType.icon(): ImageVector = when (this) {
 
 @Composable
 internal fun FinishTargetType.color(): Color = when (this) {
-    FinishTargetType.Volume -> GeeFlowTheme.colors.water
-    FinishTargetType.Weight -> MaterialTheme.colorScheme.error
+    FinishTargetType.Volume -> GeeFlowTheme.colors.waterVariant
+    FinishTargetType.Weight -> MaterialTheme.colorScheme.onSurface
 }
 
 @Composable

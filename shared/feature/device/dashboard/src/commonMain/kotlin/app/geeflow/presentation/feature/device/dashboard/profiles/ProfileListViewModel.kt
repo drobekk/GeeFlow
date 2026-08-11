@@ -1,33 +1,60 @@
+@file:Suppress("TooManyFunctions", "LongParameterList")
+
 package app.geeflow.presentation.feature.device.dashboard.profiles
 
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
+import app.geeflow.data.brew.model.BrewHistoryEntry
+import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.DeleteProfileUseCase
+import app.geeflow.domain.brew.usecase.GetBrewHistoryDataUseCase
+import app.geeflow.domain.brew.usecase.GetBrewHistoryUseCase
 import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import app.geeflow.domain.brew.usecase.UpdateBrewProfilesPositionsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
+import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.EditProfileClicked
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryBrewSelected
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.HistoryClicked
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.LoadMoreHistory
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.ProfileSelected
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.RemoveProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.Reordered
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.SearchQueryChanged
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowHistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
 import co.touchlab.kermit.Logger
+import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_description
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_freehand
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_freehand_badge
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual_badge
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile
+import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile_badge
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format.char
+import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.InjectedParam
+import kotlin.time.Instant
 
 @Factory
 internal class ProfileListViewModel(
@@ -38,9 +65,15 @@ internal class ProfileListViewModel(
     private val bindProfileUseCase: BindProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val updateBrewProfilesPositionsUseCase: UpdateBrewProfilesPositionsUseCase,
+    private val getBrewHistoryUseCase: GetBrewHistoryUseCase,
+    private val getBrewHistoryDataUseCase: GetBrewHistoryDataUseCase,
 ) : BaseViewModel<ProfileListViewState, ProfileListViewModelEvent>(ProfileListViewState()) {
 
     private var currentDomainProfiles: List<BrewProfile> = emptyList()
+    private var historyEntries: List<BrewHistoryEntry> = emptyList()
+    private var historyEndReached = false
+    private var searchQuery = ""
+    private var historyJob: Job? = null
 
     init {
         launch {
@@ -62,13 +95,103 @@ internal class ProfileListViewModel(
 
     fun handleEvent(event: ProfileListEvent) = when (event) {
         is ProfileSelected -> setSelectedProfileId(event.id)
-        is HistoryClicked -> Unit // TODO
+        is HistoryClicked -> toggleHistory()
+        is HistoryBrewSelected -> showHistoryBrew(event.id)
+        is LoadMoreHistory -> loadMoreHistory()
+        is SearchQueryChanged -> searchQueryChanged(event.query)
         is AddProfileClicked -> navigateTo(ProfileEditor(args.deviceId))
         is BindProfileClicked -> bindProfile(event.id)
         is EditProfileClicked -> navigateTo(ProfileEditor(args.deviceId, event.id.toLongOrNull()))
         is RemoveProfileClicked -> removeProfile(event.id)
         is Reordered -> reorderProfiles(event.from, event.to)
     }
+
+    private fun toggleHistory() {
+        val showHistory = !viewState.value.showHistory
+        modify { copy(showHistory = showHistory) }
+        if (showHistory) reloadHistory() else clearHistory()
+    }
+
+    private fun searchQueryChanged(query: String) {
+        if (query == searchQuery) return
+        searchQuery = query
+        if (viewState.value.showHistory) reloadHistory(debounce = true)
+    }
+
+    private fun clearHistory() {
+        historyJob?.cancel()
+        historyEntries = emptyList()
+        historyEndReached = false
+        modify { copy(history = emptyList(), historyLoading = false) }
+    }
+
+    private fun reloadHistory(debounce: Boolean = false) {
+        historyJob?.cancel()
+        historyEntries = emptyList()
+        historyEndReached = false
+        modify { copy(history = emptyList(), historyLoading = true) }
+        historyJob = launchCatching(::onError) {
+            if (debounce) delay(SEARCH_DEBOUNCE_MS)
+            loadHistoryPage()
+        }
+    }
+
+    private fun loadMoreHistory() {
+        if (historyEndReached || historyJob?.isActive == true) return
+        modify { copy(historyLoading = true) }
+        historyJob = launchCatching(::onError) { loadHistoryPage() }
+    }
+
+    private suspend fun loadHistoryPage() {
+        val page = getBrewHistoryUseCase(searchQuery, HISTORY_PAGE_SIZE, historyEntries.size)
+        historyEndReached = page.size < HISTORY_PAGE_SIZE
+        historyEntries = historyEntries + page
+        val brews = page.map { it.toHistoryBrew() }
+        modify { copy(history = history + brews, historyLoading = false) }
+    }
+
+    private fun showHistoryBrew(id: String) = launchCatching(::onError) {
+        val entry = historyEntries.find { it.id.toString() == id } ?: return@launchCatching
+        modify { copy(history = history.map { it.copy(selected = it.id == id) }) }
+        val data = getBrewHistoryDataUseCase(entry.id).mapValues { (_, point) ->
+            ChartData(
+                pressure = point.pressure,
+                weight = point.weight,
+                weightPerSecond = point.weightRate,
+                volume = point.volume,
+                volumePerSecond = point.flowRate,
+            )
+        }
+        emitEvent(
+            ShowHistoryBrew(
+                name = entry.displayName(),
+                durationSeconds = entry.durationSeconds,
+                data = data,
+                targetData = entry.profileSteps.toTargetData(),
+            ),
+        )
+    }
+
+    private suspend fun BrewHistoryEntry.toHistoryBrew() = ProfileListViewState.HistoryBrew(
+        id = id.toString(),
+        badge = getString(
+            when (mode) {
+                BrewMode.Manual -> Res.string.brew_history_manual_badge
+                BrewMode.Freehand -> Res.string.brew_history_freehand_badge
+                BrewMode.Profile -> Res.string.brew_history_profile_badge
+            },
+        ),
+        name = displayName(),
+        description = getString(Res.string.brew_history_description, startedAt.formatted(), durationSeconds),
+    )
+
+    private suspend fun BrewHistoryEntry.displayName(): String = profileName ?: getString(
+        when (mode) {
+            BrewMode.Manual -> Res.string.brew_history_manual
+            BrewMode.Freehand -> Res.string.brew_history_freehand
+            BrewMode.Profile -> Res.string.brew_history_profile
+        },
+    )
 
     private fun reorderProfiles(from: Int, to: Int) {
         val profiles = viewState.value.profiles.toMutableList()
@@ -102,6 +225,7 @@ internal class ProfileListViewModel(
 
     private fun onError(throwable: Throwable) {
         Logger.e(throwable = throwable) { "Unknown error in ProfileListViewModel" }
+        modify { copy(historyLoading = false) }
         launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
     }
 
@@ -141,4 +265,24 @@ internal class ProfileListViewModel(
             targetData = profile.steps.toTargetData(),
         )
     }
+
+    private companion object {
+        private const val HISTORY_PAGE_SIZE = 20
+        private const val SEARCH_DEBOUNCE_MS = 300L
+    }
 }
+
+private val HistoryDateTimeFormat = LocalDateTime.Format {
+    year()
+    char('-')
+    monthNumber()
+    char('-')
+    day()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+}
+
+private fun Instant.formatted(): String =
+    HistoryDateTimeFormat.format(toLocalDateTime(TimeZone.currentSystemDefault()))

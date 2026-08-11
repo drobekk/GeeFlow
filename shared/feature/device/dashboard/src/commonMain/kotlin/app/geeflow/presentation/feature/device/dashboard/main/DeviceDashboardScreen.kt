@@ -47,6 +47,7 @@ import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowHistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import app.geeflow.ui.EventsDispatcher
@@ -87,6 +88,13 @@ internal fun DeviceDashboardScreen(
     EventsDispatcher(profileListViewModel.events) {
         when (it) {
             is SelectProfile -> viewModel.handleEvent(DeviceDashboardEvent.ProfileSelected(it.id))
+            is ShowHistoryBrew -> {
+                viewModel.handleEvent(
+                    DeviceDashboardEvent.HistoryBrewSelected(it.name, it.durationSeconds, it.data, it.targetData),
+                )
+                coroutineScope.launch { pagerState.animateScrollToPage(CompactDashboardPage.Details.ordinal) }
+            }
+
             is ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
                 snackbarState.showSnackbar(it.message)
@@ -164,7 +172,6 @@ private fun ExpandedDashboard(
     ) {
         Row(Modifier.fillMaxSize()) {
             Column(modifier = Modifier.weight(MainColumnWeight).padding(start = 16.dp)) {
-                val selectedProfile = profileListViewState.profiles.find { it.selected }
                 TopBar(
                     device = viewState.device,
                     photoFileName = viewState.user.photoFileName,
@@ -175,7 +182,7 @@ private fun ExpandedDashboard(
                 )
                 BrewCharts(
                     brew = viewState.brew,
-                    selectedProfile = selectedProfile,
+                    targetData = viewState.targetData(profileListViewState),
                     visibleCharts = viewState.visibleCharts,
                     modifier = Modifier.weight(MainColumnWeight),
                 )
@@ -280,11 +287,10 @@ private fun CompactDashboard(
             ) { page ->
                 when (page) {
                     CompactDashboardPage.Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
-                        val selectedProfile = profileListViewState.profiles.find { it.selected }
                         BrewCharts(
                             brew = viewState.brew,
                             visibleCharts = viewState.visibleCharts,
-                            selectedProfile = selectedProfile,
+                            targetData = viewState.targetData(profileListViewState),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .weight(1f)
@@ -349,6 +355,13 @@ private fun TabRow(
         )
     }
 }
+
+/**
+ * A replayed history brew brings its own target curve — only fall back to the profile selected in
+ * the list while live data is on screen.
+ */
+private fun DeviceDashboardViewState.targetData(profileListViewState: ProfileListViewState) =
+    brew.historyTarget ?: profileListViewState.profiles.find { it.selected }?.targetData.orEmpty()
 
 private enum class CompactDashboardPage {
     Details,

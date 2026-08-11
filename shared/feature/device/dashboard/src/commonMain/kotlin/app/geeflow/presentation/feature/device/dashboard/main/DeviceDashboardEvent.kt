@@ -1,5 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.main
 
+import app.geeflow.presentation.feature.device.dashboard.model.ChartData
+
 sealed interface DeviceDashboardEvent {
     data class ToggleChartVisibility(val type: DeviceDashboardViewState.DashboardChartType) : DeviceDashboardEvent
     data object UserClicked : DeviceDashboardEvent
@@ -18,4 +20,10 @@ sealed interface DeviceDashboardEvent {
     data object Resumed : DeviceDashboardEvent
     data object AlarmClicked : DeviceDashboardEvent
     data class ProfileSelected(val id: String?) : DeviceDashboardEvent
+    data class HistoryBrewSelected(
+        val name: String,
+        val durationSeconds: Int,
+        val data: Map<Float, ChartData>,
+        val targetData: Map<Float, ChartData>,
+    ) : DeviceDashboardEvent
 }

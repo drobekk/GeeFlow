@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,10 +43,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
+import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
+import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.BackClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.RenameClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.SaveClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StopClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.TestClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.ToggleChartVisibility
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.FinishTarget
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.Step
 import app.geeflow.ui.EventsDispatcher
@@ -56,8 +62,10 @@ import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.core.ui.generated.resources.common_go_back
 import geeflow.shared.core.ui.generated.resources.common_save
+import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_rename_title
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_test
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
@@ -144,16 +152,22 @@ private fun ExpandedLayout(
                 .padding(start = 16.dp),
         ) {
             ProfileEditorTopBar(
-                profileName = viewState.profileName,
-                canSave = viewState.canSave,
+                viewState = viewState,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
             )
-            ProfileStepsChart(
+            BrewCharts(
+                brew = viewState.brew,
+                visibleCharts = viewState.visibleCharts,
                 targetData = viewState.targetData,
-                modifier = Modifier.weight(1f).padding(bottom = 16.dp),
+                modifier = Modifier.weight(1f),
+            )
+            EditorBrewBar(
+                viewState = viewState,
+                onEvent = onEvent,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
             )
         }
         ProfileStepsColumn(
@@ -181,8 +195,7 @@ private fun CompactLayout(
             .navigationBarsPadding(),
         topBar = {
             ProfileEditorTopBar(
-                profileName = viewState.profileName,
-                canSave = viewState.canSave,
+                viewState = viewState,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -194,9 +207,16 @@ private fun CompactLayout(
         },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            ProfileStepsChart(
+            BrewCharts(
+                brew = viewState.brew,
+                visibleCharts = viewState.visibleCharts,
                 targetData = viewState.targetData,
                 modifier = Modifier.weight(1f).padding(horizontal = 24.dp),
+            )
+            EditorBrewBar(
+                viewState = viewState,
+                onEvent = onEvent,
+                modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 16.dp, end = 24.dp),
             )
             ProfileStepsRow(
                 steps = viewState.steps,
@@ -213,9 +233,44 @@ private fun CompactLayout(
 }
 
 @Composable
+private fun EditorBrewBar(
+    viewState: ProfileEditorViewState,
+    onEvent: (ProfileEditorEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) = BrewBar(
+    brew = viewState.brew.copy(name = viewState.profileName),
+    isBrewing = viewState.isBrewing,
+    visibleCharts = viewState.visibleCharts,
+    onToggle = { onEvent(ToggleChartVisibility(it)) },
+    modifier = modifier,
+)
+
+/** Brews the profile as edited without saving it first, and turns into a stop button while it runs. */
+@Composable
+private fun TestButton(
+    isBrewing: Boolean,
+    canTest: Boolean,
+    onEvent: (ProfileEditorEvent) -> Unit,
+) {
+    Button(
+        onClick = { onEvent(if (isBrewing) StopClicked else TestClicked) },
+        enabled = isBrewing || canTest,
+        colors = if (isBrewing) {
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+            )
+        } else {
+            ButtonDefaults.filledTonalButtonColors()
+        },
+    ) {
+        Text(stringResource(if (isBrewing) CoreRes.string.common_stop else Res.string.profile_editor_test))
+    }
+}
+
+@Composable
 private fun ProfileEditorTopBar(
-    profileName: String,
-    canSave: Boolean,
+    viewState: ProfileEditorViewState,
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -228,7 +283,7 @@ private fun ProfileEditorTopBar(
         }
         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = profileName,
+                text = viewState.profileName,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -237,7 +292,9 @@ private fun ProfileEditorTopBar(
             RenameButton(onClick = { onEvent(RenameClicked) })
         }
         HorizontalSpacer(8.dp)
-        Button(onClick = { onEvent(SaveClicked) }, enabled = canSave) {
+        TestButton(isBrewing = viewState.isBrewing, canTest = viewState.canTest, onEvent = onEvent)
+        HorizontalSpacer(8.dp)
+        Button(onClick = { onEvent(SaveClicked) }, enabled = viewState.canSave) {
             Text(stringResource(CoreRes.string.common_save))
         }
     }

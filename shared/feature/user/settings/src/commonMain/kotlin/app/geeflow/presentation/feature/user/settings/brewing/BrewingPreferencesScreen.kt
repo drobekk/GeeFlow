@@ -21,6 +21,7 @@ import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.AutoConnectChanged
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.BackClicked
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.RestoreDefaultProfilesClicked
+import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.SkipManualBrewHistoryChanged
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.TemperatureUnitClicked
 import app.geeflow.presentation.feature.user.settings.brewing.components.BrewingPreferencesDialogs
 import app.geeflow.ui.components.GeeFlowNavigationListItem
@@ -38,6 +39,8 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_br
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_brewing_preferences_title
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_brewing_restore_default_profiles
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_brewing_restore_default_profiles_description
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_brewing_skip_manual_history
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_brewing_skip_manual_history_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_brewing_temperature_unit
 import org.jetbrains.compose.resources.stringResource
 
@@ -129,6 +132,13 @@ private fun BrewingContent(
             subtitle = stringResource(Res.string.user_settings_brewing_auto_connect_description),
             checked = viewState.autoConnect,
             onCheckedChanged = { onEvent(AutoConnectChanged(it)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        GeeFlowToggleListItem(
+            title = stringResource(Res.string.user_settings_brewing_skip_manual_history),
+            subtitle = stringResource(Res.string.user_settings_brewing_skip_manual_history_description),
+            checked = viewState.skipManualBrewHistory,
+            onCheckedChanged = { onEvent(SkipManualBrewHistoryChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
         )
         GeeFlowNavigationListItem(

@@ -27,7 +27,7 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Volume
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Weight
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.WeightRate
-import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
+import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.ui.isHeightCompact
 import app.geeflow.ui.theme.GeeFlowTheme
 import app.geeflow.ui.theme.disabled
@@ -86,7 +86,7 @@ private data class TargetBrewData(
 internal fun BrewCharts(
     brew: Brew,
     visibleCharts: Set<DashboardChartType>,
-    selectedProfile: Profile? = null,
+    targetData: Map<Float, ChartData> = emptyMap(),
     modifier: Modifier = Modifier,
 ) {
     val chartModifier = Modifier
@@ -98,12 +98,14 @@ internal fun BrewCharts(
     val xValues = sortedEntries.map { it.key.toDouble() }
     val sortedPoints = sortedEntries.map { it.value }
 
-    val targetData = selectedProfile?.targetData.orEmpty()
     val targetPressure = targetData.map { it.key.toDouble() to it.value.pressure.toDouble() }.toMap()
     val targetFlow = targetData.map { it.key.toDouble() to it.value.volumePerSecond.toDouble() }.toMap()
 
+    // The target curve counts towards the range too, otherwise a profile longer than the brew (or
+    // than the minimum) is drawn past the right edge and edits beyond it are invisible.
     val maxBrewX = xValues.maxOrNull() ?: 0.0
-    val maxX = maxOf(maxBrewX + ChartXPadding, MinChartX)
+    val maxTargetX = targetData.keys.maxOrNull()?.toDouble() ?: 0.0
+    val maxX = maxOf(maxOf(maxBrewX, maxTargetX) + ChartXPadding, MinChartX)
 
     val syncState = rememberBrewSyncState()
 

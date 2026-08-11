@@ -1,8 +1,13 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
+
 internal sealed interface ProfileEditorEvent {
     data object BackClicked : ProfileEditorEvent
     data object SaveClicked : ProfileEditorEvent
+    data object TestClicked : ProfileEditorEvent
+    data object StopClicked : ProfileEditorEvent
+    data class ToggleChartVisibility(val type: DashboardChartType) : ProfileEditorEvent
     data object RenameClicked : ProfileEditorEvent
     data class RenameConfirmed(val name: String) : ProfileEditorEvent
     data object AddStepClicked : ProfileEditorEvent

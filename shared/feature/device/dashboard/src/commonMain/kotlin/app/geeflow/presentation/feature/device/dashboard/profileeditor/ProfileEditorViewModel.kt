@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions", "LongParameterList")
+
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import app.geeflow.core.presentation.BaseViewModel
@@ -5,12 +7,26 @@ import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.device.model.DeviceState
+import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.GetBrewProfileUseCase
+import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
+import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase.Companion.NEW_PROFILE_ID
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
+import app.geeflow.domain.device.usecase.StopBrewingUseCase
+import app.geeflow.domain.exception.DeviceNotConnectedException
+import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
+import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
+import app.geeflow.presentation.feature.device.dashboard.model.toChartData
+import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
+import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.AddStepClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.BackClicked
@@ -25,10 +41,14 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepTypeSelected
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepValuesConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepsReordered
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StopClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.TestClicked
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.ToggleChartVisibility
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.Step
 import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_bound_requires_connection
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_default_name
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_description
 import org.jetbrains.compose.resources.getString
@@ -39,11 +59,20 @@ import org.koin.core.annotation.KoinViewModel
 internal class ProfileEditorViewModel(
     @InjectedParam private val args: ProfileEditor,
     private val getBrewProfile: GetBrewProfileUseCase,
+    private val bindProfile: BindProfileUseCase,
     private val saveBrewProfile: SaveBrewProfileUseCase,
     private val getDeviceConstraints: GetDeviceConstraintsUseCase,
+    private val startProfileBrewing: StartProfileBrewingUseCase,
+    private val stopBrewing: StopBrewingUseCase,
+    private val toggleChartVisibility: ToggleChartVisibilityUseCase,
+    observeBrewData: ObserveBrewDataUseCase,
+    observeDeviceState: ObserveDeviceStateUseCase,
+    getVisibleCharts: GetVisibleChartsUseCase,
+    observeDeviceProfile: ObserveDeviceProfileUseCase,
 ) : BaseViewModel<ProfileEditorViewState, ProfileEditorViewModelEvent>(ProfileEditorViewState()) {
 
     private var nextStepId = 0L
+    private var boundProfileId: Long? = null
 
     init {
         launch {
@@ -59,11 +88,27 @@ internal class ProfileEditorViewModel(
                 loadProfile(profile)
             }
         }
+        launch {
+            observeBrewData(args.deviceId).collect { session ->
+                modify { copy(brew = brew.copy(time = session.elapsedSeconds, data = session.toChartData())) }
+            }
+        }
+        launch {
+            observeDeviceState(args.deviceId).collect { state ->
+                modify { copy(isBrewing = state.brewStatus == DeviceState.BrewStatus.Profile) }
+            }
+        }
+        launch { getVisibleCharts().collect { charts -> modify { copy(visibleCharts = charts.toDashboard()) } } }
+        launch { observeDeviceProfile(args.deviceId).collect { boundProfileId = it?.id } }
     }
 
+    @Suppress("CyclomaticComplexMethod")
     fun handleEvent(event: ProfileEditorEvent) = when (event) {
         is BackClicked -> navigate(NavEvent.Back)
         is SaveClicked -> saveProfile()
+        is TestClicked -> testProfile()
+        is StopClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
+        is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is RenameClicked -> modify { copy(dialog = ProfileEditorDialog.Rename) }
         is RenameConfirmed -> modify { copy(profileName = event.name, dialog = null) }
         is AddStepClicked -> modify { copy(dialog = ProfileEditorDialog.StepTypePicker) }
@@ -129,10 +174,12 @@ internal class ProfileEditorViewModel(
         if (finishTarget.type == type) {
             copy(dialog = ProfileEditorDialog.FinishTargetValue(type = type, target = finishTarget.target))
         } else {
-            copy(finishTarget = finishTarget.copy(type = type))
+            copy(finishTarget = finishTarget.copy(type = type), brew = Brew())
         }
     }
 
+    // Editing the profile invalidates whatever the last test drew, so the recorded brew is dropped
+    // from the chart and the brew bar. A test that is still running simply refills it on the next tick.
     private fun confirmFinishTarget(target: Float) {
         val dialog = viewState.value.dialog as? ProfileEditorDialog.FinishTargetValue ?: return
         modify {
@@ -140,7 +187,7 @@ internal class ProfileEditorViewModel(
                 FinishTargetType.Volume -> finishTarget.copy(volume = target)
                 FinishTargetType.Weight -> finishTarget.copy(weight = target)
             }
-            copy(finishTarget = updated, dialog = null)
+            copy(finishTarget = updated, dialog = null, brew = Brew())
         }
     }
 
@@ -148,15 +195,45 @@ internal class ProfileEditorViewModel(
         toMutableList().apply { add(to, removeAt(from)) }
     }
 
-    private fun saveProfile() = launchCatching(::onError) {
+    private fun testProfile() = launchCatching(::onError) {
+        startProfileBrewing(args.deviceId, editedProfile())
+    }
+
+    /** The profile as edited. Neither brewing nor binding persists it, so its user is left unset. */
+    private fun editedProfile(): BrewProfile {
         val state = viewState.value
-        val steps = state.steps.map { it.toDomain() }
-        saveBrewProfile(
+        return BrewProfile(
             id = args.profileId ?: NEW_PROFILE_ID,
+            userId = 0,
             name = state.profileName,
-            description = getString(Res.string.profile_editor_description, steps.size, steps.sumOf { it.time }),
+            description = "",
             finishCondition = state.finishTarget.toCondition(),
-            steps = steps,
+            steps = state.steps.map { it.toDomain() },
+        )
+    }
+
+    private fun saveProfile() = launchCatching(::onError) {
+        val profile = editedProfile()
+        // A bound profile has to reach the machine before the change is stored, so that a failed
+        // rebind leaves neither the device nor the database on a half-applied version.
+        if (profile.id == boundProfileId) {
+            try {
+                bindProfile(args.deviceId, profile)
+            } catch (_: DeviceNotConnectedException) {
+                emitEvent(ShowSnackbar(getString(Res.string.profile_editor_bound_requires_connection)))
+                return@launchCatching
+            }
+        }
+        saveBrewProfile(
+            id = profile.id,
+            name = profile.name,
+            description = getString(
+                Res.string.profile_editor_description,
+                profile.steps.size,
+                profile.steps.sumOf { it.time },
+            ),
+            finishCondition = profile.finishCondition,
+            steps = profile.steps,
         )
         navigate(NavEvent.Back)
     }
@@ -164,7 +241,11 @@ internal class ProfileEditorViewModel(
     /** Keeps [ProfileEditorViewState.targetData] in sync with the steps the chart renders. */
     private fun updateSteps(block: List<Step>.() -> List<Step>) = modify {
         val updated = steps.block()
-        copy(steps = updated, targetData = updated.map { it.toDomain() }.toTargetData())
+        copy(
+            steps = updated,
+            targetData = updated.map { it.toDomain() }.toTargetData(),
+            brew = Brew(),
+        )
     }
 
     private fun onError(throwable: Throwable) {
