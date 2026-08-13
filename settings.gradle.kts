@@ -33,6 +33,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+include(":shared:core:commerce")
 include(":shared:core:datastore")
 include(":shared:core:domain")
 include(":shared:core:navigation")
@@ -55,3 +56,7 @@ include(":shared:feature:user:list")
 include(":shared:app")
 include(":androidApp")
 include(":desktopApp")
+
+if (file("commerce/build.gradle.kts").exists()) {
+    include(":commerce")
+}

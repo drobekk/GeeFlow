@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.aboutLibraries)
 }
 
+val hasCommerce = rootProject.file("commerce/build.gradle.kts").exists()
+
 sqldelight {
     databases {
         create("AppDatabase") {
@@ -36,7 +38,13 @@ kotlin {
 
 
     sourceSets {
+        commonMain.get().kotlin.srcDir(
+            if (hasCommerce) rootProject.file("commerce/wiring") else file("src/commerceStub/kotlin"),
+        )
+
         commonMain.dependencies {
+            api(projects.shared.core.commerce)
+            if (hasCommerce) api(project(":commerce"))
             api(projects.shared.core.navigation)
             api(projects.shared.core.presentation)
             api(projects.shared.core.ui)

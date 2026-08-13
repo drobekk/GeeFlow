@@ -31,6 +31,7 @@ class GeeFlowApp
 @Module(
     includes = [
         PlatformModule::class,
+        CommerceWiringModule::class,
         AppDatabaseModule::class,
         DataBrewModule::class,
         DataUserModule::class,

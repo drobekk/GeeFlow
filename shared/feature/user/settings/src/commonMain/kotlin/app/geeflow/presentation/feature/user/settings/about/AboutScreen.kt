@@ -17,6 +17,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import app.geeflow.BuildKonfig
+import app.geeflow.commerce.TipFeature
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClicked
@@ -42,6 +43,7 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ab
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_version
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 internal fun AboutScreen(
@@ -60,17 +62,23 @@ internal fun AboutScreen(
         }
     }
 
-    Content(onEvent = viewModel::handleEvent)
+    val tipFeature = koinInject<TipFeature>()
+
+    Content(
+        onEvent = viewModel::handleEvent,
+        tipSection = { modifier -> tipFeature.TipSection(modifier) },
+    )
 }
 
 @Composable
 private fun Content(
     onEvent: (AboutEvent) -> Unit = {},
+    tipSection: @Composable (Modifier) -> Unit = {},
 ) {
     if (isWidthExpanded()) {
-        ExpandedContent(onEvent = onEvent)
+        ExpandedContent(onEvent = onEvent, tipSection = tipSection)
     } else {
-        CompactContent(onEvent = onEvent)
+        CompactContent(onEvent = onEvent, tipSection = tipSection)
     }
 }
 
@@ -78,6 +86,7 @@ private fun Content(
 @Composable
 private fun CompactContent(
     onEvent: (AboutEvent) -> Unit,
+    tipSection: @Composable (Modifier) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowScaffold(
@@ -89,6 +98,7 @@ private fun CompactContent(
         content = { paddingValues ->
             AboutContent(
                 onEvent = onEvent,
+                tipSection = tipSection,
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
@@ -102,9 +112,11 @@ private fun CompactContent(
 @Composable
 private fun ExpandedContent(
     onEvent: (AboutEvent) -> Unit,
+    tipSection: @Composable (Modifier) -> Unit,
 ) {
     AboutContent(
         onEvent = onEvent,
+        tipSection = tipSection,
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
@@ -116,6 +128,7 @@ private fun ExpandedContent(
 @Composable
 private fun AboutContent(
     onEvent: (AboutEvent) -> Unit,
+    tipSection: @Composable (Modifier) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -145,6 +158,11 @@ private fun AboutContent(
             subtitle = BuildKonfig.APP_VERSION,
             modifier = Modifier
                 .fillMaxWidth(),
+        )
+        tipSection(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
         )
     }
 }
