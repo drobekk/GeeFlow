@@ -9,12 +9,15 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -63,10 +66,10 @@ fun App(closeApp: () -> Unit) {
 
     KoinApplication(koinConfiguration<GeeFlowApp>()) {
         val getAppearanceSettings = koinInject<GetAppearanceSettingsUseCase>()
-        val appearance by getAppearanceSettings().collectAsStateWithLifecycle(
-            initialValue = AppearanceSettings(),
-            minActiveState = Lifecycle.State.CREATED,
-        )
+        var appearance by rememberSaveable(stateSaver = AppearanceSettingsSaver) { mutableStateOf(AppearanceSettings()) }
+        LaunchedEffect(Unit) {
+            getAppearanceSettings().collect { appearance = it }
+        }
         val darkMode = when (appearance.themeMode) {
             UserThemeMode.SYSTEM -> isSystemInDarkTheme()
             UserThemeMode.LIGHT -> false
@@ -85,6 +88,29 @@ fun App(closeApp: () -> Unit) {
         }
     }
 }
+
+private val AppearanceSettingsSaver = listSaver<AppearanceSettings, Any>(
+    save = {
+        listOf(
+            it.themeMode.name,
+            it.appTheme.name,
+            it.paletteStyle.name,
+            it.customSeedColor,
+            it.fullScreenMode,
+            it.keepScreenOn,
+        )
+    },
+    restore = {
+        AppearanceSettings(
+            themeMode = UserThemeMode.valueOf(it[0] as String),
+            appTheme = AppTheme.valueOf(it[1] as String),
+            paletteStyle = AppPaletteStyle.valueOf(it[2] as String),
+            customSeedColor = it[3] as Int,
+            fullScreenMode = it[4] as Boolean,
+            keepScreenOn = it[5] as Boolean,
+        )
+    },
+)
 
 private fun UserThemeMode.mapToUiMode() = when (this) {
     UserThemeMode.SYSTEM -> ThemeMode.System
