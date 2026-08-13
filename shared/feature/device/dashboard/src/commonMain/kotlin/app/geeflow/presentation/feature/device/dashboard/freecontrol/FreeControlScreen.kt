@@ -192,7 +192,8 @@ private fun ExpandedLayout(
                     isBrewing = viewState.brewStatus == FreeBrewStatus.Active,
                     visibleCharts = viewState.visibleCharts,
                     onToggle = { onEvent(ToggleChartVisibility(it)) },
-                    onRename = { onEvent(RenameClicked) },
+                    onHeaderClick = { onEvent(RenameClicked) },
+                    showEditIcon = true,
                     modifier = Modifier.weight(1f).padding(bottom = 10.dp),
                 )
                 HorizontalSpacer(16.dp)
@@ -318,7 +319,8 @@ private fun CompactLayout(
                 isBrewing = viewState.brewStatus == FreeBrewStatus.Active,
                 visibleCharts = viewState.visibleCharts,
                 onToggle = { onEvent(ToggleChartVisibility(it)) },
-                onRename = { onEvent(RenameClicked) },
+                onHeaderClick = { onEvent(RenameClicked) },
+                showEditIcon = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 24.dp, top = 16.dp, end = 24.dp),

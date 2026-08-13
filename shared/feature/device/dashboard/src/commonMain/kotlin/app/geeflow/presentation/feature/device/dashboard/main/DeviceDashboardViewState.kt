@@ -29,6 +29,7 @@ data class DeviceDashboardViewState(
 
     data class Brew(
         val name: String = "",
+        val description: String = "",
         val time: Int = 0,
         val data: Map<Float, ChartData> = getEmptyChartData(),
         /**
@@ -68,6 +69,9 @@ data class DeviceDashboardViewState(
 
     sealed interface Dialog {
         object BluetoothPermissionMissing : Dialog
+
+        /** Full text of the brewed profile's description, which the brew bar can only show truncated. */
+        data class BrewDescription(val name: String, val description: String) : Dialog
     }
 }
 

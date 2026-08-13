@@ -196,6 +196,7 @@ private fun ExpandedDashboard(
                         isBrewing = viewState.device.isBrewing,
                         visibleCharts = viewState.visibleCharts,
                         onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
+                        onHeaderClick = { onEvent(DeviceDashboardEvent.BrewDescriptionClicked) },
                         modifier = Modifier.weight(1f).padding(bottom = 10.dp),
                     )
                     HorizontalSpacer(16.dp)
@@ -301,6 +302,7 @@ private fun CompactDashboard(
                             isBrewing = viewState.device.isBrewing,
                             visibleCharts = viewState.visibleCharts,
                             onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
+                            onHeaderClick = { onEvent(DeviceDashboardEvent.BrewDescriptionClicked) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(start = 24.dp, top = 16.dp, end = 24.dp),

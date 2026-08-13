@@ -42,15 +42,18 @@ import app.geeflow.platform.permissions.DeniedException
 import app.geeflow.platform.permissions.PermissionBluetoothConnect
 import app.geeflow.platform.permissions.PermissionBluetoothScan
 import app.geeflow.platform.permissions.PermissionsController
+import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
 import app.geeflow.presentation.feature.device.dashboard.QuickMaintenance
 import app.geeflow.presentation.feature.device.dashboard.QuickSettings
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.AlarmClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.BrewClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.BrewDescriptionClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.CleaningClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectedDevicesClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectionButtonClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DeviceClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DialogDismissed
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.EditProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.FlowControlClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.HistoryBrewSelected
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ManualBrewClicked
@@ -69,7 +72,6 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
 import app.geeflow.presentation.feature.device.dashboard.model.toChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
-import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_off
@@ -104,6 +106,7 @@ internal class DeviceDashboardViewModel(
 
     private var selectedProfileId: String? = null
     private var selectedProfileName: String? = null
+    private var selectedProfileDescription: String? = null
     private var selectedProfileSteps: List<ProfileStep> = emptyList()
     private var machine: Machine? = null
     private var deviceConfig: DeviceState.Config? = null
@@ -131,7 +134,13 @@ internal class DeviceDashboardViewModel(
         is ConnectedDevicesClicked -> withDeviceConnected {
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
         }
+
         is CleaningClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
+        is BrewDescriptionClicked -> modify {
+            copy(dialog = Dialog.BrewDescription(brew.name, brew.description))
+        }
+
+        is EditProfileClicked -> editSelectedProfile()
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
         is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
@@ -150,6 +159,7 @@ internal class DeviceDashboardViewModel(
                 ),
             )
         }
+
         is Resumed -> connect()
         is AlarmClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
     }
@@ -172,6 +182,12 @@ internal class DeviceDashboardViewModel(
         }
     }
 
+    private fun editSelectedProfile() {
+        val profileId = selectedProfileId?.toLongOrNull() ?: return
+        modify { copy(dialog = null) }
+        navigate(To(ProfileEditor(args.deviceId, profileId)))
+    }
+
     private fun startProfile() = launchCatching(::onError) {
         selectedProfileId
             ?.toLongOrNull()
@@ -189,8 +205,9 @@ internal class DeviceDashboardViewModel(
             ?.let { getBrewProfileUseCase(it) }
             ?.let {
                 selectedProfileName = it.name
+                selectedProfileDescription = it.description
                 selectedProfileSteps = it.steps
-                modify { copy(brew = Brew(it.name)) }
+                modify { copy(brew = Brew(name = it.name, description = it.description)) }
             }
     }
 
@@ -257,7 +274,14 @@ internal class DeviceDashboardViewModel(
         if (session.mode == BrewMode.Manual && skipManualBrews) return
 
         if (!wasBrewing && session.inProgress) {
-            modify { copy(brew = Brew(name = selectedProfileName.orEmpty())) }
+            modify {
+                copy(
+                    brew = Brew(
+                        name = selectedProfileName.orEmpty(),
+                        description = selectedProfileDescription.orEmpty(),
+                    ),
+                )
+            }
         }
         modify {
             copy(

@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +61,8 @@ internal fun BrewBar(
     visibleCharts: Set<DashboardChartType>,
     onToggle: (DashboardChartType) -> Unit,
     modifier: Modifier = Modifier,
-    onRename: (() -> Unit)? = null,
+    onHeaderClick: (() -> Unit)? = null,
+    showEditIcon: Boolean = false,
 ) {
     val lastPoint = brew.data.values.lastOrNull()
 
@@ -89,16 +90,25 @@ internal fun BrewBar(
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.small)
+                .then(if (onHeaderClick != null) Modifier.clickable(onClick = onHeaderClick) else Modifier)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = brew.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+            if (showEditIcon) EditIcon()
+            Text(
+                text = brew.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            if (brew.description.isNotBlank()) {
+                BrewDescription(
+                    description = brew.description,
+                    modifier = Modifier.weight(1f),
                 )
-                onRename?.let { RenameButton(onRename) }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
             }
             Text(
                 text = "${brew.time}s",
@@ -176,17 +186,27 @@ internal fun BrewBar(
 }
 
 @Composable
-private fun RenameButton(onRename: () -> Unit) {
-    IconButton(
-        onClick = onRename,
-        modifier = Modifier.padding(horizontal = 8.dp).size(32.dp),
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Edit,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-        )
-    }
+private fun BrewDescription(
+    description: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = description,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier.padding(horizontal = 8.dp),
+    )
+}
+
+@Composable
+private fun EditIcon() {
+    Icon(
+        imageVector = Icons.Filled.Edit,
+        contentDescription = null,
+        modifier = Modifier.padding(end = 8.dp).size(16.dp),
+    )
 }
 
 private data class ValueEntry(
@@ -270,6 +290,7 @@ private fun Double.format() = ((this * DecimalScale).toInt() / DecimalScale.toDo
 
 private val previewBrew = Brew(
     name = "Slayer shot",
+    description = "Long pre-infusion at low pressure, then a slow declining ramp to 6 bar",
     time = 25,
     data = mapOf(
         1f to ChartData(
@@ -297,6 +318,7 @@ private fun Preview() {
         isBrewing = true,
         visibleCharts = previewVisibleCharts,
         onToggle = {},
-        onRename = {},
+        onHeaderClick = {},
+        showEditIcon = true,
     )
 }

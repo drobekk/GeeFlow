@@ -2,8 +2,11 @@ package app.geeflow.presentation.feature.device.dashboard.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -11,26 +14,59 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
 import app.geeflow.ui.components.GeeFlowDialog
+import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.core.ui.generated.resources.common_open_settings
 import geeflow.shared.core.ui.generated.resources.permission_bluetooth_missing
+import geeflow.shared.core.ui.generated.resources.permission_bluetooth_title
+import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_edit_profile
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DeviceDashboardDialog(
-    model: DeviceDashboardViewState.Dialog,
+    model: Dialog,
     onEvent: (DeviceDashboardEvent) -> Unit,
 ) {
     GeeFlowDialog(
         onDismissRequest = { onEvent(DeviceDashboardEvent.DialogDismissed) },
     ) {
         when (model) {
-            DeviceDashboardViewState.Dialog.BluetoothPermissionMissing -> BluetoothPermissionMissingDialog(onEvent)
+            is Dialog.BluetoothPermissionMissing -> BluetoothPermissionMissingDialog(onEvent)
+            is Dialog.BrewDescription -> BrewDescriptionDialog(model, onEvent)
+        }
+    }
+}
+
+@Composable
+private fun BrewDescriptionDialog(
+    model: Dialog.BrewDescription,
+    onEvent: (DeviceDashboardEvent) -> Unit,
+) {
+    Column(modifier = Modifier.padding(24.dp)) {
+        GeeFlowDialogTopBar(
+            title = model.name,
+            onCloseClick = { onEvent(DeviceDashboardEvent.DialogDismissed) },
+        )
+        VerticalSpacer(16.dp)
+        Text(
+            text = model.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+        )
+        VerticalSpacer(16.dp)
+        Button(
+            onClick = { onEvent(DeviceDashboardEvent.EditProfileClicked) },
+            modifier = Modifier.align(Alignment.End),
+        ) {
+            Text(text = stringResource(Res.string.device_dashboard_edit_profile))
         }
     }
 }
@@ -41,7 +77,12 @@ private fun BluetoothPermissionMissingDialog(onEvent: (DeviceDashboardEvent) -> 
         onEvent(DeviceDashboardEvent.PermissionDialogResumed)
         onPauseOrDispose {}
     }
-    Column(modifier = Modifier.padding(32.dp)) {
+    Column(modifier = Modifier.padding(24.dp)) {
+        GeeFlowDialogTopBar(
+            title = stringResource(CoreRes.string.permission_bluetooth_title),
+            onCloseClick = { onEvent(DeviceDashboardEvent.DialogDismissed) },
+        )
+        VerticalSpacer(16.dp)
         Text(
             text = stringResource(CoreRes.string.permission_bluetooth_missing),
             modifier = Modifier.align(Alignment.Start),
@@ -61,7 +102,7 @@ private fun BluetoothPermissionMissingDialog(onEvent: (DeviceDashboardEvent) -> 
 @GeeFlowScreenPreview
 private fun Preview() {
     DeviceDashboardDialog(
-        model = DeviceDashboardViewState.Dialog.BluetoothPermissionMissing,
+        model = Dialog.BluetoothPermissionMissing,
         onEvent = {},
     )
 }

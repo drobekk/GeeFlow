@@ -12,6 +12,8 @@
 
     <string name="device_water_alarm_error">Water level is low. Please refill the water tank.</string>
 
+    <string name="device_dashboard_edit_profile">Edit profile</string>
+
     <string name="device_dashboard_toggle_steam_boiler">Toggle steam boiler</string>
     <string name="device_dashboard_steam_boiler_on">Steam boiler turned on</string>
     <string name="device_dashboard_steam_boiler_off">Steam boiler turned off</string>

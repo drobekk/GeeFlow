@@ -232,11 +232,12 @@ private fun EditorBrewBar(
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) = BrewBar(
-    brew = viewState.brew.copy(name = viewState.profileName),
+    brew = viewState.brew.copy(name = viewState.profileName, description = viewState.description),
     isBrewing = viewState.isBrewing,
     visibleCharts = viewState.visibleCharts,
     onToggle = { onEvent(ToggleChartVisibility(it)) },
-    onRename = { onEvent(EditDetailsClicked) },
+    onHeaderClick = { onEvent(EditDetailsClicked) },
+    showEditIcon = true,
     modifier = modifier,
 )
 
