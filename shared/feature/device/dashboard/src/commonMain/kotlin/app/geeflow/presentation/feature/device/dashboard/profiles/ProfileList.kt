@@ -194,7 +194,7 @@ private fun ProfilesColumn(
     LazyColumn(
         state = lazyListState,
         modifier = modifier,
-        contentPadding = PaddingValues(top = topContentPadding, bottom = 64.dp),
+        contentPadding = PaddingValues(top = topContentPadding, bottom = 72.dp),
     ) {
         items(filteredProfiles, key = { it.id }) { profile ->
             ReorderableItem(
@@ -338,14 +338,12 @@ private fun BottomBar(
     val topBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.surfaceContainer,
-            MaterialTheme.colorScheme.surfaceContainer,
             Color.Transparent,
         ),
     )
     val bottomBrush = Brush.verticalGradient(
         colors = listOf(
             Color.Transparent,
-            MaterialTheme.colorScheme.surfaceContainer,
             MaterialTheme.colorScheme.surfaceContainer,
         ),
     )
