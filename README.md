@@ -1,10 +1,16 @@
-# GeeFlow
+<div>
+  <img src="./docs/logo.png" alt="GeeFlow logo" width="160">
 
-A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting **Android**, **iOS**, and **Desktop (JVM)**.
+  <h1>GeeFlow</h1>
+
+  <p>A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting <strong>Android</strong>, <strong>iOS</strong>, and <strong>Desktop (JVM)</strong>.</p>
+</div>
 
 ## Supported Hardware
 
 Right now the only real machine supported and tested is the **Wendougee Data-S**. Other machines are not supported yet; the protocol is machine-specific and nothing else has been tried.
+
+The **Wendougee smart grinder** is not supported yet, simply because I do not own one to reverse engineer and test against. Only the smart scale is wired up on the accessory side.
 
 A built-in **Demo** device is also available for preview purposes. It simulates a machine entirely in software, so you can explore the whole app (dashboard, profiles, charts, history) without owning any hardware. Add it from the *Add Device* screen.
 
@@ -53,6 +59,11 @@ The error codes reported by the machine have **not** been mapped. The only fault
 - Pair via QR code or by scanning for nearby BLE devices
 - Multiple saved devices, with a favorite and optional auto-connect
 - Connection state surfaced throughout (connecting, synchronizing, connected)
+
+**Adaptive Layout**
+- Works in both portrait and landscape, on phones, tablets, and desktop windows
+- Layouts adapt to the available width rather than the platform: settings screens switch to a list-detail arrangement when there is room, and the dashboard, profile editor, and pairing flow reflow to match
+- Resizing a desktop window or rotating a device re-lays out live, without losing state
 
 **Users & Personalization**
 - Multiple local user profiles, each with its own photo, brew profiles, history, and settings
