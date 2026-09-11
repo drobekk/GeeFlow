@@ -27,7 +27,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
@@ -58,8 +56,6 @@ import app.geeflow.presentation.feature.device.add.AddDeviceViewState.Method.QrC
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.VerticalSpacer
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -144,7 +140,6 @@ private fun AddDeviceContent(
             Content(
                 viewState = viewState,
                 onEvent = onEvent,
-                scrollBehavior = scrollBehavior,
                 contentPadding = it,
             )
         },
@@ -156,14 +151,9 @@ private fun AddDeviceContent(
 private fun Content(
     viewState: AddDeviceViewState,
     onEvent: (AddDeviceEvent) -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
     contentPadding: PaddingValues,
 ) {
-    val modifier = if (!isWidthExpanded()) {
-        Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-    } else {
-        Modifier
-    }
+    val modifier = Modifier
 
     AnimatedContent(
         modifier = Modifier.fillMaxSize(),
@@ -193,12 +183,7 @@ private fun FloatingActionButton(
     onEvent: (AddDeviceEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) = FloatingActionButton(
-    modifier = modifier
-        .padding(
-            horizontal = GeeFlowTheme.spacing.fabHorizontal,
-            vertical = GeeFlowTheme.spacing.fabVertical,
-        )
-        .geeFlowInsetsEndPadding(),
+    modifier = modifier,
     onClick = {
         when (viewState.method) {
             is NearbyDevices -> onEvent(ShowQrCodeScannerClicked)

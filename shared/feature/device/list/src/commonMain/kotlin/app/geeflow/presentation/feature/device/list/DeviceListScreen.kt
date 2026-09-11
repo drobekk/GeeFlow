@@ -10,15 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
@@ -60,7 +55,6 @@ import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceClicke
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRemoveClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceSetAsDefaultClicked
 import app.geeflow.ui.components.GeeFlowScaffold
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -122,7 +116,7 @@ private fun DevicesListContent(
                 devices = viewState.devices,
                 onEvent = onEvent,
                 contentPadding = it,
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                modifier = Modifier,
             )
         },
     )
@@ -146,7 +140,6 @@ private fun DeviceList(
         item { ListEmptyItem(modifier = Modifier.fillParentMaxSize()) }
     }
     items(devices) { DeviceItem(device = it, onEvent = onEvent) }
-    item { Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) }
 }
 
 @Composable
@@ -251,12 +244,7 @@ private fun AddButton(
     modifier: Modifier = Modifier,
     onEvent: (DeviceListEvent) -> Unit,
 ) = FloatingActionButton(
-    modifier = modifier
-        .padding(
-            horizontal = GeeFlowTheme.spacing.fabHorizontal,
-            vertical = GeeFlowTheme.spacing.fabVertical,
-        )
-        .geeFlowInsetsEndPadding(),
+    modifier = modifier,
     onClick = { onEvent(DeviceListEvent.AddDeviceClicked) },
     content = {
         Icon(

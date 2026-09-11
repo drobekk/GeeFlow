@@ -13,7 +13,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
@@ -24,11 +23,9 @@ import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferences
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.SkipManualBrewHistoryChanged
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesEvent.TemperatureUnitClicked
 import app.geeflow.presentation.feature.user.settings.brewing.components.BrewingPreferencesDialogs
+import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowNavigationListItem
-import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -65,31 +62,19 @@ internal fun BrewingPreferencesScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     viewState: BrewingPreferencesViewState,
     onEvent: (BrewingPreferencesEvent) -> Unit = {},
 ) {
-    if (isWidthExpanded()) {
-        ExpandedContent(viewState = viewState, onEvent = onEvent)
-    } else {
-        CompactContent(viewState = viewState, onEvent = onEvent)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CompactContent(
-    viewState: BrewingPreferencesViewState,
-    onEvent: (BrewingPreferencesEvent) -> Unit,
-) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    GeeFlowScaffold(
+    GeeFlowDetailScaffold(
         title = stringResource(Res.string.user_settings_brewing_preferences_title),
         subtitle = stringResource(Res.string.user_settings_brewing_preferences_description),
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier,
         content = { paddingValues ->
             BrewingContent(
                 viewState = viewState,
@@ -105,25 +90,9 @@ private fun CompactContent(
 }
 
 @Composable
-private fun ExpandedContent(
-    viewState: BrewingPreferencesViewState,
-    onEvent: (BrewingPreferencesEvent) -> Unit,
-) {
-    BrewingContent(
-        viewState = viewState,
-        onEvent = onEvent,
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = GeeFlowTheme.spacing.contentVertical)
-            .geeFlowInsetsEndPadding(),
-    )
-}
-
-@Composable
 private fun BrewingContent(
     viewState: BrewingPreferencesViewState,
-    onEvent: (BrewingPreferencesEvent) -> Unit,
+    onEvent: (BrewingPreferencesEvent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {

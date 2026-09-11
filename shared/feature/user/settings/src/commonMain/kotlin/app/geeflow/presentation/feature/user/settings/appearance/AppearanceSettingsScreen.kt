@@ -13,7 +13,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,11 +30,9 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleClicked
 import app.geeflow.presentation.feature.user.settings.appearance.components.AppearanceDialogs
+import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowNavigationListItem
-import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -82,6 +79,7 @@ internal fun AppearanceSettingsScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     viewState: AppearanceSettingsViewState,
@@ -89,38 +87,13 @@ private fun Content(
     onLanguageClicked: () -> Unit = {},
     onEvent: (AppearanceSettingsEvent) -> Unit = {},
 ) {
-    if (isWidthExpanded()) {
-        ExpandedContent(
-            viewState = viewState,
-            isLanguageSupported = isLanguageSupported,
-            onLanguageClicked = onLanguageClicked,
-            onEvent = onEvent,
-        )
-    } else {
-        CompactContent(
-            viewState = viewState,
-            isLanguageSupported = isLanguageSupported,
-            onLanguageClicked = onLanguageClicked,
-            onEvent = onEvent,
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CompactContent(
-    viewState: AppearanceSettingsViewState,
-    isLanguageSupported: Boolean,
-    onLanguageClicked: () -> Unit,
-    onEvent: (AppearanceSettingsEvent) -> Unit,
-) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    GeeFlowScaffold(
+    GeeFlowDetailScaffold(
         title = stringResource(Res.string.user_settings_appearance_title),
         subtitle = stringResource(Res.string.user_settings_appearance_description),
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier,
         content = { paddingValues ->
             AppearanceContent(
                 viewState = viewState,
@@ -138,31 +111,11 @@ private fun CompactContent(
 }
 
 @Composable
-private fun ExpandedContent(
-    viewState: AppearanceSettingsViewState,
-    isLanguageSupported: Boolean,
-    onLanguageClicked: () -> Unit,
-    onEvent: (AppearanceSettingsEvent) -> Unit,
-) {
-    AppearanceContent(
-        viewState = viewState,
-        isLanguageSupported = isLanguageSupported,
-        onLanguageClicked = onLanguageClicked,
-        onEvent = onEvent,
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .geeFlowInsetsEndPadding()
-            .padding(vertical = GeeFlowTheme.spacing.contentVertical),
-    )
-}
-
-@Composable
 private fun AppearanceContent(
     viewState: AppearanceSettingsViewState,
-    isLanguageSupported: Boolean,
-    onLanguageClicked: () -> Unit,
-    onEvent: (AppearanceSettingsEvent) -> Unit,
+    isLanguageSupported: Boolean = false,
+    onLanguageClicked: () -> Unit = {},
+    onEvent: (AppearanceSettingsEvent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {

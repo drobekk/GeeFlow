@@ -13,7 +13,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import app.geeflow.BuildKonfig
@@ -24,11 +23,9 @@ import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClick
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.LicensesClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.PrivacyPolicyClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.SourceCodeClicked
+import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowListItem
 import app.geeflow.ui.components.GeeFlowNavigationListItem
-import app.geeflow.ui.components.GeeFlowScaffold
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -70,31 +67,19 @@ internal fun AboutScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     onEvent: (AboutEvent) -> Unit = {},
     tipSection: @Composable (Modifier) -> Unit = {},
 ) {
-    if (isWidthExpanded()) {
-        ExpandedContent(onEvent = onEvent, tipSection = tipSection)
-    } else {
-        CompactContent(onEvent = onEvent, tipSection = tipSection)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CompactContent(
-    onEvent: (AboutEvent) -> Unit,
-    tipSection: @Composable (Modifier) -> Unit,
-) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    GeeFlowScaffold(
+    GeeFlowDetailScaffold(
         title = stringResource(Res.string.user_settings_about_title),
         subtitle = stringResource(Res.string.user_settings_about_description),
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier,
         content = { paddingValues ->
             AboutContent(
                 onEvent = onEvent,
@@ -110,25 +95,9 @@ private fun CompactContent(
 }
 
 @Composable
-private fun ExpandedContent(
-    onEvent: (AboutEvent) -> Unit,
-    tipSection: @Composable (Modifier) -> Unit,
-) {
-    AboutContent(
-        onEvent = onEvent,
-        tipSection = tipSection,
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = GeeFlowTheme.spacing.contentVertical)
-            .geeFlowInsetsEndPadding(),
-    )
-}
-
-@Composable
 private fun AboutContent(
-    onEvent: (AboutEvent) -> Unit,
-    tipSection: @Composable (Modifier) -> Unit,
+    onEvent: (AboutEvent) -> Unit = {},
+    tipSection: @Composable (Modifier) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {

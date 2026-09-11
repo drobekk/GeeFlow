@@ -9,11 +9,9 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import app.geeflow.navigation.NavEvent
 import app.geeflow.navigation.Navigator
 import app.geeflow.ui.components.GeeFlowScaffold
-import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.theme.GeeFlowTheme
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
@@ -30,7 +28,7 @@ internal fun LicensesListScreen(
     val libraries by produceLibraries {
         Res.readBytes("files/aboutlibraries.json").decodeToString()
     }
-    val modifier = if (!isWidthExpanded()) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier
+    val modifier = Modifier
     GeeFlowScaffold(
         title = stringResource(Res.string.user_settings_about_licenses),
         subtitle = null,

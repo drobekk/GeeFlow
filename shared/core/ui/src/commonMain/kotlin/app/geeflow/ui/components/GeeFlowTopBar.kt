@@ -3,7 +3,6 @@ package app.geeflow.ui.components
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,6 +26,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import app.geeflow.ui.GeeFlowInsets
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_go_back
 import org.jetbrains.compose.resources.stringResource
@@ -40,7 +40,7 @@ fun GeeFlowTopBar(
     navIconClick: () -> Unit,
     navIconPainter: Painter? = rememberVectorPainter(image = Icons.AutoMirrored.Filled.ArrowBack),
     navIconContentDescription: String? = stringResource(Res.string.common_go_back),
-    windowInsets: WindowInsets = WindowInsets.statusBars,
+    windowInsets: WindowInsets = GeeFlowInsets.top,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     modifier: Modifier = Modifier,
 ) {

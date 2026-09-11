@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -56,6 +54,7 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ToggleChartVisibility
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.ui.EventsDispatcher
+import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
 import app.geeflow.ui.components.GeeFlowSlider
 import app.geeflow.ui.components.HorizontalSpacer
@@ -63,6 +62,7 @@ import app.geeflow.ui.icons.Flow
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Pressure
 import app.geeflow.ui.isWidthExpanded
+import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -130,7 +130,7 @@ private fun FreeControlContent(
                 hostState = snackbarState,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .navigationBarsPadding(),
+                    .windowInsetsPadding(GeeFlowInsets.bottom),
             )
         }
     } else {
@@ -160,7 +160,7 @@ private fun ExpandedLayout(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding(),
+            .geeFlowInsetsPadding(),
     ) {
         Column(
             modifier = Modifier
@@ -259,10 +259,10 @@ private fun CompactLayout(
     val sliderRange = if (isPressure) viewState.pressureRange else viewState.flowRange
 
     Scaffold(
+        contentWindowInsets = GeeFlowInsets.content,
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding(),
+            .geeFlowInsetsPadding(),
         topBar = {
             FreeControlTopBar(
                 sessionCompleted = viewState.sessionCompleted,

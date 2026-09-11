@@ -1,7 +1,7 @@
 package app.geeflow.presentation.feature.device.settings.brewing
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
@@ -44,15 +43,12 @@ import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsV
 import app.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
 import app.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
 import app.geeflow.ui.EventsDispatcher
+import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowInfinitePicker
-import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.GeeFlowSwitch
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.isWidthLarge
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -103,101 +99,56 @@ private fun BrewSettingsContent(
     snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    if (isWidthExpanded()) {
-        ExpandedContent(
-            viewState = viewState,
-            snackbarHostState = snackbarHostState,
-            onEvent = onEvent,
-        )
-    } else {
-        GeeFlowScaffold(
-            title = stringResource(Res.string.device_settings_brewing),
-            subtitle = stringResource(Res.string.device_settings_brewing_description),
-            navIconClick = { onEvent(CloseClicked) },
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            floatingActionButton = {
-                SettingsApplyFab(
-                    loading = viewState.applyButtonLoading,
-                    visible = viewState.applyButtonVisible,
-                    onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
-                )
-            },
-            scrollBehavior = scrollBehavior,
-            content = {
-                CompactContent(
-                    viewState = viewState,
-                    onEvent = onEvent,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(it)
-                        .padding(bottom = SettingsApplyFabPadding),
-                )
-            },
-            modifier = Modifier
-                .imePadding()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-        )
-    }
-}
-
-@Composable
-private fun ExpandedContent(
-    viewState: BrewingSettingsViewState,
-    snackbarHostState: SnackbarHostState,
-    onEvent: (BrewingSettingsEvent) -> Unit,
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (isWidthLarge()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(
-                        horizontal = GeeFlowTheme.spacing.contentHorizontal,
-                        vertical = GeeFlowTheme.spacing.contentVertical,
-                    )
-                    .geeFlowInsetsEndPadding()
-                    .padding(bottom = SettingsApplyFabPadding),
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    BoilerSection(
-                        viewState = viewState,
-                        onEvent = onEvent,
-                    )
-                }
-                HorizontalSpacer(24.dp)
-                Column(modifier = Modifier.weight(1f)) {
-                    PaddleSection(
-                        paddle = viewState.paddle,
-                        onEvent = onEvent,
-                    )
-                }
-            }
-        } else {
-            CompactContent(
+    GeeFlowDetailScaffold(
+        title = stringResource(Res.string.device_settings_brewing),
+        subtitle = stringResource(Res.string.device_settings_brewing_description),
+        navIconClick = { onEvent(CloseClicked) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            SettingsApplyFab(
+                loading = viewState.applyButtonLoading,
+                visible = viewState.applyButtonVisible,
+                onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
+            )
+        },
+        scrollBehavior = scrollBehavior,
+        content = {
+            AdaptiveContent(
                 viewState = viewState,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .geeFlowInsetsEndPadding()
+                    .padding(it)
                     .padding(bottom = SettingsApplyFabPadding),
             )
+        },
+        modifier = Modifier
+            .imePadding(),
+    )
+}
+
+@Composable
+private fun AdaptiveContent(
+    viewState: BrewingSettingsViewState,
+    onEvent: (BrewingSettingsEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    BoxWithConstraints(modifier) {
+        if (maxWidth >= 640.dp) {
+            Row(
+                Modifier.padding(
+                    horizontal = GeeFlowTheme.spacing.contentHorizontal,
+                    vertical = GeeFlowTheme.spacing.contentVertical,
+                ),
+            ) {
+                Column(Modifier.weight(1f)) { BoilerSection(viewState, onEvent) }
+                HorizontalSpacer(24.dp)
+                Column(Modifier.weight(1f)) { PaddleSection(viewState.paddle, onEvent) }
+            }
+        } else {
+            CompactContent(viewState, onEvent)
         }
-        SettingsApplyFab(
-            loading = viewState.applyButtonLoading,
-            visible = viewState.applyButtonVisible,
-            onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
-            modifier = Modifier.align(Alignment.BottomEnd)
-                .geeFlowInsetsEndPadding(),
-        )
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .geeFlowInsetsEndPadding()
-                .align(Alignment.BottomCenter),
-        )
     }
 }
 

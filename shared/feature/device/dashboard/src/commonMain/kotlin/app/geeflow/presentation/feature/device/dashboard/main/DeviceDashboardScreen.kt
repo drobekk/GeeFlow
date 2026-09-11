@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +49,7 @@ import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListVie
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import app.geeflow.ui.EventsDispatcher
+import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.modifier.geeFlowInsetsPadding
@@ -244,11 +243,11 @@ private fun CompactDashboard(
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
+        contentWindowInsets = GeeFlowInsets.content,
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding(),
+            .geeFlowInsetsPadding(),
         topBar = {
             TopBar(
                 device = viewState.device,

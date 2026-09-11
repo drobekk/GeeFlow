@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -35,8 +34,6 @@ import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Logo
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.core.ui.generated.resources.app_name
@@ -65,7 +62,7 @@ private fun IntroScreenContent(
     onEvent: (IntroEvent) -> Unit = {},
 ) {
     GeeFlowScaffold(
-        topBar = { Logo() },
+        topBar = { sideHeader -> Logo(expanded = sideHeader) },
         content = {
             Form(
                 onEvent = onEvent,
@@ -79,8 +76,7 @@ private fun IntroScreenContent(
 }
 
 @Composable
-private fun Logo(modifier: Modifier = Modifier) {
-    val expanded = isWidthExpanded()
+private fun Logo(expanded: Boolean, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .layout { measurable, constraints ->
@@ -95,7 +91,6 @@ private fun Logo(modifier: Modifier = Modifier) {
                 }
             }
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .geeFlowInsetsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -126,7 +121,6 @@ private fun Form(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
             .padding(60.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

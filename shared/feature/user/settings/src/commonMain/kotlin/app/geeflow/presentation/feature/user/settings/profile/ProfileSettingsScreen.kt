@@ -17,7 +17,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
@@ -30,10 +29,8 @@ import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEve
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.RenameClicked
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsViewModelEvent.OpenPhotoPicker
 import app.geeflow.ui.EventsDispatcher
+import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowNavigationListItem
-import app.geeflow.ui.components.GeeFlowScaffold
-import app.geeflow.ui.isWidthExpanded
-import app.geeflow.ui.modifier.geeFlowInsetsEndPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -85,31 +82,19 @@ internal fun ProfileSettingsScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     viewState: ProfileSettingsViewState,
     onEvent: (ProfileSettingsEvent) -> Unit = {},
 ) {
-    if (isWidthExpanded()) {
-        ExpandedContent(viewState = viewState, onEvent = onEvent)
-    } else {
-        CompactContent(viewState = viewState, onEvent = onEvent)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CompactContent(
-    viewState: ProfileSettingsViewState,
-    onEvent: (ProfileSettingsEvent) -> Unit,
-) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    GeeFlowScaffold(
+    GeeFlowDetailScaffold(
         title = viewState.name.ifEmpty { stringResource(Res.string.user_settings_profile_title) },
         subtitle = stringResource(Res.string.user_settings_profile_description),
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier,
         content = { paddingValues ->
             SettingsContent(
                 viewState = viewState,
@@ -125,25 +110,9 @@ private fun CompactContent(
 }
 
 @Composable
-private fun ExpandedContent(
-    viewState: ProfileSettingsViewState,
-    onEvent: (ProfileSettingsEvent) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = GeeFlowTheme.spacing.contentVertical)
-            .geeFlowInsetsEndPadding(),
-    ) {
-        SettingsContent(viewState = viewState, onEvent = onEvent)
-    }
-}
-
-@Composable
 private fun SettingsContent(
     viewState: ProfileSettingsViewState,
-    onEvent: (ProfileSettingsEvent) -> Unit,
+    onEvent: (ProfileSettingsEvent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
