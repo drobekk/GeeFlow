@@ -6,6 +6,7 @@ import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
+import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
@@ -18,6 +19,7 @@ import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
 import app.geeflow.domain.exception.DeviceNotConnectedException
+import app.geeflow.domain.user.usecase.GetSkipManualBrewHistoryUseCase
 import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent
@@ -68,10 +70,12 @@ internal class ProfileEditorViewModel(
     observeDeviceState: ObserveDeviceStateUseCase,
     getVisibleCharts: GetVisibleChartsUseCase,
     observeDeviceProfile: ObserveDeviceProfileUseCase,
+    getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
 ) : BaseViewModel<ProfileEditorViewState, ProfileEditorViewModelEvent>(ProfileEditorViewState()) {
 
     private var nextStepId = 0L
     private var boundProfileId: Long? = null
+    private var skipManualBrews = true
 
     init {
         launch {
@@ -87,8 +91,10 @@ internal class ProfileEditorViewModel(
                 loadProfile(profile)
             }
         }
+        launch { getSkipManualBrewHistory().collect { skipManualBrews = it } }
         launch {
             observeBrewData(args.deviceId).collect { session ->
+                if (session.mode == BrewMode.Manual && skipManualBrews) return@collect
                 modify { copy(brew = brew.copy(time = session.elapsedSeconds, data = session.toChartData())) }
             }
         }
