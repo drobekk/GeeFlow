@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.main
 
+import app.geeflow.data.brew.model.PhaseTransition
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
@@ -39,6 +40,7 @@ data class DeviceDashboardViewState(
          * shown, so the charts can overlay that brew's own profile instead of the selected one —
          * an empty map means the recorded brew had no profile.
          */
+        val phaseTransitions: List<PhaseTransition> = emptyList(),
         val historyTarget: Map<Float, ChartData>? = null,
     )
 

@@ -4,6 +4,8 @@ import app.geeflow.data.brew.db.AppDatabase
 import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewHistoryEntry
 import app.geeflow.data.brew.model.BrewMode
+import app.geeflow.data.brew.model.FreeHandRecording
+import app.geeflow.data.brew.model.ProfileExecutionTrace
 import app.geeflow.data.brew.model.ProfileStep
 import org.koin.core.annotation.Singleton
 import kotlin.time.Instant
@@ -27,6 +29,8 @@ class BrewHistoryDao(database: AppDatabase) {
             startedAt = entry.startedAt.toEpochMilliseconds(),
             durationSeconds = entry.durationSeconds.toLong(),
             profileSteps = entry.profileSteps,
+            profileRecording = entry.profileRecording,
+            executionTrace = entry.executionTrace,
             dataPoints = dataPoints,
         )
     }
@@ -49,6 +53,8 @@ class BrewHistoryDao(database: AppDatabase) {
         startedAt: Long,
         durationSeconds: Long,
         profileSteps: List<ProfileStep>,
+        profileRecording: FreeHandRecording?,
+        executionTrace: ProfileExecutionTrace?,
     ): BrewHistoryEntry = BrewHistoryEntry(
         id = id,
         userId = userId,
@@ -58,5 +64,7 @@ class BrewHistoryDao(database: AppDatabase) {
         startedAt = Instant.fromEpochMilliseconds(startedAt),
         durationSeconds = durationSeconds.toInt(),
         profileSteps = profileSteps,
+        profileRecording = profileRecording,
+        executionTrace = executionTrace,
     )
 }

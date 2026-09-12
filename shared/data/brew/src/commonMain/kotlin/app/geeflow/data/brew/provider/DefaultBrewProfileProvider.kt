@@ -4,7 +4,6 @@ package app.geeflow.data.brew.provider
 
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
-import app.geeflow.data.brew.model.ProfileMode
 import app.geeflow.data.brew.model.ProfileStep
 import org.koin.core.annotation.Factory
 
@@ -15,7 +14,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Disco Italiano",
             description = "Traditional 9 bar extraction",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Volume(50f),
             steps = listOf(
                 ProfileStep.Pressure(time = 30, pressure = 9f),
@@ -26,7 +25,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Disco Italiano Lungo",
             description = "Traditional 9 bar extraction, 100ml out",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Volume(100f),
             steps = listOf(
                 ProfileStep.Pressure(time = 30, pressure = 9f),
@@ -37,7 +36,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Zuppa",
             description = "20g in 60g out",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Weight(60f),
             steps = listOf(
                 ProfileStep.Flow(time = 5, flow = 6f),
@@ -50,7 +49,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Zuppa Lungo",
             description = "20g in 110g out",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Weight(110f),
             steps = listOf(
                 ProfileStep.Flow(time = 5, flow = 6f),
@@ -63,7 +62,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Cremina",
             description = "Lever-style: long soak, 9 bar peak, declining to 3 bar",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Weight(38f),
             steps = listOf(
                 ProfileStep.Pressure(time = 15, pressure = 1.1f),
@@ -81,7 +80,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Blooming Espresso",
             description = "Flow preinfusion, 30s bloom, then 2.2 ml/s extraction",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Weight(42f),
             steps = listOf(
                 ProfileStep.Flow(time = 25, flow = 4f),
@@ -94,7 +93,7 @@ class DefaultBrewProfileProvider {
             userId = userId,
             name = "Preinfusion",
             description = "18g in 36g out, 9 bar after a 5s soak",
-            mode = ProfileMode.VariablePressure,
+
             finishCondition = Condition.Volume(78f),
             steps = listOf(
                 ProfileStep.Pressure(time = 5, pressure = 3f),

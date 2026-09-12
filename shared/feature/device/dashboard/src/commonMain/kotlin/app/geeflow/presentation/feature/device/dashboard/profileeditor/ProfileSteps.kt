@@ -55,6 +55,8 @@ import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.modifier.squareSize
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.experimental_global_off
+import geeflow.shared.feature.device.dashboard.generated.resources.experimental_global_on
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_add_step
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_end_step
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_remove_step
@@ -87,6 +89,7 @@ internal fun ProfileStepsColumn(
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    allowAdd: Boolean = true,
 ) {
     val haptic = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
@@ -116,16 +119,19 @@ internal fun ProfileStepsColumn(
                 )
             }
         }
-        item(key = AddStepKey) {
-            AddStepButton(
-                onClick = { onEvent(AddStepClicked) },
-                modifier = Modifier.fillMaxWidth().animateItem(),
-            )
+        if (allowAdd) {
+            item(key = AddStepKey) {
+                AddStepButton(
+                    onClick = { onEvent(AddStepClicked) },
+                    modifier = Modifier.fillMaxWidth().animateItem(),
+                )
+            }
         }
         item(key = EndStepKey) {
             EndStepCard(
                 finishTarget = finishTarget,
                 onTypeClick = { onEvent(FinishTargetClicked(it)) },
+                onToggle = { onEvent(ProfileEditorEvent.ToggleGlobalGoal) },
                 modifier = Modifier.fillMaxWidth().animateItem(),
             )
         }
@@ -139,6 +145,7 @@ internal fun ProfileStepsRow(
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    allowAdd: Boolean = true,
 ) {
     val haptic = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
@@ -169,16 +176,19 @@ internal fun ProfileStepsRow(
                 )
             }
         }
-        item(key = AddStepKey) {
-            AddStepButton(
-                onClick = { onEvent(AddStepClicked) },
-                modifier = Modifier.fillMaxHeight().animateItem(),
-            )
+        if (allowAdd) {
+            item(key = AddStepKey) {
+                AddStepButton(
+                    onClick = { onEvent(AddStepClicked) },
+                    modifier = Modifier.fillMaxHeight().animateItem(),
+                )
+            }
         }
         item(key = EndStepKey) {
             EndStepCard(
                 finishTarget = finishTarget,
                 onTypeClick = { onEvent(FinishTargetClicked(it)) },
+                onToggle = { onEvent(ProfileEditorEvent.ToggleGlobalGoal) },
                 // The lazy row measures items with an unbounded width, so the card has to state an
                 // intrinsic one for the equally weighted toggles inside it to resolve.
                 modifier = Modifier.width(IntrinsicSize.Max).fillMaxHeight().animateItem(),
@@ -218,8 +228,10 @@ private fun StepCard(
                 StepBadge(number = number, icon = icon, color = color)
                 HorizontalSpacer(16.dp)
                 Column(Modifier.weight(1f)) {
+                    if (step.phaseName.isNotBlank()) StepTimeText(step.phaseName)
                     StepValueText(value)
                     StepTimeText(time)
+                    PhaseDetails(step, onEvent)
                 }
                 RemoveStepButton(onClick = removeStep)
             }
@@ -237,6 +249,7 @@ private fun StepCard(
                 VerticalSpacer(1f)
                 StepValueText(value)
                 StepTimeText(time)
+                PhaseDetails(step, onEvent)
             }
         }
     }
@@ -246,6 +259,7 @@ private fun StepCard(
 private fun EndStepCard(
     finishTarget: FinishTarget,
     onTypeClick: (FinishTargetType) -> Unit,
+    onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -263,16 +277,25 @@ private fun EndStepCard(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            VerticalSpacer(8.dp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FinishTargetType.entries.forEach { type ->
-                    FinishTargetButton(
-                        type = type,
-                        selected = finishTarget.type == type,
-                        value = finishTarget.valueLabel(type),
-                        onClick = { onTypeClick(type) },
-                        modifier = Modifier.weight(1f),
+            androidx.compose.material3.TextButton(onClick = onToggle) {
+                Text(
+                    stringResource(
+                        if (finishTarget.enabled) Res.string.experimental_global_on else Res.string.experimental_global_off
                     )
+                )
+            }
+            VerticalSpacer(8.dp)
+            if (finishTarget.enabled) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FinishTargetType.entries.forEach { type ->
+                        FinishTargetButton(
+                            type = type,
+                            selected = finishTarget.type == type,
+                            value = finishTarget.valueLabel(type),
+                            onClick = { onTypeClick(type) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }

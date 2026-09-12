@@ -1,4 +1,5 @@
 <resources>
+    <string name="free_control_recording_too_long">This recording is too long to replay. Free hand profiles support about 63 seconds of recorded measurements.</string>
     <!-- Device Dashboard -->
     <string name="device_dashboard_clean">Clean</string>
     <string name="device_dashboard_alarm">Alarm</string>
@@ -79,4 +80,47 @@
     <string name="quick_maintenance_title">Maintenance</string>
     <string name="quick_maintenance_start">Start cleaning</string>
     <string name="quick_maintenance_stop">Stop cleaning</string>
+    <string name="profile_experimental_info">Experimental on this machine: GeeFlow controls this profile while the app stays open. The machine cannot run it natively, so it cannot be assigned to its paddle or button.</string>
+    <string name="experimental_phase_transition">Phase transition</string>
+    <string name="experimental_phase_name">Phase name</string>
+    <string name="experimental_phase_limit">Maximum duration: %1$d s. The phase ends when any condition is met, or its time expires.</string>
+    <string name="experimental_ramp">Ramp</string>
+    <string name="experimental_start_from">Start from</string>
+    <string name="experimental_ramp_duration">Ramp duration (s)</string>
+    <string name="experimental_minimum_time">Evaluate conditions after (s)</string>
+    <string name="experimental_add_condition">Add exit condition</string>
+    <string name="experimental_save_transition">Save transition</string>
+    <string name="experimental_measurement">Measurement</string>
+    <string name="experimental_comparison">Comparison</string>
+    <string name="experimental_remove_condition">Remove condition</string>
+    <string name="experimental_water">Water pumped in this phase (ml)</string>
+    <string name="experimental_weight">Total cup weight (g)</string>
+    <string name="experimental_flow">Pump flow (ml/s)</string>
+    <string name="experimental_pump_pressure">Pump pressure (bar)</string>
+    <string name="experimental_group_pressure">Group pressure (bar)</string>
+    <string name="experimental_boiler_pressure">Boiler pressure (bar)</string>
+    <string name="experimental_transition">Transition</string>
+    <string name="experimental_copy">Copy</string>
+    <string name="experimental_title">Experimental</string>
+    <string name="experimental_app_control">Experimental · app control</string>
+    <string name="experimental_preview">Preview uses maximum phase times. Ramp starts from measurements are determined during brewing.</string>
+    <string name="experimental_global_on">Global goal: on</string>
+    <string name="experimental_global_off">Stop after last phase</string>
+    <string name="experimental_instant">Instant</string>
+    <string name="experimental_linear">Linear</string>
+    <string name="experimental_ease_in">Ease in</string>
+    <string name="experimental_ease_out">Ease out</string>
+    <string name="experimental_ease_in_out">Ease in-out</string>
+    <string name="experimental_previous_target">Previous target</string>
+    <string name="experimental_current_measurement">Current measurement</string>
+    <string name="experimental_above">At or above</string>
+    <string name="experimental_below">At or below</string>
+    <string name="experimental_selection">%1$s: %2$s</string>
+    <string name="experimental_ramp_summary">%1$s · %2$s s</string>
+    <string name="experimental_condition_summary">%1$s · %2$s %3$s</string>
+    <string name="experimental_unsupported">This profile cannot run on the selected machine.</string>
+    <string name="experimental_invalid">Check phase durations, targets and conditions.</string>
+    <string name="experimental_mode_switch">This machine does not support switching pressure and flow during app-controlled brewing.</string>
+    <string name="experimental_sensor">A required measurement is unsupported or unavailable on this machine.</string>
+    <string name="experimental_control">This machine does not support the requested live control.</string>
 </resources>

@@ -114,6 +114,26 @@ internal class BrewSyncState {
 @Composable
 internal fun rememberBrewSyncState(): BrewSyncState = remember { BrewSyncState() }
 
+@Composable
+internal fun rememberPhaseBoundaryMarker(): CartesianMarker {
+    val label = rememberTextComponent()
+    val guideline = rememberAxisGuidelineComponent()
+    return remember(label, guideline) {
+        object : DefaultCartesianMarker(label = label, guideline = guideline) {
+            override fun updateLayerMargins(
+                context: CartesianMeasuringContext,
+                layerMargins: CartesianLayerMargins,
+                layerDimensions: CartesianLayerDimensions,
+                model: CartesianChartModel,
+            ) = Unit
+
+            override fun drawOverLayers(context: CartesianDrawingContext, targets: List<CartesianMarker.Target>) {
+                with(context) { drawGuideline(targets) }
+            }
+        }
+    }
+}
+
 private class SideCenteredCartesianMarker(
     label: TextComponent,
     valueFormatter: ValueFormatter,

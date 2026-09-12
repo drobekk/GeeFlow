@@ -9,12 +9,33 @@ data class BrewProfile(
     val userId: Long,
     val name: String,
     val description: String,
-    val mode: ProfileMode = ProfileMode.VariablePressure,
-    val finishCondition: Condition,
+    val finishCondition: Condition? = null,
     val autoLinkOpen: Boolean = false,
-    val steps: List<ProfileStep> = emptyList(),
+    val program: BrewProgram,
     val position: Int = 0,
 ) {
+    /** Convenience view for simple phase presentation and native adapters. */
+    val steps: List<ProfileStep> get() = (program as? BrewProgram.Phases)?.phases.orEmpty().map { phase ->
+        val seconds = (phase.maximumDurationMillis / 1000).toInt()
+        when (val control = phase.control) {
+            is PhaseControl.Pressure -> ProfileStep.Pressure(seconds, control.bar)
+            is PhaseControl.Flow -> ProfileStep.Flow(seconds, control.millilitresPerSecond)
+            PhaseControl.PumpPause -> ProfileStep.Wait(seconds)
+        }
+    }
+    val recording: FreeHandRecording? get() = (program as? BrewProgram.Recording)?.recording
+
+    constructor(
+        id: Long = NEW_ID,
+        userId: Long,
+        name: String,
+        description: String,
+        finishCondition: Condition?,
+        steps: List<ProfileStep>,
+        position: Int = 0,
+        autoLinkOpen: Boolean = false,
+    ) : this(id, userId, name, description, finishCondition, autoLinkOpen, steps.toProgram(), position)
+
     companion object {
         const val NEW_ID = 0L
     }
@@ -46,11 +67,4 @@ sealed interface Condition {
     @Serializable
     @SerialName("volume")
     data class Volume(val target: Float) : Condition
-}
-
-@Serializable
-enum class ProfileMode {
-    VariablePressure,
-    ConstantPressure,
-    FreeVariable,
 }

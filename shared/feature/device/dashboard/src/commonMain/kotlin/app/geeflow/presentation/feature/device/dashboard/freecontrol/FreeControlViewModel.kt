@@ -7,6 +7,7 @@ import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewSession
+import app.geeflow.data.brew.model.RecordingCapacityExceededException
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
@@ -40,6 +41,7 @@ import app.geeflow.presentation.feature.device.dashboard.model.toDomain
 import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_profile_saved
+import geeflow.shared.feature.device.dashboard.generated.resources.free_control_recording_too_long
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -91,7 +93,10 @@ internal class FreeControlViewModel(
         is ModeChanged -> onModeChanged(event)
         is TargetChanged -> onTargetChanged(event.value)
         is StartClicked -> startBrewing()
-        is StopClicked -> launchCatching(::onError) { stopFreeVariableBrewing(args.deviceId) }
+        is StopClicked -> {
+            targetUpdateJob?.cancel()
+            launchCatching(::onError) { stopFreeVariableBrewing(args.deviceId) }
+        }
         is SaveClicked -> saveSession()
         is RenameClicked -> modify { copy(showRenameDialog = true) }
         is RenameConfirmed -> modify { copy(profileName = event.name, showRenameDialog = false) }
@@ -100,6 +105,8 @@ internal class FreeControlViewModel(
     }
 
     private fun startBrewing(): Job = launchCatching(::onError) {
+        targetUpdateJob?.cancel()
+        modify { copy(sessionCompleted = false) }
         val isFlow = viewState.value.mode == ControlMode.Flow
         try {
             modify { copy(brewButtonState = BrewButtonState.Syncing) }
@@ -150,7 +157,7 @@ internal class FreeControlViewModel(
         val session = lastSession ?: return
         val name = viewState.value.profileName.ifBlank { return }
         launchCatching(::onError) {
-            saveFreeVariableProfile(session, name, viewState.value.mode == ControlMode.Flow)
+            saveFreeVariableProfile(session, name)
             emitEvent(ShowSnackbar(getString(Res.string.free_control_profile_saved)))
         }
     }
@@ -182,7 +189,14 @@ internal class FreeControlViewModel(
 
     private fun onError(throwable: Throwable) {
         Logger.e(throwable = throwable) { "${this::class.simpleName}" }
-        launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
+        launch {
+            val message = if (throwable is RecordingCapacityExceededException) {
+                getString(Res.string.free_control_recording_too_long)
+            } else {
+                throwable.toUserMessage()
+            }
+            emitEvent(ShowSnackbar(message))
+        }
     }
 
     override fun onCleared() {

@@ -18,6 +18,7 @@ import app.geeflow.domain.brew.usecase.GetBrewHistoryUseCase
 import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import app.geeflow.domain.brew.usecase.UpdateBrewProfilesPositionsUseCase
+import app.geeflow.domain.device.usecase.GetProfileSupportUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
@@ -46,6 +47,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual_badge
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile_badge
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_experimental_info
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_duplicate_name
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -65,6 +67,7 @@ internal class ProfileListViewModel(
     private val observeUserProfilesUseCase: ObserveUserProfilesUseCase,
     private val observeDeviceProfileUseCase: ObserveDeviceProfileUseCase,
     private val observeDeviceStateUseCase: ObserveDeviceStateUseCase,
+    private val getProfileSupport: GetProfileSupportUseCase,
     private val bindProfileUseCase: BindProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val duplicateProfileUseCase: DuplicateProfileUseCase,
@@ -98,6 +101,9 @@ internal class ProfileListViewModel(
     }
 
     fun handleEvent(event: ProfileListEvent) = when (event) {
+        ProfileListEvent.ExperimentClicked -> launch {
+            emitEvent(ShowSnackbar(getString(Res.string.profile_experimental_info)))
+        }
         is ProfileSelected -> setSelectedProfileId(event.id)
         is HistoryClicked -> toggleHistory()
         is HistoryBrewSelected -> showHistoryBrew(event.id)
@@ -171,8 +177,11 @@ internal class ProfileListViewModel(
             ShowHistoryBrew(
                 name = entry.displayName(),
                 durationSeconds = entry.durationSeconds,
+                phaseTransitions = entry.executionTrace?.transitions.orEmpty(),
                 data = data,
-                targetData = entry.profileSteps.toTargetData(),
+                targetData =
+                entry.executionTrace?.toTargetData() ?: entry.profileRecording?.toTargetData()
+                    ?: entry.profileSteps.toTargetData(),
             ),
         )
     }
@@ -259,8 +268,14 @@ internal class ProfileListViewModel(
         emitEvent(SelectProfile(selectedProfileId))
     }
 
-    private fun mapToProfile(index: Int, profile: BrewProfile, selected: Boolean, bound: Boolean): ProfileListViewState.Profile {
+    private fun mapToProfile(
+        index: Int,
+        profile: BrewProfile,
+        selected: Boolean,
+        bound: Boolean
+    ): ProfileListViewState.Profile {
         val conditionText = when (val cond = profile.finishCondition) {
+            null -> ""
             is Condition.Weight -> "${cond.target.toInt()}g"
             is Condition.Volume -> "${cond.target.toInt()}ml"
         }
@@ -271,9 +286,11 @@ internal class ProfileListViewModel(
             name = profile.name,
             description = "$conditionText • ${profile.description}",
             brewByWeight = profile.finishCondition is Condition.Weight,
+            experimental = getProfileSupport(args.deviceId, profile).experimental,
+            canBind = getProfileSupport(args.deviceId, profile).bindingAllowed,
             bound = bound,
             selected = selected,
-            targetData = profile.steps.toTargetData(),
+            targetData = profile.toTargetData(),
         )
     }
 

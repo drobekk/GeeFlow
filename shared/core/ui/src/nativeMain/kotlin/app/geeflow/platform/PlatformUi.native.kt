@@ -18,7 +18,13 @@ actual fun getThemeProvider() = object : ThemeProvider {}
 actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
 
 @Composable
-actual fun KeepScreenOnEffect(enabled: Boolean) = Unit
+actual fun KeepScreenOnEffect(enabled: Boolean) {
+    androidx.compose.runtime.DisposableEffect(enabled) {
+        val previous = UIApplication.sharedApplication.idleTimerDisabled
+        UIApplication.sharedApplication.idleTimerDisabled = enabled
+        onDispose { UIApplication.sharedApplication.idleTimerDisabled = previous }
+    }
+}
 
 @Composable
 actual fun FullScreenEffect(enabled: Boolean) {

@@ -4,7 +4,8 @@
 package app.geeflow.data.device.impl.controller
 
 import app.geeflow.data.brew.model.BrewProfile
-import app.geeflow.data.brew.model.ProfileMode
+import app.geeflow.data.brew.model.FreeHandControlMode
+import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.ModbusSession
@@ -25,7 +26,6 @@ import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATU
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_OFF
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_ON
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_START_STREAMING
-import app.geeflow.data.device.impl.controller.WendougeeCommands.decodeHex
 import app.geeflow.data.device.impl.discovery.BleAdvertisement
 import app.geeflow.data.device.impl.discovery.WendougeeBleDeviceDiscoverer
 import app.geeflow.data.device.model.Device
@@ -38,6 +38,7 @@ import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
 import app.geeflow.data.device.model.DeviceState.HeatingMode
 import app.geeflow.data.device.model.SmartScale
+import app.geeflow.data.device.model.pumpTelemetry
 import co.touchlab.kermit.Logger
 import dev.bluefalcon.core.BlueFalcon
 import dev.bluefalcon.core.BluetoothCharacteristic
@@ -71,6 +72,12 @@ class WendougeeDataSController(
     private val modbusPlugin: ModbusPlugin,
     private val discoverer: WendougeeBleDeviceDiscoverer,
 ) : DeviceController {
+    override suspend fun stopLiveSession() = stopFreeVariableBrewing()
+    override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == DeviceState.BrewStatus.FreeVariable
+    override val profilingCapabilities = WendougeeProfiling.capabilities
+    override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
+    override fun telemetry() = deviceState.value.pumpTelemetry()
+    override suspend fun openLiveSession(initial: PhaseControl) = openFreeHandSession(initial)
 
     private val _deviceState = MutableStateFlow(DeviceState())
     override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()
@@ -529,6 +536,12 @@ class WendougeeDataSController(
     override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting free variable brew (isFlow=$isFlow)..." }
+            _deviceState.update {
+                it.copy(
+                    freeHandControlMode = if (isFlow) FreeHandControlMode.Flow else FreeHandControlMode.Pressure,
+                    freeHandStopRequested = false,
+                )
+            }
             requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_PREPARE, FREE_VAR_PREPARE_VALUE)
             requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_MODE, if (isFlow) 1 else 0,)
             sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew", 0x00, COIL_FREE_VAR_BREW.toByte())
@@ -538,8 +551,19 @@ class WendougeeDataSController(
 
     override suspend fun stopFreeVariableBrewing() {
         if (_deviceState.value.brewStatus == BrewStatus.FreeVariable) {
+            _deviceState.update { it.copy(freeHandStopRequested = true) }
             Logger.withTag(TAG).i { "Stopping free variable brew..." }
-            sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew Stop", 0x00, COIL_FREE_VAR_BREW.toByte())
+            requireSession().modbus.writeSingleRegister(
+                WendougeeRegisters.FREE_VAR_MODE,
+                if (_deviceState.value.freeHandControlMode == FreeHandControlMode.Flow) 1 else 0,
+            )
+            sendModbusPulse(
+                CMD_FREE_VAR_ON,
+                CMD_FREE_VAR_OFF,
+                "Free Variable Brew Stop",
+                0x00,
+                COIL_FREE_VAR_BREW.toByte()
+            )
         }
     }
 
@@ -665,14 +689,12 @@ class WendougeeDataSController(
         applyProfileWrites(profile, isBinding = false)
 
         Logger.withTag(TAG).d { "Profile uploaded, triggering brew pulse" }
-        if (profile.mode == ProfileMode.FreeVariable) {
-            sendModbusPulse(
-                onCommand = "0105009eff00ec14".decodeHex(),
-                offCommand = "0105009e0000ad24".decodeHex(),
-                label = "Profile Brew (Free)",
-                regHi = 0x00,
-                regLo = COIL_PROFILE_FREE.toByte(),
-            )
+        if (profile.recording != null) {
+            val modbus = requireSession().modbus
+            modbus.writeSingleCoil(COIL_PROFILE_FREE, true)
+            delay(BREW_PULSE_MS)
+            modbus.writeSingleCoil(COIL_PROFILE_FREE, false)
+            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
         } else {
             sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
         }

@@ -10,7 +10,6 @@ import app.geeflow.app.theme.rememberAppColorScheme
 import app.geeflow.app.theme.rememberAppearanceSettings
 import app.geeflow.app.theme.toUiThemeMode
 import app.geeflow.platform.FullScreenEffect
-import app.geeflow.platform.KeepScreenOnEffect
 import app.geeflow.platform.ThemeModeEffect
 import app.geeflow.ui.theme.GeeFlowTheme
 import coil3.ImageLoader
@@ -42,9 +41,9 @@ fun App(closeApp: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
         ) {
             ThemeModeEffect(appearance.themeMode.toUiThemeMode())
-            KeepScreenOnEffect(appearance.keepScreenOn)
             FullScreenEffect(appearance.fullScreenMode)
             RootNavigation(closeApp)
+            ProfileExecutionEffect(appearance.keepScreenOn)
         }
     }
 }

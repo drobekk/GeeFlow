@@ -89,7 +89,13 @@ internal fun DeviceDashboardScreen(
             is SelectProfile -> viewModel.handleEvent(DeviceDashboardEvent.ProfileSelected(it.id))
             is ShowHistoryBrew -> {
                 viewModel.handleEvent(
-                    DeviceDashboardEvent.HistoryBrewSelected(it.name, it.durationSeconds, it.data, it.targetData),
+                    DeviceDashboardEvent.HistoryBrewSelected(
+                        it.name,
+                        it.durationSeconds,
+                        it.data,
+                        it.targetData,
+                        it.phaseTransitions
+                    ),
                 )
                 coroutineScope.launch { pagerState.animateScrollToPage(CompactDashboardPage.Details.ordinal) }
             }

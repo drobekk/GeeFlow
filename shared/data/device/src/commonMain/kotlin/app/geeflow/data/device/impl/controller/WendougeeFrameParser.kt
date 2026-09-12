@@ -5,6 +5,7 @@ import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.HeatingMode
 import app.geeflow.data.device.model.SmartScale
 import co.touchlab.kermit.Logger
+import kotlin.time.Clock
 
 class WendougeeFrameParser(
     private val onStateUpdate: (DeviceState.() -> DeviceState) -> Unit,
@@ -255,7 +256,7 @@ class WendougeeFrameParser(
             isProfile -> BrewStatus.Profile
             else -> BrewStatus.Idle
         }
-        onStateUpdate { copy(brewStatus = brewStatus) }
+        onStateUpdate { copy(brewStatus = brewStatus, statusTime = Clock.System.now()) }
     }
 
     private fun parseTelemetryFrame(payload: ByteArray) {
@@ -284,6 +285,7 @@ class WendougeeFrameParser(
 
             onStateUpdate {
                 copy(
+                    telemetryTime = Clock.System.now(),
                     steamBoilerTemp = steamActual,
                     brewBoilerTemp = brewActual,
                     pressure = pressure,
