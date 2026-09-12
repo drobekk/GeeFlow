@@ -216,7 +216,7 @@ private fun CompactLayout(
                 onEvent = onEvent,
                 modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 16.dp, end = 24.dp),
             )
-            ProfileStepsColumn(
+            ProfileStepsRow(
                 steps = viewState.steps,
                 allowAdd = !viewState.isRecording,
                 finishTarget = viewState.finishTarget,
@@ -224,7 +224,7 @@ private fun CompactLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 8.dp)
-                    .height(260.dp),
+                    .height(150.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp),
             )
         }

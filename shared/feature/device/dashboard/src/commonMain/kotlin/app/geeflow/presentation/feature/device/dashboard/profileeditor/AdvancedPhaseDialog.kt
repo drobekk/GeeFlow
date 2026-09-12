@@ -47,7 +47,6 @@ import geeflow.shared.feature.device.dashboard.generated.resources.experimental_
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_comparison
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_condition_summary
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_control
-import geeflow.shared.feature.device.dashboard.generated.resources.experimental_copy
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_current_measurement
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_ease_in
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_ease_in_out
@@ -232,14 +231,8 @@ internal fun ExperimentButton(onClick: () -> Unit) {
 @Composable
 internal fun PhaseDetails(step: ProfileEditorViewState.Step, onEvent: (ProfileEditorEvent) -> Unit) {
     Column {
-        Row {
-            if (step.experimental) ExperimentButton { onEvent(ProfileEditorEvent.ExperimentClicked) }
-            TextButton(
-                onClick = { onEvent(ProfileEditorEvent.AdvancedClicked(step.id)) }
-            ) { Text(stringResource(Res.string.experimental_transition)) }
-            TextButton(
-                onClick = { onEvent(ProfileEditorEvent.StepDuplicated(step.id)) }
-            ) { Text(stringResource(Res.string.experimental_copy)) }
+        if (step.experimental) {
+            ExperimentButton { onEvent(ProfileEditorEvent.ExperimentClicked) }
         }
         if (step.ramp.style != RampStyle.Instant) {
             Text(

@@ -150,13 +150,13 @@ private fun Boiler(
         checked = boiler.enabled,
         onCheckedChange = onEnabledChanged,
         enabled = true,
-        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(8.dp)
     GeeFlowInfinitePicker(
         items = boiler.tempList,
         selected = boiler.selectedTemp,
         enabled = boiler.enabled,
+        unit = "°C",
         onSelectionChanged = onTempChanged,
     )
 }

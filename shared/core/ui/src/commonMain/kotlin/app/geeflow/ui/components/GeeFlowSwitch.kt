@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -35,11 +36,13 @@ import geeflow.shared.core.ui.generated.resources.common_off
 import geeflow.shared.core.ui.generated.resources.common_on
 import org.jetbrains.compose.resources.stringResource
 
+val DefaultToggleWidth: Dp = DefaultControlWidth
+
 @Composable
 fun GeeFlowSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(DefaultControlWidth),
     enabled: Boolean = true,
 ) {
     val shape = MaterialTheme.shapes.large
@@ -61,7 +64,6 @@ fun GeeFlowSwitch(
 
     Box(
         modifier = modifier
-            .width(IntrinsicSize.Min)
             .height(IntrinsicSize.Min)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainer)

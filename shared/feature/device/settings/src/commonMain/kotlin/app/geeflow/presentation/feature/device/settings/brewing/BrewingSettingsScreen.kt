@@ -1,7 +1,5 @@
 package app.geeflow.presentation.feature.device.settings.brewing
 
-import app.geeflow.navigation.Navigator
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -28,10 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
@@ -56,8 +54,10 @@ import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_brew_boiler
 import geeflow.shared.core.ui.generated.resources.common_pressure
+import geeflow.shared.core.ui.generated.resources.common_sec
 import geeflow.shared.core.ui.generated.resources.common_steam_boiler
 import geeflow.shared.core.ui.generated.resources.common_time
+import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.feature.device.settings.generated.resources.Res
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_boiler
@@ -237,6 +237,7 @@ private fun PaddleSection(
                 items = paddle.pressureList,
                 selected = paddle.pressure,
                 enabled = true,
+                unit = stringResource(CoreRes.string.unit_bar),
                 onSelectionChanged = { onEvent(PaddlePressureChanged(it)) },
             )
         }
@@ -254,6 +255,7 @@ private fun PaddleSection(
                 items = paddle.timeList,
                 selected = paddle.time,
                 enabled = true,
+                unit = stringResource(CoreRes.string.common_sec),
                 onSelectionChanged = { onEvent(BrewingSettingsEvent.PaddleTimeChanged(it)) },
             )
         }
@@ -280,7 +282,6 @@ private fun Boiler(
     modifier: Modifier = Modifier,
 ) = Column(
     modifier = modifier,
-    horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     BoilerHeader(
         label = label,
@@ -291,13 +292,13 @@ private fun Boiler(
         checked = boiler.enabled,
         onCheckedChange = onEnabledChanged,
         enabled = true,
-        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(8.dp)
     GeeFlowInfinitePicker(
         items = boiler.tempList,
         selected = boiler.selectedTemp,
         enabled = boiler.enabled,
+        unit = "°C",
         onSelectionChanged = onTempChanged,
     )
 }
@@ -309,20 +310,17 @@ private fun BoilerHeader(
 ) = FlowRow(
     verticalArrangement = Arrangement.Center,
     horizontalArrangement = Arrangement.Start,
-    modifier = Modifier.fillMaxWidth(),
 ) {
     Text(
         text = label,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurface,
-        textAlign = TextAlign.Center,
     )
     HorizontalSpacer(4.dp)
     Text(
         text = "($actualTemp°)",
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
     )
 }
 
