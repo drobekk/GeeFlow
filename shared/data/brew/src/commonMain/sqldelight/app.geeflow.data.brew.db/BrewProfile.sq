@@ -1,6 +1,7 @@
 import app.geeflow.data.brew.model.Condition;
-import app.geeflow.data.brew.model.ProfileMode;
+import app.geeflow.data.brew.model.BrewProgram;
 import app.geeflow.data.brew.model.ProfileStep;
+import app.geeflow.data.brew.model.FreeHandRecording;
 import kotlin.collections.List;
 
 CREATE TABLE brew_profiles (
@@ -8,10 +9,9 @@ CREATE TABLE brew_profiles (
   userId INTEGER NOT NULL,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
-  mode TEXT AS ProfileMode NOT NULL DEFAULT 'VariablePressure',
-  finishCondition TEXT AS Condition NOT NULL,
+  finishCondition TEXT AS Condition,
   autoLinkOpen INTEGER NOT NULL DEFAULT 0,
-  steps TEXT AS List<ProfileStep> NOT NULL,
+  program TEXT AS BrewProgram NOT NULL,
   position INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -26,7 +26,7 @@ selectById:
 SELECT * FROM brew_profiles WHERE id = ?;
 
 insertBrewProfile:
-INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, mode, finishCondition, autoLinkOpen, steps, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, finishCondition, autoLinkOpen, program, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM brew_profiles WHERE id = ?;

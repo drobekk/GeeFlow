@@ -60,6 +60,7 @@ internal fun ProfileEditorDialogs(
 ) {
     val onDismiss = { onEvent(DialogDismissed) }
     when (dialog) {
+        is ProfileEditorDialog.Advanced -> AdvancedPhaseDialog(dialog.step, onEvent)
         is ProfileEditorDialog.Details -> ProfileDetailsDialog(
             currentName = viewState.profileName,
             currentDescription = viewState.description,

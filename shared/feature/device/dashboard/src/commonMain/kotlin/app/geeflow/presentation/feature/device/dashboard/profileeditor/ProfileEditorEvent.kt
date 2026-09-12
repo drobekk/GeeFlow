@@ -3,6 +3,11 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 
 internal sealed interface ProfileEditorEvent {
+    data object ExperimentClicked : ProfileEditorEvent
+    data object ToggleGlobalGoal : ProfileEditorEvent
+    data class AdvancedClicked(val id: Long) : ProfileEditorEvent
+    data class AdvancedConfirmed(val step: ProfileEditorViewState.Step) : ProfileEditorEvent
+    data class StepDuplicated(val id: Long) : ProfileEditorEvent
     data object BackClicked : ProfileEditorEvent
     data object SaveClicked : ProfileEditorEvent
     data object TestClicked : ProfileEditorEvent

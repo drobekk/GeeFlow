@@ -1,7 +1,9 @@
 import app.geeflow.data.brew.model.BrewDataPoint;
 import app.geeflow.data.brew.model.BrewMode;
 import app.geeflow.data.brew.model.ProfileStep;
+import app.geeflow.data.brew.model.FreeHandRecording;
 import kotlin.Float;
+import app.geeflow.data.brew.model.ProfileExecutionTrace;
 import kotlin.collections.List;
 import kotlin.collections.Map;
 
@@ -17,6 +19,8 @@ CREATE TABLE brew_history (
   startedAt INTEGER NOT NULL,
   durationSeconds INTEGER NOT NULL,
   profileSteps TEXT AS List<ProfileStep> NOT NULL DEFAULT '[]',
+  profileRecording TEXT AS FreeHandRecording,
+  executionTrace TEXT AS ProfileExecutionTrace,
   dataPoints TEXT AS Map<Float, BrewDataPoint> NOT NULL,
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -26,7 +30,7 @@ CREATE INDEX brew_history_user_started_idx ON brew_history(userId, startedAt);
 -- The samples column is deliberately left out: the list only needs metadata, and a page of
 -- curves would be orders of magnitude larger than the rows shown.
 selectPage:
-SELECT id, userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps
+SELECT id, userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, profileRecording, executionTrace
 FROM brew_history
 WHERE userId = :userId
   AND (COALESCE(profileName, '') LIKE :pattern
@@ -39,8 +43,8 @@ selectDataPoints:
 SELECT dataPoints FROM brew_history WHERE id = ?;
 
 insertBrew:
-INSERT INTO brew_history(userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, dataPoints)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO brew_history(userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, profileRecording, executionTrace, dataPoints)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 trimHistory:
 DELETE FROM brew_history

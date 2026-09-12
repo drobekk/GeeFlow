@@ -1,5 +1,7 @@
 package app.geeflow.presentation.feature.device.settings.connectivity
 
+import app.geeflow.navigation.Navigator
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -76,7 +78,7 @@ import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun ConnectivitySettingsScreen(
     viewModel: ConnectivitySettingsViewModel,
-    navigator: app.geeflow.navigation.Navigator,
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()

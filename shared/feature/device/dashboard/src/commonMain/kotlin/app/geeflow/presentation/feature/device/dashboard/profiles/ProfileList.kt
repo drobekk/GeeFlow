@@ -75,6 +75,7 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.ExperimentButton
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.HistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import app.geeflow.ui.components.GeeFlowSwipeToRevealBox
@@ -176,7 +177,13 @@ private fun ProfilesColumn(
             viewState.profiles
         } else {
             viewState.profiles.filter {
-                it.name.contains(searchQuery, ignoreCase = true) || it.description.contains(searchQuery, ignoreCase = true)
+                it.name.contains(
+                    searchQuery,
+                    ignoreCase = true
+                ) || it.description.contains(
+                    searchQuery,
+                    ignoreCase = true
+                )
             }
         }
     }
@@ -534,6 +541,7 @@ private fun ProfileItem(
             profile = profile,
             smartScaleConnected = smartScaleConnected,
             onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) },
+            onExperimentClick = { onEvent(ProfileListEvent.ExperimentClicked) },
         )
     }
 }
@@ -585,6 +593,7 @@ private fun ProfileItemRevealContent(
         }
         IconButton(
             onClick = { onEvent(ProfileListEvent.BindProfileClicked(profile.id)) },
+            enabled = profile.canBind,
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = MaterialTheme.colorScheme.tertiary,
             ),
@@ -602,6 +611,7 @@ private fun ProfileItemContent(
     profile: Profile,
     smartScaleConnected: Boolean,
     onProfileClick: (String) -> Unit,
+    onExperimentClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val backgroundColor = when {
@@ -660,6 +670,11 @@ private fun ProfileItemContent(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f, false),
                 )
+                if (profile.experimental) {
+                    ExperimentButton(
+                        onExperimentClick
+                    )
+                }
                 if (profile.brewByWeight) {
                     val backgroundColor = if (smartScaleConnected) {
                         MaterialTheme.colorScheme.tertiary

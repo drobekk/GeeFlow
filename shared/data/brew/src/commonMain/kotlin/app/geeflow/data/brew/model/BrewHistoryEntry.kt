@@ -16,4 +16,6 @@ data class BrewHistoryEntry(
     val durationSeconds: Int,
     /** The profile's steps as they were when this brew ran; empty for manual and freehand brews. */
     val profileSteps: List<ProfileStep> = emptyList(),
+    val executionTrace: ProfileExecutionTrace? = null,
+    val profileRecording: FreeHandRecording? = null,
 )

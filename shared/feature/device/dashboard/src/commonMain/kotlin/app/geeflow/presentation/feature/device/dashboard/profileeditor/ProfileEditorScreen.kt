@@ -103,7 +103,7 @@ internal fun ProfileEditorScreen(
 }
 
 @Composable
-private fun ProfileEditorContent(
+internal fun ProfileEditorContent(
     viewState: ProfileEditorViewState,
     snackbarState: SnackbarHostState,
     onEvent: (ProfileEditorEvent) -> Unit,
@@ -153,6 +153,7 @@ private fun ExpandedLayout(
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
             )
+            ExperimentalNotice(viewState, onEvent)
             BrewCharts(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
@@ -167,6 +168,7 @@ private fun ExpandedLayout(
         }
         ProfileStepsColumn(
             steps = viewState.steps,
+            allowAdd = !viewState.isRecording,
             finishTarget = viewState.finishTarget,
             onEvent = onEvent,
             modifier = Modifier
@@ -202,6 +204,7 @@ private fun CompactLayout(
         },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
+            ExperimentalNotice(viewState, onEvent)
             BrewCharts(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
@@ -213,14 +216,15 @@ private fun CompactLayout(
                 onEvent = onEvent,
                 modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 16.dp, end = 24.dp),
             )
-            ProfileStepsRow(
+            ProfileStepsColumn(
                 steps = viewState.steps,
+                allowAdd = !viewState.isRecording,
                 finishTarget = viewState.finishTarget,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 8.dp)
-                    .height(StepsRowHeight),
+                    .height(260.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp),
             )
         }

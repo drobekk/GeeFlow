@@ -8,6 +8,7 @@ import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.GetBrewProfileUseCase
@@ -15,6 +16,7 @@ import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
+import app.geeflow.domain.device.usecase.GetProfileSupportUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
@@ -52,6 +54,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_bound_requires_connection
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_default_name
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_description
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_experimental_info
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -59,6 +62,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class ProfileEditorViewModel(
     @InjectedParam private val args: ProfileEditor,
+    private val getProfileSupport: GetProfileSupportUseCase,
     private val getBrewProfile: GetBrewProfileUseCase,
     private val bindProfile: BindProfileUseCase,
     private val saveBrewProfile: SaveBrewProfileUseCase,
@@ -73,6 +77,7 @@ internal class ProfileEditorViewModel(
     getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
 ) : BaseViewModel<ProfileEditorViewState, ProfileEditorViewModelEvent>(ProfileEditorViewState()) {
 
+    private var sourceProfile: BrewProfile? = null
     private var nextStepId = 0L
     private var boundProfileId: Long? = null
     private var skipManualBrews = true
@@ -95,7 +100,16 @@ internal class ProfileEditorViewModel(
         launch {
             observeBrewData(args.deviceId).collect { session ->
                 if (session.mode == BrewMode.Manual && skipManualBrews) return@collect
-                modify { copy(brew = brew.copy(time = session.elapsedSeconds, data = session.toChartData())) }
+                modify {
+                    copy(
+                        brew = brew.copy(
+                            time = session.elapsedSeconds,
+                            data = session.toChartData(),
+                            phaseTransitions = session.executionTrace?.transitions.orEmpty()
+                        ),
+                        targetData = session.executionTrace?.toTargetData() ?: targetData
+                    )
+                }
             }
         }
         launch {
@@ -109,6 +123,29 @@ internal class ProfileEditorViewModel(
 
     @Suppress("CyclomaticComplexMethod")
     fun handleEvent(event: ProfileEditorEvent) = when (event) {
+        is ProfileEditorEvent.ExperimentClicked -> launch {
+            emitEvent(ShowSnackbar(getString(Res.string.profile_experimental_info)))
+        }
+        is ProfileEditorEvent.ToggleGlobalGoal -> {
+            modify {
+                copy(
+                    finishTarget = finishTarget.copy(enabled = !finishTarget.enabled)
+                )
+            }
+            refreshSupport()
+        }
+        is ProfileEditorEvent.AdvancedClicked -> modify {
+            copy(dialog = steps.find { it.id == event.id }?.let { ProfileEditorDialog.Advanced(it) })
+        }
+        is ProfileEditorEvent.AdvancedConfirmed -> {
+            updateSteps { map { if (it.id == event.step.id) event.step else it } }
+            modify { copy(dialog = null) }
+        }
+        is ProfileEditorEvent.StepDuplicated -> updateSteps {
+            val source = find { it.id == event.id } ?: return@updateSteps this
+            val id = nextStepId++
+            this + source.copy(id = id, phaseId = "copy-$id-${kotlin.time.Clock.System.now().toEpochMilliseconds()}")
+        }
         is BackClicked -> navigate(NavEvent.Back)
         is SaveClicked -> saveProfile()
         is TestClicked -> testProfile()
@@ -118,7 +155,7 @@ internal class ProfileEditorViewModel(
         is DetailsConfirmed -> modify {
             copy(profileName = event.name, description = event.description, dialog = null)
         }
-        is AddStepClicked -> modify { copy(dialog = ProfileEditorDialog.StepTypePicker) }
+        is AddStepClicked -> modify { if (isRecording) this else copy(dialog = ProfileEditorDialog.StepTypePicker) }
         is StepTypeSelected -> showNewStepValues(event.type)
         is StepClicked -> showStepValues(event.id)
         is StepRemoved -> updateSteps { filterNot { it.id == event.id } }
@@ -130,15 +167,30 @@ internal class ProfileEditorViewModel(
     }
 
     private fun loadProfile(profile: BrewProfile) {
+        sourceProfile = profile
         nextStepId = profile.steps.size.toLong()
         modify {
             copy(
+                isRecording = profile.recording != null,
                 profileName = profile.name,
                 description = profile.description,
                 finishTarget = profile.finishCondition.toFinishTarget(),
             )
         }
-        updateSteps { profile.steps.mapIndexed { index, step -> step.toStep(index.toLong()) } }
+        updateSteps {
+            profile.steps.mapIndexed { index, step ->
+                val phase = (profile.program as BrewProgram.Phases).phases[index]
+                step.toStep(index.toLong()).copy(
+                    phaseId = phase.id,
+                    phaseName = phase.name,
+                    ramp = phase.ramp,
+                    minimumDurationMillis = phase.minimumDurationMillis,
+                    exitConditions = phase.exitConditions
+                )
+            }
+        }
+        modify { copy(targetData = profile.toTargetData()) }
+        refreshSupport()
     }
 
     private fun showNewStepValues(type: StepType) = modify {
@@ -169,10 +221,30 @@ internal class ProfileEditorViewModel(
     private fun confirmStepValues(timeSec: Int, value: Float) {
         val dialog = viewState.value.dialog as? ProfileEditorDialog.StepValues ?: return
         if (dialog.stepId == null) {
-            val step = Step(id = nextStepId++, type = dialog.type, timeSec = timeSec, value = value)
+            val id = nextStepId++
+            val step = Step(
+                id = id,
+                phaseId = "phase-$id-${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
+                type = dialog.type,
+                timeSec = timeSec,
+                value = value
+            )
             updateSteps { this + step }
         } else {
-            updateSteps { map { if (it.id == dialog.stepId) it.copy(timeSec = timeSec, value = value) else it } }
+            updateSteps {
+                map {
+                    if (it.id == dialog.stepId) {
+                        it.copy(
+                            timeSec = timeSec,
+                            value = value,
+                            minimumDurationMillis = it.minimumDurationMillis.coerceAtMost(timeSec * MillisecondsPerSecond),
+                            ramp = it.ramp.copy(durationMillis = it.ramp.durationMillis.coerceAtMost(timeSec * MillisecondsPerSecond))
+                        )
+                    } else {
+                        it
+                    }
+                }
+            }
         }
         modify { copy(dialog = null) }
     }
@@ -215,13 +287,18 @@ internal class ProfileEditorViewModel(
             userId = 0,
             name = state.profileName,
             description = state.description,
+            autoLinkOpen = sourceProfile?.autoLinkOpen ?: false,
+            program = sourceProfile?.recording?.let { BrewProgram.Recording(it) }
+                ?: BrewProgram.Phases(state.steps.map { it.toPhase() }),
             finishCondition = state.finishTarget.toCondition(),
-            steps = state.steps.map { it.toDomain() },
         )
     }
 
     private fun saveProfile() = launchCatching(::onError) {
-        val profile = editedProfile()
+        var profile = editedProfile()
+        if (profile.id == boundProfileId && !getProfileSupport(args.deviceId, profile).bindingAllowed) {
+            profile = profile.copy(id = BrewProfile.NEW_ID)
+        }
         // A bound profile has to reach the machine before the change is stored, so that a failed
         // rebind leaves neither the device nor the database on a half-applied version.
         if (profile.id == boundProfileId) {
@@ -236,6 +313,7 @@ internal class ProfileEditorViewModel(
             id = profile.id,
             name = profile.name,
             description = profile.description.ifBlank {
+                if (profile.recording != null) return@ifBlank ""
                 getString(
                     Res.string.profile_editor_description,
                     profile.steps.size,
@@ -243,18 +321,36 @@ internal class ProfileEditorViewModel(
                 )
             },
             finishCondition = profile.finishCondition,
-            steps = profile.steps,
+            program = profile.program,
         )
         navigate(NavEvent.Back)
     }
 
-    private fun updateSteps(block: List<Step>.() -> List<Step>) = modify {
-        val updated = steps.block()
-        copy(
-            steps = updated,
-            targetData = updated.map { it.toDomain() }.toTargetData(),
-            brew = Brew(),
-        )
+    private fun updateSteps(block: List<Step>.() -> List<Step>) {
+        modify {
+            if (isRecording) return@modify this
+            val updated = steps.block()
+            copy(
+                steps = updated,
+                targetData = BrewProgram.Phases(updated.map { it.toPhase() }).toTargetData(),
+                brew = Brew(),
+            )
+        }
+
+        refreshSupport()
+    }
+
+    private fun refreshSupport() {
+        val support = getProfileSupport(args.deviceId, editedProfile())
+        modify {
+            copy(
+                experimental = support.experimental,
+                supportIssues = support.issues.map { it.code }.distinct(),
+                steps = steps.map { step ->
+                    step.copy(experimental = support.nativeIssues.any { it.phaseId == step.phaseId })
+                }
+            )
+        }
     }
 
     private fun onError(throwable: Throwable) {
@@ -262,3 +358,5 @@ internal class ProfileEditorViewModel(
         launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
     }
 }
+
+private const val MillisecondsPerSecond = 1000L

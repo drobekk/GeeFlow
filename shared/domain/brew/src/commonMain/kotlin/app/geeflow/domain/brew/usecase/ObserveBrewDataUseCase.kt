@@ -3,12 +3,15 @@ package app.geeflow.domain.brew.usecase
 import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
+import app.geeflow.data.brew.model.ProfileExecutionTrace
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
+import app.geeflow.domain.device.ProfileExecutionCoordinator
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
@@ -24,16 +27,25 @@ import kotlin.time.TimeSource
 
 @Factory
 class ObserveBrewDataUseCase(
+    private val coordinator: ProfileExecutionCoordinator,
     private val provider: DeviceControllerProvider,
     private val getSelectedUserUseCase: GetSelectedUserUseCase,
 ) {
+    @Suppress("CyclomaticComplexMethod")
     operator fun invoke(deviceId: Long): Flow<BrewSession> {
-        val deviceState = provider.getController(deviceId).deviceState
+        val deviceState = provider.getController(deviceId).deviceState.combine(coordinator.state) { state, run ->
+            if (run.active && run.deviceId == deviceId) state.copy(brewStatus = DeviceState.BrewStatus.Profile) else state
+        }
         val sessionFlow = flow {
             val acc = Accumulator()
             var stoppedAt: TimeSource.Monotonic.ValueTimeMark? = null
-            while (currentCoroutineContext().isActive) {
-                val state = deviceState.value
+            val ticks = flow {
+                while (currentCoroutineContext().isActive) {
+                    emit(Unit)
+                    delay(SAMPLE_INTERVAL_MS)
+                }
+            }
+            combine(deviceState, ticks) { state, _ -> state }.collect { state ->
                 val currentlyBrewing = state.brewStatus.isBrewing()
                 if (acc.isBrewing && !currentlyBrewing && stoppedAt == null) {
                     stoppedAt = TimeSource.Monotonic.markNow()
@@ -45,10 +57,17 @@ class ObserveBrewDataUseCase(
                     emit(acc.toSession())
                 }
                 if (currentlyBrewing) stoppedAt = null
-                accumulateBrewData(acc, state)
+                accumulateBrewData(
+                    acc,
+                    state,
+                    coordinator.state.value.takeIf {
+                        it.active && it.deviceId == deviceId
+                    }?.trace
+                )
+                val run = coordinator.state.value
+                if (run.deviceId == deviceId && (run.active || acc.trace != null)) acc.trace = run.trace
                 emit(acc.toSession())
-                // Keep a fixed chart cadence and finish even when deviceState stops emitting.
-                delay(SAMPLE_INTERVAL_MS)
+                // Device updates capture new measurements; ticks keep the chart and post-brew tail alive.
             }
         }
 
@@ -64,6 +83,8 @@ class ObserveBrewDataUseCase(
         startTime = startTime,
         inProgress = isBrewing,
         dataPoints = data.toMap(),
+        recording = recorder?.snapshot(),
+        executionTrace = trace,
     )
 
     private fun DeviceState.BrewStatus.isBrewing() = this == DeviceState.BrewStatus.Manual ||
@@ -75,16 +96,17 @@ class ObserveBrewDataUseCase(
         else -> BrewMode.Manual
     }
 
-    private fun accumulateBrewData(acc: Accumulator, state: DeviceState): Accumulator {
+    private fun accumulateBrewData(acc: Accumulator, state: DeviceState, trace: ProfileExecutionTrace?): Accumulator {
         val status = state.brewStatus
         val currentlyBrewing = status.isBrewing()
 
         if (currentlyBrewing || (acc.isBrewing && status == DeviceState.BrewStatus.Idle)) {
             val now = Clock.System.now()
             if (!acc.isBrewing) {
-                acc.reset(now, status)
+                acc.reset(trace?.startedAt ?: now, state)
             }
 
+            acc.recorder?.capture(state)
             val elapsed = acc.startTime?.let { now - it } ?: Duration.ZERO
             val elapsedSeconds = elapsed.toDouble(DurationUnit.SECONDS).toFloat()
 
@@ -123,7 +145,9 @@ class ObserveBrewDataUseCase(
     )
 
     private class Accumulator {
+        var trace: ProfileExecutionTrace? = null
         val data = mutableMapOf<Float, BrewDataPoint>()
+        var recorder: FreeHandRecorder? = null
         var isBrewing = false
         var startTime: Instant? = null
         var status: DeviceState.BrewStatus = DeviceState.BrewStatus.Idle
@@ -131,7 +155,14 @@ class ObserveBrewDataUseCase(
         var lastTick: Int = -1
         var lastPoint: BrewDataPoint? = null
 
-        fun reset(now: Instant, status: DeviceState.BrewStatus) {
+        fun reset(now: Instant, state: DeviceState) {
+            trace = null
+            val status = state.brewStatus
+            recorder = if (status == DeviceState.BrewStatus.FreeVariable) {
+                FreeHandRecorder(now, state.freeHandControlMode)
+            } else {
+                null
+            }
             data.clear()
             isBrewing = true
             startTime = now

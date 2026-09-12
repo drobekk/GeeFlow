@@ -4,6 +4,7 @@ import app.geeflow.data.brew.BrewProfileRepository
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.DeviceRepository
+import app.geeflow.data.device.assessProfile
 import app.geeflow.domain.device.usecase.requireConnected
 import org.koin.core.annotation.Factory
 
@@ -24,6 +25,9 @@ class BindProfileUseCase(
      */
     @Throws(IllegalStateException::class)
     suspend operator fun invoke(deviceId: Long, profile: BrewProfile) = with(provider.getController(deviceId)) {
+        require(
+            assessProfile(profile).bindingAllowed
+        ) { "This profile requires app control and cannot be assigned to the paddle" }
         requireConnected(deviceId)
         bindProfile(profile)
         deviceRepository.bindProfile(deviceId, profile.id)

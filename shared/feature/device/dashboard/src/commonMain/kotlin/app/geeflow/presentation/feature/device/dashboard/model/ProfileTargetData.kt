@@ -1,8 +1,15 @@
 package app.geeflow.presentation.feature.device.dashboard.model
 
+import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.data.brew.model.FreeHandRecording
+import app.geeflow.data.brew.model.PhaseControl
+import app.geeflow.data.brew.model.ProfileExecutionTrace
 import app.geeflow.data.brew.model.ProfileStep
+import app.geeflow.data.brew.model.RampStart
 
 private const val TickScale = 10
+private const val MillisecondsPerSecond = 1000f
 
 private data class StepEvent(val time: Float, val pressure: Float, val flow: Float)
 
@@ -46,3 +53,80 @@ internal fun List<ProfileStep>.toTargetData(): Map<Float, ChartData> {
         }
     }
 }
+
+/** Raw measurements keep their actual timestamps in previews and history. */
+internal fun FreeHandRecording.toTargetData(): Map<Float, ChartData> = BrewProgram.Recording(this).toTargetData()
+
+internal fun BrewProfile.toTargetData(): Map<Float, ChartData> = program.toTargetData()
+
+/** Conditional phases use their maximum duration. Measured ramp starts cannot be predicted. */
+internal fun BrewProgram.toTargetData(): Map<Float, ChartData> = when (this) {
+    is BrewProgram.Recording -> recording.samples.associate { sample ->
+        sample.elapsedMillis / MillisecondsPerSecond to ChartData(
+            pressure = sample.data.pressure,
+            volumePerSecond = sample.data.flowRate,
+            volume = sample.data.volume,
+            weight = sample.data.weight,
+            weightPerSecond = sample.data.weightRate,
+        )
+    }
+    is BrewProgram.Phases -> buildMap {
+        var offset = 0L
+        var previous: PhaseControl? = null
+        for (phase in phases) {
+            val target = when (val control = phase.control) {
+                is PhaseControl.Pressure -> control.bar
+                is PhaseControl.Flow -> control.millilitresPerSecond
+                PhaseControl.PumpPause -> 0f
+            }
+            val from = if (phase.ramp.start == RampStart.PreviousTarget) {
+                when {
+                    phase.control is PhaseControl.Pressure && previous is PhaseControl.Pressure -> previous.bar
+                    phase.control is PhaseControl.Flow && previous is PhaseControl.Flow -> previous.millilitresPerSecond
+                    else -> target
+                }
+            } else {
+                target
+            }
+            for (time in 0..phase.maximumDurationMillis step PreviewIntervalMillis) {
+                val value = from + (target - from) * phase.ramp.fraction(time)
+                put(
+                    (offset + time) / MillisecondsPerSecond,
+                    ChartData(
+                        pressure = if (phase.control is PhaseControl.Pressure) value else 0f,
+                        volumePerSecond = if (phase.control is PhaseControl.Flow) value else 0f,
+                        volume = 0f,
+                        weight = 0f,
+                        weightPerSecond = 0f,
+                    )
+                )
+            }
+            offset += phase.maximumDurationMillis
+            previous = phase.control
+        }
+    }
+}
+
+internal fun ProfileExecutionTrace.toTargetData(): Map<Float, ChartData> = buildMap {
+    targets.forEachIndexed { index, sample ->
+        val point = ChartData(
+            pressure = (sample.target as? PhaseControl.Pressure)?.bar ?: 0f,
+            volumePerSecond = (sample.target as? PhaseControl.Flow)?.millilitresPerSecond ?: 0f,
+            volume = 0f,
+            weight = 0f,
+            weightPerSecond = 0f,
+        )
+        put(sample.elapsedMillis / MillisecondsPerSecond, point)
+        // A sent target is held until the next command; it is not a linear interpolation.
+        targets.getOrNull(index + 1)?.let { next ->
+            if (next.elapsedMillis > sample.elapsedMillis) put((next.elapsedMillis - 1) / MillisecondsPerSecond, point)
+        }
+    }
+    val end = transitions.lastOrNull()?.elapsedMillis
+    val last = entries.lastOrNull()?.value
+    if (end != null && last != null && end >= (targets.lastOrNull()?.elapsedMillis ?: 0)) {
+        put(end / MillisecondsPerSecond, last)
+    }
+}
+
+private const val PreviewIntervalMillis = 100L

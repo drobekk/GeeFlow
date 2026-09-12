@@ -35,15 +35,16 @@ object WendougeeRegisters {
     const val FV_PROFILE_MODE = 87
     const val BOUND_PROFILE_MODE = 88
     const val FV_TARGET_VALUE = 358
-    const val FV_OFFSET_ZEROING = 362
+    const val FV_CONTROL_MODE = 362 // Captures: 0 = pressure, 1 = flow
+    const val FV_TABLE_ENDS = 356 // Captured value 0x7f7f in both control modes
     const val FV_AUTO_LINK = 366
 
     // Profile Upload: Free Variable Memory Regions
     val FV_MEMORY_REGIONS = listOf(
         760, // Pressure First Half
         824, // Pressure Second Half
-        888, // Relative Flow First Half
-        952, // Relative Flow Second Half
+        888, // Cumulative Volume First Half
+        952, // Cumulative Volume Second Half
         1016, // Weight First Half
         1080, // Weight Second Half
         1500, // Absolute Flow First Half

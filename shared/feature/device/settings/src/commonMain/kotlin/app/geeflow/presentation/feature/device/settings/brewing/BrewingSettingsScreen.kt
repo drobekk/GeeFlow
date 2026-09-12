@@ -1,5 +1,7 @@
 package app.geeflow.presentation.feature.device.settings.brewing
 
+import app.geeflow.navigation.Navigator
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -70,7 +72,7 @@ import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun BrewingSettingsScreen(
     viewModel: BrewingSettingsViewModel,
-    navigator: app.geeflow.navigation.Navigator,
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()

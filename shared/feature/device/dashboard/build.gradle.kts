@@ -10,6 +10,10 @@ koinCompiler {
 
 kotlin {
     sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.compose.uiTest)
+            implementation(compose.desktop.currentOs)
+        }
         commonMain.dependencies {
             implementation(projects.shared.core.navigation)
             implementation(projects.shared.core.presentation)

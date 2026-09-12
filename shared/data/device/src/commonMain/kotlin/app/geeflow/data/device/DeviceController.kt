@@ -3,6 +3,8 @@
 package app.geeflow.data.device
 
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.PhaseControl
+import app.geeflow.data.device.model.BrewTelemetry
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceConnection
@@ -10,11 +12,23 @@ import app.geeflow.data.device.model.DeviceConstraints
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BoilerType
 import app.geeflow.data.device.model.DeviceState.HeatingMode
+import app.geeflow.data.device.model.ProfileIssue
+import app.geeflow.data.device.model.ProfileIssueCode
+import app.geeflow.data.device.model.ProfilingCapabilities
 import app.geeflow.data.device.model.SmartScale
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceController {
+    suspend fun stopLiveSession(): Unit = error("Live control is unsupported")
+    fun isLiveSessionActive(state: DeviceState): Boolean = false
+    val profilingCapabilities: ProfilingCapabilities
+        get() = ProfilingCapabilities()
+    fun assessNativeProfile(profile: BrewProfile): List<ProfileIssue> =
+        listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
+    fun telemetry(): BrewTelemetry = BrewTelemetry(emptyMap())
+    suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession =
+        error("Live profile control is unsupported")
     val deviceState: StateFlow<DeviceState>
     val capabilities: Set<DeviceCapability>
     val constraints: DeviceConstraints

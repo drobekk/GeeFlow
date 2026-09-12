@@ -49,4 +49,5 @@
     <string name="error_generic">Oops, something went wrong. Please try again.</string>
     <string name="error_connect_device">Device is not connected</string>
     <string name="error_scale_not_connected">Smart scale is needed for profile with weight target</string>
+    <string name="profile_manual_stop_required">Machine stop could not be confirmed. Stop the brew manually on the machine. Reconnect to confirm its state.</string>
 </resources>

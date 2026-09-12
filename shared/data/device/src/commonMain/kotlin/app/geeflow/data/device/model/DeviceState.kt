@@ -1,8 +1,15 @@
 package app.geeflow.data.device.model
 
+import app.geeflow.data.brew.model.FreeHandControlMode
+import kotlin.time.Instant
+
 data class DeviceState(
     val steamBoilerTemp: Float? = null,
     val brewBoilerTemp: Float? = null,
+    val telemetryTime: Instant? = null,
+    val statusTime: Instant? = null,
+    val freeHandControlMode: FreeHandControlMode = FreeHandControlMode.Pressure,
+    val freeHandStopRequested: Boolean = false,
     val pressure: Float? = null,
     val time: Int? = null,
     val volume: Float? = null,
