@@ -1,11 +1,15 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
@@ -28,15 +32,17 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepTypeSelected
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepValuesConfirmed
+import app.geeflow.ui.components.DefaultControlWidth
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
+import app.geeflow.ui.components.GeeFlowInfinitePicker
 import app.geeflow.ui.components.GeeFlowInputPad
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
-import app.geeflow.ui.components.GeeFlowSlider
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
 import geeflow.shared.core.ui.generated.resources.common_confirm
 import geeflow.shared.core.ui.generated.resources.common_sec
+import geeflow.shared.core.ui.generated.resources.common_time
 import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.core.ui.generated.resources.unit_grams
 import geeflow.shared.core.ui.generated.resources.unit_milliliters
@@ -143,11 +149,6 @@ private fun StepTypeDialog(
     }
 }
 
-private enum class StepField {
-    Time,
-    Value,
-}
-
 @Composable
 private fun StepValuesDialog(
     dialog: ProfileEditorDialog.StepValues,
@@ -155,15 +156,25 @@ private fun StepValuesDialog(
     onConfirm: (timeSec: Int, value: Float) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var timeSec by remember { mutableStateOf(dialog.timeSec.toFloat()) }
+    var timeSec by remember { mutableStateOf(dialog.timeSec) }
     var value by remember { mutableStateOf(dialog.value) }
-    var padField by remember { mutableStateOf<StepField?>(null) }
-    val timeRange = MinTimeSec..ProfileEditorDefaults.maxTimeSec(dialog.type).toFloat()
     val timeUnit = stringResource(CoreRes.string.common_sec)
     val valueUnit = stringResource(dialog.type.unitResource())
 
+    val timeList = remember(dialog.type) {
+        (MinTimeSec.toInt()..ProfileEditorDefaults.maxTimeSec(dialog.type)).map { it.toString() }
+    }
+    val valueList = remember(valueRange) {
+        val start = (valueRange.start * 10).roundToInt()
+        val end = (valueRange.endInclusive * 10).roundToInt()
+        (start..end).map { "${it / 10}.${it % 10}" }
+    }
+
+    val contentWidth = if (dialog.type == StepType.Wait) SinglePickerContentWidth else DualPickerContentWidth
+
     EditorDialog(
         onDismiss = onDismiss,
+        modifier = Modifier.width(contentWidth),
         title = {
             GeeFlowDialogTopBar(onCloseClick = onDismiss) {
                 StepTypeIcon(dialog.type)
@@ -172,53 +183,49 @@ private fun StepValuesDialog(
             }
         },
     ) {
-        when (padField) {
-            StepField.Time -> GeeFlowInputPad(
-                valueRange = timeRange,
-                unit = timeUnit,
-                allowDecimal = false,
-                onConfirm = {
-                    timeSec = it
-                    padField = null
-                },
-                onBack = { padField = null },
-            )
-
-            StepField.Value -> GeeFlowInputPad(
-                valueRange = valueRange,
-                unit = valueUnit,
-                color = dialog.type.color(),
-                onConfirm = {
-                    value = it
-                    padField = null
-                },
-                onBack = { padField = null },
-            )
-
-            null -> {
-                DialogSlider(
-                    value = timeSec,
-                    onValueChange = { timeSec = it },
-                    valueRange = timeRange,
-                    unit = timeUnit,
-                    allowDecimal = false,
-                    onClick = { padField = StepField.Time },
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(CoreRes.string.common_time),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-                if (dialog.type != StepType.Wait) {
+                VerticalSpacer(12.dp)
+                GeeFlowInfinitePicker(
+                    items = timeList,
+                    selected = timeSec.toString(),
+                    unit = timeUnit,
+                    onSelectionChanged = { timeSec = it.toIntOrNull() ?: timeSec },
+                )
+            }
+            if (dialog.type != StepType.Wait) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = dialog.type.label(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     VerticalSpacer(12.dp)
-                    DialogSlider(
-                        value = value,
-                        onValueChange = { value = it },
-                        valueRange = valueRange,
+                    GeeFlowInfinitePicker(
+                        items = valueList,
+                        selected = value.formatValue(),
                         unit = valueUnit,
-                        color = dialog.type.color(),
-                        onClick = { padField = StepField.Value },
+                        onSelectionChanged = { value = it.toFloatOrNull() ?: value },
                     )
                 }
-                VerticalSpacer(24.dp)
-                ConfirmButton { onConfirm(timeSec.roundToInt(), value) }
             }
         }
+        VerticalSpacer(24.dp)
+        ConfirmButton { onConfirm(timeSec, value) }
     }
 }
 
@@ -228,8 +235,6 @@ private fun FinishTargetDialog(
     onConfirm: (target: Float) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var target by remember { mutableStateOf(dialog.target) }
-    var showPad by remember { mutableStateOf(false) }
     val targetRange = MinFinishTarget..ProfileEditorDefaults.MaxFinishTarget
 
     val title = when (dialog.type) {
@@ -243,32 +248,27 @@ private fun FinishTargetDialog(
         },
     )
 
-    EditorDialog(
-        onDismiss = onDismiss,
-        title = { GeeFlowDialogTopBar(stringResource(title), onDismiss) },
-    ) {
-        if (showPad) {
+    GeeFlowDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(24.dp)
+                .wrapContentWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = stringResource(title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            VerticalSpacer(16.dp)
             GeeFlowInputPad(
                 valueRange = targetRange,
                 unit = unit,
+                color = dialog.type.color(),
                 allowDecimal = false,
-                onConfirm = {
-                    target = it
-                    showPad = false
-                },
-                onBack = { showPad = false },
+                onConfirm = onConfirm,
+                onBack = onDismiss,
             )
-        } else {
-            DialogSlider(
-                value = target,
-                onValueChange = { target = it },
-                valueRange = targetRange,
-                unit = unit,
-                allowDecimal = false,
-                onClick = { showPad = true },
-            )
-            VerticalSpacer(24.dp)
-            ConfirmButton { onConfirm(target) }
         }
     }
 }
@@ -278,13 +278,14 @@ private fun FinishTargetDialog(
 private fun EditorDialog(
     onDismiss: () -> Unit,
     title: @Composable () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     GeeFlowDialog(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 24.dp)
-                .fillMaxWidth(),
+                .then(modifier),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             title()
@@ -309,26 +310,6 @@ private fun ColumnScope.ConfirmButton(enabled: Boolean = true, onClick: () -> Un
     }
 }
 
-@Composable
-private fun DialogSlider(
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float>,
-    unit: String,
-    onClick: () -> Unit,
-    color: Color = MaterialTheme.colorScheme.primary,
-    allowDecimal: Boolean = true,
-) = GeeFlowSlider(
-    value = value,
-    onValueChange = onValueChange,
-    valueRange = valueRange,
-    unit = unit,
-    color = color,
-    allowDecimal = allowDecimal,
-    onClick = onClick,
-    modifier = Modifier.fillMaxWidth().height(SliderHeight),
-)
-
 private fun StepType.unitResource() = when (this) {
     StepType.Pressure -> CoreRes.string.unit_bar
     StepType.Flow, StepType.Wait -> CoreRes.string.unit_milliliters_per_second
@@ -336,4 +317,5 @@ private fun StepType.unitResource() = when (this) {
 
 private const val MinTimeSec = 1f
 private const val MinFinishTarget = 1f
-private val SliderHeight = 72.dp
+private val SinglePickerContentWidth = 208.dp
+private val DualPickerContentWidth = DefaultControlWidth * 2 + 16.dp

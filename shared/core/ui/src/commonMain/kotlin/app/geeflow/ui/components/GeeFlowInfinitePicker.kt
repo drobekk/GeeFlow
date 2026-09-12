@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,31 +29,32 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+
+val DefaultControlWidth: Dp = 160.dp
+val DefaultPickerWidth: Dp = DefaultControlWidth
 
 @Composable
 fun GeeFlowInfinitePicker(
     items: List<String>,
     selected: String,
     onSelectionChanged: (String) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(DefaultControlWidth),
     enabled: Boolean = true,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    hint: String? = null,
+    unit: String = "",
+    valueRange: ClosedFloatingPointRange<Float>? = null,
+    allowDecimal: Boolean? = null,
 ) {
     if (items.isEmpty()) return
 
@@ -84,12 +83,12 @@ fun GeeFlowInfinitePicker(
             }
         }
     }
-    var isEditing by remember { mutableStateOf(false) }
+    var showInputPad by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     val isDragged by listState.interactionSource.collectIsDraggedAsState()
     LaunchedEffect(isDragged) {
-        if (isDragged) isEditing = false
+        if (isDragged) showInputPad = false
     }
 
     LaunchedEffect(selected, items) {
@@ -105,6 +104,20 @@ fun GeeFlowInfinitePicker(
                 onSelectionChanged(selectedItem)
             }
         }
+    }
+
+    val effectiveRange = remember(items, valueRange) {
+        if (valueRange != null) return@remember valueRange
+        val numericValues = items.mapNotNull { it.extractFloat() }
+        if (numericValues.isNotEmpty()) {
+            numericValues.min()..numericValues.max()
+        } else {
+            0f..100f
+        }
+    }
+
+    val effectiveAllowDecimal = remember(items, allowDecimal) {
+        allowDecimal ?: items.any { it.contains('.') }
     }
 
     Surface(
@@ -133,7 +146,7 @@ fun GeeFlowInfinitePicker(
                         modifier = Modifier
                             .height(itemHeight)
                             .fillMaxWidth()
-                            .clickable(enabled = enabled && !isEditing, indication = null, interactionSource = null) {
+                            .clickable(enabled = enabled && !showInputPad, indication = null, interactionSource = null) {
                                 scope.launch { listState.scrollToItem((index - 1).coerceAtLeast(0)) }
                                 onSelectionChanged(item)
                             }
@@ -155,131 +168,77 @@ fun GeeFlowInfinitePicker(
                         reverseDirection = true,
                         orientation = Orientation.Vertical,
                         flingBehavior = snapFlingBehavior,
-                        enabled = enabled && !isEditing,
+                        enabled = enabled && !showInputPad,
                     )
-                    .pointerInput(enabled, isEditing) {
-                        if (enabled && !isEditing) {
+                    .pointerInput(enabled, showInputPad) {
+                        if (enabled && !showInputPad) {
                             detectTapGestures {
-                                isEditing = true
+                                showInputPad = true
                             }
                         }
                     },
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    if (isEditing) {
-                        PickerSearchField(
-                            items = items,
-                            onSelectionChanged = onSelectionChanged,
-                            listState = listState,
-                            keyboardOptions = keyboardOptions,
-                            hint = hint,
-                            onDismiss = { isEditing = false },
-                        )
-                    } else {
-                        val selectedItem = remember(items, centerIndex) { items[centerIndex % items.size] }
-                        Text(
-                            text = selectedItem,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (enabled) {
-                                MaterialTheme.colorScheme.onPrimary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentHeight(Alignment.CenterVertically),
-                        )
-                    }
+                    val selectedItem = remember(items, centerIndex) { items[centerIndex % items.size] }
+                    Text(
+                        text = selectedItem,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (enabled) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentHeight(Alignment.CenterVertically),
+                    )
                 }
+            }
+        }
+    }
+
+    if (showInputPad) {
+        GeeFlowDialog(
+            onDismissRequest = { showInputPad = false },
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .wrapContentWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                GeeFlowInputPad(
+                    valueRange = effectiveRange,
+                    unit = unit,
+                    allowDecimal = effectiveAllowDecimal,
+                    onConfirm = { confirmedValue ->
+                        val matchItem = items.firstOrNull { it.extractFloat() == confirmedValue }
+                            ?: items.minByOrNull { abs((it.extractFloat() ?: Float.MAX_VALUE) - confirmedValue) }
+                        if (matchItem != null) {
+                            val matchIndex = items.indexOf(matchItem)
+                            if (matchIndex != -1) {
+                                scope.launch {
+                                    val currentFirst = listState.firstVisibleItemIndex
+                                    val base = currentFirst - (currentFirst % items.size)
+                                    val target = base + matchIndex - 1
+                                    listState.scrollToItem(target)
+                                    onSelectionChanged(matchItem)
+                                }
+                            }
+                        }
+                        showInputPad = false
+                    },
+                    onBack = { showInputPad = false },
+                )
             }
         }
     }
 }
 
-@Composable
-private fun PickerSearchField(
-    items: List<String>,
-    onSelectionChanged: (String) -> Unit,
-    listState: LazyListState,
-    keyboardOptions: KeyboardOptions,
-    hint: String?,
-    onDismiss: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    var searchQuery by remember { mutableStateOf("") }
-    val focusRequester = remember { FocusRequester() }
-    var wasFocused by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
-
-    val textStyle = MaterialTheme.typography.bodyLarge.copy(
-        color = MaterialTheme.colorScheme.onPrimary,
-        textAlign = TextAlign.Center,
-    )
-
-    BasicTextField(
-        value = searchQuery,
-        onValueChange = { newQuery ->
-            searchQuery = newQuery
-            val matchIndex = items.indexOfFirst {
-                it.startsWith(newQuery, ignoreCase = true)
-            }
-            if (matchIndex != -1) {
-                scope.launch {
-                    val currentFirst = listState.firstVisibleItemIndex
-                    val base = currentFirst - (currentFirst % items.size)
-                    val target = base + matchIndex - 1
-                    listState.animateScrollToItem(target)
-                }
-            }
-        },
-        textStyle = textStyle,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimary),
-        singleLine = true,
-        keyboardOptions = keyboardOptions.copy(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(
-            onDone = {
-                val matchIndex = items.indexOfFirst { it.startsWith(searchQuery, ignoreCase = true) }
-                if (matchIndex != -1) {
-                    onSelectionChanged(items[matchIndex])
-                }
-                onDismiss()
-            },
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester)
-            .onFocusChanged {
-                if (it.isFocused) {
-                    wasFocused = true
-                } else if (wasFocused) {
-                    onDismiss()
-                }
-            }
-            .padding(horizontal = 16.dp),
-        decorationBox = { innerTextField ->
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (searchQuery.isEmpty() && hint != null) {
-                    Text(
-                        text = hint,
-                        style = textStyle.copy(
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-                innerTextField()
-            }
-        },
-    )
-}
+private fun String.extractFloat(): Float? =
+    toFloatOrNull() ?: filter { it.isDigit() || it == '.' || it == '-' }.toFloatOrNull()
 
 private const val VisibleItemsCount = 3
 
@@ -292,8 +251,7 @@ private fun Preview() {
             items = (100..126).map { it.toString() },
             selected = "110",
             onSelectionChanged = {},
-            keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-            hint = "Enter",
+            unit = "°C",
         )
     }
 }
