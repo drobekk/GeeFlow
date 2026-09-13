@@ -6,15 +6,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.isRoot
-import androidx.compose.ui.test.onAllNodes
 import androidx.compose.ui.test.v2.runSkikoComposeUiTest
+import app.geeflow.data.device.model.ProfilingCapabilities
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.ExitCondition
@@ -47,19 +59,58 @@ class ExperimentalProfileUiTest {
             }
         }
         waitForIdle()
-        onNodeWithText("Experimental · app control").assertExists()
+        onNodeWithText("Experimental · app control").assertDoesNotExist()
+        onNode(
+            hasContentDescription("Experimental") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button),
+        ).assertExists()
         mainClock.advanceTimeBy(1000)
         saveImage(onRoot().captureToImage().toPixelMap(), "editor")
     }
 
-    @Test fun transitionDialogShowsReadableResourceLabels() = runSkikoComposeUiTest(size = Size(600f, 1000f)) {
+    @Test fun stepEditorPortrait() = renderStepEditor(Size(440f, 900f), "step-portrait")
+    @Test fun stepEditorLandscape() = renderStepEditor(Size(1000f, 600f), "step-landscape")
+
+    @Test fun numericFieldOpensDialogAndRequiredTimeIsFixed() = runSkikoComposeUiTest(size = Size(1000f, 900f)) {
+        val editor = StepEditorViewModel(step, ProfilingCapabilities(), 0f..12f, 0f..8f)
         setContent {
-            GeeFlowTheme(false, lightColorScheme(), Modifier.fillMaxSize()) { AdvancedPhaseDialog(step, {}) }
+            val state by editor.viewState.collectAsState()
+            GeeFlowTheme(false, lightColorScheme(), Modifier.fillMaxSize()) {
+                StepEditorContent(state = state, snackbar = SnackbarHostState(), onEvent = editor::handleEvent)
+            }
+        }
+        onNodeWithText("Time (Required)").assertExists()
+        onNodeWithText("15.0").performClick()
+        waitForIdle()
+        kotlin.test.assertNotNull(editor.viewState.value.input)
+        onNodeWithText("OR").assertDoesNotExist()
+        onNodeWithText("AND").assertDoesNotExist()
+    }
+
+    @Test fun smallPortraitScrollsToAddWhileToolbarStaysVisible() = runSkikoComposeUiTest(size = Size(360f, 640f)) {
+        val editor = StepEditorViewModel(step, ProfilingCapabilities(), 0f..12f, 0f..8f)
+        setContent {
+            val state by editor.viewState.collectAsState()
+            GeeFlowTheme(false, lightColorScheme(), Modifier.fillMaxSize()) {
+                StepEditorContent(state = state, snackbar = SnackbarHostState(), onEvent = editor::handleEvent)
+            }
+        }
+        onNode(hasScrollAction()).performScrollToNode(hasContentDescription("Add exit condition"))
+        onNodeWithContentDescription("Add exit condition").assertExists()
+        onNodeWithText("Step 1").assertExists()
+        saveImage(onRoot().captureToImage().toPixelMap(), "step-small-bottom")
+    }
+
+    private fun renderStepEditor(size: Size, name: String) = runSkikoComposeUiTest(size = size) {
+        setContent {
+            GeeFlowTheme(false, lightColorScheme(), Modifier.fillMaxSize()) {
+                StepEditorContent(StepEditorViewState(step, ProfilingCapabilities(), 0f..12f, 0f..8f),
+                    SnackbarHostState(), {})
+            }
         }
         waitForIdle()
-        onNodeWithText("Ramp: Ease in-out").assertExists()
-        onNodeWithText("Measurement: Water pumped in this phase (ml)").assertExists()
-        saveImage(onAllNodes(isRoot())[1].captureToImage().toPixelMap(), "transition")
+        onNodeWithText("Exit conditions").assertExists()
+        onNodeWithText("Step 1").assertExists()
+        saveImage(onRoot().captureToImage().toPixelMap(), name)
     }
 
     private fun saveImage(pixels: androidx.compose.ui.graphics.PixelMap, name: String) {

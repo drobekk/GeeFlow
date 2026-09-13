@@ -6,9 +6,12 @@ import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
+import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.GetBrewProfileUseCase
@@ -17,6 +20,7 @@ import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import app.geeflow.domain.device.usecase.GetProfileSupportUseCase
+import app.geeflow.domain.device.usecase.GetProfilingCapabilitiesUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
@@ -41,8 +45,6 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.SaveClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepRemoved
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepTypeSelected
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepValuesConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepsReordered
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StopClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.TestClicked
@@ -62,6 +64,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class ProfileEditorViewModel(
     @InjectedParam private val args: ProfileEditor,
+    private val getProfilingCapabilities: GetProfilingCapabilitiesUseCase,
     private val getProfileSupport: GetProfileSupportUseCase,
     private val getBrewProfile: GetBrewProfileUseCase,
     private val bindProfile: BindProfileUseCase,
@@ -85,7 +88,13 @@ internal class ProfileEditorViewModel(
     init {
         launch {
             val constraints = getDeviceConstraints(args.deviceId)
-            modify { copy(pressureRange = constraints.pressureRange, flowRange = constraints.flowRange) }
+            modify {
+                copy(
+                    pressureRange = constraints.pressureRange,
+                    flowRange = constraints.flowRange,
+                    profilingCapabilities = getProfilingCapabilities(args.deviceId)
+                )
+            }
         }
         launch {
             val profile = args.profileId?.let { getBrewProfile(it) }
@@ -105,16 +114,22 @@ internal class ProfileEditorViewModel(
                         brew = brew.copy(
                             time = session.elapsedSeconds,
                             data = session.toChartData(),
-                            phaseTransitions = session.executionTrace?.transitions.orEmpty()
+                            phaseProgram = if (isBrewing) session.executionTrace?.profile?.program else brew.phaseProgram,
+                            phaseTransitions = if (isBrewing) session.executionTrace?.transitions.orEmpty() else brew.phaseTransitions
                         ),
-                        targetData = session.executionTrace?.toTargetData() ?: targetData
+                        targetData = if (isBrewing) {
+                            session.executionTrace?.let { it.profile.program.toTargetData(it.transitions) } ?: targetData
+                        } else {
+                            targetData
+                        }
                     )
                 }
             }
         }
         launch {
             observeDeviceState(args.deviceId).collect { state ->
-                modify { copy(isBrewing = state.brewStatus == DeviceState.BrewStatus.Profile) }
+                modify { copy(isBrewing = state.brewStatus == DeviceState.BrewStatus.Profile ||
+                    state.brewStatus == DeviceState.BrewStatus.FreeVariable) }
             }
         }
         launch { getVisibleCharts().collect { charts -> modify { copy(visibleCharts = charts.toDashboard()) } } }
@@ -124,7 +139,7 @@ internal class ProfileEditorViewModel(
     @Suppress("CyclomaticComplexMethod")
     fun handleEvent(event: ProfileEditorEvent) = when (event) {
         is ProfileEditorEvent.ExperimentClicked -> launch {
-            emitEvent(ShowSnackbar(getString(Res.string.profile_experimental_info)))
+            emitEvent(ShowSnackbar(getString(Res.string.profile_experimental_info), persistent = true))
         }
         is ProfileEditorEvent.ToggleGlobalGoal -> {
             modify {
@@ -133,13 +148,6 @@ internal class ProfileEditorViewModel(
                 )
             }
             refreshSupport()
-        }
-        is ProfileEditorEvent.AdvancedClicked -> modify {
-            copy(dialog = steps.find { it.id == event.id }?.let { ProfileEditorDialog.Advanced(it) })
-        }
-        is ProfileEditorEvent.AdvancedConfirmed -> {
-            updateSteps { map { if (it.id == event.step.id) event.step else it } }
-            modify { copy(dialog = null) }
         }
         is ProfileEditorEvent.StepDuplicated -> updateSteps {
             val source = find { it.id == event.id } ?: return@updateSteps this
@@ -155,12 +163,21 @@ internal class ProfileEditorViewModel(
         is DetailsConfirmed -> modify {
             copy(profileName = event.name, description = event.description, dialog = null)
         }
-        is AddStepClicked -> modify { if (isRecording) this else copy(dialog = ProfileEditorDialog.StepTypePicker) }
-        is StepTypeSelected -> showNewStepValues(event.type)
-        is StepClicked -> showStepValues(event.id)
+        is AddStepClicked -> openStepEditor(null)
+        is StepClicked -> openStepEditor(event.id)
+        is ProfileEditorEvent.StepEditorCancelled -> modify { copy(stepEditor = null) }
+        is ProfileEditorEvent.StepEditorSaved -> {
+            val request = viewState.value.stepEditor
+            if (request != null) {
+                updateSteps {
+                    if (request.isNew) this + event.step else map { if (it.id == event.step.id) event.step else it }
+                }
+                modify { copy(stepEditor = null) }
+            }
+            Unit
+        }
         is StepRemoved -> updateSteps { filterNot { it.id == event.id } }
         is StepsReordered -> reorderSteps(event.from, event.to)
-        is StepValuesConfirmed -> confirmStepValues(event.timeSec, event.value)
         is FinishTargetClicked -> finishTargetClicked(event.type)
         is FinishTargetConfirmed -> confirmFinishTarget(event.target)
         is DialogDismissed -> modify { copy(dialog = null) }
@@ -185,6 +202,7 @@ internal class ProfileEditorViewModel(
                     phaseName = phase.name,
                     ramp = phase.ramp,
                     minimumDurationMillis = phase.minimumDurationMillis,
+                    timeSec = (phase.maximumDurationMillis / 1000).toInt(),
                     exitConditions = phase.exitConditions
                 )
             }
@@ -193,60 +211,22 @@ internal class ProfileEditorViewModel(
         refreshSupport()
     }
 
-    private fun showNewStepValues(type: StepType) = modify {
-        copy(
-            dialog = ProfileEditorDialog.StepValues(
-                type = type,
-                stepId = null,
-                timeSec = ProfileEditorDefaults.defaultTimeSec(type),
-                value = ProfileEditorDefaults.defaultValue(type),
-            ),
-        )
-    }
-
-    private fun showStepValues(id: Long) {
-        val step = viewState.value.steps.find { it.id == id } ?: return
-        modify {
-            copy(
-                dialog = ProfileEditorDialog.StepValues(
-                    type = step.type,
-                    stepId = step.id,
-                    timeSec = step.timeSec,
-                    value = step.value,
-                ),
+    private fun openStepEditor(id: Long?) {
+        if (viewState.value.isRecording) return
+        val step = if (id == null) {
+            val newId = nextStepId++
+            Step(
+                newId,
+                StepType.Pressure,
+                60,
+                9f,
+                phaseId = "phase-$newId-${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
+                exitConditions = listOf(ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f))
             )
-        }
-    }
-
-    private fun confirmStepValues(timeSec: Int, value: Float) {
-        val dialog = viewState.value.dialog as? ProfileEditorDialog.StepValues ?: return
-        if (dialog.stepId == null) {
-            val id = nextStepId++
-            val step = Step(
-                id = id,
-                phaseId = "phase-$id-${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
-                type = dialog.type,
-                timeSec = timeSec,
-                value = value
-            )
-            updateSteps { this + step }
         } else {
-            updateSteps {
-                map {
-                    if (it.id == dialog.stepId) {
-                        it.copy(
-                            timeSec = timeSec,
-                            value = value,
-                            minimumDurationMillis = it.minimumDurationMillis.coerceAtMost(timeSec * MillisecondsPerSecond),
-                            ramp = it.ramp.copy(durationMillis = it.ramp.durationMillis.coerceAtMost(timeSec * MillisecondsPerSecond))
-                        )
-                    } else {
-                        it
-                    }
-                }
-            }
+            viewState.value.steps.find { it.id == id } ?: return
         }
-        modify { copy(dialog = null) }
+        modify { copy(stepEditor = StepEditorRequest("edit-${step.phaseId}", step, id == null), dialog = null) }
     }
 
     /** Selects the target type first; only a press on the already selected one opens the value dialog. */

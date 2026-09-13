@@ -15,6 +15,7 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
             dependencies.add("commonMainImplementation", libs.findLibrary("koin-compose-viewmodel-navigation").get())
             dependencies.add("commonMainImplementation", libs.findLibrary("jetbrains-navigation3-ui").get())
             dependencies.add("commonMainImplementation", libs.findLibrary("jetbrains-lifecycle-viewmodelNavigation3").get())
+            dependencies.add("commonMainImplementation", libs.findLibrary("androidx-navigationevent-compose").get())
             dependencies.add("commonMainImplementation", libs.findLibrary("kotlinx-serialization-json").get())
         }
     }

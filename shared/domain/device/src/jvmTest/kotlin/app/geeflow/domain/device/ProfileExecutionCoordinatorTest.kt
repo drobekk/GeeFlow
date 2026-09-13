@@ -34,7 +34,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 
 class ProfileExecutionCoordinatorTest {
-    private class Fixture {
+    private class Fixture(val continuous: Boolean = false) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val device = MutableStateFlow(
             DeviceState(
@@ -74,11 +74,12 @@ class ProfileExecutionCoordinatorTest {
                     }
                 }
                 return object : LiveBrewSession {
+                    override val requiresContinuousUpdates = continuous
                     override suspend fun applyTarget(target: PhaseControl): PhaseControl {
                         if (failWrite) error("write_failed")
                         delay(10)
                         writes.update { it + target }
-                        return target
+                        return if (continuous) PhaseControl.Pressure(bar = writes.value.size.toFloat()) else target
                     }
                     override suspend fun stop() {
                         stops++
@@ -129,6 +130,25 @@ class ProfileExecutionCoordinatorTest {
             assertEquals(1, fixture.coordinator.state.value.trace?.transitions?.size)
             withTimeout(4000) { fixture.saved.first { it.isNotEmpty() } }
             assertEquals("App", fixture.saved.value.single().profileName)
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
+    @Test
+    fun feedbackSessionReceivesConstantTargetsAndRecordsActualCommands() = runBlocking {
+        val fixture = Fixture(continuous = true)
+        val program = fixture.profile.program as BrewProgram.Phases
+        val profile = fixture.profile.copy(
+            program = BrewProgram.Phases(program.phases.map { it.copy(maximumDurationMillis = 900) }),
+        )
+        try {
+            fixture.coordinator.start(1, profile)
+            withTimeout(4000) { fixture.coordinator.state.first { !it.active } }
+            assertTrue(fixture.writes.value.size >= 2)
+            assertTrue(fixture.writes.value.all { it == PhaseControl.Pressure(6.2f) })
+            assertEquals(PhaseControl.Pressure(1f), fixture.coordinator.state.value.trace?.targets?.first()?.target)
+            assertEquals(1, fixture.stops)
         } finally {
             fixture.scope.cancel()
         }

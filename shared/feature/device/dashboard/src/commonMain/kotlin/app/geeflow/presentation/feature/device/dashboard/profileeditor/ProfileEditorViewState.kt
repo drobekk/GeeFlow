@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseRamp
 import app.geeflow.data.device.model.ProfileIssueCode
+import app.geeflow.data.device.model.ProfilingCapabilities
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.FlowRate
@@ -11,6 +12,8 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 internal data class ProfileEditorViewState(
+    val stepEditor: StepEditorRequest? = null,
+    val profilingCapabilities: ProfilingCapabilities = ProfilingCapabilities(),
     val experimental: Boolean = false,
     val supportIssues: List<ProfileIssueCode> = emptyList(),
     val isRecording: Boolean = false,
@@ -71,19 +74,9 @@ internal enum class FinishTargetType {
 }
 
 internal sealed interface ProfileEditorDialog {
-    data class Advanced(val step: ProfileEditorViewState.Step) : ProfileEditorDialog
-
     data object Details : ProfileEditorDialog
-
-    data object StepTypePicker : ProfileEditorDialog
-
-    /** Value entry for a new step when [stepId] is `null`, otherwise for the step being edited. */
-    data class StepValues(
-        val type: StepType,
-        val stepId: Long?,
-        val timeSec: Int,
-        val value: Float,
-    ) : ProfileEditorDialog
 
     data class FinishTargetValue(val type: FinishTargetType, val target: Float) : ProfileEditorDialog
 }
+
+internal data class StepEditorRequest(val key: String, val step: ProfileEditorViewState.Step, val isNew: Boolean)

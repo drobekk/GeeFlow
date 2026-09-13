@@ -73,5 +73,16 @@ class ProfileSupportTest {
             program = BrewProgram.Phases(phases + phases.first().copy(id = "flow", control = PhaseControl.Flow(4f)))
         )
         assertEquals(ProfileExecution.Unsupported, demo.assessProfile(mixed).execution)
+        val pressureAdapter = object : DeviceController by demo {
+            override val profilingCapabilities = demo.profilingCapabilities.copy(liveFlowViaPressure = true)
+        }
+        assertEquals(ProfileExecution.AppControlled, pressureAdapter.assessProfile(mixed).execution)
+        assertFalse(pressureAdapter.assessProfile(mixed).bindingAllowed)
+        val missingSensor = object : DeviceController by pressureAdapter {
+            override val profilingCapabilities = pressureAdapter.profilingCapabilities.copy(
+                telemetry = pressureAdapter.profilingCapabilities.telemetry - BrewMetric.PumpFlow,
+            )
+        }
+        assertEquals(ProfileExecution.Unsupported, missingSensor.assessProfile(mixed).execution)
     }
 }

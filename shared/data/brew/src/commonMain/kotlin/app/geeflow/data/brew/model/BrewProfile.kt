@@ -16,7 +16,7 @@ data class BrewProfile(
 ) {
     /** Convenience view for simple phase presentation and native adapters. */
     val steps: List<ProfileStep> get() = (program as? BrewProgram.Phases)?.phases.orEmpty().map { phase ->
-        val seconds = (phase.maximumDurationMillis / 1000).toInt()
+        val seconds = (phase.plannedDurationMillis() / 1000).toInt()
         when (val control = phase.control) {
             is PhaseControl.Pressure -> ProfileStep.Pressure(seconds, control.bar)
             is PhaseControl.Flow -> ProfileStep.Flow(seconds, control.millilitresPerSecond)

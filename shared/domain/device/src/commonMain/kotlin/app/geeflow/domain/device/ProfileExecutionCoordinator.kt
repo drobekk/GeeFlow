@@ -159,6 +159,7 @@ class ProfileExecutionCoordinator(
         var stamp: kotlin.time.Instant? = null
         var lastWrite: Long? = null
         var lastTarget: PhaseControl? = null
+        var lastSent: PhaseControl? = null
         val engine = ProfileProgramEngine(profile)
         while (currentCoroutineContext().isActive) {
             val device = controller.deviceState.value
@@ -171,18 +172,18 @@ class ProfileExecutionCoordinator(
                 val sample = FreeHandSample(
                     clock.elapsedNow().inWholeMilliseconds,
                     BrewDataPoint(
-                    pressure = device.pressure ?: 0f,
-                    weight = device.weight ?: 0f,
-                    volume = device.volume ?: 0f,
-                    flowRate = device.flowRate ?: 0f,
-                    weightRate = device.weightRate ?: 0f,
-                )
+                        pressure = device.pressure ?: 0f,
+                        weight = device.weight ?: 0f,
+                        volume = device.volume ?: 0f,
+                        flowRate = device.flowRate ?: 0f,
+                        weightRate = device.weightRate ?: 0f,
+                    )
                 )
                 mutableState.update { state ->
                     state.copy(
                         trace = state.trace?.let {
-                        it.copy(measurements = it.measurements + sample)
-                    }
+                            it.copy(measurements = it.measurements + sample)
+                        }
                     )
                 }
             }
@@ -195,17 +196,18 @@ class ProfileExecutionCoordinator(
             output.finish?.let { return it }
             val target = controller.quantize(requireNotNull(output.target))
             val interval = maxOf(MINIMUM_WRITE_INTERVAL_MS, controller.profilingCapabilities.minimumWriteIntervalMillis)
-            if (target != lastTarget && (lastWrite == null || elapsed - lastWrite >= interval)) {
+            if ((target != lastTarget || session.requiresContinuousUpdates) &&
+                (lastWrite == null || elapsed - lastWrite >= interval)
+            ) {
                 val sent = withTimeout(TELEMETRY_TIMEOUT_MS) { session.applyTarget(target) }
-                lastTarget = sent
+                lastTarget = target
                 lastWrite = clock.elapsedNow().inWholeMilliseconds
-                val event = EmittedTarget(lastWrite, output.phaseId, sent)
-                mutableState.update { state ->
-                    state.copy(
-                        trace = state.trace?.let {
-                        it.copy(targets = it.targets + event)
+                if (sent != lastSent) {
+                    val event = EmittedTarget(lastWrite, output.phaseId, sent)
+                    mutableState.update { state ->
+                        state.copy(trace = state.trace?.let { it.copy(targets = it.targets + event) })
                     }
-                    )
+                    lastSent = sent
                 }
             }
             delay(EVALUATION_INTERVAL_MS)

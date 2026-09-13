@@ -21,6 +21,8 @@ data class ProfilingCapabilities(
     val liveFlow: TargetRange? = null,
     val livePause: Boolean = false,
     val liveModeSwitch: Boolean = false,
+    /** App-controlled pump flow is realized by adjusting pump pressure, without switching hardware modes. */
+    val liveFlowViaPressure: Boolean = false,
     val minimumWriteIntervalMillis: Long = 200,
     val telemetry: Set<BrewMetric> = emptySet(),
     val binding: Boolean = false,
@@ -102,7 +104,7 @@ fun BrewProfile.requiredMetrics(): Set<BrewMetric> = buildSet {
         null -> Unit
     }
     (program as? BrewProgram.Phases)?.phases?.forEach { phase ->
-        addAll(phase.exitConditions.map { it.metric })
+        addAll(phase.exitConditions.map { it.metric }.filter { it != BrewMetric.PhaseTime })
         if (phase.ramp.style != RampStyle.Instant) phase.control.metric()?.let { add(it) }
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
@@ -59,6 +61,7 @@ import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.core.ui.generated.resources.common_go_back
+import geeflow.shared.core.ui.generated.resources.common_ok
 import geeflow.shared.core.ui.generated.resources.common_save
 import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
@@ -75,6 +78,7 @@ internal fun ProfileEditorScreen(
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val ok = stringResource(CoreRes.string.common_ok)
 
     NavigatorEffect(navigator, viewModel.navEvent)
 
@@ -82,9 +86,23 @@ internal fun ProfileEditorScreen(
         when (it) {
             is ProfileEditorViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
-                snackbarState.showSnackbar(it.message)
+                snackbarState.showSnackbar(
+                    it.message,
+                    actionLabel = if (it.persistent) ok else null,
+                    duration = if (it.persistent) SnackbarDuration.Indefinite else SnackbarDuration.Short
+                )
             }
         }
+    }
+
+    viewState.stepEditor?.let { request ->
+        ScopedStepEditor(
+            request,
+            viewState,
+            onSaved = { viewModel.handleEvent(ProfileEditorEvent.StepEditorSaved(it)) },
+            onCancel = { viewModel.handleEvent(ProfileEditorEvent.StepEditorCancelled) }
+        )
+        return
     }
 
     ProfileEditorContent(
@@ -153,11 +171,11 @@ private fun ExpandedLayout(
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
             )
-            ExperimentalNotice(viewState, onEvent)
             BrewCharts(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
                 targetData = viewState.targetData,
+                program = BrewProgram.Phases(viewState.steps.map { it.toPhase() }),
                 modifier = Modifier.weight(1f),
             )
             EditorBrewBar(
@@ -204,11 +222,11 @@ private fun CompactLayout(
         },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            ExperimentalNotice(viewState, onEvent)
             BrewCharts(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
                 targetData = viewState.targetData,
+                program = BrewProgram.Phases(viewState.steps.map { it.toPhase() }),
                 modifier = Modifier.weight(1f).padding(horizontal = 24.dp),
             )
             EditorBrewBar(
@@ -283,6 +301,10 @@ private fun ProfileEditorTopBar(
             )
         }
         HorizontalSpacer(1f)
+        if (viewState.experimental) {
+            ExperimentButton(onClick = { onEvent(ProfileEditorEvent.ExperimentClicked) })
+            HorizontalSpacer(8.dp)
+        }
         TestButton(isBrewing = viewState.isBrewing, canTest = viewState.canTest, onEvent = onEvent)
         HorizontalSpacer(8.dp)
         Button(onClick = { onEvent(SaveClicked) }, enabled = viewState.canSave) {

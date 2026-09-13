@@ -8,22 +8,17 @@ import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.device.ProfileExecutionCoordinator
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
 import org.koin.core.annotation.Factory
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.Instant
-import kotlin.time.TimeSource
 
 @Factory
 class ObserveBrewDataUseCase(
@@ -38,25 +33,7 @@ class ObserveBrewDataUseCase(
         }
         val sessionFlow = flow {
             val acc = Accumulator()
-            var stoppedAt: TimeSource.Monotonic.ValueTimeMark? = null
-            val ticks = flow {
-                while (currentCoroutineContext().isActive) {
-                    emit(Unit)
-                    delay(SAMPLE_INTERVAL_MS)
-                }
-            }
-            combine(deviceState, ticks) { state, _ -> state }.collect { state ->
-                val currentlyBrewing = state.brewStatus.isBrewing()
-                if (acc.isBrewing && !currentlyBrewing && stoppedAt == null) {
-                    stoppedAt = TimeSource.Monotonic.markNow()
-                }
-                val captureFinished = stoppedAt?.elapsedNow()?.let { it >= POST_BREW_CAPTURE_SECONDS.seconds } == true
-                val restarted = stoppedAt != null && currentlyBrewing
-                if (acc.isBrewing && (restarted || captureFinished)) {
-                    acc.isBrewing = false
-                    emit(acc.toSession())
-                }
-                if (currentlyBrewing) stoppedAt = null
+            deviceState.collect { state ->
                 accumulateBrewData(
                     acc,
                     state,
@@ -67,7 +44,6 @@ class ObserveBrewDataUseCase(
                 val run = coordinator.state.value
                 if (run.deviceId == deviceId && (run.active || acc.trace != null)) acc.trace = run.trace
                 emit(acc.toSession())
-                // Device updates capture new measurements; ticks keep the chart and post-brew tail alive.
             }
         }
 
@@ -100,7 +76,7 @@ class ObserveBrewDataUseCase(
         val status = state.brewStatus
         val currentlyBrewing = status.isBrewing()
 
-        if (currentlyBrewing || (acc.isBrewing && status == DeviceState.BrewStatus.Idle)) {
+        if (currentlyBrewing) {
             val now = Clock.System.now()
             if (!acc.isBrewing) {
                 acc.reset(trace?.startedAt ?: now, state)
@@ -132,6 +108,8 @@ class ObserveBrewDataUseCase(
             }
             acc.lastTick = currentTick
             acc.lastPoint = currentPoint
+        } else {
+            acc.isBrewing = false
         }
         return acc
     }
@@ -175,7 +153,5 @@ class ObserveBrewDataUseCase(
 
 private const val TICKS_PER_SECOND = 10
 private const val TICKS_PER_SECOND_FLOAT = 10f
-private const val SAMPLE_INTERVAL_MS = 100L
-private const val POST_BREW_CAPTURE_SECONDS = 2
 
 private fun lerp(a: Float, b: Float, t: Float): Float = a + (b - a) * t
