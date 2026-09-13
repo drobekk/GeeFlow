@@ -29,9 +29,8 @@ class SaveBrewToHistoryUseCase(
         profileRecording: FreeHandRecording? = null,
     ) {
         // The execution coordinator records app-controlled profiles independently of navigation.
-        if (session.executionTrace != null) return
+        if (session.executionTrace != null || session.dataPoints.isEmpty()) return
         val startedAt = session.startTime ?: return
-        if (session.dataPoints.isEmpty()) return
         val userId = userRepository.selectedUser.first()?.id ?: return
         if (session.mode == BrewMode.Manual && userSettingsRepository.skipManualBrewHistory(userId).first()) return
 

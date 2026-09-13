@@ -53,7 +53,7 @@ class ProfileProgramEngineTest {
         }
     }
 
-    @Test fun conditionsAreOrWithMinimumTimeAndRelativeWater() {
+    @Test fun conditionsUseTotalVolumeInLaterPhase() {
         val second = first.copy(
             id = "second",
             maximumDurationMillis = 10000,
@@ -67,10 +67,9 @@ class ProfileProgramEngineTest {
         engine.tick(0, telemetry())
         engine.tick(1000, telemetry(volume = 20f))
         assertNull(engine.tick(1200, telemetry(volume = 70f)).finish)
-        assertNull(engine.tick(1600, telemetry(volume = 50f)).finish)
-        assertEquals("program_complete", engine.tick(1700, telemetry(volume = 50f, weight = 36f)).finish)
+        assertEquals("program_complete", engine.tick(1600, telemetry(volume = 50f)).finish)
         assertEquals(PhaseExitReason.ConditionMatched, engine.transitions.last().reason)
-        assertEquals(BrewMetric.CupWeight, engine.transitions.last().condition?.metric)
+        assertEquals(BrewMetric.PumpedVolume, engine.transitions.last().condition?.metric)
     }
 
     @Test fun missingPressureCannotSatisfyBelowCondition() {

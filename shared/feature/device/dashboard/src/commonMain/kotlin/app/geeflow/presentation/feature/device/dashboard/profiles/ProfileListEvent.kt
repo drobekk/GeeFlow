@@ -1,7 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.profiles
 
 sealed interface ProfileListEvent {
-    data object ExperimentClicked : ProfileListEvent
     data class ProfileSelected(val id: String) : ProfileListEvent
     data class EditProfileClicked(val id: String) : ProfileListEvent
     data class DuplicateProfileClicked(val id: String) : ProfileListEvent

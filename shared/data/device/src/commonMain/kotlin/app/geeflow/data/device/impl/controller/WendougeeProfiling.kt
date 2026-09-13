@@ -1,13 +1,17 @@
 package app.geeflow.data.device.impl.controller
 
 import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStyle
+import app.geeflow.data.brew.model.ThresholdComparison
+import app.geeflow.data.brew.model.plannedDurationMillis
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.LiveBrewSession
+import app.geeflow.data.device.ble.modbus.ModbusSession
 import app.geeflow.data.device.model.NativeProfilingCapabilities
 import app.geeflow.data.device.model.NativeRecordingCapabilities
 import app.geeflow.data.device.model.ProfileIssue
@@ -24,6 +28,7 @@ internal object WendougeeProfiling {
     private const val MAX_PHASE_DURATION_MS = 65535000L
     val capabilities = ProfilingCapabilities(
         native = NativeProfilingCapabilities(
+            exitMetrics = setOf(BrewMetric.PhaseTime),
             pressureLocations = setOf(PressureLocation.Pump),
             flow = true,
             pause = true,
@@ -32,11 +37,22 @@ internal object WendougeeProfiling {
         livePressure = mapOf(PressureLocation.Pump to TargetRange(0f, MAX_PRESSURE, .1f)),
         liveFlow = TargetRange(0f, MAX_FLOW, .1f),
         livePause = true,
-        // Switching the free-hand mode during a brew has not been physically verified.
+        // Live register changes were acknowledged but did not switch the active regulator in device tests.
         liveModeSwitch = false,
+        liveFlowViaPressure = true,
         telemetry = setOf(BrewMetric.PumpPressure, BrewMetric.PumpFlow, BrewMetric.PumpedVolume, BrewMetric.CupWeight),
         binding = true,
     )
+
+    private fun BrewPhase.isNativeTiming(): Boolean {
+        val nativeExit = exitConditions.isEmpty() || exitConditions.singleOrNull()?.let {
+            it.metric == BrewMetric.PhaseTime && it.comparison == ThresholdComparison.Above && it.threshold % 1f == 0f
+        } == true
+        val noExtensions = nativeExit && minimumDurationMillis == 0L && ramp.style == RampStyle.Instant
+        val representable = maximumDurationMillis % MILLISECONDS_PER_SECOND == 0L &&
+            maximumDurationMillis in MILLISECONDS_PER_SECOND..MAX_PHASE_DURATION_MS
+        return noExtensions && representable && plannedDurationMillis() >= MILLISECONDS_PER_SECOND
+    }
 
     fun assessNative(profile: BrewProfile): List<ProfileIssue> = buildList {
         if (profile.finishCondition == null) add(ProfileIssue(ProfileIssueCode.MissingGlobalGoal))
@@ -44,8 +60,8 @@ internal object WendougeeProfiling {
             is BrewProgram.Recording -> {
                 if (program.recording.playbackPoints().size > MAX_RECORDING_POINTS) {
                     add(
-                    ProfileIssue(ProfileIssueCode.RecordingCapacity)
-                )
+                        ProfileIssue(ProfileIssueCode.RecordingCapacity)
+                    )
                 }
             }
             is BrewProgram.Phases -> {
@@ -57,10 +73,7 @@ internal object WendougeeProfiling {
                         is PhaseControl.Flow -> control.millilitresPerSecond in 0f..MAX_FLOW
                         PhaseControl.PumpPause -> index > 0 && program.phases[index - 1].control != PhaseControl.PumpPause
                     }
-                    if (!validControl || phase.exitConditions.isNotEmpty() || phase.minimumDurationMillis != 0L ||
-                        phase.ramp.style != RampStyle.Instant || phase.maximumDurationMillis % MILLISECONDS_PER_SECOND != 0L ||
-                        phase.maximumDurationMillis !in MILLISECONDS_PER_SECOND..MAX_PHASE_DURATION_MS
-                    ) {
+                    if (!validControl || !phase.isNativeTiming()) {
                         add(ProfileIssue(ProfileIssueCode.NativeFeature, phase.id))
                     }
                 }
@@ -99,5 +112,16 @@ internal suspend fun DeviceController.openFreeHandSession(initial: PhaseControl)
             return actual
         }
         override suspend fun stop() = stopFreeVariableBrewing()
+    }
+}
+
+internal suspend fun ModbusSession.uploadProfile(profile: BrewProfile, isBinding: Boolean) {
+    // Compile and validate the complete program before the first register write.
+    val writes = WendougeeProfileCompiler().buildProfileWrites(profile, isBinding)
+    for (write in writes) {
+        when (write) {
+            is ProfileWrite.Single -> writeSingleRegister(write.register, write.value)
+            is ProfileWrite.Multiple -> writeMultipleRegisters(write.register, write.values)
+        }
     }
 }

@@ -2,6 +2,8 @@ package app.geeflow.ui.modifier
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.IntrinsicMeasurable
+import androidx.compose.ui.layout.IntrinsicMeasureScope
 import androidx.compose.ui.layout.LayoutModifier
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
@@ -76,6 +78,46 @@ private class SquareSizeModifier(
                 placeable.placeRelative(0, 0)
             }
         }
+    }
+
+    override fun IntrinsicMeasureScope.minIntrinsicWidth(
+        measurable: IntrinsicMeasurable,
+        height: Int,
+    ): Int {
+        val contentWidth = measurable.minIntrinsicWidth(height)
+        val contentHeight = measurable.maxIntrinsicHeight(Constraints.Infinity)
+        val desired = max(contentWidth, contentHeight)
+        return if (height != Constraints.Infinity) desired.coerceAtMost(height) else desired
+    }
+
+    override fun IntrinsicMeasureScope.maxIntrinsicWidth(
+        measurable: IntrinsicMeasurable,
+        height: Int,
+    ): Int {
+        val contentWidth = measurable.maxIntrinsicWidth(height)
+        val contentHeight = measurable.maxIntrinsicHeight(Constraints.Infinity)
+        val desired = max(contentWidth, contentHeight)
+        return if (height != Constraints.Infinity) desired.coerceAtMost(height) else desired
+    }
+
+    override fun IntrinsicMeasureScope.minIntrinsicHeight(
+        measurable: IntrinsicMeasurable,
+        width: Int,
+    ): Int {
+        val contentHeight = measurable.minIntrinsicHeight(width)
+        val contentWidth = measurable.maxIntrinsicWidth(Constraints.Infinity)
+        val desired = max(contentWidth, contentHeight)
+        return if (width != Constraints.Infinity) desired.coerceAtMost(width) else desired
+    }
+
+    override fun IntrinsicMeasureScope.maxIntrinsicHeight(
+        measurable: IntrinsicMeasurable,
+        width: Int,
+    ): Int {
+        val contentHeight = measurable.maxIntrinsicHeight(width)
+        val contentWidth = measurable.maxIntrinsicWidth(Constraints.Infinity)
+        val desired = max(contentWidth, contentHeight)
+        return if (width != Constraints.Infinity) desired.coerceAtMost(width) else desired
     }
 
     override fun equals(other: Any?): Boolean {

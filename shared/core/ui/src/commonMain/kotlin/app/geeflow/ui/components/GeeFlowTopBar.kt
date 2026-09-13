@@ -59,8 +59,14 @@ fun GeeFlowTopBar(
     if (scrollBehavior != null) {
         SideEffect {
             val titleHeightPx = textMeasurer.measure(title, style = titleStyle).size.height
-            val subtitleHeightPx = if (subtitle != null) textMeasurer.measure(subtitle,
-                style = subtitleStyle).size.height else 0
+            val subtitleHeightPx = if (subtitle != null) {
+                textMeasurer.measure(
+                subtitle,
+                style = subtitleStyle
+            ).size.height
+            } else {
+                0
+            }
 
             // The layout is dynamic but we can estimate the heights perfectly since text size is fixed and does not wrap.
             val iconHeightPx = with(density) { 48.dp.roundToPx() }

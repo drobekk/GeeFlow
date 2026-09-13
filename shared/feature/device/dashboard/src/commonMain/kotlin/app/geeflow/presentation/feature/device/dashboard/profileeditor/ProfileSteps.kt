@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,17 +21,17 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,9 +50,15 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType.Companion.LongPress
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
+import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.PhaseRamp
+import app.geeflow.data.brew.model.RampStyle
+import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.AddStepClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.StepClicked
@@ -62,22 +68,26 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.Step
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
+import app.geeflow.ui.icons.GeeFlowIcon
+import app.geeflow.ui.icons.LineEndCircle
 import app.geeflow.ui.modifier.squareSize
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
+import geeflow.shared.core.ui.generated.resources.common_off
+import geeflow.shared.core.ui.generated.resources.common_on
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_copy
-import geeflow.shared.feature.device.dashboard.generated.resources.experimental_global_off
-import geeflow.shared.feature.device.dashboard.generated.resources.experimental_global_on
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_add_step
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_end_step
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_finish_target_disabled
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_remove_step
 import org.jetbrains.compose.resources.stringResource
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
 private val CardSpacing = 8.dp
-private val StepTileWidth = 140.dp
+internal val StepTileWidth = 220.dp
 private val EndToggleHeight = 60.dp
 private val BadgeIconSize = 14.dp
 private val BadgeIconOffset = 8.dp
@@ -89,7 +99,7 @@ private val SelectedBorderWidth = 2.dp
 private const val AddStepKey = "add_step"
 private const val EndStepKey = "end_step"
 
-private enum class StepCardStyle {
+internal enum class StepCardStyle {
     Row,
     Tile,
 }
@@ -211,7 +221,7 @@ internal fun ProfileStepsRow(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun StepCard(
+internal fun StepCard(
     step: Step,
     number: Int,
     style: StepCardStyle,
@@ -222,14 +232,12 @@ private fun StepCard(
     val elevation by animateDpAsState(if (isDragging) DraggingElevation else 0.dp)
     val icon = step.type.icon()
     val color = step.type.color()
-    val value = step.valueLabel()
-    val time = step.timeLabel()
 
     when (style) {
         StepCardStyle.Row -> Row(
             modifier = modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .height(IntrinsicSize.Min)
                 .shadow(elevation, shape = MaterialTheme.shapes.medium)
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.surfaceContainer),
@@ -238,7 +246,7 @@ private fun StepCard(
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .wrapContentHeight()
+                    .fillMaxHeight()
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                     .clickable { onEvent(StepClicked(step.id)) }
@@ -247,74 +255,49 @@ private fun StepCard(
             ) {
                 StepBadge(number = number, icon = icon, color = color)
                 HorizontalSpacer(16.dp)
-                Column(
+                ProfileStepSummary(
+                    step = step,
+                    number = number,
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    if (step.phaseName.isNotBlank()) StepTimeText(step.phaseName)
-                    StepValueText(value)
-                    StepTimeText(time)
-                    PhaseDetails(step, onEvent)
-                }
+                )
             }
 
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 4.dp),
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                IconButton(
-                    onClick = { onEvent(StepRemoved(step.id)) },
-                ) {
-                    Icon(
-                        painter = rememberVectorPainter(Icons.Filled.Close),
-                        contentDescription = stringResource(Res.string.profile_editor_remove_step),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-                IconButton(
-                    onClick = { onEvent(ProfileEditorEvent.StepDuplicated(step.id)) },
-                ) {
-                    Icon(
-                        painter = rememberVectorPainter(Icons.Filled.ContentCopy),
-                        contentDescription = stringResource(Res.string.experimental_copy),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-            }
+            StepActions(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                onRemove = { onEvent(StepRemoved(step.id)) },
+                onDuplicate = { onEvent(ProfileEditorEvent.StepDuplicated(step.id)) },
+            )
         }
 
-        StepCardStyle.Tile -> Surface(
-            onClick = { onEvent(StepClicked(step.id)) },
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shadowElevation = elevation,
-            modifier = modifier,
+        StepCardStyle.Tile -> Row(
+            modifier = modifier
+                .height(IntrinsicSize.Min)
+                .shadow(elevation, shape = MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .fillMaxSize(),
         ) {
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxSize()
-                    .padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 12.dp),
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .clickable { onEvent(StepClicked(step.id)) }
+                    .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    StepBadge(number = number, icon = icon, color = color)
-                    Spacer(Modifier.weight(1f))
-                    StepActions(
-                        onRemove = { onEvent(StepRemoved(step.id)) },
-                        onDuplicate = { onEvent(ProfileEditorEvent.StepDuplicated(step.id)) },
-                    )
-                }
+                StepBadge(number = number, icon = icon, color = color)
                 VerticalSpacer(1f)
-                StepValueText(value)
-                StepTimeText(time)
-                PhaseDetails(step, onEvent)
+                ProfileStepSummary(
+                    step = step,
+                    number = number,
+                )
             }
+            StepActions(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                onRemove = { onEvent(StepRemoved(step.id)) },
+                onDuplicate = { onEvent(ProfileEditorEvent.StepDuplicated(step.id)) },
+            )
         }
     }
 }
@@ -325,71 +308,89 @@ private fun StepActions(
     onDuplicate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceContainer,
+    Column(
         modifier = modifier,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        IconButton(
+            onClick = onRemove,
         ) {
-            IconButton(
-                onClick = onRemove,
-                modifier = Modifier.size(36.dp),
-            ) {
-                Icon(
-                    painter = rememberVectorPainter(Icons.Filled.Close),
-                    contentDescription = stringResource(Res.string.profile_editor_remove_step),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-            IconButton(
-                onClick = onDuplicate,
-                modifier = Modifier.size(36.dp),
-            ) {
-                Icon(
-                    painter = rememberVectorPainter(Icons.Filled.ContentCopy),
-                    contentDescription = stringResource(Res.string.experimental_copy),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.Close),
+                contentDescription = stringResource(Res.string.profile_editor_remove_step),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+        IconButton(
+            onClick = onDuplicate,
+        ) {
+            Icon(
+                painter = rememberVectorPainter(Icons.Filled.ContentCopy),
+                contentDescription = stringResource(Res.string.experimental_copy),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
         }
     }
 }
 
 @Composable
-private fun EndStepCard(
+internal fun EndStepCard(
     finishTarget: FinishTarget,
     onTypeClick: (FinishTargetType) -> Unit,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        modifier = modifier,
+    Column(
+        modifier = modifier
+            .background(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = MaterialTheme.shapes.medium)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                StepIcon(Icons.AutoMirrored.Filled.LastPage, MaterialTheme.colorScheme.primary)
-                HorizontalSpacer(16.dp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = rememberVectorPainter(GeeFlowIcon.LineEndCircle),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.surfaceContainerHighest, shape = CircleShape)
+                    .padding(5.dp)
+                    .size(20.dp),
+            )
+            HorizontalSpacer(16.dp)
+            Text(
+                text = stringResource(Res.string.profile_editor_end_step),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            HorizontalSpacer(1f)
+            val buttonColor by animateColorAsState(
+                if (finishTarget.enabled) {
+                    MaterialTheme.colorScheme.secondaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainer
+                },
+            )
+            HorizontalSpacer(16.dp)
+            Box(
+                modifier = Modifier
+                    .height(32.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(color = buttonColor)
+                    .clickable(onClick = onToggle, role = Role.Button)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
                 Text(
-                    text = stringResource(Res.string.profile_editor_end_step),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = stringResource(if (finishTarget.enabled) CoreRes.string.common_on else CoreRes.string.common_off),
+                    style = MaterialTheme.typography.labelSmall,
                 )
             }
-            androidx.compose.material3.TextButton(onClick = onToggle) {
-                Text(
-                    stringResource(
-                        if (finishTarget.enabled) Res.string.experimental_global_on else Res.string.experimental_global_off,
-                    ),
-                )
-            }
-            VerticalSpacer(8.dp)
-            if (finishTarget.enabled) {
+        }
+        VerticalSpacer(16.dp)
+        AnimatedContent(targetState = finishTarget.enabled) { enabled ->
+            if (enabled) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FinishTargetType.entries.forEach { type ->
                         FinishTargetButton(
@@ -400,6 +401,25 @@ private fun EndStepCard(
                             modifier = Modifier.weight(1f),
                         )
                     }
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .widthIn(max = 200.dp),
+                ) {
+                    Icon(
+                        painter = rememberVectorPainter(Icons.Outlined.Info),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    HorizontalSpacer(12.dp)
+                    Text(
+                        text = stringResource(Res.string.profile_editor_finish_target_disabled),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -515,29 +535,31 @@ private fun StepBadge(
     }
 }
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-private fun StepIcon(icon: ImageVector, color: Color) = Icon(
-    painter = rememberVectorPainter(icon),
-    contentDescription = null,
-    tint = color,
-    modifier = Modifier.size(24.dp),
-)
+@GeeFlowComponentPreview
+private fun ProfileStepsColumnPreview() {
+    ProfileStepsColumn(
+        steps = PreviewSteps,
+        finishTarget = FinishTarget(type = FinishTargetType.Weight, weight = 36f),
+        onEvent = {},
+        modifier = Modifier.width(360.dp).height(560.dp),
+        contentPadding = PaddingValues(16.dp),
+    )
+}
 
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
-private fun StepValueText(value: String) = Text(
-    text = value,
-    style = MaterialTheme.typography.titleSmall,
-    color = MaterialTheme.colorScheme.onSurface,
-    maxLines = 1,
-    overflow = TextOverflow.Ellipsis,
-)
-
-@Composable
-private fun StepTimeText(time: String) = Text(
-    text = time,
-    style = MaterialTheme.typography.bodyMedium,
-    color = MaterialTheme.colorScheme.onSurfaceVariant,
-)
+@GeeFlowComponentPreview
+private fun ProfileStepsRowPreview() {
+    ProfileStepsRow(
+        steps = PreviewSteps,
+        finishTarget = FinishTarget(type = FinishTargetType.Weight, weight = 36f),
+        onEvent = {},
+        modifier = Modifier.width(1000.dp).height(220.dp),
+        contentPadding = PaddingValues(16.dp),
+    )
+}
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
@@ -546,9 +568,16 @@ private fun StepCardRowPreview() {
     val step = Step(
         id = 1,
         type = StepType.Pressure,
+        experimental = true,
         timeSec = 20,
         value = 9f,
         phaseName = "Extraction",
+        ramp = PhaseRamp(style = RampStyle.Linear, durationMillis = 3000),
+        exitConditions = listOf(
+            ExitCondition(metric = BrewMetric.PhaseTime, comparison = ThresholdComparison.Above, threshold = 20f),
+            ExitCondition(metric = BrewMetric.CupWeight, comparison = ThresholdComparison.Above, threshold = 36f),
+            ExitCondition(metric = BrewMetric.PumpFlow, comparison = ThresholdComparison.Above, threshold = 4f),
+        ),
     )
     Box(modifier = Modifier.padding(16.dp).width(320.dp)) {
         StepCard(
@@ -564,10 +593,26 @@ private fun StepCardRowPreview() {
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowComponentPreview
+private fun UnnamedStepCardRowPreview() {
+    Box(modifier = Modifier.padding(16.dp).width(280.dp)) {
+        StepCard(
+            step = Step(id = 2, type = StepType.Flow, timeSec = 10, value = 4.5f),
+            number = 2,
+            style = StepCardStyle.Row,
+            isDragging = false,
+            onEvent = {},
+        )
+    }
+}
+
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
+@Composable
+@GeeFlowComponentPreview
 private fun StepCardTilePreview() {
     val step = Step(
         id = 1,
         type = StepType.Flow,
+        experimental = true,
         timeSec = 10,
         value = 4.5f,
         phaseName = "Pre-infusion",
@@ -582,3 +627,50 @@ private fun StepCardTilePreview() {
         )
     }
 }
+
+@PreviewWrapper(GeeFlowPreviewWrapper::class)
+@Composable
+@GeeFlowComponentPreview
+private fun EndStepCardPreview() {
+    val finishTarget = FinishTarget(
+        enabled = true,
+        type = FinishTargetType.Weight,
+    )
+    Box(modifier = Modifier.padding(16.dp).width(320.dp)) {
+        EndStepCard(
+            finishTarget = finishTarget,
+            onTypeClick = {},
+            onToggle = {},
+        )
+    }
+}
+
+private val PreviewSteps = listOf(
+    Step(
+        id = 1,
+        type = StepType.Flow,
+        timeSec = 10,
+        value = 4.5f,
+        phaseName = "Pre-infusion",
+    ),
+    Step(
+        id = 2,
+        type = StepType.Wait,
+        timeSec = 5,
+        value = 0f,
+        phaseName = "Bloom",
+    ),
+    Step(
+        id = 3,
+        type = StepType.Pressure,
+        timeSec = 25,
+        value = 9f,
+        phaseName = "Extraction",
+        ramp = PhaseRamp(style = RampStyle.Linear, durationMillis = 3000),
+        exitConditions = listOf(
+            ExitCondition(metric = BrewMetric.PhaseTime, comparison = ThresholdComparison.Above, threshold = 25f),
+            ExitCondition(metric = BrewMetric.CupWeight, comparison = ThresholdComparison.Above, threshold = 36f),
+        ),
+        experimental = true,
+    ),
+)

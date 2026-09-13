@@ -1,10 +1,12 @@
 package app.geeflow.data.device
 
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.PhaseControl
+import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.validate
 import app.geeflow.data.device.model.ProfileExecution
 import app.geeflow.data.device.model.ProfileIssue
@@ -22,7 +24,7 @@ fun DeviceController.assessProfile(profile: BrewProfile, checkAvailability: Bool
             is Condition.Volume -> finish.target
             null -> null
         }
-        require(goal == null || goal.isFinite() && goal > 0f)
+        require(goal == null || (goal.isFinite() && goal > 0f))
     } catch (_: IllegalArgumentException) {
         return ProfileSupport(
             ProfileExecution.Unsupported,
@@ -31,26 +33,38 @@ fun DeviceController.assessProfile(profile: BrewProfile, checkAvailability: Bool
         )
     }
     val native = assessNativeProfile(profile)
+    val feedbackMetrics = if (native.isNotEmpty() && profilingCapabilities.liveFlowViaPressure && profile.hasFlowControl()) {
+        setOf(BrewMetric.PumpFlow, BrewMetric.PumpPressure)
+    } else {
+        emptySet()
+    }
     val unavailable = if (checkAvailability) {
-        profile.requiredMetrics().filter { telemetry()[it] == null }
+        (profile.requiredMetrics() + feedbackMetrics).filter { telemetry()[it] == null }
             .map { ProfileIssue(ProfileIssueCode.NotAvailable, metric = it) }
     } else {
         emptyList()
     }
     if (native.isEmpty()) {
         return ProfileSupport(
-        ProfileExecution.Native,
-        native,
-        unavailable,
-        profilingCapabilities.binding
-    )
+            ProfileExecution.Native,
+            native,
+            unavailable,
+            profilingCapabilities.binding
+        )
     }
-    val issues = liveIssues(profile)
+    val issues = liveIssues(profile) + feedbackMetrics.filter { it !in profilingCapabilities.telemetry }.map {
+        ProfileIssue(ProfileIssueCode.UnsupportedMetric, metric = it)
+    }
     return ProfileSupport(
         if (issues.isEmpty()) ProfileExecution.AppControlled else ProfileExecution.Unsupported,
         native,
         issues + unavailable,
     )
+}
+
+private fun BrewProfile.hasFlowControl(): Boolean = when (val program = program) {
+    is BrewProgram.Phases -> program.phases.any { it.control is PhaseControl.Flow }
+    is BrewProgram.Recording -> program.recording.controlMode == FreeHandControlMode.Flow
 }
 
 private fun DeviceController.liveIssues(profile: BrewProfile): List<ProfileIssue> {
@@ -69,12 +83,17 @@ private fun DeviceController.liveIssues(profile: BrewProfile): List<ProfileIssue
         controls.forEach { (id, control) ->
             val supported = when (control) {
                 is PhaseControl.Pressure -> caps.livePressure.containsKey(control.location)
-                is PhaseControl.Flow -> caps.liveFlow != null
+                is PhaseControl.Flow -> caps.liveFlow != null &&
+                    (!caps.liveFlowViaPressure || PressureLocation.Pump in caps.livePressure)
                 PhaseControl.PumpPause -> caps.livePause
             }
             if (!supported) add(ProfileIssue(ProfileIssueCode.UnsupportedControl, id))
         }
-        if (!caps.liveModeSwitch && controls.mapNotNull { it.second.metric() }.distinct().size > 1) {
+        val metrics = controls.mapNotNull { it.second.metric() }.distinct()
+        val pressureAdapter = caps.liveFlowViaPressure && metrics.all {
+            it == BrewMetric.PumpPressure || it == BrewMetric.PumpFlow
+        }
+        if (!caps.liveModeSwitch && !pressureAdapter && metrics.size > 1) {
             add(ProfileIssue(ProfileIssueCode.ModeSwitch))
         }
         profile.requiredMetrics().filter { it !in caps.telemetry }.forEach {
@@ -84,6 +103,8 @@ private fun DeviceController.liveIssues(profile: BrewProfile): List<ProfileIssue
 }
 
 interface LiveBrewSession {
+    /** Feedback controllers must run even when the profile's requested target stays constant. */
+    val requiresContinuousUpdates: Boolean get() = false
     /** Returns the actual quantized target sent to the device. Calls must be serialized. */
     suspend fun applyTarget(target: PhaseControl): PhaseControl
     suspend fun stop()

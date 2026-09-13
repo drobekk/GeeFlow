@@ -160,6 +160,7 @@ internal class DeviceDashboardViewModel(
                     time = event.durationSeconds,
                     data = event.data,
                     historyTarget = event.targetData,
+                    phaseProgram = event.phaseProgram,
                     phaseTransitions = event.phaseTransitions,
                 ),
             )
@@ -317,7 +318,10 @@ internal class DeviceDashboardViewModel(
                 brew = brew.copy(
                     time = session.elapsedSeconds,
                     data = session.toChartData(),
-                    historyTarget = session.executionTrace?.toTargetData() ?: brew.historyTarget,
+                    historyTarget = session.executionTrace?.let { trace ->
+                        if (session.inProgress) trace.profile.program.toTargetData(trace.transitions) else trace.toTargetData()
+                    } ?: brew.historyTarget,
+                    phaseProgram = session.executionTrace?.profile?.program,
                     phaseTransitions = session.executionTrace?.transitions.orEmpty(),
                 ),
             )

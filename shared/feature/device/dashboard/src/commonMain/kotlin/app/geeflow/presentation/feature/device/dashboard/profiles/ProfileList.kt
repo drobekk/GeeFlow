@@ -75,19 +75,21 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
-import app.geeflow.presentation.feature.device.dashboard.profileeditor.ExperimentButton
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.HistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
 import app.geeflow.ui.components.GeeFlowSwipeToRevealBox
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.SwipeToRevealBoxValue
 import app.geeflow.ui.components.rememberSwipeToRevealBoxState
+import app.geeflow.ui.icons.Experiment
+import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.modifier.squareSize
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.disabled
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_empty
+import geeflow.shared.feature.device.dashboard.generated.resources.experimental_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_add_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_bind
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_delete
@@ -179,10 +181,10 @@ private fun ProfilesColumn(
             viewState.profiles.filter {
                 it.name.contains(
                     searchQuery,
-                    ignoreCase = true
+                    ignoreCase = true,
                 ) || it.description.contains(
                     searchQuery,
-                    ignoreCase = true
+                    ignoreCase = true,
                 )
             }
         }
@@ -541,7 +543,6 @@ private fun ProfileItem(
             profile = profile,
             smartScaleConnected = smartScaleConnected,
             onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) },
-            onExperimentClick = { onEvent(ProfileListEvent.ExperimentClicked) },
         )
     }
 }
@@ -611,7 +612,6 @@ private fun ProfileItemContent(
     profile: Profile,
     smartScaleConnected: Boolean,
     onProfileClick: (String) -> Unit,
-    onExperimentClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val backgroundColor = when {
@@ -671,8 +671,10 @@ private fun ProfileItemContent(
                     modifier = Modifier.weight(1f, false),
                 )
                 if (profile.experimental) {
-                    ExperimentButton(
-                        onExperimentClick
+                    Icon(
+                        GeeFlowIcon.Experiment,
+                        contentDescription = stringResource(Res.string.experimental_title),
+                        modifier = Modifier.size(16.dp),
                     )
                 }
                 if (profile.brewByWeight) {

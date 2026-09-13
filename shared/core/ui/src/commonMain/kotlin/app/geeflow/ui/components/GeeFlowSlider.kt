@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +20,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -33,8 +33,6 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-private val SliderShape = RoundedCornerShape(12.dp)
-
 @Composable
 fun GeeFlowSlider(
     value: Float,
@@ -42,6 +40,7 @@ fun GeeFlowSlider(
     valueRange: ClosedFloatingPointRange<Float>,
     unit: String,
     modifier: Modifier = Modifier,
+    shape: Shape = MaterialTheme.shapes.large,
     color: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
     vertical: Boolean = false,
@@ -60,7 +59,7 @@ fun GeeFlowSlider(
 
     Box(
         modifier = modifier
-            .clip(SliderShape)
+            .clip(shape)
             .background(trackColor)
             .then(
                 if (enabled) {

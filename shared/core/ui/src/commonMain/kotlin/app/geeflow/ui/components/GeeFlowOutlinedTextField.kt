@@ -1,11 +1,11 @@
 package app.geeflow.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldLabelScope
 import androidx.compose.runtime.Composable
@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 fun GeeFlowOutlinedTextField(
     state: TextFieldState,
     modifier: Modifier = Modifier,
-    shape: Shape = CircleShape,
-    contentPadding: PaddingValues = PaddingValues(vertical = 16.dp, horizontal = 24.dp),
+    shape: Shape = MaterialTheme.shapes.large,
+    contentPadding: PaddingValues = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
     label: @Composable (TextFieldLabelScope.() -> Unit)? = null,
     lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default,
     enabled: Boolean = true,

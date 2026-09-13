@@ -25,7 +25,7 @@ data class BrewPhase(
     val maximumDurationMillis: Long,
     val minimumDurationMillis: Long = 0,
     val ramp: PhaseRamp = PhaseRamp(),
-    /** OR: the first satisfied condition exits the phase. Volume is relative to phase entry. */
+    /** A phase ends as soon as any condition matches. PhaseTime thresholds use seconds. */
     val exitConditions: List<ExitCondition> = emptyList(),
 )
 
@@ -46,7 +46,15 @@ sealed interface PhaseControl {
 
 @Serializable enum class PressureLocation { Pump, Group, Boiler }
 
-@Serializable enum class BrewMetric { PumpPressure, GroupPressure, BoilerPressure, PumpFlow, PumpedVolume, CupWeight }
+@Serializable enum class BrewMetric {
+    PumpPressure,
+    GroupPressure,
+    BoilerPressure,
+    PumpFlow,
+    PumpedVolume,
+    CupWeight,
+    PhaseTime
+}
 
 @Serializable enum class ThresholdComparison { Above, Below }
 
@@ -114,3 +122,21 @@ fun BrewProgram.validate() {
 }
 
 private const val RAMP_MIDPOINT = .5f
+
+/** A single time condition has a known deadline even when a longer safety limit is configured. */
+fun BrewPhase.plannedDurationMillis(): Long {
+    val time = exitConditions.singleOrNull()?.takeIf {
+        it.metric == BrewMetric.PhaseTime && it.comparison == ThresholdComparison.Above
+    } ?: return maximumDurationMillis
+    return minOf(
+        maximumDurationMillis,
+        maxOf(
+            minimumDurationMillis,
+            (time.threshold * MILLISECONDS_PER_SECOND).toLong()
+        )
+    )
+}
+
+fun BrewPhase.conditionsMet(matches: (ExitCondition) -> Boolean): Boolean = exitConditions.any(matches)
+
+private const val MILLISECONDS_PER_SECOND = 1000L

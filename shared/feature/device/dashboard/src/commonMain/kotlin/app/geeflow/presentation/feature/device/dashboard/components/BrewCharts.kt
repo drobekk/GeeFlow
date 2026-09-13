@@ -27,6 +27,9 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Volume
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Weight
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.WeightRate
+import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.presentation.feature.device.dashboard.model.ChartPhaseBoundary
+import app.geeflow.presentation.feature.device.dashboard.model.chartBoundaries
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.ui.isHeightCompact
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -87,8 +90,10 @@ internal fun BrewCharts(
     brew: Brew,
     visibleCharts: Set<DashboardChartType>,
     targetData: Map<Float, ChartData> = emptyMap(),
+    program: BrewProgram? = brew.phaseProgram,
     modifier: Modifier = Modifier,
 ) {
+    val boundaries = program.chartBoundaries(brew.phaseTransitions)
     val chartModifier = Modifier
         .background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.medium)
         .fillMaxWidth()
@@ -105,7 +110,7 @@ internal fun BrewCharts(
     // than the minimum) is drawn past the right edge and edits beyond it are invisible.
     val maxBrewX = xValues.maxOrNull() ?: 0.0
     val maxTargetX = targetData.keys.maxOrNull()?.toDouble() ?: 0.0
-    val maxX = maxOf(maxOf(maxBrewX, maxTargetX) + ChartXPadding, MinChartX)
+    val maxX = maxOf(maxOf(maxBrewX, maxTargetX, boundaries.maxOfOrNull { it.seconds } ?: 0.0) + ChartXPadding, MinChartX)
 
     val syncState = rememberBrewSyncState()
 
@@ -196,7 +201,7 @@ internal fun BrewCharts(
                     targets = listOfNotNull(pressureTarget),
                     yFloor = 12.0,
                     maxX = maxX,
-                    phaseBoundaries = brew.phaseTransitions.map { it.elapsedMillis / MillisecondsPerSecond },
+                    phaseBoundaries = boundaries,
                     syncState = syncState,
                     chartId = 0,
                     modifier = rowModifier,
@@ -209,7 +214,7 @@ internal fun BrewCharts(
                     targets = flowTargets,
                     yFloor = 12.0,
                     maxX = maxX,
-                    phaseBoundaries = brew.phaseTransitions.map { it.elapsedMillis / MillisecondsPerSecond },
+                    phaseBoundaries = boundaries,
                     syncState = syncState,
                     chartId = 1,
                     modifier = rowModifier,
@@ -222,7 +227,7 @@ internal fun BrewCharts(
                     targets = accumulatedTargets,
                     yFloor = 40.0,
                     maxX = maxX,
-                    phaseBoundaries = brew.phaseTransitions.map { it.elapsedMillis / MillisecondsPerSecond },
+                    phaseBoundaries = boundaries,
                     syncState = syncState,
                     chartId = 2,
                     modifier = rowModifier,
@@ -242,7 +247,7 @@ internal fun BrewCharts(
                     targets = listOfNotNull(pressureTarget),
                     yFloor = 12.0,
                     maxX = maxX,
-                    phaseBoundaries = brew.phaseTransitions.map { it.elapsedMillis / MillisecondsPerSecond },
+                    phaseBoundaries = boundaries,
                     syncState = syncState,
                     chartId = 0,
                     modifier = columnModifier,
@@ -255,7 +260,7 @@ internal fun BrewCharts(
                     targets = flowTargets,
                     yFloor = 12.0,
                     maxX = maxX,
-                    phaseBoundaries = brew.phaseTransitions.map { it.elapsedMillis / MillisecondsPerSecond },
+                    phaseBoundaries = boundaries,
                     syncState = syncState,
                     chartId = 1,
                     modifier = columnModifier,
@@ -268,7 +273,7 @@ internal fun BrewCharts(
                     targets = accumulatedTargets,
                     yFloor = 40.0,
                     maxX = maxX,
-                    phaseBoundaries = brew.phaseTransitions.map { it.elapsedMillis / MillisecondsPerSecond },
+                    phaseBoundaries = boundaries,
                     syncState = syncState,
                     chartId = 2,
                     modifier = columnModifier,
@@ -300,7 +305,7 @@ private fun BrewDataChart(
     targets: List<TargetBrewData> = emptyList(),
     yFloor: Double,
     maxX: Double,
-    phaseBoundaries: List<Double>,
+    phaseBoundaries: List<ChartPhaseBoundary>,
     syncState: BrewSyncState,
     chartId: Int,
     modifier: Modifier = Modifier,
@@ -362,7 +367,7 @@ private fun BrewChart(
     marker: CartesianMarker,
     markerVisibilityListener: CartesianMarkerVisibilityListener,
     syncMarkerX: Double?,
-    phaseBoundaries: List<Double>,
+    phaseBoundaries: List<ChartPhaseBoundary>,
     modifier: Modifier = Modifier,
 ) {
     if (colors.isEmpty() && targetColors.isEmpty()) return
@@ -374,9 +379,8 @@ private fun BrewChart(
         minZoom = Zoom.Content,
         maxZoom = Zoom.Content,
     )
-    val boundaryMarker = rememberPhaseBoundaryMarker()
+    val phaseDecoration = brewPhaseDecoration(boundaries = phaseBoundaries)
     val persistentMarkers: PersistentMarkerScope.(ExtraStore) -> Unit = {
-        phaseBoundaries.forEach { boundaryMarker at it }
         syncMarkerX?.let { marker at it }
     }
 
@@ -392,9 +396,9 @@ private fun BrewChart(
                                 Fill(
                                     Brush.verticalGradient(
                                         listOf(
-                                color.disabled(),
-                                Color.Transparent
-                            )
+                                            color.disabled(),
+                                            Color.Transparent
+                                        )
                                     )
                                 )
                             ),
@@ -414,6 +418,7 @@ private fun BrewChart(
             markerVisibilityListener = markerVisibilityListener,
             markerController = CartesianMarkerController.rememberShowOnPress(consumeMoveEvents = true),
             persistentMarkers = persistentMarkers,
+            decorations = listOf(phaseDecoration),
             startAxis = VerticalAxis.rememberStart(
                 tick = null,
                 label = rememberAxisLabelComponent(

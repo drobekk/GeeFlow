@@ -4,9 +4,11 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.PhaseControl
+import app.geeflow.data.brew.model.PhaseTransition
 import app.geeflow.data.brew.model.ProfileExecutionTrace
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.brew.model.RampStart
+import app.geeflow.data.brew.model.plannedDurationMillis
 
 private const val TickScale = 10
 private const val MillisecondsPerSecond = 1000f
@@ -60,7 +62,7 @@ internal fun FreeHandRecording.toTargetData(): Map<Float, ChartData> = BrewProgr
 internal fun BrewProfile.toTargetData(): Map<Float, ChartData> = program.toTargetData()
 
 /** Conditional phases use their maximum duration. Measured ramp starts cannot be predicted. */
-internal fun BrewProgram.toTargetData(): Map<Float, ChartData> = when (this) {
+internal fun BrewProgram.toTargetData(transitions: List<PhaseTransition> = emptyList()): Map<Float, ChartData> = when (this) {
     is BrewProgram.Recording -> recording.samples.associate { sample ->
         sample.elapsedMillis / MillisecondsPerSecond to ChartData(
             pressure = sample.data.pressure,
@@ -83,12 +85,19 @@ internal fun BrewProgram.toTargetData(): Map<Float, ChartData> = when (this) {
                 when {
                     phase.control is PhaseControl.Pressure && previous is PhaseControl.Pressure -> previous.bar
                     phase.control is PhaseControl.Flow && previous is PhaseControl.Flow -> previous.millilitresPerSecond
-                    else -> target
+                    else -> 0f
                 }
             } else {
-                target
+                // Actual measurement is unavailable in a preview; show an estimated ramp from rest.
+                0f
             }
-            for (time in 0..phase.maximumDurationMillis step PreviewIntervalMillis) {
+            val duration = transitions.firstOrNull { it.phaseId == phase.id }
+                ?.let { (it.elapsedMillis - offset).coerceAtLeast(0) }
+                ?: phase.plannedDurationMillis()
+            val times = ((0..duration step PreviewIntervalMillis).toList() +
+                listOf(phase.ramp.durationMillis.coerceIn(0, duration), (duration - 1).coerceAtLeast(0), duration))
+                .distinct().sorted()
+            for (time in times) {
                 val value = from + (target - from) * phase.ramp.fraction(time)
                 put(
                     (offset + time) / MillisecondsPerSecond,
@@ -101,7 +110,7 @@ internal fun BrewProgram.toTargetData(): Map<Float, ChartData> = when (this) {
                     )
                 )
             }
-            offset += phase.maximumDurationMillis
+            offset += duration
             previous = phase.control
         }
     }

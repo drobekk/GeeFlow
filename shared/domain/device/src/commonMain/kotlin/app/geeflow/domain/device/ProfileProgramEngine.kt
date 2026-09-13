@@ -5,6 +5,7 @@ import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.PhaseControl
@@ -13,6 +14,7 @@ import app.geeflow.data.brew.model.PhaseTransition
 import app.geeflow.data.brew.model.RampStart
 import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.brew.model.ThresholdComparison
+import app.geeflow.data.brew.model.conditionsMet
 import app.geeflow.data.device.model.BrewTelemetry
 import app.geeflow.data.device.model.metric
 import app.geeflow.data.device.model.value
@@ -23,7 +25,6 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
     private var index = 0
     private var enteredAt = 0L
     private var entered = false
-    private var baselineVolume: Float? = null
     private var rampFrom = 0f
     private var previousTarget: PhaseControl? = null
     val transitions = mutableListOf<PhaseTransition>()
@@ -62,30 +63,28 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
             val phase = phases[index]
             if (!entered) {
                 enteredAt = elapsed
-                baselineVolume = if (index == 0) 0f else telemetry[BrewMetric.PumpedVolume]
                 rampFrom = rampStartValue(phase, telemetry)
                 entered = true
             }
             val phaseTime = elapsed - enteredAt
-            val condition = if (phaseTime >= phase.minimumDurationMillis) {
-                phase.exitConditions.firstOrNull {
-                    val measured = telemetry[it.metric] ?: return@firstOrNull false
-                    val value = if (it.metric == BrewMetric.PumpedVolume) {
-                        measured - (baselineVolume ?: return@firstOrNull false)
-                    } else {
-                        measured
-                    }
-                    when (it.comparison) {
-                        ThresholdComparison.Above -> value >= it.threshold
-                        ThresholdComparison.Below -> value <= it.threshold
-                    }
+            var matchedCondition: ExitCondition? = null
+            val conditionsMet = phaseTime >= phase.minimumDurationMillis && phase.conditionsMet { condition ->
+                val measured = if (condition.metric == BrewMetric.PhaseTime) {
+                    phaseTime / 1000f
+                } else {
+                    telemetry[condition.metric] ?: return@conditionsMet false
                 }
-            } else {
-                null
+                val value = measured
+                val matches = when (condition.comparison) {
+                    ThresholdComparison.Above -> value >= condition.threshold
+                    ThresholdComparison.Below -> value <= condition.threshold
+                }
+                if (matches) matchedCondition = condition
+                matches
             }
             val reason = when {
                 phaseTime >= phase.maximumDurationMillis -> PhaseExitReason.MaximumDuration
-                condition != null -> PhaseExitReason.ConditionMatched
+                conditionsMet -> PhaseExitReason.ConditionMatched
                 else -> null
             }
             if (reason != null) {
@@ -93,7 +92,7 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
                     elapsed,
                     phase.id,
                     reason,
-                    condition.takeIf { reason == PhaseExitReason.ConditionMatched }
+                    matchedCondition.takeIf { reason == PhaseExitReason.ConditionMatched }
                 )
                 previousTarget = phase.control
                 index++

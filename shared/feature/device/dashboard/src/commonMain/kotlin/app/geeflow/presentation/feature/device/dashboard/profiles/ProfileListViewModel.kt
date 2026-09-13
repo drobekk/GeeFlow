@@ -7,9 +7,11 @@ import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewHistoryEntry
+import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.device.model.requiredMetrics
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.DeleteProfileUseCase
 import app.geeflow.domain.brew.usecase.DuplicateProfileUseCase
@@ -23,6 +25,7 @@ import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
+import app.geeflow.data.brew.model.toProgram
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
@@ -101,9 +104,6 @@ internal class ProfileListViewModel(
     }
 
     fun handleEvent(event: ProfileListEvent) = when (event) {
-        ProfileListEvent.ExperimentClicked -> launch {
-            emitEvent(ShowSnackbar(getString(Res.string.profile_experimental_info)))
-        }
         is ProfileSelected -> setSelectedProfileId(event.id)
         is HistoryClicked -> toggleHistory()
         is HistoryBrewSelected -> showHistoryBrew(event.id)
@@ -177,6 +177,7 @@ internal class ProfileListViewModel(
             ShowHistoryBrew(
                 name = entry.displayName(),
                 durationSeconds = entry.durationSeconds,
+                phaseProgram = entry.executionTrace?.profile?.program ?: entry.profileSteps.toProgram(),
                 phaseTransitions = entry.executionTrace?.transitions.orEmpty(),
                 data = data,
                 targetData =
@@ -285,11 +286,12 @@ internal class ProfileListViewModel(
             number = (index + 1).toString(),
             name = profile.name,
             description = "$conditionText • ${profile.description}",
-            brewByWeight = profile.finishCondition is Condition.Weight,
+            brewByWeight = BrewMetric.CupWeight in profile.requiredMetrics(),
             experimental = getProfileSupport(args.deviceId, profile).experimental,
             canBind = getProfileSupport(args.deviceId, profile).bindingAllowed,
             bound = bound,
             selected = selected,
+            program = profile.program,
             targetData = profile.toTargetData(),
         )
     }

@@ -2,15 +2,19 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.plannedDurationMillis
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.FinishTarget
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.Step
 import app.geeflow.ui.icons.Flow
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Pressure
+import app.geeflow.ui.icons.Volume
 import app.geeflow.ui.icons.Weight
 import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_sec
@@ -29,6 +33,14 @@ import kotlin.math.roundToInt
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
 private const val DecimalScale = 10f
+
+internal fun BrewMetric.icon(): ImageVector = when (this) {
+    BrewMetric.PhaseTime -> Icons.Outlined.Timer
+    BrewMetric.PumpedVolume -> GeeFlowIcon.Volume
+    BrewMetric.CupWeight -> GeeFlowIcon.Weight
+    BrewMetric.PumpFlow -> GeeFlowIcon.Flow
+    BrewMetric.PumpPressure, BrewMetric.GroupPressure, BrewMetric.BoilerPressure -> GeeFlowIcon.Pressure
+}
 
 internal fun StepType.icon(): ImageVector = when (this) {
     StepType.Flow -> GeeFlowIcon.Flow
@@ -72,7 +84,9 @@ internal fun FinishTargetType.color(): Color = when (this) {
 }
 
 @Composable
-internal fun Step.timeLabel(): String = "$timeSec ${stringResource(CoreRes.string.common_sec)}"
+internal fun Step.timeLabel(): String = "${toPhase().plannedDurationMillis() / MillisecondsPerSecond} ${stringResource(
+    CoreRes.string.common_sec
+)}"
 
 @Composable
 internal fun Step.valueLabel(): String = when (type) {
@@ -89,3 +103,5 @@ internal fun FinishTarget.valueLabel(type: FinishTargetType): String = when (typ
 
 /** Renders a step value with a single decimal, e.g. `9.0`. */
 internal fun Float.formatValue(): String = ((this * DecimalScale).roundToInt() / DecimalScale).toString()
+
+private const val MillisecondsPerSecond = 1000f

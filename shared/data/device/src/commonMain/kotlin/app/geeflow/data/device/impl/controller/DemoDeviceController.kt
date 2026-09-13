@@ -33,9 +33,19 @@ import kotlin.time.Duration.Companion.milliseconds
 class DemoDeviceController(private val scope: CoroutineScope) : DeviceController {
     override suspend fun stopLiveSession() = stopFreeVariableBrewing()
     override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == DeviceState.BrewStatus.FreeVariable
-    override val profilingCapabilities = WendougeeProfiling.capabilities
+    override val profilingCapabilities = WendougeeProfiling.capabilities.copy(liveFlowViaPressure = false)
     override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
-    override fun telemetry() = deviceState.value.pumpTelemetry()
+    override fun telemetry() = deviceState.value.let { state ->
+        // A connected simulator has working pump sensors even before the first brew.
+        // Idle counters are zero; nullable display values must not imply missing hardware.
+        if (state.connectionStatus == DeviceState.ConnectionStatus.Connected &&
+            state.brewStatus == DeviceState.BrewStatus.Idle
+        ) {
+            state.copy(pressure = 0f, flowRate = 0f, volume = 0f, weight = 0f).pumpTelemetry()
+        } else {
+            state.pumpTelemetry()
+        }
+    }
     override suspend fun openLiveSession(initial: PhaseControl) = openFreeHandSession(initial)
 
     private val _deviceState = MutableStateFlow(DeviceState())
@@ -224,10 +234,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                     val newVolume = (state.volume ?: 0f) + targetFlow * dtSec
                     val weightActive = elapsedMs >= WEIGHT_ACTIVE_DELAY_MS
                     val newWeight = (state.weight ?: 0f) + if (weightActive) targetFlow * WEIGHT_FLOW_RATIO * dtSec else 0f
-                    val finished = when (val cond = requireNotNull(profile.finishCondition)) {
-                        is Condition.Weight -> newWeight >= cond.target
-                        is Condition.Volume -> newVolume >= cond.target
-                    }
+                    val finished = profile.reachedGoal(volume = newVolume, weight = newWeight)
                     if (finished) {
                         state.copy(
                             statusTime = Clock.System.now(),
@@ -561,4 +568,10 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
             (current - step).coerceAtLeast(target)
         }
     }
+}
+
+private fun BrewProfile.reachedGoal(volume: Float, weight: Float): Boolean = when (val goal = finishCondition) {
+    is Condition.Weight -> weight >= goal.target
+    is Condition.Volume -> volume >= goal.target
+    null -> false
 }
