@@ -16,6 +16,8 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.geeflow.navigation.NavFeature
+import app.geeflow.ui.animations.ForwardTransition
+import app.geeflow.ui.animations.BackwardTransition
 import kotlinx.serialization.modules.plus
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject

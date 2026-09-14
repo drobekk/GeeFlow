@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,6 +55,8 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.Step
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.GeeFlowInsets
+import app.geeflow.ui.animations.BackwardTransition
+import app.geeflow.ui.animations.ForwardTransition
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.modifier.geeFlowInsets
@@ -87,29 +90,40 @@ internal fun ProfileEditorScreen(
             is ProfileEditorViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
                 snackbarState.showSnackbar(
-                    it.message,
+                    message = it.message,
                     actionLabel = if (it.persistent) ok else null,
-                    duration = if (it.persistent) SnackbarDuration.Indefinite else SnackbarDuration.Short
+                    duration = if (it.persistent) SnackbarDuration.Indefinite else SnackbarDuration.Short,
                 )
             }
         }
     }
 
-    viewState.stepEditor?.let { request ->
-        ScopedStepEditor(
-            request,
-            viewState,
-            onSaved = { viewModel.handleEvent(ProfileEditorEvent.StepEditorSaved(it)) },
-            onCancel = { viewModel.handleEvent(ProfileEditorEvent.StepEditorCancelled) }
-        )
-        return
+    AnimatedContent(
+        targetState = viewState.stepEditor,
+        transitionSpec = {
+            if (targetState != null) {
+                ForwardTransition
+            } else {
+                BackwardTransition
+            }
+        },
+        label = "stepEditorTransition",
+    ) { request ->
+        if (request != null) {
+            ScopedStepEditor(
+                request,
+                viewState,
+                onSaved = { viewModel.handleEvent(ProfileEditorEvent.StepEditorSaved(it)) },
+                onCancel = { viewModel.handleEvent(ProfileEditorEvent.StepEditorCancelled) },
+            )
+        } else {
+            ProfileEditorContent(
+                viewState = viewState,
+                snackbarState = snackbarState,
+                onEvent = viewModel::handleEvent,
+            )
+        }
     }
-
-    ProfileEditorContent(
-        viewState = viewState,
-        snackbarState = snackbarState,
-        onEvent = viewModel::handleEvent,
-    )
 
     viewState.dialog?.let { dialog ->
         ProfileEditorDialogs(

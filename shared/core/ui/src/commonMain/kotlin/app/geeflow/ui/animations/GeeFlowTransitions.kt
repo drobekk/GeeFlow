@@ -1,4 +1,4 @@
-package app.geeflow.app.navigation
+package app.geeflow.ui.animations
 
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
@@ -12,14 +12,10 @@ private const val EnterDurationMillis = 300
 private const val ExitDurationMillis = 200
 private const val SlideFraction = 8
 
-/**
- * Navigation3 leaves the transition specs empty on desktop and iOS, so they are defined here
- * in common code to keep screen transitions identical on every platform.
- */
-internal val ForwardTransition: ContentTransform
+val ForwardTransition: ContentTransform
     get() = slideTransform(enterFromRight = true)
 
-internal val BackwardTransition: ContentTransform
+val BackwardTransition: ContentTransform
     get() = slideTransform(enterFromRight = false)
 
 private fun slideTransform(enterFromRight: Boolean): ContentTransform {

@@ -70,9 +70,9 @@ class PhaseChartTest {
             PhaseTransition(elapsedMillis = 3200, phaseId = "first", reason = PhaseExitReason.ConditionMatched, condition = below),
         ))
         assertEquals(listOf(0.0, 3.2, 13.2), boundaries.map { it.seconds })
-        assertEquals(2, boundaries[1].nextStepNumber)
+        assertEquals(1, boundaries[1].stepNumber)
         assertEquals(below, boundaries[1].matchedCondition)
         assertNull(boundaries.last().matchedCondition)
-        assertNull(boundaries.last().nextStepNumber)
+        assertEquals(2, boundaries.last().stepNumber)
     }
 }
