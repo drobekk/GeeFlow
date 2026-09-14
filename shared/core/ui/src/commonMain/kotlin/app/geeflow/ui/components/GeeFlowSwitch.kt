@@ -1,13 +1,16 @@
 package app.geeflow.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -20,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -40,21 +43,23 @@ fun GeeFlowSwitch(
     enabled: Boolean = true,
 ) {
     val shape = MaterialTheme.shapes.large
+    val primaryColor = MaterialTheme.colorScheme.primary
 
-    val offBorderColor by animateColorAsState(
-        if (!checked) MaterialTheme.colorScheme.primary else Color.Transparent,
+    val fraction by animateFloatAsState(
+        targetValue = if (checked) 1f else 0f,
+        label = "SwitchFraction"
     )
+
     val offTextColor by animateColorAsState(
-        if (!checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    val onBackgroundColor by animateColorAsState(
-        if (checked) MaterialTheme.colorScheme.primary else Color.Transparent,
+        targetValue = if (!checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "OffTextColor"
     )
     val onTextColor by animateColorAsState(
-        if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "OnTextColor"
     )
 
-    Row(
+    Box(
         modifier = modifier
             .width(IntrinsicSize.Min)
             .height(IntrinsicSize.Min)
@@ -62,41 +67,57 @@ fun GeeFlowSwitch(
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .alpha(if (enabled) 1f else DisabledAlpha),
     ) {
-        Text(
-            text = stringResource(Res.string.common_off),
+        // Sliding Indicator
+        Box(
             modifier = Modifier
-                .weight(1f)
                 .fillMaxHeight()
+                .fillMaxWidth(IndicatorWidthFraction)
+                .graphicsLayer {
+                    translationX = size.width * fraction
+                }
                 .clip(shape)
-                .clickable(enabled = enabled) { onCheckedChange(!checked) }
-                .border(2.dp, offBorderColor, shape)
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-                .wrapContentHeight(Alignment.CenterVertically),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-            color = offTextColor,
-            textAlign = TextAlign.Center,
+                .background(primaryColor.copy(alpha = fraction))
+                .border(2.dp, primaryColor, shape)
         )
 
-        Text(
-            text = stringResource(Res.string.common_on),
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .clip(shape)
-                .clickable(enabled = enabled) { onCheckedChange(!checked) }
-                .background(onBackgroundColor)
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-                .wrapContentHeight(Alignment.CenterVertically),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-            color = onTextColor,
-            textAlign = TextAlign.Center,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(Res.string.common_off),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(shape)
+                    .clickable(enabled = enabled) { onCheckedChange(!checked) }
+                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = offTextColor,
+                textAlign = TextAlign.Center,
+            )
+
+            Text(
+                text = stringResource(Res.string.common_on),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(shape)
+                    .clickable(enabled = enabled) { onCheckedChange(!checked) }
+                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = onTextColor,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 
 private const val DisabledAlpha = 0.38f
+private const val IndicatorWidthFraction = 0.5f
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
