@@ -102,11 +102,8 @@ koinCompiler {
 aboutLibraries {
     export {
         outputPath = file("../feature/user/settings/src/commonMain/composeResources/files/aboutlibraries.json")
-        prettyPrint = true
     }
     library {
         duplicationMode = com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
     }
 }
-
-

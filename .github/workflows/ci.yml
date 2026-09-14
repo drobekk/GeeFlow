@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validation:
+    name: Lint & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        
+      - name: Run Detekt
+        run: ./gradlew detekt
+        
+      - name: Run Tests
+        run: ./gradlew test
+
+  build-android:
+    name: Build Android
+    needs: validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Build Android APK
+        run: ./gradlew :androidApp:assembleDebug
+
+  build-desktop:
+    name: Build Desktop (${{ matrix.os }})
+    needs: validation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Package Desktop App
+        run: ./gradlew :desktopApp:packageDistributionForCurrentOS
+
+  build-ios:
+    name: Build iOS
+    needs: validation
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Build iOS App (Simulator)
+        run: |
+          cd iosApp
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -sdk iphonesimulator build CODE_SIGNING_ALLOWED=NO

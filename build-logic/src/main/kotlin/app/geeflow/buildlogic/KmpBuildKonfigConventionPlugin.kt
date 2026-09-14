@@ -12,8 +12,10 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply(libs.findPlugin("buildKonfig").get().get().pluginId)
 
-        val appVersion = libs.findVersion("appVersion").get().requiredVersion
-        val appVersionCode = libs.findVersion("appVersionCode").get().requiredVersion
+        val appVersion =
+            (project.findProperty("appVersionName") as? String) ?: libs.findVersion("appVersion").get().requiredVersion
+        val appVersionCode =
+            (project.findProperty("appVersionCode") as? String) ?: libs.findVersion("appVersionCode").get().requiredVersion
         val appPackageName = libs.findVersion("appPackageName").get().requiredVersion
 
         extensions.configure<BuildKonfigExtension> {

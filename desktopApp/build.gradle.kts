@@ -52,7 +52,7 @@ compose.desktop {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "GeeFlow"
-            packageVersion = libs.versions.appVersion.get()
+            packageVersion = (project.findProperty("appVersionName") as? String) ?: libs.versions.appVersion.get()
             
             modules("java.sql", "jdk.unsupported")
             

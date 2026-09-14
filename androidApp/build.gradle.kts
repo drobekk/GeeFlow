@@ -20,8 +20,8 @@ android {
     defaultConfig {
         applicationId = libs.versions.appPackageName.get()
         minSdk = libs.versions.android.minSdk.get().toInt()
-        versionCode = libs.versions.appVersionCode.get().toInt()
-        versionName = libs.versions.appVersion.get()
+        versionCode = (project.findProperty("appVersionCode") as? String)?.toInt() ?: libs.versions.appVersionCode.get().toInt()
+        versionName = (project.findProperty("appVersionName") as? String) ?: libs.versions.appVersion.get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
