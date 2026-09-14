@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.ContentCopy
@@ -37,7 +38,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -387,7 +387,7 @@ private fun BottomBar(
                 ) {
                     Icon(
                         painter = rememberVectorPainter(
-                            if (historyShown) Icons.Default.List else Icons.Filled.History,
+                            if (historyShown) Icons.AutoMirrored.Filled.List else Icons.Filled.History,
                         ),
                         contentDescription = if (historyShown) {
                             stringResource(Res.string.profile_list_show_profiles)

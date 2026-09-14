@@ -23,9 +23,11 @@ internal object WendougeeProfiling {
     const val MAX_RECORDING_POINTS = 127
     const val MAX_PRESSURE = 12f
     const val MAX_FLOW = 8f
+
     private const val RECORDING_INTERVAL_MS = 500L
     private const val MILLISECONDS_PER_SECOND = 1000L
     private const val MAX_PHASE_DURATION_MS = 65535000L
+
     val capabilities = ProfilingCapabilities(
         native = NativeProfilingCapabilities(
             exitMetrics = setOf(BrewMetric.PhaseTime),
@@ -59,19 +61,17 @@ internal object WendougeeProfiling {
         when (val program = profile.program) {
             is BrewProgram.Recording -> {
                 if (program.recording.playbackPoints().size > MAX_RECORDING_POINTS) {
-                    add(
-                        ProfileIssue(ProfileIssueCode.RecordingCapacity)
-                    )
+                    add(ProfileIssue(ProfileIssueCode.RecordingCapacity))
                 }
             }
+
             is BrewProgram.Phases -> {
                 // Native steps use whole seconds; waits are attached to a preceding active step.
                 program.phases.forEachIndexed { index, phase ->
-                    val control = phase.control
-                    val validControl = when (control) {
+                    val validControl = when (val control = phase.control) {
                         is PhaseControl.Pressure -> control.location == PressureLocation.Pump && control.bar in 0f..MAX_PRESSURE
                         is PhaseControl.Flow -> control.millilitresPerSecond in 0f..MAX_FLOW
-                        PhaseControl.PumpPause -> index > 0 && program.phases[index - 1].control != PhaseControl.PumpPause
+                        is PhaseControl.PumpPause -> index > 0 && program.phases[index - 1].control != PhaseControl.PumpPause
                     }
                     if (!validControl || !phase.isNativeTiming()) {
                         add(ProfileIssue(ProfileIssueCode.NativeFeature, phase.id))
@@ -85,17 +85,18 @@ internal object WendougeeProfiling {
 internal suspend fun DeviceController.openFreeHandSession(initial: PhaseControl): LiveBrewSession {
     val flow = initial is PhaseControl.Flow
     startFreeVariableBrewing(flow)
+
     return object : LiveBrewSession {
         override suspend fun applyTarget(target: PhaseControl): PhaseControl {
             val actual = when (target) {
                 is PhaseControl.Flow -> target.copy(
-                    millilitresPerSecond =
-                    requireNotNull(profilingCapabilities.liveFlow).quantize(target.millilitresPerSecond)
+                    millilitresPerSecond = requireNotNull(profilingCapabilities.liveFlow).quantize(target.millilitresPerSecond),
                 )
+
                 is PhaseControl.Pressure -> target.copy(
-                    bar =
-                    requireNotNull(profilingCapabilities.livePressure[target.location]).quantize(target.bar)
+                    bar = requireNotNull(profilingCapabilities.livePressure[target.location]).quantize(target.bar),
                 )
+
                 PhaseControl.PumpPause -> target
             }
             when (actual) {
@@ -103,14 +104,17 @@ internal suspend fun DeviceController.openFreeHandSession(initial: PhaseControl)
                     check(flow)
                     setFreeBrewFlowTarget(actual.millilitresPerSecond)
                 }
+
                 is PhaseControl.Pressure -> {
                     check(!flow)
                     setFreeBrewPressureTarget(actual.bar)
                 }
+
                 PhaseControl.PumpPause -> if (flow) setFreeBrewFlowTarget(0f) else setFreeBrewPressureTarget(0f)
             }
             return actual
         }
+
         override suspend fun stop() = stopFreeVariableBrewing()
     }
 }

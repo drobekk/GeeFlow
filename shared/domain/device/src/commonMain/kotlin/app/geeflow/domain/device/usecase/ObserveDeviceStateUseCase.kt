@@ -2,6 +2,7 @@ package app.geeflow.domain.device.usecase
 
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
+import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.user.UserRepository
 import app.geeflow.data.user.UserSettingsRepository
 import app.geeflow.data.user.model.TemperatureUnit
@@ -27,7 +28,7 @@ class ObserveDeviceStateUseCase(
         .flatMapLatest { userId ->
             provider.getController(deviceId).deviceState
                 .combine(coordinator.state) { state, run ->
-                    if (run.active && run.deviceId == deviceId) state.copy(brewStatus = DeviceState.BrewStatus.Profile) else state
+                    if (run.active && run.deviceId == deviceId) state.copy(brewStatus = BrewStatus.Profile) else state
                 }
                 .combine(userSettingsRepository.temperatureUnit(userId)) { state, unit ->
                     if (unit == TemperatureUnit.FAHRENHEIT) state.toFahrenheit() else state

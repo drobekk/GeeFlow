@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -35,8 +34,6 @@ import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_off
 import geeflow.shared.core.ui.generated.resources.common_on
 import org.jetbrains.compose.resources.stringResource
-
-val DefaultToggleWidth: Dp = DefaultControlWidth
 
 @Composable
 fun GeeFlowSwitch(
@@ -50,16 +47,16 @@ fun GeeFlowSwitch(
 
     val fraction by animateFloatAsState(
         targetValue = if (checked) 1f else 0f,
-        label = "SwitchFraction"
+        label = "SwitchFraction",
     )
 
     val offTextColor by animateColorAsState(
         targetValue = if (!checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "OffTextColor"
+        label = "OffTextColor",
     )
     val onTextColor by animateColorAsState(
         targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "OnTextColor"
+        label = "OnTextColor",
     )
 
     Box(
@@ -79,11 +76,11 @@ fun GeeFlowSwitch(
                 }
                 .clip(shape)
                 .background(primaryColor.copy(alpha = fraction))
-                .border(2.dp, primaryColor, shape)
+                .border(2.dp, primaryColor, shape),
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 text = stringResource(Res.string.common_off),

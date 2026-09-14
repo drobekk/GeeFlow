@@ -73,11 +73,20 @@ class WendougeeDataSController(
     private val modbusPlugin: ModbusPlugin,
     private val discoverer: WendougeeBleDeviceDiscoverer,
 ) : DeviceController {
-    override suspend fun stopLiveSession() = stopFreeVariableBrewing()
-    override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == DeviceState.BrewStatus.FreeVariable
     override val profilingCapabilities = WendougeeProfiling.capabilities
+
+    override val constraints = wendougeeConstraints
+
+    override val capabilities = wendougeeCapabilities
+
+    override suspend fun stopLiveSession() = stopFreeVariableBrewing()
+
+    override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == BrewStatus.FreeVariable
+
     override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
+
     override fun telemetry() = deviceState.value.pumpTelemetry()
+
     override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession {
         startFreeVariableBrewing(isFlow = false)
         return WendougeePressureSession(controller = this)
@@ -91,9 +100,6 @@ class WendougeeDataSController(
 
     private val _resolvedConnection = MutableSharedFlow<DeviceConnection>(extraBufferCapacity = 1)
     override val resolvedConnection: SharedFlow<DeviceConnection> = _resolvedConnection.asSharedFlow()
-
-    override val constraints = wendougeeConstraints
-    override val capabilities = wendougeeCapabilities
 
     var logPolling: Boolean = false
 
@@ -797,7 +803,6 @@ private const val FREE_VAR_PREPARE_VALUE = 4
 private const val COIL_SHORT_PRESS = 0x96
 private const val COIL_CLEANING = 0x9B
 private const val COIL_PROFILE_FREE = 0x9E
-private const val BYTE_SHIFT = 8
 private const val BYTE_MASK = 0xFF
 private const val HEX_RADIX = 16
 private const val SCALE_CMD_CONNECT = 0x80

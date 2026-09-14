@@ -9,7 +9,6 @@ import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.device.ProfileExecutionCoordinator
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
@@ -35,11 +34,9 @@ class ObserveBrewDataUseCase(
             val acc = Accumulator()
             deviceState.collect { state ->
                 accumulateBrewData(
-                    acc,
-                    state,
-                    coordinator.state.value.takeIf {
-                        it.active && it.deviceId == deviceId
-                    }?.trace
+                    acc = acc,
+                    state = state,
+                    trace = coordinator.state.value.takeIf { it.active && it.deviceId == deviceId }?.trace,
                 )
                 val run = coordinator.state.value
                 if (run.deviceId == deviceId && (run.active || acc.trace != null)) acc.trace = run.trace

@@ -20,15 +20,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceController {
-    suspend fun stopLiveSession(): Unit = error("Live control is unsupported")
-    fun isLiveSessionActive(state: DeviceState): Boolean = false
     val profilingCapabilities: ProfilingCapabilities
         get() = ProfilingCapabilities()
-    fun assessNativeProfile(profile: BrewProfile): List<ProfileIssue> =
-        listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
-    fun telemetry(): BrewTelemetry = BrewTelemetry(emptyMap())
-    suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession =
-        error("Live profile control is unsupported")
     val deviceState: StateFlow<DeviceState>
     val capabilities: Set<DeviceCapability>
     val constraints: DeviceConstraints
@@ -68,4 +61,12 @@ interface DeviceController {
     suspend fun requestSmartScaleList()
     suspend fun connectSmartScale(name: String)
     suspend fun disconnectSmartScale()
+
+    suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession = error("Live profile control is unsupported")
+    suspend fun stopLiveSession(): Unit = error("Live control is unsupported")
+
+    fun isLiveSessionActive(state: DeviceState): Boolean = false
+    fun assessNativeProfile(profile: BrewProfile): List<ProfileIssue> =
+        listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
+    fun telemetry(): BrewTelemetry = BrewTelemetry(emptyMap())
 }

@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import androidx.compose.animation.AnimatedContent

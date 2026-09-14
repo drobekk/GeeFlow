@@ -43,14 +43,14 @@ internal fun brewPhaseDecoration(boundaries: List<ChartPhaseBoundary>): Decorati
             val direction = layoutDirectionMultiplier
             val start = (if (isLtr) layerBounds.left else layerBounds.right) +
                 direction * layerDimensions.startPadding - scroll
-            
+
             val groupedBoundaries = boundaries.groupBy { it.seconds }
-            
+
             groupedBoundaries.forEach { (seconds, overlappingBoundaries) ->
                 val x = start + direction * layerDimensions.xSpacing *
                     ((seconds - ranges.minX) / ranges.xStep).toFloat()
                 if (x < layerBounds.left - 1 || x > layerBounds.right + 1) return@forEach
-                
+
                 overlappingBoundaries.forEachIndexed { index, boundary ->
                     val tint = if (boundary.actual) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.45f)
                     drawScope.draw(density = density, layoutDirection = layoutDirection, canvas = canvas, size = canvasSize) {
@@ -59,19 +59,33 @@ internal fun brewPhaseDecoration(boundaries: List<ChartPhaseBoundary>): Decorati
                             start = Offset(x, layerBounds.top),
                             end = Offset(x, layerBounds.bottom),
                             strokeWidth = 1.dp.toPx(),
-                            pathEffect = if (boundary.actual) null else PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 3.dp.toPx())),
+                            pathEffect = if (boundary.actual) {
+                                null
+                            } else {
+                                PathEffect.dashPathEffect(
+                                    floatArrayOf(
+                                        4.dp.toPx(),
+                                        3.dp.toPx(),
+                                    ),
+                                )
+                            },
                         )
                     }
-                    
+
                     val offsetIndex = index - (overlappingBoundaries.size - 1) / 2f
                     val offsetX = offsetIndex * 20.dp.pixels
                     val centerX = (x + offsetX).coerceIn(layerBounds.left + 12.dp.pixels, layerBounds.right - 12.dp.pixels)
-                    
+
                     var currentY = layerBounds.top + 12.dp.pixels
-                    
+
                     boundary.stepNumber?.let { number ->
                         if (currentY + 8.dp.pixels <= layerBounds.bottom) {
-                            drawScope.draw(density = density, layoutDirection = layoutDirection, canvas = canvas, size = canvasSize) {
+                            drawScope.draw(
+                                density = density,
+                                layoutDirection = layoutDirection,
+                                canvas = canvas,
+                                size = canvasSize,
+                            ) {
                                 drawCircle(
                                     color = colors.surfaceContainerHigh,
                                     radius = 8.dp.toPx(),
@@ -89,7 +103,7 @@ internal fun brewPhaseDecoration(boundaries: List<ChartPhaseBoundary>): Decorati
                         }
                         currentY += 18.dp.pixels
                     }
-                    
+
                     boundary.conditions.forEach { condition ->
                         if (currentY + 8.dp.pixels <= layerBounds.bottom) {
                             val painter = when (condition.metric) {
@@ -100,7 +114,12 @@ internal fun brewPhaseDecoration(boundaries: List<ChartPhaseBoundary>): Decorati
                                 BrewMetric.PumpPressure, BrewMetric.GroupPressure, BrewMetric.BoilerPressure -> pressure
                             }
                             val selected = condition == boundary.matchedCondition
-                            drawScope.draw(density = density, layoutDirection = layoutDirection, canvas = canvas, size = canvasSize) {
+                            drawScope.draw(
+                                density = density,
+                                layoutDirection = layoutDirection,
+                                canvas = canvas,
+                                size = canvasSize,
+                            ) {
                                 drawCircle(
                                     color = if (selected) colors.primary else colors.surfaceContainerHigh,
                                     radius = 8.dp.toPx(),
@@ -110,7 +129,13 @@ internal fun brewPhaseDecoration(boundaries: List<ChartPhaseBoundary>): Decorati
                                     with(painter) {
                                         draw(
                                             size = Size(12.dp.toPx(), 12.dp.toPx()),
-                                            colorFilter = ColorFilter.tint(if (selected) colors.onPrimary else colors.onSurfaceVariant),
+                                            colorFilter = ColorFilter.tint(
+                                                if (selected) {
+                                                    colors.onPrimary
+                                                } else {
+                                                    colors.onSurfaceVariant
+                                                },
+                                            ),
                                         )
                                     }
                                 }

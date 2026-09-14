@@ -196,6 +196,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         }
     }
 
+    @Suppress("LongMethod")
     override suspend fun startProfileBrewing(profile: BrewProfile) {
         val recordingPoints = profile.recording?.playbackPoints()
         delay(500.milliseconds)

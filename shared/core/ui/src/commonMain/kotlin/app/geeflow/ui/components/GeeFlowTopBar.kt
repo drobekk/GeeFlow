@@ -60,10 +60,7 @@ fun GeeFlowTopBar(
         SideEffect {
             val titleHeightPx = textMeasurer.measure(title, style = titleStyle).size.height
             val subtitleHeightPx = if (subtitle != null) {
-                textMeasurer.measure(
-                subtitle,
-                style = subtitleStyle
-            ).size.height
+                textMeasurer.measure(subtitle, style = subtitleStyle).size.height
             } else {
                 0
             }

@@ -7,11 +7,9 @@ import org.koin.core.annotation.Factory
 @Factory
 class SetFreeBrewPressureUseCase(
     private val coordinator: ProfileExecutionCoordinator,
-    private val provider: DeviceControllerProvider
+    private val provider: DeviceControllerProvider,
 ) {
-    suspend operator fun invoke(deviceId: Long, pressure: Float) = coordinator.withUnownedControl(
-        deviceId
-    ) {
+    suspend operator fun invoke(deviceId: Long, pressure: Float) = coordinator.withUnownedControl(deviceId) {
         with(provider.getController(deviceId)) {
             requireConnected(deviceId)
             setFreeBrewPressureTarget(pressure)

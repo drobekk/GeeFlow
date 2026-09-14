@@ -269,7 +269,7 @@ private fun EditorBrewBar(
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) = BrewBar(
-    brew = viewState.brew.copy(name = viewState.profileName, description = viewState.description),
+    brew = viewState.brew.copy(name = viewState.profileName, description = viewState.displayDescription),
     isBrewing = viewState.isBrewing,
     visibleCharts = viewState.visibleCharts,
     onToggle = { onEvent(ToggleChartVisibility(it)) },
@@ -328,7 +328,6 @@ private fun ProfileEditorTopBar(
 }
 
 private val StepsColumnWidth = 320.dp
-private val StepsRowHeight = 132.dp
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable

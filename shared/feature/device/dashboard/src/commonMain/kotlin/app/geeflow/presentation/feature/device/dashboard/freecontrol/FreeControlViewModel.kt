@@ -7,7 +7,6 @@ import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewSession
-import app.geeflow.data.brew.model.RecordingCapacityExceededException
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
@@ -19,6 +18,7 @@ import app.geeflow.domain.device.usecase.SetFreeBrewFlowUseCase
 import app.geeflow.domain.device.usecase.SetFreeBrewPressureUseCase
 import app.geeflow.domain.device.usecase.StartFreeVariableBrewingUseCase
 import app.geeflow.domain.device.usecase.StopFreeVariableBrewingUseCase
+import app.geeflow.domain.exception.RecordingCapacityExceededException
 import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent
@@ -97,6 +97,7 @@ internal class FreeControlViewModel(
             targetUpdateJob?.cancel()
             launchCatching(::onError) { stopFreeVariableBrewing(args.deviceId) }
         }
+
         is SaveClicked -> saveSession()
         is RenameClicked -> modify { copy(showRenameDialog = true) }
         is RenameConfirmed -> modify { copy(profileName = event.name, showRenameDialog = false) }
@@ -159,6 +160,7 @@ internal class FreeControlViewModel(
         launchCatching(::onError) {
             saveFreeVariableProfile(session, name)
             emitEvent(ShowSnackbar(getString(Res.string.free_control_profile_saved)))
+            navigate(NavEvent.Back)
         }
     }
 

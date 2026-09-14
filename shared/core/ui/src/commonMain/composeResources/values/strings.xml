@@ -49,7 +49,16 @@
     <string name="error_generic">Oops, something went wrong. Please try again.</string>
     <string name="error_connect_device">Device is not connected</string>
     <string name="error_scale_not_connected">Smart scale is needed for profile with weight target</string>
+    <string name="error_profile_binding_not_allowed">This profile requires app control and cannot be assigned to the paddle</string>
     <string name="profile_manual_stop_required">Machine stop could not be confirmed. Stop the brew manually on the machine. Reconnect to confirm its state.</string>
+    <string name="error_machine_busy">The machine is busy with another brew or operation.</string>
+    <string name="error_app_backgrounded_brew">Please keep the app open in the foreground to run this profile.</string>
+    <string name="error_recording_no_volume">Cannot save recording because no volume was measured.</string>
+    <string name="error_recording_too_complex">This recorded brew is too long or complex to be saved as a playback profile.</string>
+    <string name="error_machine_control_changed">Machine control was interrupted by a manual action.</string>
+    <string name="error_telemetry_timeout">Lost communication with the machine while brewing.</string>
+    <string name="error_required_measurement_lost">A sensor required by this profile was disconnected.</string>
+    <string name="error_profile_unavailable">This profile is not compatible with the machine in its current state.</string>
 
     <!-- AGREEMENT -->
     <string name="agreement_prefix">I accept the </string>

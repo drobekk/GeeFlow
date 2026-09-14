@@ -74,10 +74,9 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
                 } else {
                     telemetry[condition.metric] ?: return@conditionsMet false
                 }
-                val value = measured
                 val matches = when (condition.comparison) {
-                    ThresholdComparison.Above -> value >= condition.threshold
-                    ThresholdComparison.Below -> value <= condition.threshold
+                    ThresholdComparison.Above -> measured >= condition.threshold
+                    ThresholdComparison.Below -> measured <= condition.threshold
                 }
                 if (matches) matchedCondition = condition
                 matches
@@ -104,6 +103,7 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
         }
         return Output(finish = "program_complete")
     }
+
     private fun rampStartValue(phase: BrewPhase, telemetry: BrewTelemetry): Float {
         if (phase.ramp.style == RampStyle.Instant) return phase.control.value()
         val metric = phase.control.metric()

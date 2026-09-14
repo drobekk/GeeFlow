@@ -9,9 +9,7 @@ class StartCleaningUseCase(
     private val coordinator: ProfileExecutionCoordinator,
     private val provider: DeviceControllerProvider
 ) {
-    suspend operator fun invoke(deviceId: Long) = coordinator.withUnownedControl(
-        deviceId
-    ) {
+    suspend operator fun invoke(deviceId: Long) = coordinator.withUnownedControl(deviceId) {
         with(provider.getController(deviceId)) {
             requireConnected(deviceId)
             startCleaning()

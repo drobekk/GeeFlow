@@ -2,6 +2,7 @@ package app.geeflow.platform
 
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.window.core.layout.WindowSizeClass
 import app.geeflow.ui.theme.ThemeMode
@@ -19,7 +20,7 @@ actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveIn
 
 @Composable
 actual fun KeepScreenOnEffect(enabled: Boolean) {
-    androidx.compose.runtime.DisposableEffect(enabled) {
+    DisposableEffect(enabled) {
         val previous = UIApplication.sharedApplication.idleTimerDisabled
         UIApplication.sharedApplication.idleTimerDisabled = enabled
         onDispose { UIApplication.sharedApplication.idleTimerDisabled = previous }

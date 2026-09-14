@@ -18,6 +18,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 class WendougeePressureSessionTest {
+
     @Test
     fun mixedTargetsUseOnlyPressureAndIgnoreRepeatedTelemetry() = runBlocking {
         val device = MutableStateFlow(DeviceState(pressure = 1f, flowRate = 0f, telemetryTime = Clock.System.now()))

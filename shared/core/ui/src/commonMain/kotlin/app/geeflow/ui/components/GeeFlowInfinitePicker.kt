@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 val DefaultControlWidth: Dp = 160.dp
-val DefaultPickerWidth: Dp = DefaultControlWidth
 
 @Composable
 fun GeeFlowInfinitePicker(

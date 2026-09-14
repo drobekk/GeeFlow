@@ -47,5 +47,3 @@ data class FreeHandRecording(
         const val SAMPLE_INTERVAL_MS = 500L
     }
 }
-
-class RecordingCapacityExceededException : IllegalArgumentException("The recording exceeds the playback table capacity")

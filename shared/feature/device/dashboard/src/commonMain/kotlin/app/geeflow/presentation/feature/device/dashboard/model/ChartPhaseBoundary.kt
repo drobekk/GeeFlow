@@ -18,14 +18,16 @@ internal data class ChartPhaseBoundary(
 
 internal fun BrewProgram?.chartBoundaries(transitions: List<PhaseTransition>): List<ChartPhaseBoundary> {
     val phases = (this as? BrewProgram.Phases)?.phases.orEmpty()
-    if (phases.isEmpty()) return transitions.mapIndexed { index, transition ->
-        ChartPhaseBoundary(
-            seconds = transition.elapsedMillis / 1000.0,
-            stepNumber = index + 1,
-            conditions = listOfNotNull(transition.condition),
-            matchedCondition = transition.condition,
-            actual = true,
-        )
+    if (phases.isEmpty()) {
+        return transitions.mapIndexed { index, transition ->
+            ChartPhaseBoundary(
+                seconds = transition.elapsedMillis / 1000.0,
+                stepNumber = index + 1,
+                conditions = listOfNotNull(transition.condition),
+                matchedCondition = transition.condition,
+                actual = true,
+            )
+        }
     }
     var elapsedMillis = 0L
     return buildList {

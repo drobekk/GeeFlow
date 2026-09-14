@@ -22,7 +22,9 @@ internal class PumpFlowPressureRegulator(private val maximumPressure: Float) {
         require(measuredFlow.isFinite() && measuredFlow >= 0f)
         val previous = previousTime
         require(elapsedMillis >= 0 && (previous == null || elapsedMillis >= previous))
-        val seconds = if (previous == null) 0f else {
+        val seconds = if (previous == null) {
+            0f
+        } else {
             ((elapsedMillis - previous) / MILLISECONDS_PER_SECOND).coerceAtMost(MAXIMUM_INTERVAL_SECONDS)
         }
         previousTime = elapsedMillis

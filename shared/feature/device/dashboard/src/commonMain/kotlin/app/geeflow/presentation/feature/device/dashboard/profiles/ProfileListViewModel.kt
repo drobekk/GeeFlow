@@ -10,7 +10,7 @@ import app.geeflow.data.brew.model.BrewHistoryEntry
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
-import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.toProgram
 import app.geeflow.data.device.model.requiredMetrics
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
 import app.geeflow.domain.brew.usecase.DeleteProfileUseCase
@@ -25,7 +25,7 @@ import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
-import app.geeflow.data.brew.model.toProgram
+import app.geeflow.presentation.feature.device.dashboard.model.displayDescription
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.AddProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.BindProfileClicked
@@ -50,7 +50,6 @@ import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual_badge
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile_badge
-import geeflow.shared.feature.device.dashboard.generated.resources.profile_experimental_info
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_duplicate_name
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -180,8 +179,8 @@ internal class ProfileListViewModel(
                 phaseProgram = entry.executionTrace?.profile?.program ?: entry.profileSteps.toProgram(),
                 phaseTransitions = entry.executionTrace?.transitions.orEmpty(),
                 data = data,
-                targetData =
-                entry.executionTrace?.toTargetData() ?: entry.profileRecording?.toTargetData()
+                targetData = entry.executionTrace?.toTargetData()
+                    ?: entry.profileRecording?.toTargetData()
                     ?: entry.profileSteps.toTargetData(),
             ),
         )
@@ -250,51 +249,40 @@ internal class ProfileListViewModel(
         launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
     }
 
-    private fun profilesChanged(profiles: List<BrewProfile>, boundProfileId: String?) {
+    private suspend fun profilesChanged(profiles: List<BrewProfile>, boundProfileId: String?) {
         currentDomainProfiles = profiles
         if (profiles.isEmpty()) return
         val selectedProfileId = viewState.value.profiles.find { it.selected }?.id ?: profiles.first().id.toString()
-        modify {
-            copy(
-                profiles = profiles.mapIndexed { index, profile ->
-                    mapToProfile(
-                        index = index,
-                        profile = profile,
-                        selected = selectedProfileId == profile.id.toString(),
-                        bound = boundProfileId == profile.id.toString(),
-                    )
-                },
+        val mappedProfiles = profiles.mapIndexed { index, profile ->
+            mapToProfile(
+                index = index,
+                profile = profile,
+                selected = selectedProfileId == profile.id.toString(),
+                bound = boundProfileId == profile.id.toString(),
             )
         }
+        modify { copy(profiles = mappedProfiles) }
         emitEvent(SelectProfile(selectedProfileId))
     }
 
-    private fun mapToProfile(
+    private suspend fun mapToProfile(
         index: Int,
         profile: BrewProfile,
         selected: Boolean,
-        bound: Boolean
-    ): ProfileListViewState.Profile {
-        val conditionText = when (val cond = profile.finishCondition) {
-            null -> ""
-            is Condition.Weight -> "${cond.target.toInt()}g"
-            is Condition.Volume -> "${cond.target.toInt()}ml"
-        }
-
-        return ProfileListViewState.Profile(
-            id = profile.id.toString(),
-            number = (index + 1).toString(),
-            name = profile.name,
-            description = "$conditionText • ${profile.description}",
-            brewByWeight = BrewMetric.CupWeight in profile.requiredMetrics(),
-            experimental = getProfileSupport(args.deviceId, profile).experimental,
-            canBind = getProfileSupport(args.deviceId, profile).bindingAllowed,
-            bound = bound,
-            selected = selected,
-            program = profile.program,
-            targetData = profile.toTargetData(),
-        )
-    }
+        bound: Boolean,
+    ): ProfileListViewState.Profile = ProfileListViewState.Profile(
+        id = profile.id.toString(),
+        number = (index + 1).toString(),
+        name = profile.name,
+        description = profile.displayDescription(),
+        brewByWeight = BrewMetric.CupWeight in profile.requiredMetrics(),
+        experimental = getProfileSupport(args.deviceId, profile).experimental,
+        canBind = getProfileSupport(args.deviceId, profile).bindingAllowed,
+        bound = bound,
+        selected = selected,
+        program = profile.program,
+        targetData = profile.toTargetData(),
+    )
 
     private companion object {
         private const val HISTORY_PAGE_SIZE = 20

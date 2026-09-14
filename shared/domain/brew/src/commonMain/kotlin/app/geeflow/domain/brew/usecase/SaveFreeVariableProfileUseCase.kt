@@ -5,6 +5,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.BrewSession
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.domain.exception.RecordingNoVolumeException
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
@@ -19,7 +20,7 @@ class SaveFreeVariableProfileUseCase(
         val recording = requireNotNull(session.recording) { "No free hand recording available" }
         recording.playbackPoints() // Validate the transport capacity before persisting.
         val target = recording.samples.last().data.volume
-        require(target > 0f) { "The recording has no measured volume" }
+        if (target <= 0f) throw RecordingNoVolumeException()
         val profile = BrewProfile(
             userId = userId,
             name = name,

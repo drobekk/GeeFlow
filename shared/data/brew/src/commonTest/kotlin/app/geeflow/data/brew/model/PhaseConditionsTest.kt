@@ -9,7 +9,8 @@ class PhaseConditionsTest {
     private val conditions = listOf(
         ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f),
         ExitCondition(BrewMetric.PumpedVolume, ThresholdComparison.Above, 40f),
-        ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.Below, 2f))
+        ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.Below, 2f),
+    )
     private fun phase() = BrewPhase(
         id = "test",
         control = PhaseControl.Pressure(3f),

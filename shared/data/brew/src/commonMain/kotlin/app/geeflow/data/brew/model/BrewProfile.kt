@@ -34,7 +34,16 @@ data class BrewProfile(
         steps: List<ProfileStep>,
         position: Int = 0,
         autoLinkOpen: Boolean = false,
-    ) : this(id, userId, name, description, finishCondition, autoLinkOpen, steps.toProgram(), position)
+    ) : this(
+        id = id,
+        userId = userId,
+        name = name,
+        description = description,
+        finishCondition = finishCondition,
+        autoLinkOpen = autoLinkOpen,
+        program = steps.toProgram(),
+        position = position
+    )
 
     companion object {
         const val NEW_ID = 0L

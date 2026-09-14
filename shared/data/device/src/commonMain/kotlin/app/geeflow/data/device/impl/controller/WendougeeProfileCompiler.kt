@@ -4,7 +4,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.ProfileStep
-import app.geeflow.data.brew.model.RecordingCapacityExceededException
+import app.geeflow.domain.exception.RecordingCapacityExceededException
 
 /**
  * One Modbus register write that makes up part of a profile upload. The controller
@@ -27,10 +27,7 @@ class WendougeeProfileCompiler {
             is Condition.Volume -> cond.target
             null -> error("Native profiles require a finish target")
         }
-        if (profile.recording?.playbackPoints()?.size?.let {
-                it > WendougeeProfiling.MAX_RECORDING_POINTS
-            } == true
-        ) {
+        if (profile.recording?.playbackPoints()?.size?.let { it > WendougeeProfiling.MAX_RECORDING_POINTS } == true) {
             throw RecordingCapacityExceededException()
         }
         require(WendougeeProfiling.assessNative(profile).isEmpty()) { "Profile cannot run natively on this device" }
@@ -52,9 +49,7 @@ class WendougeeProfileCompiler {
         val writes = mutableListOf<ProfileWrite>()
         val recording = requireNotNull(profile.recording) { "Free variable profile has no recording" }
         val points = recording.playbackPoints().map {
-            it.copy(
-                pressure = it.pressure.coerceAtMost(WendougeeProfiling.MAX_PRESSURE),
-            )
+            it.copy(pressure = it.pressure.coerceAtMost(WendougeeProfiling.MAX_PRESSURE))
         }
         if (points.size > WendougeeProfiling.MAX_RECORDING_POINTS) throw RecordingCapacityExceededException()
         require(targetValue.isFinite() && targetValue > 0 && targetValue <= MAX_REGISTER_VALUE) {
