@@ -10,7 +10,7 @@ import app.geeflow.data.brew.model.plannedDurationMillis
 
 internal data class ChartPhaseBoundary(
     val seconds: Double,
-    val nextStepNumber: Int? = null,
+    val stepNumber: Int? = null,
     val conditions: List<ExitCondition> = emptyList(),
     val matchedCondition: ExitCondition? = null,
     val actual: Boolean = false,
@@ -21,7 +21,7 @@ internal fun BrewProgram?.chartBoundaries(transitions: List<PhaseTransition>): L
     if (phases.isEmpty()) return transitions.mapIndexed { index, transition ->
         ChartPhaseBoundary(
             seconds = transition.elapsedMillis / 1000.0,
-            nextStepNumber = index + 2,
+            stepNumber = index + 1,
             conditions = listOfNotNull(transition.condition),
             matchedCondition = transition.condition,
             actual = true,
@@ -29,7 +29,7 @@ internal fun BrewProgram?.chartBoundaries(transitions: List<PhaseTransition>): L
     }
     var elapsedMillis = 0L
     return buildList {
-        add(ChartPhaseBoundary(seconds = 0.0, nextStepNumber = 1))
+        add(ChartPhaseBoundary(seconds = 0.0, stepNumber = null))
         phases.forEachIndexed { index, phase ->
             val transition = transitions.firstOrNull { it.phaseId == phase.id }
             elapsedMillis = transition?.elapsedMillis ?: (elapsedMillis + phase.plannedDurationMillis())
@@ -43,7 +43,7 @@ internal fun BrewProgram?.chartBoundaries(transitions: List<PhaseTransition>): L
             add(
                 ChartPhaseBoundary(
                     seconds = elapsedMillis / 1000.0,
-                    nextStepNumber = (index + 2).takeIf { index < phases.lastIndex },
+                    stepNumber = index + 1,
                     conditions = conditions,
                     matchedCondition = if (transition?.reason == PhaseExitReason.MaximumDuration) time else transition?.condition,
                     actual = transition != null,
