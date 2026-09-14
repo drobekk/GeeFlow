@@ -43,13 +43,26 @@ compose.desktop {
     application {
         mainClass = "app.geeflow.MainKt"
 
-        nativeLibPath?.let { jvmArgs += "-Djava.library.path=$it" }
+        if (isWindows) {
+            val arch = if (isArm64) "windows-arm64" else "windows-x64"
+            jvmArgs += "-Djava.library.path=\$APPDIR/resources/$arch"
+        }
 
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = libs.versions.appPackageName.get()
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
+            packageName = "GeeFlow"
             packageVersion = libs.versions.appVersion.get()
+            
+            modules("java.sql", "jdk.unsupported")
+            
+            windows {
+                iconFile.set(project.file("icon.ico"))
+                menuGroup = "GeeFlow"
+                shortcut = true
+                dirChooser = true
+                upgradeUuid = "1aed0245-316c-4b4d-89ad-46b5ce0b6a13"
+            }
         }
     }
 }
