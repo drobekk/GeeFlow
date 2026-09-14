@@ -110,6 +110,4 @@ internal fun <T> enumLabel(value: T): String = when (value) {
     )
 }
 
-private const val DefaultPhaseWaterMl = 40f
-
 private const val MillisecondsPerSecond = 1000L

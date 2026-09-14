@@ -19,6 +19,7 @@ internal data class ProfileEditorViewState(
     val isRecording: Boolean = false,
     val profileName: String = "",
     val description: String = "",
+    val displayDescription: String = "",
     val steps: List<Step> = emptyList(),
     val finishTarget: FinishTarget = FinishTarget(),
     val targetData: Map<Float, ChartData> = emptyMap(),

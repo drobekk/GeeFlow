@@ -146,6 +146,7 @@ internal class FreeControlViewModel(
         launchCatching(::onError) {
             saveFreeVariableProfile(session, name)
             emitEvent(ShowSnackbar(getString(Res.string.free_control_profile_saved)))
+            navigate(NavEvent.Back)
         }
     }
 

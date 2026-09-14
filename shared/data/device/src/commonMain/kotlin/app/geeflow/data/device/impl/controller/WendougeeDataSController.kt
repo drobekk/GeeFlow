@@ -797,7 +797,6 @@ private const val FREE_VAR_PREPARE_VALUE = 4
 private const val COIL_SHORT_PRESS = 0x96
 private const val COIL_CLEANING = 0x9B
 private const val COIL_PROFILE_FREE = 0x9E
-private const val BYTE_SHIFT = 8
 private const val BYTE_MASK = 0xFF
 private const val HEX_RADIX = 16
 private const val SCALE_CMD_CONNECT = 0x80

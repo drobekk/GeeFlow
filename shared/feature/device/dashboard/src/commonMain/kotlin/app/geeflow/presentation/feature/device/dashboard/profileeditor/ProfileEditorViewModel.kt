@@ -31,6 +31,7 @@ import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
+import app.geeflow.presentation.feature.device.dashboard.model.displayDescription
 import app.geeflow.presentation.feature.device.dashboard.model.toChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
 import app.geeflow.presentation.feature.device.dashboard.model.toDomain
@@ -55,7 +56,6 @@ import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_bound_requires_connection
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_default_name
-import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_description
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_experimental_info
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
@@ -92,7 +92,7 @@ internal class ProfileEditorViewModel(
                 copy(
                     pressureRange = constraints.pressureRange,
                     flowRange = constraints.flowRange,
-                    profilingCapabilities = getProfilingCapabilities(args.deviceId)
+                    profilingCapabilities = getProfilingCapabilities(args.deviceId),
                 )
             }
         }
@@ -114,22 +114,36 @@ internal class ProfileEditorViewModel(
                         brew = brew.copy(
                             time = session.elapsedSeconds,
                             data = session.toChartData(),
-                            phaseProgram = if (isBrewing) session.executionTrace?.profile?.program else brew.phaseProgram,
-                            phaseTransitions = if (isBrewing) session.executionTrace?.transitions.orEmpty() else brew.phaseTransitions
+                            phaseProgram = if (isBrewing) {
+                                session.executionTrace?.profile?.program
+                            } else {
+                                brew.phaseProgram
+                            },
+                            phaseTransitions = if (isBrewing) {
+                                session.executionTrace?.transitions.orEmpty()
+                            } else {
+                                brew.phaseTransitions
+                            },
                         ),
                         targetData = if (isBrewing) {
-                            session.executionTrace?.let { it.profile.program.toTargetData(it.transitions) } ?: targetData
+                            session.executionTrace?.let {
+                                it.profile.program.toTargetData(it.transitions)
+                            } ?: targetData
                         } else {
                             targetData
-                        }
+                        },
                     )
                 }
             }
         }
         launch {
             observeDeviceState(args.deviceId).collect { state ->
-                modify { copy(isBrewing = state.brewStatus == DeviceState.BrewStatus.Profile ||
-                    state.brewStatus == DeviceState.BrewStatus.FreeVariable) }
+                modify {
+                    copy(
+                        isBrewing = state.brewStatus == DeviceState.BrewStatus.Profile ||
+                            state.brewStatus == DeviceState.BrewStatus.FreeVariable,
+                    )
+                }
             }
         }
         launch { getVisibleCharts().collect { charts -> modify { copy(visibleCharts = charts.toDashboard()) } } }
@@ -141,19 +155,22 @@ internal class ProfileEditorViewModel(
         is ProfileEditorEvent.ExperimentClicked -> launch {
             emitEvent(ShowSnackbar(getString(Res.string.profile_experimental_info), persistent = true))
         }
+
         is ProfileEditorEvent.ToggleGlobalGoal -> {
             modify {
                 copy(
-                    finishTarget = finishTarget.copy(enabled = !finishTarget.enabled)
+                    finishTarget = finishTarget.copy(enabled = !finishTarget.enabled),
                 )
             }
             refreshSupport()
         }
+
         is ProfileEditorEvent.StepDuplicated -> updateSteps {
             val source = find { it.id == event.id } ?: return@updateSteps this
             val id = nextStepId++
             this + source.copy(id = id, phaseId = "copy-$id-${kotlin.time.Clock.System.now().toEpochMilliseconds()}")
         }
+
         is BackClicked -> navigate(NavEvent.Back)
         is SaveClicked -> saveProfile()
         is TestClicked -> testProfile()
@@ -163,6 +180,7 @@ internal class ProfileEditorViewModel(
         is DetailsConfirmed -> modify {
             copy(profileName = event.name, description = event.description, dialog = null)
         }
+
         is AddStepClicked -> openStepEditor(null)
         is StepClicked -> openStepEditor(event.id)
         is ProfileEditorEvent.StepEditorCancelled -> modify { copy(stepEditor = null) }
@@ -176,6 +194,7 @@ internal class ProfileEditorViewModel(
             }
             Unit
         }
+
         is StepRemoved -> updateSteps { filterNot { it.id == event.id } }
         is StepsReordered -> reorderSteps(event.from, event.to)
         is FinishTargetClicked -> finishTargetClicked(event.type)
@@ -183,14 +202,16 @@ internal class ProfileEditorViewModel(
         is DialogDismissed -> modify { copy(dialog = null) }
     }
 
-    private fun loadProfile(profile: BrewProfile) {
+    private suspend fun loadProfile(profile: BrewProfile) {
         sourceProfile = profile
         nextStepId = profile.steps.size.toLong()
+        val displayDescription = profile.displayDescription()
         modify {
             copy(
                 isRecording = profile.recording != null,
                 profileName = profile.name,
                 description = profile.description,
+                displayDescription = displayDescription,
                 finishTarget = profile.finishCondition.toFinishTarget(),
             )
         }
@@ -203,7 +224,7 @@ internal class ProfileEditorViewModel(
                     ramp = phase.ramp,
                     minimumDurationMillis = phase.minimumDurationMillis,
                     timeSec = (phase.maximumDurationMillis / 1000).toInt(),
-                    exitConditions = phase.exitConditions
+                    exitConditions = phase.exitConditions,
                 )
             }
         }
@@ -221,7 +242,7 @@ internal class ProfileEditorViewModel(
                 60,
                 9f,
                 phaseId = "phase-$newId-${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
-                exitConditions = listOf(ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f))
+                exitConditions = listOf(ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f)),
             )
         } else {
             viewState.value.steps.find { it.id == id } ?: return
@@ -230,12 +251,15 @@ internal class ProfileEditorViewModel(
     }
 
     /** Selects the target type first; only a press on the already selected one opens the value dialog. */
-    private fun finishTargetClicked(type: FinishTargetType) = modify {
-        if (finishTarget.type == type) {
-            copy(dialog = ProfileEditorDialog.FinishTargetValue(type = type, target = finishTarget.target))
-        } else {
-            copy(finishTarget = finishTarget.copy(type = type), brew = Brew())
+    private fun finishTargetClicked(type: FinishTargetType) {
+        modify {
+            if (finishTarget.type == type) {
+                copy(dialog = ProfileEditorDialog.FinishTargetValue(type = type, target = finishTarget.target))
+            } else {
+                copy(finishTarget = finishTarget.copy(type = type), brew = Brew())
+            }
         }
+        updateDisplayDescription()
     }
 
     // Editing the profile invalidates whatever the last test drew, so the recorded brew is dropped
@@ -249,6 +273,7 @@ internal class ProfileEditorViewModel(
             }
             copy(finishTarget = updated, dialog = null, brew = Brew())
         }
+        updateDisplayDescription()
     }
 
     private fun reorderSteps(from: Int, to: Int) = updateSteps {
@@ -292,14 +317,7 @@ internal class ProfileEditorViewModel(
         saveBrewProfile(
             id = profile.id,
             name = profile.name,
-            description = profile.description.ifBlank {
-                if (profile.recording != null) return@ifBlank ""
-                getString(
-                    Res.string.profile_editor_description,
-                    profile.steps.size,
-                    profile.steps.sumOf { it.time },
-                )
-            },
+            description = profile.description,
             finishCondition = profile.finishCondition,
             program = profile.program,
         )
@@ -318,6 +336,12 @@ internal class ProfileEditorViewModel(
         }
 
         refreshSupport()
+        updateDisplayDescription()
+    }
+
+    private fun updateDisplayDescription() = launch {
+        val newDesc = editedProfile().displayDescription()
+        modify { copy(displayDescription = newDesc) }
     }
 
     private fun refreshSupport() {
@@ -328,7 +352,7 @@ internal class ProfileEditorViewModel(
                 supportIssues = support.issues.map { it.code }.distinct(),
                 steps = steps.map { step ->
                     step.copy(experimental = support.nativeIssues.any { it.phaseId == step.phaseId })
-                }
+                },
             )
         }
     }
@@ -338,5 +362,3 @@ internal class ProfileEditorViewModel(
         launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
     }
 }
-
-private const val MillisecondsPerSecond = 1000L

@@ -169,23 +169,8 @@ class ProfileExecutionCoordinator(
             if (device.telemetryTime != stamp) {
                 stamp = device.telemetryTime
                 freshAt = TimeSource.Monotonic.markNow()
-                val sample = FreeHandSample(
-                    clock.elapsedNow().inWholeMilliseconds,
-                    BrewDataPoint(
-                        pressure = device.pressure ?: 0f,
-                        weight = device.weight ?: 0f,
-                        volume = device.volume ?: 0f,
-                        flowRate = device.flowRate ?: 0f,
-                        weightRate = device.weightRate ?: 0f,
-                    )
-                )
-                mutableState.update { state ->
-                    state.copy(
-                        trace = state.trace?.let {
-                            it.copy(measurements = it.measurements + sample)
-                        }
-                    )
-                }
+                val elapsed = clock.elapsedNow().inWholeMilliseconds
+                recordTelemetrySample(device, elapsed)
             }
             check(freshAt.elapsedNow().inWholeMilliseconds < TELEMETRY_TIMEOUT_MS) { "Telemetry timed out" }
             val telemetry = controller.telemetry()
@@ -196,9 +181,9 @@ class ProfileExecutionCoordinator(
             output.finish?.let { return it }
             val target = controller.quantize(requireNotNull(output.target))
             val interval = maxOf(MINIMUM_WRITE_INTERVAL_MS, controller.profilingCapabilities.minimumWriteIntervalMillis)
-            if ((target != lastTarget || session.requiresContinuousUpdates) &&
-                (lastWrite == null || elapsed - lastWrite >= interval)
-            ) {
+            val shouldWriteTarget = target != lastTarget || session.requiresContinuousUpdates
+            val isIntervalPassed = lastWrite == null || elapsed - lastWrite >= interval
+            if (shouldWriteTarget && isIntervalPassed) {
                 val sent = withTimeout(TELEMETRY_TIMEOUT_MS) { session.applyTarget(target) }
                 lastTarget = target
                 lastWrite = clock.elapsedNow().inWholeMilliseconds
@@ -247,6 +232,26 @@ class ProfileExecutionCoordinator(
                     it.brewStatus == DeviceState.BrewStatus.Idle && it.statusTime != previousStatus
             }
             mutableState.update { it.copy(manualStopRequired = false) }
+        }
+    }
+
+    private fun recordTelemetrySample(device: DeviceState, elapsed: Long) {
+        val sample = FreeHandSample(
+            elapsed,
+            BrewDataPoint(
+                pressure = device.pressure ?: 0f,
+                weight = device.weight ?: 0f,
+                volume = device.volume ?: 0f,
+                flowRate = device.flowRate ?: 0f,
+                weightRate = device.weightRate ?: 0f,
+            )
+        )
+        mutableState.update { state ->
+            state.copy(
+                trace = state.trace?.let {
+                    it.copy(measurements = it.measurements + sample)
+                }
+            )
         }
     }
 }

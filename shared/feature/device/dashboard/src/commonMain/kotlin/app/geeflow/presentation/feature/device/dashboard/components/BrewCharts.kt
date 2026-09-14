@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.FlowRate
@@ -27,10 +28,9 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Volume
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Weight
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.WeightRate
-import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.presentation.feature.device.dashboard.model.ChartPhaseBoundary
 import app.geeflow.presentation.feature.device.dashboard.model.chartBoundaries
-import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.ui.isHeightCompact
 import app.geeflow.ui.theme.GeeFlowTheme
 import app.geeflow.ui.theme.disabled
@@ -110,7 +110,10 @@ internal fun BrewCharts(
     // than the minimum) is drawn past the right edge and edits beyond it are invisible.
     val maxBrewX = xValues.maxOrNull() ?: 0.0
     val maxTargetX = targetData.keys.maxOrNull()?.toDouble() ?: 0.0
-    val maxX = maxOf(maxOf(maxBrewX, maxTargetX, boundaries.maxOfOrNull { it.seconds } ?: 0.0) + ChartXPadding, MinChartX)
+    val maxX = maxOf(
+        maxOf(maxBrewX, maxTargetX, boundaries.maxOfOrNull { it.seconds } ?: 0.0) + ChartXPadding,
+        MinChartX,
+    )
 
     val syncState = rememberBrewSyncState()
 
@@ -176,9 +179,10 @@ internal fun BrewCharts(
             entries.map { it.key.toDouble() },
             entries.map { value(it.value).toDouble() },
             color.copy(alpha = 0.5f),
-            unit
+            unit,
         )
     }
+
     val flowTargets = buildList {
         flowTarget?.let { add(it) }
         if (showWeightRate) reference(onSurface, unitGramsPerSecond) { it.weightPerSecond }?.let { add(it) }
@@ -380,7 +384,7 @@ private fun BrewChart(
         maxZoom = Zoom.Content,
     )
     val phaseDecoration = brewPhaseDecoration(boundaries = phaseBoundaries)
-    val persistentMarkers: PersistentMarkerScope.(ExtraStore) -> Unit = {
+    val persistentMarkers: PersistentMarkerScope.(ExtraStore) -> Unit = { _ ->
         syncMarkerX?.let { marker at it }
     }
 
@@ -397,10 +401,10 @@ private fun BrewChart(
                                     Brush.verticalGradient(
                                         listOf(
                                             color.disabled(),
-                                            Color.Transparent
-                                        )
-                                    )
-                                )
+                                            Color.Transparent,
+                                        ),
+                                    ),
+                                ),
                             ),
                         )
                     }.toTypedArray() + targetColors.map { color ->
@@ -486,5 +490,3 @@ private fun getXStep(maxValue: Double, targetStepCount: Int = 10): Double {
 
     return niceMultiplier * magnitude
 }
-
-private const val MillisecondsPerSecond = 1000.0

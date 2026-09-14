@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DetailsConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DialogDismissed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetConfirmed
-import app.geeflow.ui.components.DefaultControlWidth
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.GeeFlowInputPad
@@ -165,5 +164,3 @@ private fun ColumnScope.ConfirmButton(enabled: Boolean = true, onClick: () -> Un
 }
 
 private const val MinFinishTarget = 1f
-private val SinglePickerContentWidth = 208.dp
-private val DualPickerContentWidth = DefaultControlWidth * 2 + 16.dp

@@ -71,6 +71,7 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
+import app.geeflow.presentation.feature.device.dashboard.model.displayDescription
 import app.geeflow.presentation.feature.device.dashboard.model.toChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
@@ -203,18 +204,15 @@ internal class DeviceDashboardViewModel(
             }
     }
 
-    private fun onProfileSelected(id: String?) {
+    private fun onProfileSelected(id: String?) = launchCatching(::onError) {
         selectedProfileId = id
-        selectedProfileId
-            ?.toLongOrNull()
-            ?.let { getBrewProfileUseCase(it) }
-            ?.let {
-                selectedProfileName = it.name
-                selectedProfileDescription = it.description
-                selectedProfileSteps = it.steps
-                selectedProfileRecording = it.recording
-                modify { copy(brew = Brew(name = it.name, description = it.description)) }
-            }
+        val profileId = id?.toLongOrNull() ?: return@launchCatching
+        val profile = getBrewProfileUseCase(profileId) ?: return@launchCatching
+        selectedProfileName = profile.name
+        selectedProfileDescription = profile.displayDescription()
+        selectedProfileSteps = profile.steps
+        selectedProfileRecording = profile.recording
+        modify { copy(brew = Brew(name = profile.name, description = selectedProfileDescription.orEmpty())) }
     }
 
     private fun updateMachineStateUi(state: DeviceState) {
