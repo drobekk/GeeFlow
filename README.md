@@ -1,3 +1,5 @@
+[![CI](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml)
+
 <div>
   <img src="./docs/logo.png" alt="GeeFlow logo" width="160">
 
