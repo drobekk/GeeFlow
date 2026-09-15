@@ -9,4 +9,6 @@ internal sealed interface AddDeviceEvent {
     data object Resumed : AddDeviceEvent
     data object OpenSystemSettingsClicked : AddDeviceEvent
     data object AddDemoDeviceClicked : AddDeviceEvent
+    data object CancelWarningClicked : AddDeviceEvent
+    data object AcceptWarningClicked : AddDeviceEvent
 }

@@ -1,12 +1,12 @@
-package app.geeflow.data.device.model
+﻿package app.geeflow.data.device.model
 
 sealed class SupportedDevice(
     val manufacturer: String,
     val model: String,
     val version: String,
 ) {
-    data object WendougeeDataS : SupportedDevice("Wendougee", "Data-S", "V180")
-    data object GeeFlowDemo : SupportedDevice("GeeFlow", "Demo", "V1")
+    data object WendougeeDataS : SupportedDevice(DeviceManufacturer.WENDOUGEE, "Data-S", "V180")
+    data object GeeFlowDemo : SupportedDevice(DeviceManufacturer.GEEFLOW, "Demo", "V1")
 
     companion object {
         fun all(): List<SupportedDevice> = listOf(WendougeeDataS, GeeFlowDemo)
@@ -27,3 +27,8 @@ val Device.supportedDevice: SupportedDevice?
 
 val Device.isDemo: Boolean
     get() = this.supportedDevice is SupportedDevice.GeeFlowDemo
+
+object DeviceManufacturer {
+    const val WENDOUGEE = "Wendougee"
+    const val GEEFLOW = "GeeFlow"
+}

@@ -1,7 +1,10 @@
 package app.geeflow.presentation.feature.device.add
 
+import app.geeflow.data.device.model.Device
+
 internal data class AddDeviceViewState(
     val method: Method = Method.NearbyDevices(),
+    val dialog: Dialog? = null,
 ) {
     sealed interface Method {
         val changeMethodButtonVisible: Boolean
@@ -22,4 +25,8 @@ internal data class AddDeviceViewState(
         val id: String, // BLE peripheral id (transient — only valid until persisted)
         val name: String,
     )
+
+    sealed interface Dialog {
+        data class ExperimentalWarning(val device: Device) : Dialog
+    }
 }

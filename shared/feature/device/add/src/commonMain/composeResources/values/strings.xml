@@ -8,4 +8,8 @@
     <string name="add_device_screen_qr_parsing_error">Could not parse device data</string>
     <string name="add_device_screen_empty">No devices found. Time to wake up your espresso machine.</string>
     <string name="add_device_demo">Add Demo device</string>
+    <string name="add_device_warning_title">Disclaimer &amp; Warning</string>
+    <string name="add_device_warning_message">This is an unofficial, third-party application. While it utilizes the manufacturer's native communication protocol, the integration was independently reverse-engineered and is not endorsed, certified, or supported by the manufacturer.\n\nBecause this application sends direct hardware commands, unforeseen bugs or firmware incompatibilities could cause your espresso machine to operate incorrectly.\n\nBy proceeding, you acknowledge and agree that:\n• You use this software entirely at your own risk.\n• It may cause unintended behavior, damage your machine, or void your warranty.\n• You must never leave the machine unattended while it is under app control.</string>
+    <string name="add_device_warning_accept">I accept the risks</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

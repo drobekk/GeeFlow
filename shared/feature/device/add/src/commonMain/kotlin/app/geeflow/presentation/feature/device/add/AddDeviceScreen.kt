@@ -144,6 +144,11 @@ private fun AddDeviceContent(
             )
         },
     )
+
+    AddDeviceDialogs(
+        dialog = viewState.dialog,
+        onEvent = onEvent,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

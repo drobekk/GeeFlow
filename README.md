@@ -17,9 +17,14 @@ The **Wendougee smart grinder** is not supported yet, simply because I do not ow
 A built-in **Demo** device is also available for preview purposes. It simulates a machine entirely in software, so you can explore the whole app (dashboard, profiles, charts, history) without owning any hardware. Add it from the *Add Device* screen.
 
 > [!WARNING]
-> **The BLE protocol used here was reverse engineered.** It is not based on any vendor documentation, SDK, or official specification, and it is neither endorsed nor supported by the manufacturer. This app sends commands directly to your machine's control board, including boiler temperature targets, heating modes, pressure and flow targets, and cleaning cycles.
+> **This is an unofficial, third-party application.** While it utilizes the manufacturer's native communication protocol, the integration was independently reverse-engineered and is not endorsed, certified, or supported by the manufacturer.
 >
-> **Use it at your own risk.** It may damage your machine, void your warranty, or behave unpredictably after a firmware update. Never leave the machine running unattended while it is under app control.
+> Because this application sends direct hardware commands (including heating targets, pressure profiles, and cleaning cycles), unforeseen bugs or firmware incompatibilities could cause your machine to operate incorrectly.
+>
+> **By using this software, you acknowledge and agree that:**
+> - You use it entirely at your own risk.
+> - It may cause unintended behavior, damage your machine, or void your warranty.
+> - You must **never** leave the machine unattended while it is under app control.
 
 ### Error Handling Limitation
 

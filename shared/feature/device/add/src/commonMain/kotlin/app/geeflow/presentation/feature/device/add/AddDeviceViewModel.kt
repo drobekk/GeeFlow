@@ -7,6 +7,7 @@ import app.geeflow.data.device.DiscoveredBleDevice
 import app.geeflow.data.device.NearbyDevicesController
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
+import app.geeflow.data.device.model.DeviceManufacturer
 import app.geeflow.data.device.model.SupportedDevice
 import app.geeflow.domain.device.usecase.AddDeviceUseCase
 import app.geeflow.domain.device.usecase.ParseDeviceQrCodeUseCase
@@ -79,6 +80,14 @@ internal class AddDeviceViewModel(
                 ),
             )
         }
+        is AddDeviceEvent.CancelWarningClicked -> {
+            modify { copy(dialog = null) }
+        }
+        is AddDeviceEvent.AcceptWarningClicked -> {
+            val warning = viewState.value.dialog as? AddDeviceViewState.Dialog.ExperimentalWarning
+            modify { copy(dialog = null) }
+            warning?.let { addDeviceAndNavigate(it.device) }
+        }
     }
 
     private fun startScanning() {
@@ -88,11 +97,19 @@ internal class AddDeviceViewModel(
         }
     }
 
+    private fun handleDeviceSelected(device: Device) {
+        if (device.manufacturer == DeviceManufacturer.WENDOUGEE) {
+            modify { copy(dialog = AddDeviceViewState.Dialog.ExperimentalWarning(device)) }
+        } else {
+            addDeviceAndNavigate(device)
+        }
+    }
+
     private fun onDeviceClicked(id: String) {
         val discovered = nearbyDevicesController.discoveredDevices.value
             .find { (it.device.connection as? DeviceConnection.Ble)?.peripheralId == id }
             ?: return
-        addDeviceAndNavigate(discovered.device)
+        handleDeviceSelected(discovered.device)
     }
 
     private fun onDevicesFound(devices: Set<DiscoveredBleDevice>) {
@@ -125,7 +142,7 @@ internal class AddDeviceViewModel(
     private fun parseQrCode(data: String) {
         val device = parseDeviceQrCodeUseCase(data)
         if (device != null) {
-            addDeviceAndNavigate(device)
+            handleDeviceSelected(device)
         } else {
             launch {
                 emitEvent(ShowSnackbar(getString(Res.string.add_device_screen_qr_parsing_error)))
