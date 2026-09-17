@@ -200,7 +200,7 @@ private fun ExpandedDashboard(
                     )
                     HorizontalSpacer(16.dp)
                     BrewButton(
-                        isBrewing = viewState.device.isBrewing,
+                        state = viewState.brewButtonState,
                         onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
                         onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
                         onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
@@ -260,7 +260,7 @@ private fun CompactDashboard(
         },
         bottomBar = {
             BrewButton(
-                isBrewing = viewState.device.isBrewing,
+                state = viewState.brewButtonState,
                 onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
                 onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
                 onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },

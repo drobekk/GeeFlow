@@ -6,7 +6,7 @@
     <string name="device_dashboard_connected">Connected</string>
     <string name="device_dashboard_disconnected">Disconnected</string>
     <string name="device_dashboard_connecting">Connecting</string>
-    <string name="device_dashboard_synchronizing">Synchronizing</string>
+    <string name="device_dashboard_syncing">Syncing</string>
 
     <string name="device_dashboard_select_charts">Select data types below to visualize your brew</string>
 

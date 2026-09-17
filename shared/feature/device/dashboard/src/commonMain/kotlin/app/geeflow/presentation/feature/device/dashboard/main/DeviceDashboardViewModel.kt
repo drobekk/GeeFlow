@@ -45,6 +45,7 @@ import app.geeflow.platform.permissions.PermissionsController
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
 import app.geeflow.presentation.feature.device.dashboard.QuickMaintenance
 import app.geeflow.presentation.feature.device.dashboard.QuickSettings
+import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.AlarmClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.BrewClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.BrewDescriptionClicked
@@ -193,7 +194,20 @@ internal class DeviceDashboardViewModel(
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
             ?.let { profile ->
-                startProfileBrewing(args.deviceId, profile)
+                try {
+                    modify { copy(brewButtonState = BrewButtonState.Syncing) }
+                    startProfileBrewing(args.deviceId, profile)
+                } finally {
+                    modify {
+                        copy(
+                            brewButtonState = if (device.isBrewing) {
+                                BrewButtonState.Brewing
+                            } else {
+                                BrewButtonState.Idle
+                            },
+                        )
+                    }
+                }
                 emitEvent(DeviceDashboardViewModelEvent.SwitchToDetails)
             }
     }
@@ -225,6 +239,15 @@ internal class DeviceDashboardViewModel(
                 BrewStatus.FreeVariable -> Device.BrewStatus.Profile
                 else -> Device.BrewStatus.Idle
             }
+
+            val currentButtonState = if (this.brewButtonState == BrewButtonState.Syncing) {
+                BrewButtonState.Syncing
+            } else if (newBrewStatus != Device.BrewStatus.Idle) {
+                BrewButtonState.Brewing
+            } else {
+                BrewButtonState.Idle
+            }
+
             copy(
                 device = device.copy(
                     brewBoilerTemp = state.brewBoilerTemp?.roundDecimalsTo(1)?.toString(),
@@ -240,6 +263,7 @@ internal class DeviceDashboardViewModel(
                     smartScaleConnected = state.smartScale?.isConnected == true,
                     alarm = state.waterLevelAlarm,
                 ),
+                brewButtonState = currentButtonState,
             )
         }
     }

@@ -175,6 +175,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun startProfileBrewing(profile: BrewProfile) {
+        delay(500.milliseconds)
         _deviceState.update {
             it.copy(brewStatus = DeviceState.BrewStatus.Profile, pressure = 0f, weight = 0f, volume = 0f)
         }
@@ -183,7 +184,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
             var elapsedMs = 0L
 
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.Profile) {
-                delay(BREW_TICK_MS)
+                delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
                 val elapsedSec = elapsedMs / MS_PER_SECOND
 

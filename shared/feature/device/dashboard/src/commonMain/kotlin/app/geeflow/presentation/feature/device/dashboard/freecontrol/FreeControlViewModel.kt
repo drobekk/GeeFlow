@@ -22,6 +22,7 @@ import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent
 import app.geeflow.navigation.destination.FreeControl
+import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.BackClicked
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ModeChanged
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.RenameClicked
@@ -100,16 +101,28 @@ internal class FreeControlViewModel(
 
     private fun startBrewing(): Job = launchCatching(::onError) {
         val isFlow = viewState.value.mode == ControlMode.Flow
-        startFreeVariableBrewing(args.deviceId, isFlow)
-        if (isFlow) {
-            setFreeBrewFlow(args.deviceId, viewState.value.flowTarget)
-        } else {
-            setFreeBrewPressure(args.deviceId, viewState.value.pressureTarget)
+        try {
+            modify { copy(brewButtonState = BrewButtonState.Syncing) }
+            startFreeVariableBrewing(args.deviceId, isFlow)
+            if (isFlow) {
+                setFreeBrewFlow(args.deviceId, viewState.value.flowTarget)
+            } else {
+                setFreeBrewPressure(args.deviceId, viewState.value.pressureTarget)
+            }
+        } finally {
+            val currentButtonState = if (viewState.value.brewButtonState == BrewButtonState.Syncing) {
+                BrewButtonState.Syncing
+            } else if (viewState.value.brewButtonState == BrewButtonState.Brewing) {
+                BrewButtonState.Brewing
+            } else {
+                BrewButtonState.Idle
+            }
+            modify { copy(brewButtonState = currentButtonState) }
         }
     }
 
     private fun onModeChanged(event: ModeChanged) {
-        if (viewState.value.brewStatus == FreeBrewStatus.Idle) {
+        if (viewState.value.brewButtonState == BrewButtonState.Idle) {
             modify { copy(mode = event.mode) }
         }
     }
@@ -143,14 +156,16 @@ internal class FreeControlViewModel(
     }
 
     private fun updateFromDeviceState(state: DeviceState) {
-        val wasActive = viewState.value.brewStatus == FreeBrewStatus.Active
+        val wasActive = viewState.value.brewButtonState == BrewButtonState.Brewing
         val isNowIdle = state.brewStatus == DeviceState.BrewStatus.Idle
         modify {
             copy(
-                brewStatus = if (state.brewStatus == DeviceState.BrewStatus.FreeVariable) {
-                    FreeBrewStatus.Active
+                brewButtonState = if (state.brewStatus == DeviceState.BrewStatus.FreeVariable) {
+                    BrewButtonState.Brewing
+                } else if (viewState.value.brewButtonState == BrewButtonState.Syncing) {
+                    BrewButtonState.Syncing
                 } else {
-                    FreeBrewStatus.Idle
+                    BrewButtonState.Idle
                 },
                 sessionCompleted = sessionCompleted || (wasActive && isNowIdle),
             )
@@ -172,7 +187,7 @@ internal class FreeControlViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        if (viewState.value.brewStatus == FreeBrewStatus.Active) {
+        if (viewState.value.brewButtonState == BrewButtonState.Brewing) {
             appScope.launch {
                 runCatching { stopFreeVariableBrewing(args.deviceId) }
                     .onFailure { Logger.e(throwable = it) { "${this::class.simpleName}" } }

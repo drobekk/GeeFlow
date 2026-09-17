@@ -41,6 +41,7 @@ import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
+import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.BackClicked
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ModeChanged
@@ -170,7 +171,7 @@ private fun ExpandedLayout(
         ) {
             FreeControlTopBar(
                 sessionCompleted = viewState.sessionCompleted,
-                brewStatus = viewState.brewStatus,
+                brewButtonState = viewState.brewButtonState,
                 onBack = { onEvent(BackClicked) },
                 onSave = { onEvent(SaveClicked) },
                 modifier = Modifier
@@ -189,7 +190,7 @@ private fun ExpandedLayout(
             ) {
                 BrewBar(
                     brew = viewState.brew.copy(name = viewState.profileName),
-                    isBrewing = viewState.brewStatus == FreeBrewStatus.Active,
+                    isBrewing = viewState.brewButtonState == BrewButtonState.Brewing,
                     visibleCharts = viewState.visibleCharts,
                     onToggle = { onEvent(ToggleChartVisibility(it)) },
                     onHeaderClick = { onEvent(RenameClicked) },
@@ -198,7 +199,7 @@ private fun ExpandedLayout(
                 )
                 HorizontalSpacer(16.dp)
                 BrewButton(
-                    isBrewing = viewState.brewStatus == FreeBrewStatus.Active,
+                    state = viewState.brewButtonState,
                     onManualClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
                     onFlowClick = { onEvent(StartClicked) },
                     onManualFlowClick = { onEvent(ModeChanged(ControlMode.Flow)) },
@@ -266,7 +267,7 @@ private fun CompactLayout(
         topBar = {
             FreeControlTopBar(
                 sessionCompleted = viewState.sessionCompleted,
-                brewStatus = viewState.brewStatus,
+                brewButtonState = viewState.brewButtonState,
                 onBack = { onEvent(BackClicked) },
                 onSave = { onEvent(SaveClicked) },
                 modifier = Modifier
@@ -276,7 +277,7 @@ private fun CompactLayout(
         },
         bottomBar = {
             BrewButton(
-                isBrewing = viewState.brewStatus == FreeBrewStatus.Active,
+                state = viewState.brewButtonState,
                 onManualClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
                 onFlowClick = { onEvent(StartClicked) },
                 onManualFlowClick = { onEvent(ModeChanged(ControlMode.Flow)) },
@@ -316,7 +317,7 @@ private fun CompactLayout(
             )
             BrewBar(
                 brew = viewState.brew.copy(name = viewState.profileName),
-                isBrewing = viewState.brewStatus == FreeBrewStatus.Active,
+                isBrewing = viewState.brewButtonState == BrewButtonState.Brewing,
                 visibleCharts = viewState.visibleCharts,
                 onToggle = { onEvent(ToggleChartVisibility(it)) },
                 onHeaderClick = { onEvent(RenameClicked) },
@@ -345,7 +346,7 @@ private fun FreeControlTopBar(
     onBack: () -> Unit,
     onSave: () -> Unit,
     sessionCompleted: Boolean,
-    brewStatus: FreeBrewStatus,
+    brewButtonState: BrewButtonState,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -362,7 +363,7 @@ private fun FreeControlTopBar(
         Spacer(Modifier.weight(1f))
         Button(
             onClick = onSave,
-            enabled = sessionCompleted && brewStatus == FreeBrewStatus.Idle,
+            enabled = sessionCompleted && brewButtonState == BrewButtonState.Idle,
             modifier = Modifier.padding(end = 8.dp),
         ) {
             Text(stringResource(CoreRes.string.common_save))
@@ -420,7 +421,7 @@ private fun Preview() {
             flowTarget = 3.5f,
             pressureRange = 0f..12f,
             flowRange = 0f..8f,
-            brewStatus = FreeBrewStatus.Idle,
+            brewButtonState = BrewButtonState.Idle,
             sessionCompleted = false,
             visibleCharts = setOf(
                 DashboardChartType.Pressure,

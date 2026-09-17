@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.freecontrol
 
+import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.FlowRate
@@ -15,12 +16,10 @@ data class FreeControlViewState(
     val pressureRange: ClosedFloatingPointRange<Float> = 0f..0f,
     val flowRange: ClosedFloatingPointRange<Float> = 0f..0f,
     val brew: Brew = Brew(),
-    val brewStatus: FreeBrewStatus = FreeBrewStatus.Idle,
+    val brewButtonState: BrewButtonState = BrewButtonState.Idle,
     val sessionCompleted: Boolean = false,
     val visibleCharts: Set<DashboardChartType> = setOf(Pressure, FlowRate, WeightRate),
     val showRenameDialog: Boolean = false,
 )
 
 enum class ControlMode { Pressure, Flow }
-
-enum class FreeBrewStatus { Idle, Active }

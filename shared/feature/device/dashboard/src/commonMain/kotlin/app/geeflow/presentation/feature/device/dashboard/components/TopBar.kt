@@ -85,7 +85,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.device_dashbo
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_connected_devices
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_connecting
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_disconnected
-import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_synchronizing
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_syncing
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_toggle_steam_boiler
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
@@ -289,7 +289,7 @@ private fun ConnectionStatusButton(
     val text = when (connectionStatus) {
         Device.ConnectionStatus.Disconnected -> stringResource(Res.string.device_dashboard_disconnected)
         Device.ConnectionStatus.Connecting -> stringResource(Res.string.device_dashboard_connecting)
-        Device.ConnectionStatus.Synchronizing -> stringResource(Res.string.device_dashboard_synchronizing)
+        Device.ConnectionStatus.Synchronizing -> stringResource(Res.string.device_dashboard_syncing)
         Device.ConnectionStatus.Connected -> stringResource(Res.string.device_dashboard_connected)
     }
 

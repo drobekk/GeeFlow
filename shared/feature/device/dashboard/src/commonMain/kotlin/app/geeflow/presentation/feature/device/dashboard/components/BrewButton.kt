@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.Role
@@ -56,11 +57,13 @@ import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_stop
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_syncing
 import org.jetbrains.compose.resources.stringResource
+import geeflow.shared.feature.device.dashboard.generated.resources.Res as DashboardRes
 
 @Composable
 fun BrewButton(
-    isBrewing: Boolean,
+    state: BrewButtonState,
     onManualClick: () -> Unit,
     onFlowClick: () -> Unit,
     onManualFlowClick: () -> Unit,
@@ -84,31 +87,31 @@ fun BrewButton(
     },
 ) {
     val firstColor by animateColorAsState(
-        if (isBrewing) {
-            MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHigh
+        when (state) {
+            BrewButtonState.Brewing -> MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
+            BrewButtonState.Syncing -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.9f)
+            BrewButtonState.Idle -> MaterialTheme.colorScheme.surfaceContainerHigh
         },
     )
     val secondColor by animateColorAsState(
-        if (isBrewing) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHighest
+        when (state) {
+            BrewButtonState.Brewing -> MaterialTheme.colorScheme.error
+            BrewButtonState.Syncing -> MaterialTheme.colorScheme.tertiary
+            BrewButtonState.Idle -> MaterialTheme.colorScheme.surfaceContainerHighest
         },
     )
-    val transition = updateTransition(targetState = isBrewing, label = "BrewingTransition")
+    val transition = updateTransition(targetState = state, label = "BrewingTransition")
     val logoOffsetY by transition.animateDp(
         transitionSpec = {
-            if (targetState) {
+            if (targetState != BrewButtonState.Idle) {
                 tween(durationMillis = 200)
             } else {
                 spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
             }
         },
         label = "logoOffset",
-    ) { brewing -> if (brewing) 100.dp else 0.dp }
-    val logoAlpha by transition.animateFloat(label = "logoAlpha") { if (it) 0f else 1f }
+    ) { buttonState -> if (buttonState != BrewButtonState.Idle) 100.dp else 0.dp }
+    val logoAlpha by transition.animateFloat(label = "logoAlpha") { if (it != BrewButtonState.Idle) 0f else 1f }
 
     Box(
         modifier = modifier
@@ -129,17 +132,26 @@ fun BrewButton(
                 fadeIn(tween(TransitionDurationMs)) togetherWith fadeOut(tween(TransitionDurationMs))
             },
             modifier = Modifier
-                .clickable(enabled = isBrewing, onClick = onStopClick, role = Role.Button)
+                .clickable(enabled = state == BrewButtonState.Brewing, onClick = onStopClick, role = Role.Button)
                 .height(50.dp),
             contentAlignment = Alignment.Center,
-        ) {
-            BrewingContent(modifier = Modifier.visible(it))
+        ) { buttonState ->
+            ActiveStateContent(
+                text = stringResource(Res.string.common_stop).uppercase(),
+                textColor = MaterialTheme.colorScheme.onError,
+                modifier = Modifier.visible(buttonState == BrewButtonState.Brewing),
+            )
+            ActiveStateContent(
+                text = stringResource(DashboardRes.string.device_dashboard_syncing).uppercase(),
+                textColor = MaterialTheme.colorScheme.onTertiary,
+                modifier = Modifier.visible(buttonState == BrewButtonState.Syncing),
+            )
             BrewContent(
                 onManualClick = onManualClick,
                 onManualFlowClick = onManualFlowClick,
                 startIcon = startIcon,
                 endIcon = endIcon,
-                modifier = Modifier.visible(!it),
+                modifier = Modifier.visible(buttonState == BrewButtonState.Idle),
             )
         }
 
@@ -202,19 +214,27 @@ private fun BrewContent(
 }
 
 @Composable
-private fun BrewingContent(
+private fun ActiveStateContent(
+    text: String,
+    textColor: Color,
     modifier: Modifier = Modifier,
 ) {
     Text(
-        text = stringResource(Res.string.common_stop).uppercase(),
-        style = MaterialTheme.typography.headlineMedium,
-        color = MaterialTheme.colorScheme.onPrimary,
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        color = textColor,
         textAlign = TextAlign.Center,
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(horizontal = 32.dp),
     )
+}
+
+enum class BrewButtonState {
+    Idle,
+    Syncing,
+    Brewing
 }
 
 private const val TransitionDurationMs = 300
@@ -224,12 +244,12 @@ private const val LogoVisibleThreshold = 0.01f
 @Composable
 @GeeFlowComponentPreview
 private fun Preview() {
-    var isBrewing by remember { mutableStateOf(false) }
+    var state by remember { mutableStateOf(BrewButtonState.Idle) }
     BrewButton(
-        isBrewing = isBrewing,
+        state = state,
         onManualClick = {},
-        onFlowClick = { isBrewing = true },
+        onFlowClick = { state = BrewButtonState.Brewing },
         onManualFlowClick = {},
-        onStopClick = { isBrewing = false },
+        onStopClick = { state = BrewButtonState.Idle },
     )
 }

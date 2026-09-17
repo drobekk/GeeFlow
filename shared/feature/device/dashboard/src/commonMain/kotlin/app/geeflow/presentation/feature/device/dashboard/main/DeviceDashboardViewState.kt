@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.main
 
+import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 data class DeviceDashboardViewState(
@@ -12,6 +13,7 @@ data class DeviceDashboardViewState(
         DashboardChartType.FlowRate,
         DashboardChartType.WeightRate,
     ),
+    val brewButtonState: BrewButtonState = BrewButtonState.Idle,
 ) {
     enum class DashboardChartType {
         Pressure,
