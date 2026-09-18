@@ -10,6 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,6 +21,7 @@ import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.user.list.add.AddUserEvent.BackClicked
 import app.geeflow.presentation.feature.user.list.add.AddUserEvent.SaveNameClicked
+import app.geeflow.ui.components.GeeFlowAgreementCheckbox
 import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
 import app.geeflow.ui.components.VerticalSpacer
@@ -39,6 +44,7 @@ private fun Content(
     onEvent: (AddUserEvent) -> Unit = {},
 ) {
     val nameState = rememberTextFieldState()
+    var termsAgreed by rememberSaveable { mutableStateOf(false) }
     Surface(shape = MaterialTheme.shapes.large) {
         Column(
             modifier = Modifier
@@ -57,10 +63,16 @@ private fun Content(
                 label = { Text(stringResource(Res.string.user_list_add_profile_name_hint)) },
                 modifier = Modifier.fillMaxWidth(),
             )
+            VerticalSpacer(16.dp)
+            GeeFlowAgreementCheckbox(
+                checked = termsAgreed,
+                onCheckedChange = { termsAgreed = it },
+                modifier = Modifier.fillMaxWidth(),
+            )
             VerticalSpacer(24.dp)
             Button(
                 onClick = { onEvent(SaveNameClicked(nameState.text.toString())) },
-                enabled = nameState.text.isNotBlank(),
+                enabled = nameState.text.isNotBlank() && termsAgreed,
                 modifier = Modifier.align(Alignment.End),
             ) {
                 Text(stringResource(CoreRes.string.common_confirm))

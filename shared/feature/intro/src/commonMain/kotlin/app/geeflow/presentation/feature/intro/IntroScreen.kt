@@ -18,6 +18,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -28,6 +32,7 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
+import app.geeflow.ui.components.GeeFlowAgreementCheckbox
 import app.geeflow.ui.components.GeeFlowIconButton
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
 import app.geeflow.ui.components.GeeFlowScaffold
@@ -126,6 +131,7 @@ private fun Form(
         verticalArrangement = Arrangement.Center,
     ) {
         val userNameTextFieldState = rememberTextFieldState()
+        var termsAgreed by rememberSaveable { mutableStateOf(false) }
         Text(
             text = stringResource(Res.string.intro_screen_set_up),
             style = MaterialTheme.typography.bodyLarge,
@@ -137,17 +143,23 @@ private fun Form(
             lineLimits = TextFieldLineLimits.SingleLine,
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             onKeyboardAction = {
-                if (userNameTextFieldState.text.isNotEmpty()) {
+                if (userNameTextFieldState.text.isNotEmpty() && termsAgreed) {
                     onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString()))
                 }
             },
             label = { Text(stringResource(UiRes.string.common_user_name)) },
         )
+        VerticalSpacer(16.dp)
+        GeeFlowAgreementCheckbox(
+            checked = termsAgreed,
+            onCheckedChange = { termsAgreed = it },
+            modifier = Modifier.fillMaxWidth(),
+        )
         VerticalSpacer(32.dp)
         VerticalSpacer(1f)
         GeeFlowIconButton(
             painter = rememberVectorPainter(Icons.Filled.Check),
-            enabled = userNameTextFieldState.text.isNotEmpty(),
+            enabled = userNameTextFieldState.text.isNotEmpty() && termsAgreed,
             contentDescription = stringResource(UiRes.string.common_confirm),
             onClick = { onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString())) },
         )

@@ -6,6 +6,8 @@ import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClick
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.LicensesClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.PrivacyPolicyClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.SourceCodeClicked
+import app.geeflow.presentation.feature.user.settings.about.AboutEvent.TermsAndConditionsClicked
+import app.geeflow.ui.GeeFlowUrls
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
@@ -14,12 +16,8 @@ internal class AboutViewModel : BaseViewModel<AboutViewState, AboutViewModelEven
     fun handleEvent(event: AboutEvent) = when (event) {
         BackClicked -> navigateBack()
         LicensesClicked -> navigateTo(LicensesList)
-        PrivacyPolicyClicked -> emitEvent(AboutViewModelEvent.OpenUrl(URL_PRIVACY_POLICY))
-        SourceCodeClicked -> emitEvent(AboutViewModelEvent.OpenUrl(URL_SOURCE_CODE))
-    }
-
-    private companion object {
-        const val URL_PRIVACY_POLICY = "https://github.com/drobek/GeeFlow"
-        const val URL_SOURCE_CODE = "https://github.com/drobek/GeeFlow"
+        TermsAndConditionsClicked -> emitEvent(AboutViewModelEvent.OpenUrl(GeeFlowUrls.TermsAndConditions))
+        PrivacyPolicyClicked -> emitEvent(AboutViewModelEvent.OpenUrl(GeeFlowUrls.PrivacyPolicy))
+        SourceCodeClicked -> emitEvent(AboutViewModelEvent.OpenUrl(GeeFlowUrls.SourceCode))
     }
 }

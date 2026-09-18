@@ -23,6 +23,7 @@ import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClick
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.LicensesClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.PrivacyPolicyClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.SourceCodeClicked
+import app.geeflow.presentation.feature.user.settings.about.AboutEvent.TermsAndConditionsClicked
 import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowListItem
 import app.geeflow.ui.components.GeeFlowNavigationListItem
@@ -37,6 +38,8 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ab
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_privacy_policy_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_source_code
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_source_code_description
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_terms
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_terms_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_version
 import org.jetbrains.compose.resources.stringResource
@@ -101,6 +104,13 @@ private fun AboutContent(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
+        GeeFlowNavigationListItem(
+            title = stringResource(Res.string.user_settings_about_terms),
+            subtitle = stringResource(Res.string.user_settings_about_terms_description),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onEvent(TermsAndConditionsClicked) },
+        )
         GeeFlowNavigationListItem(
             title = stringResource(Res.string.user_settings_about_privacy_policy),
             subtitle = stringResource(Res.string.user_settings_about_privacy_policy_description),
