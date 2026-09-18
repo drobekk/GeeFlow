@@ -50,7 +50,7 @@ compose.desktop {
 
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe)
             packageName = "GeeFlow"
             packageVersion = (project.findProperty("appVersionName") as? String) ?: libs.versions.appVersion.get()
             

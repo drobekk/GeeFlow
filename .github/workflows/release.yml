@@ -18,8 +18,6 @@ jobs:
             format: exe
           - os: macos-latest
             format: dmg
-          - os: ubuntu-latest
-            format: deb
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -44,7 +42,6 @@ jobs:
             desktopApp/build/compose/binaries/main/*/*.exe
             desktopApp/build/compose/binaries/main/*/*.msi
             desktopApp/build/compose/binaries/main/*/*.dmg
-            desktopApp/build/compose/binaries/main/*/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
