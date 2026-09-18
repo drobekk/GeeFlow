@@ -1,12 +1,12 @@
 [![CI](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml)
 
-<div>
-  <img src="./docs/logo.png" alt="GeeFlow logo" width="160">
+<p align="center">
+  <img src="./docs/Banner.png" alt="GeeFlow Banner" width="100%">
+</p>
 
-  <h1>GeeFlow</h1>
+# GeeFlow
 
-  <p>A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting <strong>Android</strong>, <strong>iOS</strong>, and <strong>Desktop (JVM)</strong>.</p>
-</div>
+A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting **Android**, **iOS**, and **Desktop (JVM)**.
 
 ## Screenshots
 
