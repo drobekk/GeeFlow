@@ -28,6 +28,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         
       - name: Package Desktop App
+        shell: bash
         run: |
           VERSION_NAME=${GITHUB_REF_NAME#v}
           VERSION_CODE=$GITHUB_RUN_NUMBER
@@ -38,6 +39,7 @@ jobs:
         with:
           files: |
             desktopApp/build/compose/binaries/main/*/*.exe
+            desktopApp/build/compose/binaries/main/*/*.msi
             desktopApp/build/compose/binaries/main/*/*.dmg
             desktopApp/build/compose/binaries/main/*/*.deb
         env:
