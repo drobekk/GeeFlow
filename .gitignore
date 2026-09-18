@@ -19,7 +19,9 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 app.db
-!README.md
 *.md
+!README.md
+!PRIVACY_POLICY.md
+!TERMS_AND_CONDITIONS.md
 *.txt
 **/aboutlibraries.json
