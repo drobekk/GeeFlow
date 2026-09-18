@@ -53,6 +53,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Checkout commerce module
+        if: ${{ secrets.COMMERCE_DEPLOY_KEY != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: drobekk/GeeFlow-Commerce
+          ssh-key: ${{ secrets.COMMERCE_DEPLOY_KEY }}
+          path: commerce
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -96,6 +105,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Checkout commerce module
+        if: ${{ secrets.COMMERCE_DEPLOY_KEY != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: drobekk/GeeFlow-Commerce
+          ssh-key: ${{ secrets.COMMERCE_DEPLOY_KEY }}
+          path: commerce
 
       - name: Set up JDK
         uses: actions/setup-java@v4
