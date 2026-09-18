@@ -134,7 +134,7 @@ private fun AboutContent(
         )
         GeeFlowListItem(
             title = stringResource(Res.string.user_settings_about_version),
-            subtitle = BuildKonfig.APP_VERSION,
+            subtitle = "${BuildKonfig.APP_VERSION} (${BuildKonfig.APP_VERSION_CODE})",
             modifier = Modifier
                 .fillMaxWidth(),
         )
