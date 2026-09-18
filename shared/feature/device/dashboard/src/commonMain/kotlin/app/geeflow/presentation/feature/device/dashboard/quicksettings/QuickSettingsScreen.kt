@@ -98,7 +98,8 @@ private fun QuickSettingsContent(
     modifier = Modifier
         .background(MaterialTheme.colorScheme.background, MaterialTheme.shapes.large)
         .verticalScroll(rememberScrollState())
-        .padding(horizontal = 24.dp, vertical = 16.dp),
+        .padding(horizontal = 24.dp, vertical = 16.dp)
+        .fillMaxWidth(),
     horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     GeeFlowDialogTopBar(
@@ -107,6 +108,7 @@ private fun QuickSettingsContent(
     )
     VerticalSpacer(16.dp)
     Row(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         Boiler(
@@ -114,12 +116,14 @@ private fun QuickSettingsContent(
             label = stringResource(CoreRes.string.common_brew_boiler),
             onTempChanged = { onEvent(QuickSettingsEvent.BrewTempChanged(it)) },
             onEnabledChanged = { onEvent(QuickSettingsEvent.BrewBoilerToggled(it)) },
+            modifier = Modifier.weight(1f),
         )
         Boiler(
             boiler = viewState.steamBoiler,
             label = stringResource(CoreRes.string.common_steam_boiler),
             onTempChanged = { onEvent(QuickSettingsEvent.SteamTempChanged(it)) },
             onEnabledChanged = { onEvent(QuickSettingsEvent.SteamBoilerToggled(it)) },
+            modifier = Modifier.weight(1f),
         )
     }
     VerticalSpacer(24.dp)
@@ -154,6 +158,7 @@ private fun Boiler(
         enabled = boiler.enabled,
         unit = "°C",
         onSelectionChanged = onTempChanged,
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
