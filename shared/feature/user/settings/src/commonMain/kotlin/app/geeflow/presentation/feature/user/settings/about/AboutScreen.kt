@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import app.geeflow.BuildKonfig
-import app.geeflow.commerce.TipFeature
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClicked
@@ -43,7 +42,6 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ab
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_version
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 
 @Composable
 internal fun AboutScreen(
@@ -62,11 +60,8 @@ internal fun AboutScreen(
         }
     }
 
-    val tipFeature = koinInject<TipFeature>()
-
     Content(
         onEvent = viewModel::handleEvent,
-        tipSection = { modifier -> tipFeature.TipSection(modifier) },
     )
 }
 
@@ -74,7 +69,6 @@ internal fun AboutScreen(
 @Composable
 private fun Content(
     onEvent: (AboutEvent) -> Unit = {},
-    tipSection: @Composable (Modifier) -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
@@ -86,7 +80,6 @@ private fun Content(
         content = { paddingValues ->
             AboutContent(
                 onEvent = onEvent,
-                tipSection = tipSection,
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
@@ -100,7 +93,6 @@ private fun Content(
 @Composable
 private fun AboutContent(
     onEvent: (AboutEvent) -> Unit = {},
-    tipSection: @Composable (Modifier) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -137,11 +129,6 @@ private fun AboutContent(
             subtitle = "${BuildKonfig.APP_VERSION} (${BuildKonfig.APP_VERSION_CODE})",
             modifier = Modifier
                 .fillMaxWidth(),
-        )
-        tipSection(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
         )
     }
 }
