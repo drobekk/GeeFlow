@@ -8,6 +8,19 @@
   <p>A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting <strong>Android</strong>, <strong>iOS</strong>, and <strong>Desktop (JVM)</strong>.</p>
 </div>
 
+## Screenshots
+
+<p align="center">
+  <a href="./docs/1.png"><img src="./docs/1.png" width="220" alt="Dashboard" /></a>
+  <a href="./docs/2.png"><img src="./docs/2.png" width="220" alt="Profile Editor" /></a>
+  <a href="./docs/3.png"><img src="./docs/3.png" width="220" alt="Step Editor" /></a>
+</p>
+<p align="center">
+  <a href="./docs/5.png"><img src="./docs/5.png" width="220" alt="Device Settings" /></a>
+  <a href="./docs/6.png"><img src="./docs/6.png" width="220" alt="User Preferences" /></a>
+  <a href="./docs/7.png"><img src="./docs/7.png" width="220" alt="Quick Settings" /></a>
+</p>
+
 ## Supported Hardware
 
 Right now the only real machine supported and tested is the **Wendougee Data-S**. Other machines are not supported yet; the protocol is machine-specific and nothing else has been tried.
