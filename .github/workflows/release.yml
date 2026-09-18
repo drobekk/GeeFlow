@@ -4,6 +4,9 @@ on:
   release:
     types: [published] # Triggers when a new GitHub Release is created
 
+permissions:
+  contents: write
+
 jobs:
   release-desktop:
     name: Release Desktop (${{ matrix.os }})
