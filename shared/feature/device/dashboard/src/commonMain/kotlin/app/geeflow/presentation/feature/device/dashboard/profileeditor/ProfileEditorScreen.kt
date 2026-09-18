@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -37,6 +39,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
@@ -52,6 +55,8 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEd
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewState.Step
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.GeeFlowInsets
+import app.geeflow.ui.animations.BackwardTransition
+import app.geeflow.ui.animations.ForwardTransition
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.modifier.geeFlowInsets
@@ -59,6 +64,7 @@ import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.core.ui.generated.resources.common_go_back
+import geeflow.shared.core.ui.generated.resources.common_ok
 import geeflow.shared.core.ui.generated.resources.common_save
 import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
@@ -75,6 +81,7 @@ internal fun ProfileEditorScreen(
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val ok = stringResource(CoreRes.string.common_ok)
 
     NavigatorEffect(navigator, viewModel.navEvent)
 
@@ -82,16 +89,41 @@ internal fun ProfileEditorScreen(
         when (it) {
             is ProfileEditorViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
-                snackbarState.showSnackbar(it.message)
+                snackbarState.showSnackbar(
+                    message = it.message,
+                    actionLabel = if (it.persistent) ok else null,
+                    duration = if (it.persistent) SnackbarDuration.Indefinite else SnackbarDuration.Short,
+                )
             }
         }
     }
 
-    ProfileEditorContent(
-        viewState = viewState,
-        snackbarState = snackbarState,
-        onEvent = viewModel::handleEvent,
-    )
+    AnimatedContent(
+        targetState = viewState.stepEditor,
+        transitionSpec = {
+            if (targetState != null) {
+                ForwardTransition
+            } else {
+                BackwardTransition
+            }
+        },
+        label = "stepEditorTransition",
+    ) { request ->
+        if (request != null) {
+            ScopedStepEditor(
+                request,
+                viewState,
+                onSaved = { viewModel.handleEvent(ProfileEditorEvent.StepEditorSaved(it)) },
+                onCancel = { viewModel.handleEvent(ProfileEditorEvent.StepEditorCancelled) },
+            )
+        } else {
+            ProfileEditorContent(
+                viewState = viewState,
+                snackbarState = snackbarState,
+                onEvent = viewModel::handleEvent,
+            )
+        }
+    }
 
     viewState.dialog?.let { dialog ->
         ProfileEditorDialogs(
@@ -103,7 +135,7 @@ internal fun ProfileEditorScreen(
 }
 
 @Composable
-private fun ProfileEditorContent(
+internal fun ProfileEditorContent(
     viewState: ProfileEditorViewState,
     snackbarState: SnackbarHostState,
     onEvent: (ProfileEditorEvent) -> Unit,
@@ -157,6 +189,7 @@ private fun ExpandedLayout(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
                 targetData = viewState.targetData,
+                program = BrewProgram.Phases(viewState.steps.map { it.toPhase() }),
                 modifier = Modifier.weight(1f),
             )
             EditorBrewBar(
@@ -167,6 +200,7 @@ private fun ExpandedLayout(
         }
         ProfileStepsColumn(
             steps = viewState.steps,
+            allowAdd = !viewState.isRecording,
             finishTarget = viewState.finishTarget,
             onEvent = onEvent,
             modifier = Modifier
@@ -206,6 +240,7 @@ private fun CompactLayout(
                 brew = viewState.brew,
                 visibleCharts = viewState.visibleCharts,
                 targetData = viewState.targetData,
+                program = BrewProgram.Phases(viewState.steps.map { it.toPhase() }),
                 modifier = Modifier.weight(1f).padding(horizontal = 24.dp),
             )
             EditorBrewBar(
@@ -215,12 +250,13 @@ private fun CompactLayout(
             )
             ProfileStepsRow(
                 steps = viewState.steps,
+                allowAdd = !viewState.isRecording,
                 finishTarget = viewState.finishTarget,
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 8.dp)
-                    .height(StepsRowHeight),
+                    .height(150.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp),
             )
         }
@@ -233,7 +269,7 @@ private fun EditorBrewBar(
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) = BrewBar(
-    brew = viewState.brew.copy(name = viewState.profileName, description = viewState.description),
+    brew = viewState.brew.copy(name = viewState.profileName, description = viewState.displayDescription),
     isBrewing = viewState.isBrewing,
     visibleCharts = viewState.visibleCharts,
     onToggle = { onEvent(ToggleChartVisibility(it)) },
@@ -279,6 +315,10 @@ private fun ProfileEditorTopBar(
             )
         }
         HorizontalSpacer(1f)
+        if (viewState.experimental) {
+            ExperimentButton(onClick = { onEvent(ProfileEditorEvent.ExperimentClicked) })
+            HorizontalSpacer(8.dp)
+        }
         TestButton(isBrewing = viewState.isBrewing, canTest = viewState.canTest, onEvent = onEvent)
         HorizontalSpacer(8.dp)
         Button(onClick = { onEvent(SaveClicked) }, enabled = viewState.canSave) {
@@ -288,7 +328,6 @@ private fun ProfileEditorTopBar(
 }
 
 private val StepsColumnWidth = 320.dp
-private val StepsRowHeight = 132.dp
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable

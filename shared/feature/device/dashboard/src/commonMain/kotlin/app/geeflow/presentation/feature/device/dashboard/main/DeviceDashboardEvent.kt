@@ -1,5 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.main
 
+import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.data.brew.model.PhaseTransition
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 sealed interface DeviceDashboardEvent {
@@ -28,5 +30,7 @@ sealed interface DeviceDashboardEvent {
         val durationSeconds: Int,
         val data: Map<Float, ChartData>,
         val targetData: Map<Float, ChartData>,
+        val phaseProgram: BrewProgram? = null,
+        val phaseTransitions: List<PhaseTransition> = emptyList(),
     ) : DeviceDashboardEvent
 }

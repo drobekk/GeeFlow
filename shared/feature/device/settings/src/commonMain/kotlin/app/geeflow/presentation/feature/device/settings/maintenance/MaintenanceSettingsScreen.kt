@@ -235,6 +235,7 @@ private fun Picker(
             items = items,
             selected = selected,
             enabled = true,
+            unit = subtitle,
             onSelectionChanged = onSelectionChanged,
         )
     }

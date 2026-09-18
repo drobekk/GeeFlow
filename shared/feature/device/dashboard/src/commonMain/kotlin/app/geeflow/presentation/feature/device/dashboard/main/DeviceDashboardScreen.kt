@@ -89,7 +89,14 @@ internal fun DeviceDashboardScreen(
             is SelectProfile -> viewModel.handleEvent(DeviceDashboardEvent.ProfileSelected(it.id))
             is ShowHistoryBrew -> {
                 viewModel.handleEvent(
-                    DeviceDashboardEvent.HistoryBrewSelected(it.name, it.durationSeconds, it.data, it.targetData),
+                    DeviceDashboardEvent.HistoryBrewSelected(
+                        name = it.name,
+                        durationSeconds = it.durationSeconds,
+                        data = it.data,
+                        targetData = it.targetData,
+                        phaseProgram = it.phaseProgram,
+                        phaseTransitions = it.phaseTransitions,
+                    ),
                 )
                 coroutineScope.launch { pagerState.animateScrollToPage(CompactDashboardPage.Details.ordinal) }
             }
@@ -182,6 +189,11 @@ private fun ExpandedDashboard(
                 BrewCharts(
                     brew = viewState.brew,
                     targetData = viewState.targetData(profileListViewState),
+                    program = if (viewState.brew.historyTarget != null) {
+                        viewState.brew.phaseProgram
+                    } else {
+                        profileListViewState.profiles.find { it.selected }?.program
+                    },
                     visibleCharts = viewState.visibleCharts,
                     modifier = Modifier.weight(MainColumnWeight),
                 )
@@ -291,6 +303,11 @@ private fun CompactDashboard(
                             brew = viewState.brew,
                             visibleCharts = viewState.visibleCharts,
                             targetData = viewState.targetData(profileListViewState),
+                            program = if (viewState.brew.historyTarget != null) {
+                                viewState.brew.phaseProgram
+                            } else {
+                                profileListViewState.profiles.find { it.selected }?.program
+                            },
                             modifier = Modifier
                                 .fillMaxSize()
                                 .weight(1f)

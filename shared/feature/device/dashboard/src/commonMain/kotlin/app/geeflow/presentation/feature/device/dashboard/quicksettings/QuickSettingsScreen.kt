@@ -74,7 +74,7 @@ internal fun QuickSettingsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box {
         QuickSettingsContent(
             viewState = viewState,
             onEvent = viewModel::handleEvent,
@@ -98,8 +98,7 @@ private fun QuickSettingsContent(
     modifier = Modifier
         .background(MaterialTheme.colorScheme.background, MaterialTheme.shapes.large)
         .verticalScroll(rememberScrollState())
-        .padding(horizontal = 24.dp, vertical = 16.dp)
-        .fillMaxWidth(),
+        .padding(horizontal = 24.dp, vertical = 16.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     GeeFlowDialogTopBar(
@@ -108,7 +107,6 @@ private fun QuickSettingsContent(
     )
     VerticalSpacer(16.dp)
     Row(
-        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         Boiler(
@@ -116,14 +114,12 @@ private fun QuickSettingsContent(
             label = stringResource(CoreRes.string.common_brew_boiler),
             onTempChanged = { onEvent(QuickSettingsEvent.BrewTempChanged(it)) },
             onEnabledChanged = { onEvent(QuickSettingsEvent.BrewBoilerToggled(it)) },
-            modifier = Modifier.weight(1f),
         )
         Boiler(
             boiler = viewState.steamBoiler,
             label = stringResource(CoreRes.string.common_steam_boiler),
             onTempChanged = { onEvent(QuickSettingsEvent.SteamTempChanged(it)) },
             onEnabledChanged = { onEvent(QuickSettingsEvent.SteamBoilerToggled(it)) },
-            modifier = Modifier.weight(1f),
         )
     }
     VerticalSpacer(24.dp)
@@ -150,13 +146,13 @@ private fun Boiler(
         checked = boiler.enabled,
         onCheckedChange = onEnabledChanged,
         enabled = true,
-        modifier = Modifier.fillMaxWidth(),
     )
     VerticalSpacer(8.dp)
     GeeFlowInfinitePicker(
         items = boiler.tempList,
         selected = boiler.selectedTemp,
         enabled = boiler.enabled,
+        unit = "°C",
         onSelectionChanged = onTempChanged,
     )
 }

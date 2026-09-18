@@ -4,8 +4,10 @@
 package app.geeflow.data.device.impl.controller
 
 import app.geeflow.data.brew.model.BrewProfile
-import app.geeflow.data.brew.model.ProfileMode
+import app.geeflow.data.brew.model.FreeHandControlMode
+import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.device.DeviceController
+import app.geeflow.data.device.LiveBrewSession
 import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.ModbusSession
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_OFF
@@ -25,7 +27,6 @@ import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATU
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_OFF
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_ON
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_START_STREAMING
-import app.geeflow.data.device.impl.controller.WendougeeCommands.decodeHex
 import app.geeflow.data.device.impl.discovery.BleAdvertisement
 import app.geeflow.data.device.impl.discovery.WendougeeBleDeviceDiscoverer
 import app.geeflow.data.device.model.Device
@@ -38,6 +39,7 @@ import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
 import app.geeflow.data.device.model.DeviceState.HeatingMode
 import app.geeflow.data.device.model.SmartScale
+import app.geeflow.data.device.model.pumpTelemetry
 import co.touchlab.kermit.Logger
 import dev.bluefalcon.core.BlueFalcon
 import dev.bluefalcon.core.BluetoothCharacteristic
@@ -71,6 +73,24 @@ class WendougeeDataSController(
     private val modbusPlugin: ModbusPlugin,
     private val discoverer: WendougeeBleDeviceDiscoverer,
 ) : DeviceController {
+    override val profilingCapabilities = WendougeeProfiling.capabilities
+
+    override val constraints = wendougeeConstraints
+
+    override val capabilities = wendougeeCapabilities
+
+    override suspend fun stopLiveSession() = stopFreeVariableBrewing()
+
+    override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == BrewStatus.FreeVariable
+
+    override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
+
+    override fun telemetry() = deviceState.value.pumpTelemetry()
+
+    override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession {
+        startFreeVariableBrewing(isFlow = false)
+        return WendougeePressureSession(controller = this)
+    }
 
     private val _deviceState = MutableStateFlow(DeviceState())
     override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()
@@ -80,34 +100,6 @@ class WendougeeDataSController(
 
     private val _resolvedConnection = MutableSharedFlow<DeviceConnection>(extraBufferCapacity = 1)
     override val resolvedConnection: SharedFlow<DeviceConnection> = _resolvedConnection.asSharedFlow()
-
-    override val constraints: DeviceConstraints = DeviceConstraints(
-        brewTempRange = 0..BREW_MAX_TEMP,
-        steamTempRange = 0..STEAM_MAX_TEMP,
-        manualBrewPressureRange = 1..PADDLE_PRESSURE_MAX_INT,
-        manualBrewTimeRange = 0..PADDLE_TIME_MAX,
-        cleaningTimeRange = 1..CLEANING_TIME_MAX,
-        cleaningRestRange = 1..CLEANING_REST_MAX,
-        cleaningCountRange = 1..CLEANING_COUNT_MAX,
-        pressureRange = 0f..FREE_BREW_PRESSURE_MAX,
-        flowRange = 0f..FREE_BREW_FLOW_MAX,
-    )
-
-    override val capabilities: Set<DeviceCapability> = setOf(
-        DeviceCapability.SteamBoiler,
-        DeviceCapability.BrewBoiler,
-        DeviceCapability.WaterAlarm,
-        DeviceCapability.CleaningSettings,
-        DeviceCapability.ManualBrewing,
-        DeviceCapability.ProfileBrewing,
-        DeviceCapability.CleaningMode,
-        DeviceCapability.HeatingMode,
-        DeviceCapability.SmartScaleConnectivity,
-        DeviceCapability.SingleDoseGrinderConnectivity,
-        DeviceCapability.CommercialGrinderConnectivity,
-        DeviceCapability.PressureProfiling,
-        DeviceCapability.FlowProfiling,
-    )
 
     var logPolling: Boolean = false
 
@@ -127,7 +119,6 @@ class WendougeeDataSController(
         onHeartbeat = { onHeartbeatReceived() },
         shouldLogPolling = { logPolling },
     )
-    private val profileCompiler = WendougeeProfileCompiler()
 
     private var connectJob: Job? = null
     private var watchdogJob: Job? = null
@@ -529,6 +520,12 @@ class WendougeeDataSController(
     override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting free variable brew (isFlow=$isFlow)..." }
+            _deviceState.update {
+                it.copy(
+                    freeHandControlMode = if (isFlow) FreeHandControlMode.Flow else FreeHandControlMode.Pressure,
+                    freeHandStopRequested = false,
+                )
+            }
             requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_PREPARE, FREE_VAR_PREPARE_VALUE)
             requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_MODE, if (isFlow) 1 else 0,)
             sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew", 0x00, COIL_FREE_VAR_BREW.toByte())
@@ -538,8 +535,19 @@ class WendougeeDataSController(
 
     override suspend fun stopFreeVariableBrewing() {
         if (_deviceState.value.brewStatus == BrewStatus.FreeVariable) {
+            _deviceState.update { it.copy(freeHandStopRequested = true) }
             Logger.withTag(TAG).i { "Stopping free variable brew..." }
-            sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew Stop", 0x00, COIL_FREE_VAR_BREW.toByte())
+            requireSession().modbus.writeSingleRegister(
+                WendougeeRegisters.FREE_VAR_MODE,
+                if (_deviceState.value.freeHandControlMode == FreeHandControlMode.Flow) 1 else 0,
+            )
+            sendModbusPulse(
+                CMD_FREE_VAR_ON,
+                CMD_FREE_VAR_OFF,
+                "Free Variable Brew Stop",
+                0x00,
+                COIL_FREE_VAR_BREW.toByte()
+            )
         }
     }
 
@@ -662,17 +670,15 @@ class WendougeeDataSController(
     override suspend fun startProfileBrewing(profile: BrewProfile) {
         Logger.withTag(TAG).i { "Starting profile brew: ${profile.name}" }
 
-        applyProfileWrites(profile, isBinding = false)
+        requireSession().modbus.uploadProfile(profile, isBinding = false)
 
         Logger.withTag(TAG).d { "Profile uploaded, triggering brew pulse" }
-        if (profile.mode == ProfileMode.FreeVariable) {
-            sendModbusPulse(
-                onCommand = "0105009eff00ec14".decodeHex(),
-                offCommand = "0105009e0000ad24".decodeHex(),
-                label = "Profile Brew (Free)",
-                regHi = 0x00,
-                regLo = COIL_PROFILE_FREE.toByte(),
-            )
+        if (profile.recording != null) {
+            val modbus = requireSession().modbus
+            modbus.writeSingleCoil(COIL_PROFILE_FREE, true)
+            delay(BREW_PULSE_MS)
+            modbus.writeSingleCoil(COIL_PROFILE_FREE, false)
+            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
         } else {
             sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
         }
@@ -681,22 +687,12 @@ class WendougeeDataSController(
     override suspend fun bindProfile(profile: BrewProfile) {
         Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
 
-        applyProfileWrites(profile, isBinding = true)
+        requireSession().modbus.uploadProfile(profile, isBinding = true)
 
         Logger.withTag(
             TAG,
         ).d { "Profile uploaded, sending bind command to register ${WendougeeRegisters.BIND_PROFILE}" }
         requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
-    }
-
-    private suspend fun applyProfileWrites(profile: BrewProfile, isBinding: Boolean) {
-        val modbus = requireSession().modbus
-        for (w in profileCompiler.buildProfileWrites(profile, isBinding)) {
-            when (w) {
-                is ProfileWrite.Single -> modbus.writeSingleRegister(w.register, w.value)
-                is ProfileWrite.Multiple -> modbus.writeMultipleRegisters(w.register, w.values)
-            }
-        }
     }
 
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
@@ -755,89 +751,96 @@ class WendougeeDataSController(
         val job = currentCoroutineContext()[Job]
         return job?.isActive ?: true
     }
-
-    companion object {
-        private const val TAG = "WendougeeController"
-        private const val BLE_TRACE_TAG = "WendougeeBle"
-
-        const val DATA_UUID_SUFFIX = "2b10"
-        const val CTRL_UUID_SUFFIX = "2c10"
-
-        private const val POLLING_INTERVAL_MS = 200L
-        private const val BREW_PULSE_MS = 100L
-        private const val HEARTBEAT_TIMEOUT_MS = 10_000L
-
-        private const val MTU_SIZE = 512
-        private const val MTU_TIMEOUT_MS = 4_000L
-        private const val POST_MTU_DELAY_MS = 500L
-        private const val CHARS_READY_TIMEOUT_MS = 10_000L
-        private const val CONNECT_TIMEOUT_MS = 10_000L
-        private const val CONNECT_RETRY_DELAY_MS = 100L
-        private const val POST_CONNECT_SETTLE_MS = 500L
-        private const val CHARS_RETRY_DELAY_MS = 200L
-        private const val STALE_GATT_SETTLE_MS = 300L
-        private const val CCCD_SETTLE_DELAY_MS = 200L
-        private const val INIT_CONFIG_DELAY_MS = 300L
-        private const val INIT_SCALE_DELAY_MS = 400L
-        private const val SCALE_STATUS_DELAY_MS = 100L
-        private const val SCALE_LIST_DELAY_MS = 200L
-        private const val POST_INIT_DELAY_MS = 300L
-        private const val NOTIFY_RESET_DELAY_MS = 100L
-        private const val POLL_BETWEEN_DELAY_MS = 30L
-        private const val POLL_TIMEOUT_MS = 800L
-        private const val INIT_POLL_TIMEOUT_MS = 3000L
-        private const val SCAN_TIMEOUT_MS = 12_000L
-        private const val WATCHDOG_INTERVAL_MS = 1_000L
-        private const val FC_COIL_WRITE: Byte = 0x05
-        private const val MODBUS_UNIT_ID: Byte = 0x01
-        private const val SENSOR_SCALE_FACTOR = 10
-        private const val BREW_MAX_TEMP = 110
-        private const val STEAM_MAX_TEMP = 140
-        private const val PADDLE_PRESSURE_MAX_INT = 120
-        private const val PADDLE_TIME_MAX = 60
-        private const val FREE_BREW_PRESSURE_MAX = 12f
-        private const val FREE_BREW_FLOW_MAX = 8f
-        private const val CLEANING_TIME_MAX = 60
-        private const val CLEANING_REST_MAX = 60
-        private const val CLEANING_COUNT_MAX = 10
-        private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
-        private const val COIL_MANUAL_BREW = 0x9A
-        private const val COIL_FREE_VAR_BREW = 0x9D
-        private const val FREE_VAR_PREPARE_VALUE = 4
-        private const val COIL_SHORT_PRESS = 0x96
-        private const val COIL_CLEANING = 0x9B
-        private const val COIL_PROFILE_FREE = 0x9E
-        private const val SCALE_FRAME_DATA_OFFSET = 7
-        private const val SCALE_FRAME_CMD_IDX = 4
-        private const val BYTE_SHIFT = 8
-        private const val BYTE_MASK = 0xFF
-        private const val SCALE_FRAME_CHECKSUM_SALT = 0x53
-        private const val HEX_RADIX = 16
-        private const val SCALE_CMD_CONNECT = 0x80
-        private const val SCALE_CMD_DISCONNECT = 0x87
-
-        private const val WRITE_TYPE_NO_RESPONSE = 1
-
-        private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
-        private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
-        private val SCALE_FRAME_PREFIX = byteArrayOf(0xFF.toByte(), 0x55.toByte(), 0xFF.toByte(), 0xFF.toByte())
-
-        private fun toHexString(arr: ByteArray): String = arr.joinToString("") {
-            (it.toInt() and BYTE_MASK).toString(HEX_RADIX).padStart(2, '0')
-        }
-
-        private fun buildScaleFrame(cmd: Int, name: String): ByteArray {
-            val nameBytes = name.encodeToByteArray()
-            val len = nameBytes.size
-            val buffer = ByteArray(SCALE_FRAME_DATA_OFFSET + len)
-            SCALE_FRAME_PREFIX.copyInto(buffer)
-            buffer[SCALE_FRAME_CMD_IDX] = cmd.toByte()
-            buffer[SCALE_FRAME_CMD_IDX + 1] = (len ushr BYTE_SHIFT).toByte()
-            buffer[SCALE_FRAME_CMD_IDX + 2] = (len and BYTE_MASK).toByte()
-            nameBytes.copyInto(buffer, destinationOffset = SCALE_FRAME_DATA_OFFSET)
-            var sum = 0
-            for (i in SCALE_FRAME_CMD_IDX until buffer.size) sum += buffer[i].toInt() and BYTE_MASK
-            return buffer + ((sum + SCALE_FRAME_CHECKSUM_SALT) and BYTE_MASK).toByte()
-        }
-    }
 }
+
+private const val TAG = "WendougeeController"
+private const val BLE_TRACE_TAG = "WendougeeBle"
+
+private const val DATA_UUID_SUFFIX = "2b10"
+private const val CTRL_UUID_SUFFIX = "2c10"
+
+private const val POLLING_INTERVAL_MS = 200L
+private const val BREW_PULSE_MS = 100L
+private const val HEARTBEAT_TIMEOUT_MS = 10_000L
+
+private const val MTU_SIZE = 512
+private const val MTU_TIMEOUT_MS = 4_000L
+private const val POST_MTU_DELAY_MS = 500L
+private const val CHARS_READY_TIMEOUT_MS = 10_000L
+private const val CONNECT_TIMEOUT_MS = 10_000L
+private const val CONNECT_RETRY_DELAY_MS = 100L
+private const val POST_CONNECT_SETTLE_MS = 500L
+private const val CHARS_RETRY_DELAY_MS = 200L
+private const val STALE_GATT_SETTLE_MS = 300L
+private const val CCCD_SETTLE_DELAY_MS = 200L
+private const val INIT_CONFIG_DELAY_MS = 300L
+private const val INIT_SCALE_DELAY_MS = 400L
+private const val SCALE_STATUS_DELAY_MS = 100L
+private const val SCALE_LIST_DELAY_MS = 200L
+private const val POST_INIT_DELAY_MS = 300L
+private const val NOTIFY_RESET_DELAY_MS = 100L
+private const val POLL_BETWEEN_DELAY_MS = 30L
+private const val POLL_TIMEOUT_MS = 800L
+private const val INIT_POLL_TIMEOUT_MS = 3000L
+private const val SCAN_TIMEOUT_MS = 12_000L
+private const val WATCHDOG_INTERVAL_MS = 1_000L
+private const val FC_COIL_WRITE: Byte = 0x05
+private const val MODBUS_UNIT_ID: Byte = 0x01
+private const val SENSOR_SCALE_FACTOR = 10
+private const val BREW_MAX_TEMP = 110
+private const val STEAM_MAX_TEMP = 140
+private const val PADDLE_PRESSURE_MAX_INT = 120
+private const val PADDLE_TIME_MAX = 60
+private const val FREE_BREW_PRESSURE_MAX = 12f
+private const val FREE_BREW_FLOW_MAX = 8f
+private const val CLEANING_TIME_MAX = 60
+private const val CLEANING_REST_MAX = 60
+private const val CLEANING_COUNT_MAX = 10
+private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
+private const val COIL_MANUAL_BREW = 0x9A
+private const val COIL_FREE_VAR_BREW = 0x9D
+private const val FREE_VAR_PREPARE_VALUE = 4
+private const val COIL_SHORT_PRESS = 0x96
+private const val COIL_CLEANING = 0x9B
+private const val COIL_PROFILE_FREE = 0x9E
+private const val BYTE_MASK = 0xFF
+private const val HEX_RADIX = 16
+private const val SCALE_CMD_CONNECT = 0x80
+private const val SCALE_CMD_DISCONNECT = 0x87
+
+private const val WRITE_TYPE_NO_RESPONSE = 1
+
+private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
+private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
+
+private fun toHexString(arr: ByteArray): String = arr.joinToString("") {
+    (it.toInt() and BYTE_MASK).toString(HEX_RADIX).padStart(2, '0')
+}
+
+private val wendougeeConstraints: DeviceConstraints = DeviceConstraints(
+    brewTempRange = 0..BREW_MAX_TEMP,
+    steamTempRange = 0..STEAM_MAX_TEMP,
+    manualBrewPressureRange = 1..PADDLE_PRESSURE_MAX_INT,
+    manualBrewTimeRange = 0..PADDLE_TIME_MAX,
+    cleaningTimeRange = 1..CLEANING_TIME_MAX,
+    cleaningRestRange = 1..CLEANING_REST_MAX,
+    cleaningCountRange = 1..CLEANING_COUNT_MAX,
+    pressureRange = 0f..FREE_BREW_PRESSURE_MAX,
+    flowRange = 0f..FREE_BREW_FLOW_MAX,
+)
+
+private val wendougeeCapabilities: Set<DeviceCapability> = setOf(
+    DeviceCapability.SteamBoiler,
+    DeviceCapability.BrewBoiler,
+    DeviceCapability.WaterAlarm,
+    DeviceCapability.CleaningSettings,
+    DeviceCapability.ManualBrewing,
+    DeviceCapability.ProfileBrewing,
+    DeviceCapability.CleaningMode,
+    DeviceCapability.HeatingMode,
+    DeviceCapability.SmartScaleConnectivity,
+    DeviceCapability.SingleDoseGrinderConnectivity,
+    DeviceCapability.CommercialGrinderConnectivity,
+    DeviceCapability.PressureProfiling,
+    DeviceCapability.FlowProfiling,
+)

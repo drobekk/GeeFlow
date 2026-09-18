@@ -2,8 +2,9 @@ package app.geeflow.domain.brew.usecase
 
 import app.geeflow.data.brew.BrewProfileRepository
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
-import app.geeflow.data.brew.model.ProfileStep
+import app.geeflow.data.brew.model.validate
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
@@ -21,22 +22,23 @@ class SaveBrewProfileUseCase(
         id: Long,
         name: String,
         description: String,
-        finishCondition: Condition,
-        steps: List<ProfileStep>,
+        finishCondition: Condition?,
+        program: BrewProgram,
     ) {
+        program.validate()
         val userId = getSelectedUserUseCase().first()?.id ?: error("no user selected")
         val existing = brewProfileRepository.getBrewProfileById(id)
         val profile = existing?.copy(
             name = name,
             description = description,
             finishCondition = finishCondition,
-            steps = steps,
+            program = program,
         ) ?: BrewProfile(
             userId = userId,
             name = name,
             description = description,
             finishCondition = finishCondition,
-            steps = steps,
+            program = program,
             position = brewProfileRepository.getBrewProfilesForUser(userId).size,
         )
         brewProfileRepository.addBrewProfile(profile)

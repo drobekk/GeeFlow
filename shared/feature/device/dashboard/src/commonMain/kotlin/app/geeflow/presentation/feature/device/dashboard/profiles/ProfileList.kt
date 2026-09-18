@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.ContentCopy
@@ -37,7 +38,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -81,12 +81,15 @@ import app.geeflow.ui.components.GeeFlowSwipeToRevealBox
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.SwipeToRevealBoxValue
 import app.geeflow.ui.components.rememberSwipeToRevealBoxState
+import app.geeflow.ui.icons.Experiment
+import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.modifier.squareSize
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.disabled
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_empty
+import geeflow.shared.feature.device.dashboard.generated.resources.experimental_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_add_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_bind
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_delete
@@ -176,7 +179,13 @@ private fun ProfilesColumn(
             viewState.profiles
         } else {
             viewState.profiles.filter {
-                it.name.contains(searchQuery, ignoreCase = true) || it.description.contains(searchQuery, ignoreCase = true)
+                it.name.contains(
+                    searchQuery,
+                    ignoreCase = true,
+                ) || it.description.contains(
+                    searchQuery,
+                    ignoreCase = true,
+                )
             }
         }
     }
@@ -378,7 +387,7 @@ private fun BottomBar(
                 ) {
                     Icon(
                         painter = rememberVectorPainter(
-                            if (historyShown) Icons.Default.List else Icons.Filled.History,
+                            if (historyShown) Icons.AutoMirrored.Filled.List else Icons.Filled.History,
                         ),
                         contentDescription = if (historyShown) {
                             stringResource(Res.string.profile_list_show_profiles)
@@ -585,6 +594,7 @@ private fun ProfileItemRevealContent(
         }
         IconButton(
             onClick = { onEvent(ProfileListEvent.BindProfileClicked(profile.id)) },
+            enabled = profile.canBind,
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = MaterialTheme.colorScheme.tertiary,
             ),
@@ -660,6 +670,13 @@ private fun ProfileItemContent(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f, false),
                 )
+                if (profile.experimental) {
+                    Icon(
+                        GeeFlowIcon.Experiment,
+                        contentDescription = stringResource(Res.string.experimental_title),
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
                 if (profile.brewByWeight) {
                     val backgroundColor = if (smartScaleConnected) {
                         MaterialTheme.colorScheme.tertiary

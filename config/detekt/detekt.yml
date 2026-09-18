@@ -46,6 +46,11 @@ exceptions:
       - RuntimeException
       - Throwable
 
+coroutines:
+  InjectDispatcher:
+    active: true
+    excludes: [ '**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**' ]
+
 potential-bugs:
   UnsafeCallOnNullableType:
     excludes: [ '**/icons/**' ]

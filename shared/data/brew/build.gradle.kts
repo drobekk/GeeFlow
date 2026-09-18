@@ -22,6 +22,7 @@ sqldelight {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            api(projects.shared.core.domain)
             api(projects.shared.data.user)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)

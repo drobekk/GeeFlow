@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.CloseClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
@@ -76,7 +77,7 @@ import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 @Composable
 internal fun ConnectivitySettingsScreen(
     viewModel: ConnectivitySettingsViewModel,
-    navigator: app.geeflow.navigation.Navigator,
+    navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()

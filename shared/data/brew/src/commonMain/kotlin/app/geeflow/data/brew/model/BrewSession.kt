@@ -10,6 +10,8 @@ data class BrewSession(
     val inProgress: Boolean = false,
     val elapsedSeconds: Int = 0,
     val dataPoints: Map<Float, BrewDataPoint> = emptyMap(),
+    val recording: FreeHandRecording? = null,
+    val executionTrace: ProfileExecutionTrace? = null,
 )
 
 @Serializable

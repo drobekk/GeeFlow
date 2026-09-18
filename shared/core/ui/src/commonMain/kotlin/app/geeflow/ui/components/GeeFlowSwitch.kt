@@ -39,7 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 fun GeeFlowSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(DefaultControlWidth),
     enabled: Boolean = true,
 ) {
     val shape = MaterialTheme.shapes.large
@@ -47,21 +47,20 @@ fun GeeFlowSwitch(
 
     val fraction by animateFloatAsState(
         targetValue = if (checked) 1f else 0f,
-        label = "SwitchFraction"
+        label = "SwitchFraction",
     )
 
     val offTextColor by animateColorAsState(
         targetValue = if (!checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "OffTextColor"
+        label = "OffTextColor",
     )
     val onTextColor by animateColorAsState(
         targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "OnTextColor"
+        label = "OnTextColor",
     )
 
     Box(
         modifier = modifier
-            .width(IntrinsicSize.Min)
             .height(IntrinsicSize.Min)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -77,11 +76,11 @@ fun GeeFlowSwitch(
                 }
                 .clip(shape)
                 .background(primaryColor.copy(alpha = fraction))
-                .border(2.dp, primaryColor, shape)
+                .border(2.dp, primaryColor, shape),
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 text = stringResource(Res.string.common_off),

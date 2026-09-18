@@ -78,6 +78,7 @@ fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewS
             description = "69g",
             brewByWeight = true,
             selected = true,
+            experimental = true
         ),
         Profile(
             id = "2",

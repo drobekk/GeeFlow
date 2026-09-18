@@ -8,6 +8,7 @@ koinCompiler {
     compileSafety = false
 }
 
+
 kotlin {
     sourceSets {
         commonMain.dependencies {

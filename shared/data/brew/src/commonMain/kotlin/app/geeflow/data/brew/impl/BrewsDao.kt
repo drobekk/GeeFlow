@@ -2,9 +2,8 @@ package app.geeflow.data.brew.impl
 
 import app.geeflow.data.brew.db.AppDatabase
 import app.geeflow.data.brew.model.BrewProfile
+import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
-import app.geeflow.data.brew.model.ProfileMode
-import app.geeflow.data.brew.model.ProfileStep
 import org.koin.core.annotation.Singleton
 
 @Singleton
@@ -25,10 +24,9 @@ class BrewsDao(database: AppDatabase) {
             userId = brewProfile.userId,
             name = brewProfile.name,
             description = brewProfile.description,
-            mode = brewProfile.mode,
             finishCondition = brewProfile.finishCondition,
             autoLinkOpen = if (brewProfile.autoLinkOpen) 1L else 0L,
-            steps = brewProfile.steps,
+            program = brewProfile.program,
             position = brewProfile.position.toLong(),
         )
     }
@@ -43,20 +41,18 @@ class BrewsDao(database: AppDatabase) {
         userId: Long,
         name: String,
         description: String,
-        mode: ProfileMode,
-        finishCondition: Condition,
+        finishCondition: Condition?,
         autoLinkOpen: Long,
-        steps: List<ProfileStep>,
+        program: BrewProgram,
         position: Long,
     ): BrewProfile = BrewProfile(
         id = id,
         userId = userId,
         name = name,
         description = description,
-        mode = mode,
         finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen != 0L,
-        steps = steps,
+        program = program,
         position = position.toInt(),
     )
 }

@@ -8,6 +8,7 @@ import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
+import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BoilerType
@@ -71,8 +72,10 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
+import app.geeflow.presentation.feature.device.dashboard.model.displayDescription
 import app.geeflow.presentation.feature.device.dashboard.model.toChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toDashboard
+import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_off
@@ -109,6 +112,7 @@ internal class DeviceDashboardViewModel(
     private var selectedProfileName: String? = null
     private var selectedProfileDescription: String? = null
     private var selectedProfileSteps: List<ProfileStep> = emptyList()
+    private var selectedProfileRecording: FreeHandRecording? = null
     private var machine: Machine? = null
     private var deviceConfig: DeviceState.Config? = null
     private var brewInProgress = false
@@ -157,6 +161,8 @@ internal class DeviceDashboardViewModel(
                     time = event.durationSeconds,
                     data = event.data,
                     historyTarget = event.targetData,
+                    phaseProgram = event.phaseProgram,
+                    phaseTransitions = event.phaseTransitions,
                 ),
             )
         }
@@ -212,17 +218,15 @@ internal class DeviceDashboardViewModel(
             }
     }
 
-    private fun onProfileSelected(id: String?) {
+    private fun onProfileSelected(id: String?) = launchCatching(::onError) {
         selectedProfileId = id
-        selectedProfileId
-            ?.toLongOrNull()
-            ?.let { getBrewProfileUseCase(it) }
-            ?.let {
-                selectedProfileName = it.name
-                selectedProfileDescription = it.description
-                selectedProfileSteps = it.steps
-                modify { copy(brew = Brew(name = it.name, description = it.description)) }
-            }
+        val profileId = id?.toLongOrNull() ?: return@launchCatching
+        val profile = getBrewProfileUseCase(profileId) ?: return@launchCatching
+        selectedProfileName = profile.name
+        selectedProfileDescription = profile.displayDescription()
+        selectedProfileSteps = profile.steps
+        selectedProfileRecording = profile.recording
+        modify { copy(brew = Brew(name = profile.name, description = selectedProfileDescription.orEmpty())) }
     }
 
     private fun updateMachineStateUi(state: DeviceState) {
@@ -312,6 +316,11 @@ internal class DeviceDashboardViewModel(
                 brew = brew.copy(
                     time = session.elapsedSeconds,
                     data = session.toChartData(),
+                    historyTarget = session.executionTrace?.let { trace ->
+                        if (session.inProgress) trace.profile.program.toTargetData(trace.transitions) else trace.toTargetData()
+                    } ?: brew.historyTarget,
+                    phaseProgram = session.executionTrace?.profile?.program,
+                    phaseTransitions = session.executionTrace?.transitions.orEmpty(),
                 ),
             )
         }
@@ -326,6 +335,7 @@ internal class DeviceDashboardViewModel(
             profileId = selectedProfileId?.toLongOrNull()?.takeIf { isProfileBrew },
             profileName = selectedProfileName?.takeIf { isProfileBrew },
             profileSteps = if (isProfileBrew) selectedProfileSteps else emptyList(),
+            profileRecording = selectedProfileRecording.takeIf { isProfileBrew },
         )
     }
 

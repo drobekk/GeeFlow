@@ -4,6 +4,7 @@ import app.geeflow.data.brew.BrewHistoryRepository
 import app.geeflow.data.brew.model.BrewHistoryEntry
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
+import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.user.UserRepository
 import app.geeflow.data.user.UserSettingsRepository
@@ -25,21 +26,25 @@ class SaveBrewToHistoryUseCase(
         profileId: Long?,
         profileName: String?,
         profileSteps: List<ProfileStep> = emptyList(),
+        profileRecording: FreeHandRecording? = null,
     ) {
+        // The execution coordinator records app-controlled profiles independently of navigation.
+        if (session.executionTrace != null || session.dataPoints.isEmpty()) return
         val startedAt = session.startTime ?: return
-        if (session.dataPoints.isEmpty()) return
         val userId = userRepository.selectedUser.first()?.id ?: return
         if (session.mode == BrewMode.Manual && userSettingsRepository.skipManualBrewHistory(userId).first()) return
 
         brewHistoryRepository.addBrew(
             entry = BrewHistoryEntry(
                 userId = userId,
-                profileId = profileId,
-                profileName = profileName,
+                profileId = session.executionTrace?.profile?.id?.takeIf { it != 0L } ?: profileId,
+                profileName = session.executionTrace?.profile?.name ?: profileName,
+                executionTrace = session.executionTrace,
                 mode = session.mode,
                 startedAt = startedAt,
                 durationSeconds = session.elapsedSeconds,
                 profileSteps = profileSteps,
+                profileRecording = profileRecording,
             ),
             dataPoints = session.dataPoints,
         )
