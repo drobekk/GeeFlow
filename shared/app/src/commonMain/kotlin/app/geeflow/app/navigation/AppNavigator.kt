@@ -28,7 +28,7 @@ class AppNavigator(
         if (targetIndex != -1) {
             val fromIndex = if (inclusive) targetIndex else targetIndex + 1
             while (backStack.size > fromIndex) {
-                backStack.removeLastOrNull()
+                backStack.removeAt(backStack.lastIndex)
             }
         }
     }
@@ -37,6 +37,6 @@ class AppNavigator(
     override fun getPreviousDestination(): NavKey? = backStack.getOrNull(backStack.size - 2)
 
     private fun back() {
-        if (backStack.size == 1) finish() else backStack.removeLastOrNull()
+        if (backStack.size == 1) finish() else backStack.removeAt(backStack.lastIndex)
     }
 }

@@ -38,7 +38,11 @@ internal fun RootNavigation(closeApp: () -> Unit) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
-        onBack = { backStack.removeLast() },
+        onBack = {
+            if (backStack.isNotEmpty()) {
+                backStack.removeAt(backStack.lastIndex)
+            }
+        },
         sceneStrategies = listOf(listDetailStrategy, dialogSceneStrategy),
         backStack = backStack,
         transitionSpec = { ForwardTransition },
