@@ -30,6 +30,10 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            freeCompilerArgs += listOf(
+                "-Xdisable-phases=DevirtualizationAnalysis",
+                "-Xbinary=bundleId=app.geeflow.shared",
+            )
         }
         iosTarget.binaries.all {
             linkerOpts("-lsqlite3", "-lz")

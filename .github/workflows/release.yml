@@ -100,6 +100,8 @@ jobs:
   release-ios:
     name: Release iOS to TestFlight
     runs-on: macos-latest
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx8192M -XX:+UseParallelGC"
     steps:
       - uses: actions/checkout@v4
 
