@@ -129,19 +129,54 @@ jobs:
         env:
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
         run: |
+          PP_PATH=$RUNNER_TEMP/profile.mobileprovision
+          echo "$BUILD_PROVISION_PROFILE_BASE64" | tr -d '\r\n ' | base64 --decode > $PP_PATH
+          UUID=$(security cms -D -i $PP_PATH | /usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin)
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+          echo "PROFILE_UUID=$UUID" >> $GITHUB_ENV
 
       - name: Build and Archive iOS App
         run: |
           cd iosApp
           VERSION_NAME=${GITHUB_REF_NAME#v}
           VERSION_CODE=$GITHUB_RUN_NUMBER
+          
+          cat <<EOF > ExportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>destination</key>
+              <string>export</string>
+              <key>method</key>
+              <string>app-store</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>teamID</key>
+              <string>6YSU8C88CY</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>app.geeflow</key>
+                  <string>$PROFILE_UUID</string>
+              </dict>
+          </dict>
+          </plist>
+          EOF
+
           xcodebuild -project iosApp.xcodeproj -scheme iosApp -sdk iphoneos \
             -configuration Release archive -archivePath $PWD/build/iosApp.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+            DEVELOPMENT_TEAM=6YSU8C88CY \
             MARKETING_VERSION=$VERSION_NAME CURRENT_PROJECT_VERSION=$VERSION_CODE
+
           xcodebuild -exportArchive -archivePath $PWD/build/iosApp.xcarchive \
             -exportOptionsPlist ExportOptions.plist -exportPath $PWD/build
+
           find $PWD/build -name "*.ipa" -exec cp {} $PWD/build/GeeFlow.ipa \;
 
       - name: Upload to TestFlight
