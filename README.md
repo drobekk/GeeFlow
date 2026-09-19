@@ -9,8 +9,12 @@
 A Kotlin Multiplatform app for controlling and monitoring espresso machines over BLE, targeting **Android**, **iOS**, and **Desktop (JVM)**.
 
 <p align="center">
+  <a href="https://apps.apple.com/us/app/geeflow/id6813844388">
+    <img src="./docs/appstore-badge.png" alt="Download on the App Store" height="55">
+  </a>
+  &nbsp;&nbsp;
   <a href="https://play.google.com/store/apps/details?id=app.geeflow">
-    <img src="https://raw.githubusercontent.com/pioug/google-play-badges/refs/heads/main/svg/en.svg" alt="Get it on Google Play" height="55">
+    <img src="./docs/google-play-badge.png" alt="Get it on Google Play" height="55">
   </a>
 </p>
 
