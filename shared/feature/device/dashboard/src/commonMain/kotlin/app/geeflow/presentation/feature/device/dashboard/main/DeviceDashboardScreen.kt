@@ -214,9 +214,9 @@ private fun ExpandedDashboard(
                     BrewButton(
                         state = viewState.brewButtonState,
                         onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
-                        onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
-                        onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
-                        onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
+                        onStartButtonClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
+                        onHeroButtonClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
+                        onEndButtonClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
                     )
                 }
             }
@@ -274,9 +274,9 @@ private fun CompactDashboard(
             BrewButton(
                 state = viewState.brewButtonState,
                 onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
-                onManualClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
-                onFlowClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
-                onManualFlowClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
+                onStartButtonClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
+                onHeroButtonClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
+                onEndButtonClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp),

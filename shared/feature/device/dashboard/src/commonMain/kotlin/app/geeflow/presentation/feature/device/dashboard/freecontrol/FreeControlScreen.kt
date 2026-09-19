@@ -70,11 +70,14 @@ import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_cancel
 import geeflow.shared.core.ui.generated.resources.common_confirm
 import geeflow.shared.core.ui.generated.resources.common_go_back
+import geeflow.shared.core.ui.generated.resources.common_pressure
 import geeflow.shared.core.ui.generated.resources.common_save
+import geeflow.shared.core.ui.generated.resources.common_start
 import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.core.ui.generated.resources.unit_milliliters_per_second
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_default_profile_name
+import geeflow.shared.feature.device.dashboard.generated.resources.free_control_mode_flow
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_rename_dialog_name
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_rename_dialog_title
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_screen_title
@@ -200,14 +203,17 @@ private fun ExpandedLayout(
                 HorizontalSpacer(16.dp)
                 BrewButton(
                     state = viewState.brewButtonState,
-                    onManualClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
-                    onFlowClick = { onEvent(StartClicked) },
-                    onManualFlowClick = { onEvent(ModeChanged(ControlMode.Flow)) },
+                    onStartButtonClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
+                    onHeroButtonClick = { onEvent(StartClicked) },
+                    onEndButtonClick = { onEvent(ModeChanged(ControlMode.Flow)) },
                     onStopClick = { onEvent(StopClicked) },
+                    startContentDescription = stringResource(CoreRes.string.common_pressure),
+                    heroContentDescription = stringResource(CoreRes.string.common_start),
+                    endContentDescription = stringResource(Res.string.free_control_mode_flow),
                     startIcon = {
                         Icon(
                             painter = rememberVectorPainter(GeeFlowIcon.Pressure),
-                            contentDescription = null,
+                            contentDescription = stringResource(CoreRes.string.common_pressure),
                             modifier = Modifier.size(24.dp),
                             tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -215,7 +221,7 @@ private fun ExpandedLayout(
                     endIcon = {
                         Icon(
                             painter = rememberVectorPainter(GeeFlowIcon.Flow),
-                            contentDescription = null,
+                            contentDescription = stringResource(Res.string.free_control_mode_flow),
                             modifier = Modifier.size(24.dp),
                             tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -278,14 +284,17 @@ private fun CompactLayout(
         bottomBar = {
             BrewButton(
                 state = viewState.brewButtonState,
-                onManualClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
-                onFlowClick = { onEvent(StartClicked) },
-                onManualFlowClick = { onEvent(ModeChanged(ControlMode.Flow)) },
+                onStartButtonClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
+                onHeroButtonClick = { onEvent(StartClicked) },
+                onEndButtonClick = { onEvent(ModeChanged(ControlMode.Flow)) },
                 onStopClick = { onEvent(StopClicked) },
+                startContentDescription = stringResource(CoreRes.string.common_pressure),
+                heroContentDescription = stringResource(CoreRes.string.common_start),
+                endContentDescription = stringResource(Res.string.free_control_mode_flow),
                 startIcon = {
                     Icon(
                         painter = rememberVectorPainter(GeeFlowIcon.Pressure),
-                        contentDescription = null,
+                        contentDescription = stringResource(CoreRes.string.common_pressure),
                         modifier = Modifier.size(24.dp),
                         tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -293,7 +302,7 @@ private fun CompactLayout(
                 endIcon = {
                     Icon(
                         painter = rememberVectorPainter(GeeFlowIcon.Flow),
-                        contentDescription = null,
+                        contentDescription = stringResource(Res.string.free_control_mode_flow),
                         modifier = Modifier.size(24.dp),
                         tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
                     )

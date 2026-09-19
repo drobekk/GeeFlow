@@ -426,6 +426,7 @@ private fun BrewChart(
                 itemPlacer = VerticalAxis.ItemPlacer.step(step = { 2.0 }),
                 valueFormatter = { _, value, _ -> value.toLong().toString() },
                 guideline = rememberAxisGuidelineComponent(
+                    fill = Fill(MaterialTheme.colorScheme.outlineVariant),
                     shape = DashedShape(
                         shape = CircleShape,
                         dashLength = 1.dp,
@@ -448,6 +449,7 @@ private fun BrewChart(
                 ),
                 valueFormatter = { _, value, _ -> value.toLong().toString() },
                 guideline = rememberAxisGuidelineComponent(
+                    fill = Fill(MaterialTheme.colorScheme.outlineVariant),
                     shape = DashedShape(shape = CircleShape, dashLength = 1.dp, gapLength = 5.dp),
                 ),
             ),

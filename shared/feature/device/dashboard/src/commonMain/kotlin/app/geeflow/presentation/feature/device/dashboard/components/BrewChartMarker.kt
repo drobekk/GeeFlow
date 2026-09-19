@@ -51,7 +51,9 @@ internal fun rememberBrewChartMarker(units: List<String>): CartesianMarker {
         background = labelBackground,
     )
 
-    val guideline = rememberAxisGuidelineComponent()
+    val guideline = rememberAxisGuidelineComponent(
+        fill = Fill(MaterialTheme.colorScheme.outlineVariant),
+    )
     val indicatorFrontComponent = rememberShapeComponent(
         Fill(MaterialTheme.colorScheme.surface),
         MaterialTheme.shapes.small,

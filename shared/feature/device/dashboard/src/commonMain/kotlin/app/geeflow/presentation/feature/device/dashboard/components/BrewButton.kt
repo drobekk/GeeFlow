@@ -13,10 +13,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,16 +27,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,50 +45,89 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import app.geeflow.ui.components.GeeFlowLogoShape
-import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.WaveDivider
 import app.geeflow.ui.icons.FlowControl
+import app.geeflow.ui.icons.Flush
 import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Logo
-import app.geeflow.ui.icons.Manual
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.shared.core.ui.generated.resources.Res
+import geeflow.shared.core.ui.generated.resources.common_flush
+import geeflow.shared.core.ui.generated.resources.common_start
 import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_syncing
+import geeflow.shared.feature.device.dashboard.generated.resources.free_control_screen_title
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.milliseconds
 import geeflow.shared.feature.device.dashboard.generated.resources.Res as DashboardRes
 
 @Composable
 fun BrewButton(
     state: BrewButtonState,
-    onManualClick: () -> Unit,
-    onFlowClick: () -> Unit,
-    onManualFlowClick: () -> Unit,
+    onStartButtonClick: () -> Unit,
+    onHeroButtonClick: () -> Unit,
+    onEndButtonClick: () -> Unit,
     onStopClick: () -> Unit,
     modifier: Modifier = Modifier,
+    startContentDescription: String = stringResource(Res.string.common_flush),
+    heroContentDescription: String = stringResource(Res.string.common_start),
+    endContentDescription: String = stringResource(DashboardRes.string.free_control_screen_title),
     startIcon: @Composable () -> Unit = {
         Icon(
-            painter = rememberVectorPainter(GeeFlowIcon.Manual),
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
+            painter = rememberVectorPainter(GeeFlowIcon.Flush),
+            contentDescription = startContentDescription,
+            modifier = Modifier.size(28.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     },
     endIcon: @Composable () -> Unit = {
         Icon(
             painter = rememberVectorPainter(GeeFlowIcon.FlowControl),
-            contentDescription = null,
+            contentDescription = endContentDescription,
             modifier = Modifier.size(28.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     },
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
+
+    var tooltipJob by remember { mutableStateOf<Job?>(null) }
+    var activeTooltipText by remember { mutableStateOf<String?>(null) }
+    var activeTooltipAlignment by remember { mutableStateOf(Alignment.TopCenter) }
+
+    fun showTransientTooltip(text: String, alignment: Alignment) {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        tooltipJob?.cancel()
+        activeTooltipText = text
+        activeTooltipAlignment = alignment
+        tooltipJob = coroutineScope.launch {
+            delay(TransientTooltipDuration)
+            activeTooltipText = null
+        }
+    }
+
+    fun dismissTooltip() {
+        tooltipJob?.cancel()
+        activeTooltipText = null
+    }
+
     val firstColor by animateColorAsState(
         when (state) {
             BrewButtonState.Brewing -> MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
@@ -132,7 +174,14 @@ fun BrewButton(
                 fadeIn(tween(TransitionDurationMs)) togetherWith fadeOut(tween(TransitionDurationMs))
             },
             modifier = Modifier
-                .clickable(enabled = state == BrewButtonState.Brewing, onClick = onStopClick, role = Role.Button)
+                .clickable(
+                    enabled = state == BrewButtonState.Brewing,
+                    onClick = {
+                        dismissTooltip()
+                        onStopClick()
+                    },
+                    role = Role.Button,
+                )
                 .height(50.dp),
             contentAlignment = Alignment.Center,
         ) { buttonState ->
@@ -147,8 +196,20 @@ fun BrewButton(
                 modifier = Modifier.visible(buttonState == BrewButtonState.Syncing),
             )
             BrewContent(
-                onManualClick = onManualClick,
-                onManualFlowClick = onManualFlowClick,
+                onStartButtonClick = {
+                    dismissTooltip()
+                    onStartButtonClick()
+                },
+                onEndButtonClick = {
+                    dismissTooltip()
+                    onEndButtonClick()
+                },
+                onStartButtonLongClick = {
+                    showTransientTooltip(startContentDescription, Alignment.TopStart)
+                },
+                onEndButtonLongClick = {
+                    showTransientTooltip(endContentDescription, Alignment.TopEnd)
+                },
                 startIcon = startIcon,
                 endIcon = endIcon,
                 modifier = Modifier.visible(buttonState == BrewButtonState.Idle),
@@ -160,18 +221,57 @@ fun BrewButton(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .offset(y = logoOffsetY)
-                    .graphicsLayer { alpha = logoAlpha },
+                    .graphicsLayer { alpha = logoAlpha }
+                    .size(HeroButtonSize)
+                    .background(MaterialTheme.colorScheme.primary, GeeFlowLogoShape)
+                    .clip(GeeFlowLogoShape)
+                    .combinedClickable(
+                        onClick = {
+                            dismissTooltip()
+                            onHeroButtonClick()
+                        },
+                        onLongClick = {
+                            showTransientTooltip(heroContentDescription, Alignment.TopCenter)
+                        },
+                        role = Role.Button,
+                    ),
+                contentAlignment = Alignment.Center,
             ) {
-                FilledIconButton(
-                    shape = GeeFlowLogoShape,
-                    onClick = onFlowClick,
-                    modifier = Modifier.size(72.dp),
+                Icon(
+                    painter = rememberVectorPainter(GeeFlowIcon.Logo),
+                    contentDescription = heroContentDescription,
+                    modifier = Modifier.size(HeroIconSize).padding(top = HeroIconTopPadding),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+        }
+
+        activeTooltipText?.let { tooltipText ->
+            val yOffsetPx = with(density) { TooltipVerticalOffset.roundToPx() }
+            val xOffsetPx = when (activeTooltipAlignment) {
+                Alignment.TopStart -> with(density) { TooltipHorizontalOffset.roundToPx() }
+                Alignment.TopEnd -> with(density) { (-TooltipHorizontalOffset).roundToPx() }
+                else -> 0
+            }
+            Popup(
+                alignment = activeTooltipAlignment,
+                offset = IntOffset(x = xOffsetPx, y = yOffsetPx),
+                onDismissRequest = { activeTooltipText = null },
+                properties = PopupProperties(focusable = false),
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    shadowElevation = TooltipShadowElevation,
                 ) {
-                    Icon(
-                        painter = rememberVectorPainter(GeeFlowIcon.Logo),
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp).padding(top = 5.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                    Text(
+                        text = tooltipText,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(
+                            horizontal = TooltipHorizontalPadding,
+                            vertical = TooltipVerticalPadding,
+                        ),
                     )
                 }
             }
@@ -181,35 +281,56 @@ fun BrewButton(
 
 @Composable
 private fun BrewContent(
-    onManualClick: () -> Unit,
-    onManualFlowClick: () -> Unit,
+    onStartButtonClick: () -> Unit,
+    onEndButtonClick: () -> Unit,
+    onStartButtonLongClick: () -> Unit,
+    onEndButtonLongClick: () -> Unit,
     startIcon: @Composable () -> Unit,
     endIcon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth().padding(horizontal = 32.dp),
+            .fillMaxSize()
+            .clip(MaterialTheme.shapes.large),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
     ) {
-        IconButton(
-            onClick = onManualClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
+        BrewSideButton(
+            onClick = onStartButtonClick,
+            onLongClick = onStartButtonLongClick,
         ) {
             startIcon()
         }
-        HorizontalSpacer(1f)
-        IconButton(
-            onClick = onManualFlowClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
+        Box(modifier = Modifier.width(HeroButtonSize))
+        BrewSideButton(
+            onClick = onEndButtonClick,
+            onLongClick = onEndButtonLongClick,
         ) {
             endIcon()
         }
+    }
+}
+
+@Composable
+private fun RowScope.BrewSideButton(
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .weight(1f)
+            .widthIn(min = SideButtonMinWidth)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+                role = Role.Button,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
     }
 }
 
@@ -239,6 +360,17 @@ enum class BrewButtonState {
 
 private const val TransitionDurationMs = 300
 private const val LogoVisibleThreshold = 0.01f
+private val TransientTooltipDuration = 2000L.milliseconds
+
+private val SideButtonMinWidth = 82.dp
+private val HeroButtonSize = 72.dp
+private val HeroIconSize = 48.dp
+private val HeroIconTopPadding = 5.dp
+private val TooltipVerticalOffset = (-44).dp
+private val TooltipHorizontalOffset = 32.dp
+private val TooltipShadowElevation = 4.dp
+private val TooltipHorizontalPadding = 10.dp
+private val TooltipVerticalPadding = 6.dp
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
@@ -247,9 +379,9 @@ private fun Preview() {
     var state by remember { mutableStateOf(BrewButtonState.Idle) }
     BrewButton(
         state = state,
-        onManualClick = {},
-        onFlowClick = { state = BrewButtonState.Brewing },
-        onManualFlowClick = {},
+        onStartButtonClick = {},
+        onHeroButtonClick = { state = BrewButtonState.Brewing },
+        onEndButtonClick = {},
         onStopClick = { state = BrewButtonState.Idle },
     )
 }
