@@ -3,15 +3,26 @@ package app.geeflow.platform
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.window.core.layout.WindowSizeClass
 import app.geeflow.ui.theme.ThemeMode
+import kotlinx.coroutines.delay
+import platform.Foundation.NSDate
+import platform.Foundation.NSDateFormatter
+import platform.Foundation.NSDateFormatterNoStyle
+import platform.Foundation.NSDateFormatterShortStyle
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIStatusBarAnimation
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.setStatusBarHidden
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 actual fun getThemeProvider() = object : ThemeProvider {}
 
@@ -60,3 +71,43 @@ actual fun rememberLanguageSettingsLauncher(): (() -> Unit)? = remember {
 actual val isFullScreenSupported: Boolean = true
 
 actual val isKeepScreenOnSupported: Boolean = true
+
+@Composable
+actual fun rememberFormattedTime(): String {
+    var time by remember { mutableStateOf(getNativeFormattedTime()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            time = getNativeFormattedTime()
+            delay(1.seconds)
+        }
+    }
+    return time
+}
+
+@Composable
+actual fun rememberFormattedDate(): String {
+    var date by remember { mutableStateOf(getNativeFormattedDate()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            date = getNativeFormattedDate()
+            delay(1.minutes)
+        }
+    }
+    return date
+}
+
+private fun getNativeFormattedTime(): String {
+    val formatter = NSDateFormatter().apply {
+        timeStyle = NSDateFormatterShortStyle
+        dateStyle = NSDateFormatterNoStyle
+    }
+    return formatter.stringFromDate(NSDate())
+}
+
+private fun getNativeFormattedDate(): String {
+    val formatter = NSDateFormatter().apply {
+        timeStyle = NSDateFormatterNoStyle
+        setLocalizedDateFormatFromTemplate("EEEE, d MMMM")
+    }
+    return formatter.stringFromDate(NSDate())
+}

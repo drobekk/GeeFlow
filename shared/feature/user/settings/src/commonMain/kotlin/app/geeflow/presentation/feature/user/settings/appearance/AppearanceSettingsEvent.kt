@@ -18,4 +18,7 @@ sealed interface AppearanceSettingsEvent {
     data class CustomColorConfirmed(val colorArgb: Int) : AppearanceSettingsEvent
     data class FullScreenChanged(val enabled: Boolean) : AppearanceSettingsEvent
     data class KeepScreenOnChanged(val enabled: Boolean) : AppearanceSettingsEvent
+    data class ScreensaverChanged(val enabled: Boolean) : AppearanceSettingsEvent
+    data object ScreensaverTimeoutClicked : AppearanceSettingsEvent
+    data class ScreensaverTimeoutConfirmed(val minutes: Int) : AppearanceSettingsEvent
 }

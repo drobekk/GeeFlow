@@ -6,15 +6,12 @@ import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
 
 @Factory
-class SetKeepScreenOnUseCase(
+class SetScreensaverTimeoutMinutesUseCase(
     private val repository: UserSettingsRepository,
     private val userRepository: UserRepository,
 ) {
-    suspend operator fun invoke(enabled: Boolean) {
+    suspend operator fun invoke(minutes: Int) {
         val userId = userRepository.selectedUser.first()?.id ?: return
-        repository.setKeepScreenOn(userId, enabled)
-        if (!enabled) {
-            repository.setScreensaverEnabled(userId, false)
-        }
+        repository.setScreensaverTimeoutMinutes(userId, minutes)
     }
 }

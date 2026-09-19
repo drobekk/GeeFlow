@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package app.geeflow.data.user.impl
 
 import androidx.datastore.core.DataStore
@@ -59,6 +61,14 @@ class UserSettingsRepositoryImpl(
         preferences[keepScreenOnKey(userId)] ?: false
     }
 
+    override fun screensaverEnabled(userId: Long): Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[screensaverEnabledKey(userId)] ?: false
+    }
+
+    override fun screensaverTimeoutMinutes(userId: Long): Flow<Int> = dataStore.data.map { preferences ->
+        preferences[screensaverTimeoutMinutesKey(userId)] ?: DefaultScreensaverTimeoutMinutes
+    }
+
     override fun autoConnect(userId: Long): Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[autoConnectKey(userId)] ?: true
     }
@@ -115,6 +125,18 @@ class UserSettingsRepositoryImpl(
         }
     }
 
+    override suspend fun setScreensaverEnabled(userId: Long, enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[screensaverEnabledKey(userId)] = enabled
+        }
+    }
+
+    override suspend fun setScreensaverTimeoutMinutes(userId: Long, minutes: Int) {
+        dataStore.edit { preferences ->
+            preferences[screensaverTimeoutMinutesKey(userId)] = minutes
+        }
+    }
+
     override suspend fun setAutoConnect(userId: Long, enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[autoConnectKey(userId)] = enabled
@@ -140,6 +162,8 @@ class UserSettingsRepositoryImpl(
             preferences.remove(appThemeKey(userId))
             preferences.remove(fullScreenModeKey(userId))
             preferences.remove(keepScreenOnKey(userId))
+            preferences.remove(screensaverEnabledKey(userId))
+            preferences.remove(screensaverTimeoutMinutesKey(userId))
             preferences.remove(autoConnectKey(userId))
             preferences.remove(temperatureUnitKey(userId))
             preferences.remove(skipManualBrewHistoryKey(userId))
@@ -157,11 +181,14 @@ class UserSettingsRepositoryImpl(
     private fun customSeedColorKey(userId: Long) = intPreferencesKey(key("custom_seed_color", userId))
     private fun fullScreenModeKey(userId: Long) = booleanPreferencesKey(key("full_screen_mode", userId))
     private fun keepScreenOnKey(userId: Long) = booleanPreferencesKey(key("keep_screen_on", userId))
+    private fun screensaverEnabledKey(userId: Long) = booleanPreferencesKey(key("screensaver_enabled", userId))
+    private fun screensaverTimeoutMinutesKey(userId: Long) = intPreferencesKey(key("screensaver_timeout_minutes", userId))
     private fun autoConnectKey(userId: Long) = booleanPreferencesKey(key("auto_connect", userId))
     private fun temperatureUnitKey(userId: Long) = stringPreferencesKey(key("temperature_unit", userId))
     private fun skipManualBrewHistoryKey(userId: Long) = booleanPreferencesKey(key("skip_manual_brew_history", userId))
 
     companion object {
         private const val DefaultCustomSeedColor = 0xFF1E88E5.toInt()
+        private const val DefaultScreensaverTimeoutMinutes = 5
     }
 }

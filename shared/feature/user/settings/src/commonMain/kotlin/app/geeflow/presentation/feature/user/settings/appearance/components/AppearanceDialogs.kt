@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -34,10 +35,12 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DialogDismissed
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleChanged
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverTimeoutConfirmed
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsViewState.Dialog
 import app.geeflow.presentation.feature.user.settings.appearance.titleRes
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
+import app.geeflow.ui.components.GeeFlowInputPad
 import app.geeflow.ui.components.VerticalSpacer
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -47,6 +50,8 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ap
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_custom_color
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_dark_mode
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_palette_style
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver_timeout
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver_unit_minutes
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
@@ -93,7 +98,46 @@ internal fun AppearanceDialogs(
             )
         }
 
+        Dialog.ScreensaverTimeout -> {
+            ScreensaverTimeoutDialog(
+                onTimeoutConfirmed = { onEvent(ScreensaverTimeoutConfirmed(it)) },
+                onDismiss = { onEvent(DialogDismissed) },
+            )
+        }
+
         null -> {}
+    }
+}
+
+private const val MinScreensaverTimeoutMinutes = 1f
+private const val MaxScreensaverTimeoutMinutes = 60f
+
+@Composable
+private fun ScreensaverTimeoutDialog(
+    onTimeoutConfirmed: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    GeeFlowDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(24.dp)
+                .wrapContentWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = stringResource(Res.string.user_settings_appearance_screensaver_timeout),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            VerticalSpacer(16.dp)
+            GeeFlowInputPad(
+                valueRange = MinScreensaverTimeoutMinutes..MaxScreensaverTimeoutMinutes,
+                unit = stringResource(Res.string.user_settings_appearance_screensaver_unit_minutes),
+                allowDecimal = false,
+                onConfirm = { onTimeoutConfirmed(it.toInt()) },
+                onBack = onDismiss,
+            )
+        }
     }
 }
 

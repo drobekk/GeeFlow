@@ -47,6 +47,11 @@
     <string name="user_settings_appearance_full_screen_description">Hide system bars while using the app</string>
     <string name="user_settings_appearance_keep_screen_on">Keep Screen On</string>
     <string name="user_settings_appearance_keep_screen_on_description">Prevent screen from turning off during brew</string>
+    <string name="user_settings_appearance_screensaver">Screensaver</string>
+    <string name="user_settings_appearance_screensaver_description">Show clock when inactive</string>
+    <string name="user_settings_appearance_screensaver_timeout">Screensaver Timeout</string>
+    <string name="user_settings_appearance_screensaver_timeout_description">Time before screensaver activates</string>
+    <string name="user_settings_appearance_screensaver_unit_minutes">min</string>
     <string name="user_settings_appearance_app_theme_custom">Custom</string>
     <string name="user_settings_appearance_custom_color">Custom Color</string>
     <string name="user_settings_appearance_custom_color_description">Tap to pick a seed color</string>

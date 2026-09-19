@@ -76,6 +76,8 @@ style:
 ktlint:
   ArgumentListWrapping:
     maxLineLength: 130
+  ParameterListWrapping:
+    maxLineLength: 130
   BlankLineBetweenWhenConditions:
     active: false
   ClassSignature:

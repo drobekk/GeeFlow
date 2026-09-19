@@ -1,10 +1,12 @@
 package app.geeflow.platform
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.text.format.DateFormat
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
@@ -19,13 +21,22 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.window.core.layout.WindowSizeClass
 import app.geeflow.ui.theme.ThemeMode
+import kotlinx.coroutines.delay
+import java.util.Date
+import java.util.Locale
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 actual fun getThemeProvider() = object : ThemeProvider {
     @Composable
@@ -130,3 +141,39 @@ actual fun rememberLanguageSettingsLauncher(): (() -> Unit)? {
 actual val isFullScreenSupported: Boolean = true
 
 actual val isKeepScreenOnSupported: Boolean = true
+
+@Composable
+actual fun rememberFormattedTime(): String {
+    val context = LocalContext.current
+    var time by remember { mutableStateOf(getAndroidFormattedTime(context)) }
+    LaunchedEffect(context) {
+        while (true) {
+            time = getAndroidFormattedTime(context)
+            delay(1.seconds)
+        }
+    }
+    return time
+}
+
+@Composable
+actual fun rememberFormattedDate(): String {
+    var date by remember { mutableStateOf(getAndroidFormattedDate()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            date = getAndroidFormattedDate()
+            delay(1.minutes)
+        }
+    }
+    return date
+}
+
+private fun getAndroidFormattedTime(context: Context): String {
+    val format = DateFormat.getTimeFormat(context)
+    return format.format(Date())
+}
+
+private fun getAndroidFormattedDate(): String {
+    val now = Date()
+    val pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEE, d MMMM")
+    return DateFormat.format(pattern, now).toString()
+}

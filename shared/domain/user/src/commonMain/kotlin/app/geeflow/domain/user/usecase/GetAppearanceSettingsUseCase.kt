@@ -33,10 +33,33 @@ class GetAppearanceSettingsUseCase(
                         customSeedColor = customSeedColor,
                     )
                 },
-                repository.fullScreenMode(userId),
-                repository.keepScreenOn(userId),
-            ) { settings, fullScreenMode, keepScreenOn ->
-                settings.copy(fullScreenMode = fullScreenMode, keepScreenOn = keepScreenOn)
+                combine(
+                    repository.fullScreenMode(userId),
+                    repository.keepScreenOn(userId),
+                    repository.screensaverEnabled(userId),
+                    repository.screensaverTimeoutMinutes(userId),
+                ) { fullScreenMode, keepScreenOn, screensaverEnabled, screensaverTimeoutMinutes ->
+                    ScreenSettings(
+                        fullScreenMode = fullScreenMode,
+                        keepScreenOn = keepScreenOn,
+                        screensaverEnabled = screensaverEnabled,
+                        screensaverTimeoutMinutes = screensaverTimeoutMinutes,
+                    )
+                },
+            ) { settings, screenSettings ->
+                settings.copy(
+                    fullScreenMode = screenSettings.fullScreenMode,
+                    keepScreenOn = screenSettings.keepScreenOn,
+                    screensaverEnabled = screenSettings.screensaverEnabled,
+                    screensaverTimeoutMinutes = screenSettings.screensaverTimeoutMinutes,
+                )
             }
         }
 }
+
+private data class ScreenSettings(
+    val fullScreenMode: Boolean,
+    val keepScreenOn: Boolean,
+    val screensaverEnabled: Boolean,
+    val screensaverTimeoutMinutes: Int,
+)

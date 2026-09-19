@@ -6,15 +6,15 @@ import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
 
 @Factory
-class SetKeepScreenOnUseCase(
+class SetScreensaverEnabledUseCase(
     private val repository: UserSettingsRepository,
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(enabled: Boolean) {
         val userId = userRepository.selectedUser.first()?.id ?: return
-        repository.setKeepScreenOn(userId, enabled)
-        if (!enabled) {
-            repository.setScreensaverEnabled(userId, false)
+        repository.setScreensaverEnabled(userId, enabled)
+        if (enabled) {
+            repository.setKeepScreenOn(userId, true)
         }
     }
 }

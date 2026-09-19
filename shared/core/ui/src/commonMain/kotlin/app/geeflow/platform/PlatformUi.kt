@@ -26,6 +26,12 @@ expect val isFullScreenSupported: Boolean
 
 expect val isKeepScreenOnSupported: Boolean
 
+@Composable
+expect fun rememberFormattedTime(): String
+
+@Composable
+expect fun rememberFormattedDate(): String
+
 interface ThemeProvider {
     @Composable
     fun getSystemColorScheme(darkTheme: Boolean): ColorScheme? = null

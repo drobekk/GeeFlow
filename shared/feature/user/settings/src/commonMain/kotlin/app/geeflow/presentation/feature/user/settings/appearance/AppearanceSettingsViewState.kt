@@ -11,6 +11,8 @@ data class AppearanceSettingsViewState(
     val customSeedColor: Int = 0xFF1E88E5.toInt(),
     val fullScreenMode: Boolean = false,
     val keepScreenOn: Boolean = false,
+    val screensaverEnabled: Boolean = false,
+    val screensaverTimeoutMinutes: Int = 5,
     val dialog: Dialog? = null,
 ) {
     sealed interface Dialog {
@@ -18,5 +20,6 @@ data class AppearanceSettingsViewState(
         data object AppTheme : Dialog
         data object PaletteStyle : Dialog
         data object CustomColor : Dialog
+        data object ScreensaverTimeout : Dialog
     }
 }

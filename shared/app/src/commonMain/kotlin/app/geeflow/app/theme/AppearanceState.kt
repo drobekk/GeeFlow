@@ -43,6 +43,8 @@ private val AppearanceSettingsSaver = listSaver<AppearanceSettings, Any>(
             it.customSeedColor,
             it.fullScreenMode,
             it.keepScreenOn,
+            it.screensaverEnabled,
+            it.screensaverTimeoutMinutes,
         )
     },
     restore = {
@@ -53,6 +55,8 @@ private val AppearanceSettingsSaver = listSaver<AppearanceSettings, Any>(
             customSeedColor = it[3] as Int,
             fullScreenMode = it[4] as Boolean,
             keepScreenOn = it[5] as Boolean,
+            screensaverEnabled = it.getOrNull(6) as? Boolean ?: false,
+            screensaverTimeoutMinutes = it.getOrNull(7) as? Int ?: 5,
         )
     },
 )

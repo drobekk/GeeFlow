@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.user.settings.appearance
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,11 +9,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,8 +35,11 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.FullScreenChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleClicked
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverChanged
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverTimeoutClicked
 import app.geeflow.presentation.feature.user.settings.appearance.components.AppearanceDialogs
 import app.geeflow.ui.components.GeeFlowDetailScaffold
+import app.geeflow.ui.components.GeeFlowListItem
 import app.geeflow.ui.components.GeeFlowNavigationListItem
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -49,6 +58,11 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ap
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_language
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_language_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_palette_style
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver_description
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver_timeout
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver_timeout_description
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_screensaver_unit_minutes
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -179,6 +193,43 @@ private fun AppearanceContent(
                 onCheckedChanged = { onEvent(KeepScreenOnChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
+            GeeFlowToggleListItem(
+                title = stringResource(Res.string.user_settings_appearance_screensaver),
+                subtitle = stringResource(Res.string.user_settings_appearance_screensaver_description),
+                checked = viewState.screensaverEnabled,
+                onCheckedChanged = { onEvent(ScreensaverChanged(it)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (viewState.screensaverEnabled) {
+                val unit = stringResource(Res.string.user_settings_appearance_screensaver_unit_minutes)
+                GeeFlowListItem(
+                    title = stringResource(Res.string.user_settings_appearance_screensaver_timeout),
+                    subtitle = stringResource(Res.string.user_settings_appearance_screensaver_timeout_description),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp)
+                        .clickable { onEvent(ScreensaverTimeoutClicked) },
+                    trailingContent = {
+                        Surface(
+                            onClick = { onEvent(ScreensaverTimeoutClicked) },
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.surfaceContainer,
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            ) {
+                                Text(
+                                    text = "${viewState.screensaverTimeoutMinutes} $unit",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                    },
+                )
+            }
         }
     }
 }

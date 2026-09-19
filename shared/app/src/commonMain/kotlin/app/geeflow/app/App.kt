@@ -6,11 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import app.geeflow.app.navigation.RootNavigation
+import app.geeflow.app.screensaver.ScreensaverContainer
 import app.geeflow.app.theme.rememberAppColorScheme
 import app.geeflow.app.theme.rememberAppearanceSettings
 import app.geeflow.app.theme.toUiThemeMode
 import app.geeflow.platform.FullScreenEffect
 import app.geeflow.platform.ThemeModeEffect
+import app.geeflow.platform.isKeepScreenOnSupported
 import app.geeflow.ui.theme.GeeFlowTheme
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -42,7 +44,12 @@ fun App(closeApp: () -> Unit) {
         ) {
             ThemeModeEffect(appearance.themeMode.toUiThemeMode())
             FullScreenEffect(appearance.fullScreenMode)
-            RootNavigation(closeApp)
+            ScreensaverContainer(
+                enabled = appearance.screensaverEnabled && isKeepScreenOnSupported,
+                timeoutMinutes = appearance.screensaverTimeoutMinutes,
+            ) {
+                RootNavigation(closeApp)
+            }
             ProfileExecutionEffect(appearance.keepScreenOn)
         }
     }
