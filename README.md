@@ -58,6 +58,7 @@ The error codes reported by the machine have **not** been mapped. The only fault
 **Brewing**
 - Manual brewing with configurable time and pressure
 - Profile brewing with multi-step pressure, flow, and wait stages (variable-pressure and constant-pressure modes)
+- Experimental profiles with app-controlled ramps and measurement-based step transitions
 - Freehand ("free variable") brewing - steer pressure or flow live from a control screen, and optionally save the result as a profile
 - Finish conditions by target weight or target volume
 - Stop a brew at any time
@@ -66,11 +67,27 @@ The error codes reported by the machine have **not** been mapped. The only fault
 - Create, edit, duplicate, delete, and reorder profiles
 - Visual profile editor with per-step editing and descriptions
 - Profiles are per-user; a set of defaults ships with the app and can be restored
-- Bind a profile to a device; once bound, edits are synced to the machine as you save them, and a failed sync aborts the save so the two never drift apart
+- Bind compatible profiles to the machine's paddle/button for native execution; once bound, edits are synced to the machine as you save them, and a failed sync aborts the save
+- Save profiles even when they exceed the machine's native recording capacity or use features that cannot be bound to its paddle/button
+
+**Experimental Profiles**
+- GeeFlow runs these profiles by sending live targets and evaluating measurements throughout the brew, rather than uploading the complete profile for the machine to execute
+- Combine pressure, flow, and wait steps, each with a required time limit
+- Choose instant, linear, ease-in, ease-out, or ease-in-out transitions for pressure and flow targets, with a configurable ramp duration
+- Start a ramp from the previous target or the current measurement
+- Add exit conditions for total volume, total weight, pressure, and flow; pressure and flow support upper and lower thresholds
+- Use OR to advance when any measurement condition is met, or AND to require all measurement conditions to be met at the same time. The time limit always ends the step independently of AND/OR
+- Weight-based conditions require a connected scale
+- Experimental indicators identify features that the selected machine cannot execute natively. Available features depend on the machine's capabilities
+- Experimental profiles require the app to remain active and connected during brewing and cannot be assigned to the machine's paddle/button
+
+On the Wendougee Data-S, experimental flow targets are implemented by adjusting pump pressure in response to measured pump flow. This lets a profile combine pressure and flow steps without switching the machine's active control mode. Flow regulation is performed by GeeFlow and depends on measurement updates and the pump's response. Reported pressure is pump pressure, not puck backpressure.
 
 **Live Monitoring**
 - Real-time dashboard: brew and steam boiler temperatures, pressure, flow rate, volume, weight, weight rate, and elapsed time
 - Live charts for pressure, flow rate, weight rate, volume, and weight, each of which can be hidden or shown at will
+- Pressure, pump flow, and weight rate share a chart, with weight rate hidden by default
+- Profile charts show target ramps, numbered step boundaries, and exit-condition markers, including the conditions that triggered transitions during brewing
 - Brew history with the recorded curve and the profile steps as they were at brew time
 
 **Machine Control & Settings**
