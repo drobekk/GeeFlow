@@ -164,6 +164,6 @@ internal class AddDeviceViewModel(
 
 private fun Platform.getMethod(): AddDeviceViewState.Method = when (this.type) {
     Platform.Type.Desktop -> NearbyDevices(changeMethodButtonVisible = false)
-    Platform.Type.Android -> QrCodeScanner(changeMethodButtonVisible = true)
-    Platform.Type.IOS -> QrCodeScanner(changeMethodButtonVisible = true)
+    Platform.Type.Android -> NearbyDevices(changeMethodButtonVisible = true)
+    Platform.Type.IOS -> NearbyDevices(changeMethodButtonVisible = true)
 }
