@@ -143,7 +143,6 @@ jobs:
               if [ -n "$UUID" ]; then
                 echo "Using Provisioning Profile: $NAME ($UUID)"
                 echo "PROFILE_UUID=$UUID" >> $GITHUB_ENV
-                cp "$f" ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
                 break
               fi
             fi
