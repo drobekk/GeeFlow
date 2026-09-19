@@ -134,57 +134,37 @@ jobs:
           api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
 
-      - name: Setup Provisioning Profile
+      - name: Build and Archive iOS App
         run: |
+          cd iosApp
+          VERSION_NAME=${GITHUB_REF_NAME#v}
+          VERSION_CODE=$GITHUB_RUN_NUMBER
+
+          # Find the downloaded profile UUID
           for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
             if [ -f "$f" ]; then
               UUID=$(security cms -D -i "$f" 2>/dev/null | plutil -extract UUID raw - 2>/dev/null || true)
               NAME=$(security cms -D -i "$f" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || true)
               if [ -n "$UUID" ]; then
-                echo "Using Provisioning Profile: $NAME ($UUID)"
                 PROFILE_UUID="$UUID"
-                echo "PROFILE_UUID=$UUID" >> $GITHUB_ENV
+                echo "Using Provisioning Profile: $NAME ($PROFILE_UUID)"
                 break
               fi
             fi
           done
 
           if [ -z "$PROFILE_UUID" ]; then
-            echo "ERROR: Provisioning profile not found in ~/Library/MobileDevice/Provisioning Profiles/"
+            echo "ERROR: Provisioning profile not found!"
             ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
             exit 1
           fi
 
-      - name: Build and Archive iOS App
-        run: |
-          cd iosApp
-          VERSION_NAME=${GITHUB_REF_NAME#v}
-          VERSION_CODE=$GITHUB_RUN_NUMBER
-          
-          cat <<EOF > ExportOptions.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>destination</key>
-              <string>export</string>
-              <key>method</key>
-              <string>app-store</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>teamID</key>
-              <string>6YSU8C88CY</string>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>app.geeflow</key>
-                  <string>$PROFILE_UUID</string>
-              </dict>
-          </dict>
-          </plist>
-          EOF
+          # Update ExportOptions.plist with manual signing and UUID
+          plutil -replace signingStyle -string "manual" ExportOptions.plist
+          plutil -remove provisioningProfiles ExportOptions.plist 2>/dev/null || true
+          plutil -insert provisioningProfiles -xml "<dict><key>app.geeflow</key><string>$PROFILE_UUID</string></dict>" ExportOptions.plist
 
+          # Build and Archive
           xcodebuild -project iosApp.xcodeproj -scheme iosApp -sdk iphoneos \
             -configuration Release archive -archivePath $PWD/build/iosApp.xcarchive \
             CODE_SIGN_STYLE=Manual \
@@ -193,9 +173,11 @@ jobs:
             DEVELOPMENT_TEAM=6YSU8C88CY \
             MARKETING_VERSION=$VERSION_NAME CURRENT_PROJECT_VERSION=$VERSION_CODE
 
+          # Export IPA
           xcodebuild -exportArchive -archivePath $PWD/build/iosApp.xcarchive \
             -exportOptionsPlist ExportOptions.plist -exportPath $PWD/build
 
+          # Ensure GeeFlow.ipa exists
           find $PWD/build -name "*.ipa" -exec cp {} $PWD/build/GeeFlow.ipa \;
 
       - name: Upload to TestFlight
