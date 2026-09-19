@@ -13,9 +13,15 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
         pluginManager.apply(libs.findPlugin("buildKonfig").get().get().pluginId)
 
         val appVersion =
-            (project.findProperty("appVersionName") as? String) ?: libs.findVersion("appVersion").get().requiredVersion
+            (project.findProperty("appVersionName") as? String)
+                ?: System.getenv("VERSION_NAME")?.takeIf { it.isNotBlank() }
+                ?: System.getenv("MARKETING_VERSION")?.takeIf { it.isNotBlank() }
+                ?: libs.findVersion("appVersion").get().requiredVersion
         val appVersionCode =
-            (project.findProperty("appVersionCode") as? String) ?: libs.findVersion("appVersionCode").get().requiredVersion
+            (project.findProperty("appVersionCode") as? String)
+                ?: System.getenv("VERSION_CODE")?.takeIf { it.isNotBlank() }
+                ?: System.getenv("CURRENT_PROJECT_VERSION")?.takeIf { it.isNotBlank() }
+                ?: libs.findVersion("appVersionCode").get().requiredVersion
         val appPackageName = libs.findVersion("appPackageName").get().requiredVersion
 
         extensions.configure<BuildKonfigExtension> {

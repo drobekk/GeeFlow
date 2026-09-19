@@ -131,6 +131,10 @@ jobs:
           cd iosApp
           VERSION_NAME=${GITHUB_REF_NAME#v}
           VERSION_CODE=$GITHUB_RUN_NUMBER
+          export VERSION_NAME
+          export VERSION_CODE
+          export MARKETING_VERSION=$VERSION_NAME
+          export CURRENT_PROJECT_VERSION=$VERSION_CODE
 
           # Find the downloaded profile UUID
           for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
