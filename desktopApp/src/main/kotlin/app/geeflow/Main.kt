@@ -24,10 +24,13 @@ import app.geeflow.ui.icons.GeeFlowIcon
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.app_name
 import io.github.vinceglb.filekit.FileKit
+import java.awt.Taskbar
+import javax.imageio.ImageIO
 import org.jetbrains.compose.resources.stringResource
 
 fun main() {
     FileKit.init(appId = "app.geeflow")
+    configureMacOsDockIcon()
     application {
         var isFullscreen by remember { mutableStateOf(false) }
         val state = rememberWindowState(placement = WindowPlacement.Floating, size = DpSize(1000.dp, 650.dp))
@@ -64,4 +67,19 @@ private fun handleFullscreenKey(
     true
 } else {
     false
+}
+
+private fun configureMacOsDockIcon() {
+    runCatching {
+        if (Taskbar.isTaskbarSupported()) {
+            val taskbar = Taskbar.getTaskbar()
+            if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                val iconStream = object {}.javaClass.getResourceAsStream("/icon.png")
+                if (iconStream != null) {
+                    val image = ImageIO.read(iconStream)
+                    taskbar.iconImage = image
+                }
+            }
+        }
+    }
 }

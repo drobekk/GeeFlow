@@ -63,6 +63,11 @@ compose.desktop {
                 dirChooser = true
                 upgradeUuid = "1aed0245-316c-4b4d-89ad-46b5ce0b6a13"
             }
+
+            macOS {
+                iconFile.set(project.file("icon.icns"))
+                bundleID = "app.geeflow"
+            }
         }
     }
 }
