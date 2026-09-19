@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -24,7 +24,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -63,6 +62,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.RampStart
 import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.brew.model.ThresholdComparison
@@ -85,12 +85,14 @@ import geeflow.shared.feature.device.dashboard.generated.resources.experimental_
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_remove_condition
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_start_from
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_experimental_info
+import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_condition_and
+import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_condition_or
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_conditions
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_default_name
-import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_first_condition
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_pause_hint
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_pump_control
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_rename
+import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_time_limit
 import geeflow.shared.feature.device.dashboard.generated.resources.step_unit_flow
 import geeflow.shared.feature.device.dashboard.generated.resources.step_unit_pressure
 import kotlinx.coroutines.launch
@@ -159,15 +161,6 @@ internal fun StepEditorContent(
     onEvent: (StepEditorEvent) -> Unit,
 ) {
     val title = state.name.ifBlank { stringResource(Res.string.step_editor_default_name, state.stepNumber) }
-    val scope = rememberCoroutineScope()
-    val conditionsHelp = stringResource(Res.string.step_editor_first_condition)
-    val ok = stringResource(CoreRes.string.common_ok)
-    val onShowConditionsInfo: () -> Unit = {
-        scope.launch {
-            snackbar.currentSnackbarData?.dismiss()
-            snackbar.showSnackbar(conditionsHelp, actionLabel = ok)
-        }
-    }
     if (state.renaming) RenameStepDialog(name = title, onEvent = onEvent)
     if (state.input != null) StepInputDialog(state = state, onEvent = onEvent)
     Scaffold(
@@ -244,7 +237,6 @@ internal fun StepEditorContent(
                     conditionItems(
                         state = state,
                         onEvent = onEvent,
-                        onInfoClick = onShowConditionsInfo,
                     )
                 }
             }
@@ -266,7 +258,6 @@ internal fun StepEditorContent(
                 conditionItems(
                     state = state,
                     onEvent = onEvent,
-                    onInfoClick = onShowConditionsInfo,
                 )
             }
         }
@@ -281,15 +272,12 @@ private fun ControlPane(
     modifier: Modifier,
 ) {
     Column(modifier = modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(Res.string.step_editor_pump_control),
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
+        VerticalSpacer(16.dp)
+        Text(
+            text = stringResource(Res.string.step_editor_pump_control),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        VerticalSpacer(16.dp)
         val types = listOf(StepType.Pressure, StepType.Flow, StepType.Wait)
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             types.forEachIndexed { index, type ->
@@ -368,29 +356,29 @@ private fun ControlPane(
 private fun LazyListScope.conditionItems(
     state: StepEditorViewState,
     onEvent: (StepEditorEvent) -> Unit,
-    onInfoClick: () -> Unit,
 ) {
-    item(key = "conditions-heading") {
-        Row(
-            modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(
-                text = stringResource(Res.string.step_editor_conditions),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            IconButton(onClick = onInfoClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = stringResource(Res.string.step_editor_first_condition),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        }
+    item(key = "time-limit-heading") {
+        VerticalSpacer(16.dp)
+        Text(
+            text = stringResource(Res.string.step_editor_time_limit),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        VerticalSpacer(16.dp)
     }
-    items(items = state.conditions, key = { it.id }) { condition ->
+    items(items = state.conditions.filter { it.metric == BrewMetric.PhaseTime }, key = { it.id }) { condition ->
+        ConditionTile(
+            condition = condition,
+            state = state,
+            onEvent = onEvent,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        VerticalSpacer(16.dp)
+    }
+    item(key = "conditions-heading") {
+        ConditionsHeading(state, onEvent)
+        VerticalSpacer(16.dp)
+    }
+    items(items = state.conditions.filterNot { it.metric == BrewMetric.PhaseTime }, key = { it.id }) { condition ->
         ConditionTile(condition = condition, state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
         VerticalSpacer(16.dp)
     }
@@ -400,6 +388,41 @@ private fun LazyListScope.conditionItems(
             enabled = state.availableConditionMetrics.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
         )
+    }
+}
+
+@Composable
+private fun ConditionsHeading(
+    state: StepEditorViewState,
+    onEvent: (StepEditorEvent) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = stringResource(Res.string.step_editor_conditions),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f),
+        )
+        FilledTonalButton(
+            onClick = { onEvent(StepEditorEvent.ConditionOperatorToggled) },
+            modifier = Modifier
+                .defaultMinSize(minHeight = 0.dp)
+                .height(26.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        ) {
+            Text(
+                text = stringResource(
+                    if (state.conditionOperator == ConditionOperator.And) {
+                        Res.string.step_editor_condition_and
+                    } else {
+                        Res.string.step_editor_condition_or
+                    },
+                ),
+            )
+        }
     }
 }
 

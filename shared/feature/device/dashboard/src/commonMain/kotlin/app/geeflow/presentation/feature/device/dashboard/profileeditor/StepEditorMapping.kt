@@ -41,6 +41,7 @@ internal fun StepEditorViewState.toStep(): ProfileEditorViewState.Step? {
         minimumDurationMillis = 0,
         ramp = ramp,
         exitConditions = exits,
+        conditionOperator = conditionOperator,
     )
 }
 

@@ -9,6 +9,8 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseControl
+import app.geeflow.data.brew.model.PhaseRamp
+import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
@@ -45,6 +47,9 @@ class ProfileExecutionCoordinatorTest {
             )
         )
         var failWrite = false
+        var failStart = false
+        var stopFailures = 0
+        var telemetryDelayMillis = 0L
         var stops = 0
         val writes = MutableStateFlow<List<PhaseControl>>(emptyList())
         val saved = MutableStateFlow<List<BrewHistoryEntry>>(emptyList())
@@ -59,15 +64,24 @@ class ProfileExecutionCoordinatorTest {
         val controller = object : DeviceController by DemoDeviceController(scope) {
             override val deviceState = device
             override fun telemetry() = device.value.pumpTelemetry()
+            override suspend fun stopLiveSession() {
+                stops++
+                if (stopFailures-- > 0) error("stop_failed")
+                device.update {
+                    it.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.Idle)
+                }
+            }
             override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession {
                 device.update {
                     it.copy(
                         statusTime = Clock.System.now(),
                         brewStatus = DeviceState.BrewStatus.FreeVariable,
-                        telemetryTime = Clock.System.now()
+                        telemetryTime = if (telemetryDelayMillis == 0L) Clock.System.now() else null
                     )
                 }
+                if (failStart) error("start_acknowledgement_lost")
                 scope.launch {
+                    delay(telemetryDelayMillis)
                     while (device.value.brewStatus != DeviceState.BrewStatus.Idle) {
                         delay(50)
                         device.update { it.copy(telemetryTime = Clock.System.now()) }
@@ -82,13 +96,7 @@ class ProfileExecutionCoordinatorTest {
                         return if (continuous) PhaseControl.Pressure(bar = writes.value.size.toFloat()) else target
                     }
                     override suspend fun stop() {
-                        stops++
-                        device.update {
-                            it.copy(
-                                statusTime = Clock.System.now(),
-                                brewStatus = DeviceState.BrewStatus.Idle
-                            )
-                        }
+                        stopLiveSession()
                     }
                 }
             }
@@ -126,7 +134,7 @@ class ProfileExecutionCoordinatorTest {
             withTimeout(4000) { fixture.coordinator.state.first { !it.active } }
             assertEquals(listOf(PhaseControl.Pressure(6.2f)), fixture.writes.value)
             assertEquals(1, fixture.stops)
-            assertFalse(fixture.coordinator.state.value.manualStopRequired)
+            assertFalse(fixture.coordinator.state.value.stopPending)
             assertEquals(1, fixture.coordinator.state.value.trace?.transitions?.size)
             withTimeout(4000) { fixture.saved.first { it.isNotEmpty() } }
             assertEquals("App", fixture.saved.value.single().profileName)
@@ -181,14 +189,106 @@ class ProfileExecutionCoordinatorTest {
         }
     }
 
-    @Test fun disconnectRequiresManualStopAndReconnectNeverResumes() = runBlocking {
+    @Test
+    fun initialPressureIsSentBeforeTelemetryConfirmsStart() = runBlocking {
+        val fixture = Fixture()
+        fixture.telemetryDelayMillis = 1000L
+        try {
+            fixture.coordinator.start(1, fixture.profile)
+            withTimeout(500) { fixture.writes.first { it.isNotEmpty() } }
+            assertEquals(PhaseControl.Pressure(6.2f), fixture.writes.value.first())
+            assertEquals(null, fixture.device.value.telemetryTime)
+            fixture.coordinator.stop(1)
+            assertEquals(1, fixture.stops)
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
+    @Test
+    fun initialRampDoesNotJumpStraightToFinalPressure() = runBlocking {
+        val fixture = Fixture()
+        fixture.telemetryDelayMillis = 1000L
+        val program = fixture.profile.program as BrewProgram.Phases
+        val profile = fixture.profile.copy(
+            program = BrewProgram.Phases(
+                program.phases.map {
+                    it.copy(
+                        maximumDurationMillis = 5000,
+                        ramp = PhaseRamp(style = RampStyle.Linear, durationMillis = 2000),
+                    )
+                },
+            ),
+        )
+        try {
+            fixture.coordinator.start(1, profile)
+            withTimeout(500) { fixture.writes.first { it.isNotEmpty() } }
+            assertEquals(PhaseControl.Pressure(0f), fixture.writes.value.first())
+            fixture.coordinator.stop(1)
+            assertEquals(1, fixture.stops)
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
+    @Test
+    fun partialStartStillStopsWithoutALiveSession() = runBlocking {
+        val fixture = Fixture()
+        fixture.failStart = true
+        try {
+            fixture.coordinator.start(1, fixture.profile)
+            withTimeout(4000) { fixture.coordinator.state.first { !it.active } }
+            assertEquals(1, fixture.stops)
+            assertFalse(fixture.coordinator.state.value.stopPending)
+            assertEquals(DeviceState.BrewStatus.Idle, fixture.device.value.brewStatus)
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
+    @Test
+    fun failedStopIsRetriedWithoutSendingMoreTargets() = runBlocking {
+        val fixture = Fixture()
+        fixture.stopFailures = 2
+        try {
+            fixture.coordinator.start(1, fixture.profile)
+            withTimeout(4000) { fixture.coordinator.state.first { it.stopPending } }
+            val targets = fixture.writes.value
+            withTimeout(4000) { fixture.coordinator.state.first { !it.active && !it.stopPending } }
+            assertEquals(3, fixture.stops)
+            assertEquals(targets, fixture.writes.value)
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
+    @Test
+    fun reconnectWithRunningPumpAutomaticallyStops() = runBlocking {
+        val fixture = Fixture()
+        try {
+            fixture.coordinator.start(1, fixture.profile)
+            withTimeout(4000) { fixture.writes.first { it.isNotEmpty() } }
+            fixture.device.update { it.copy(connectionStatus = DeviceState.ConnectionStatus.Disconnected) }
+            withTimeout(4000) { fixture.coordinator.state.first { it.stopPending } }
+            val targets = fixture.writes.value
+            fixture.device.update { it.copy(connectionStatus = DeviceState.ConnectionStatus.Connected) }
+            withTimeout(4000) { fixture.coordinator.state.first { !it.stopPending } }
+            assertEquals(1, fixture.stops)
+            assertEquals(targets, fixture.writes.value)
+            assertEquals(DeviceState.BrewStatus.Idle, fixture.device.value.brewStatus)
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
+    @Test fun disconnectKeepsStopPendingAndReconnectNeverResumes() = runBlocking {
         val fixture = Fixture()
         try {
             fixture.coordinator.start(1, fixture.profile)
             withTimeout(4000) { fixture.writes.first { it.isNotEmpty() } }
             fixture.device.update { it.copy(connectionStatus = DeviceState.ConnectionStatus.Disconnected) }
             withTimeout(4000) { fixture.coordinator.state.first { !it.active } }
-            assertTrue(fixture.coordinator.state.value.manualStopRequired)
+            assertTrue(fixture.coordinator.state.value.stopPending)
             assertEquals(0, fixture.stops)
             fixture.device.update {
                 it.copy(
@@ -197,7 +297,7 @@ class ProfileExecutionCoordinatorTest {
                     brewStatus = DeviceState.BrewStatus.Idle
                 )
             }
-            withTimeout(4000) { fixture.coordinator.state.first { !it.manualStopRequired } }
+            withTimeout(4000) { fixture.coordinator.state.first { !it.stopPending } }
             assertFalse(fixture.coordinator.state.value.active)
             assertEquals(1, fixture.writes.value.size)
         } finally {

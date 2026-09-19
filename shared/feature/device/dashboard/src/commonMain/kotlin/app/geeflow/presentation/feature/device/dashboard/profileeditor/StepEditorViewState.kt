@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStart
@@ -21,6 +22,7 @@ internal data class StepEditorViewState(
     val pressureRange: ClosedFloatingPointRange<Float>,
     val flowRange: ClosedFloatingPointRange<Float>,
     val stepNumber: Int = 1,
+    val conditionOperator: ConditionOperator = source.conditionOperator,
     val renaming: Boolean = false,
     val input: StepInput? = null,
     val type: StepType = source.type,

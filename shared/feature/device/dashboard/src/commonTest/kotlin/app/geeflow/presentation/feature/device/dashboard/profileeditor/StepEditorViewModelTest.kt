@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.device.model.ProfilingCapabilities
@@ -10,6 +11,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class StepEditorViewModelTest {
+    @Test
+    fun `condition operator toggles and survives saving the step`() {
+        val editor = editor()
+        assertEquals(ConditionOperator.Or, editor.viewState.value.conditionOperator)
+        editor.handleEvent(StepEditorEvent.ConditionOperatorToggled)
+        val step = assertNotNull(editor.viewState.value.toStep())
+        assertEquals(ConditionOperator.And, step.toPhase().conditionOperator)
+        val reopened = StepEditorViewState(step, ProfilingCapabilities(), 0f..12f, 0f..8f)
+        assertEquals(ConditionOperator.And, reopened.conditionOperator)
+        editor.handleEvent(StepEditorEvent.ConditionOperatorToggled)
+        assertEquals(ConditionOperator.Or, editor.viewState.value.conditionOperator)
+    }
+
     private fun editor(
         capabilities: ProfilingCapabilities = ProfilingCapabilities(
             livePressure = mapOf(PressureLocation.Pump to TargetRange(0f, 12f, 0.1f)),

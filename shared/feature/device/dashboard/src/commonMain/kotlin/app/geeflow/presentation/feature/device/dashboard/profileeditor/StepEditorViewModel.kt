@@ -3,10 +3,12 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.device.model.ProfilingCapabilities
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.Cancel
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionAdded
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionChanged
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionOperatorToggled
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionRemoved
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ExperimentClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.InputClicked
@@ -48,6 +50,15 @@ internal class StepEditorViewModel(
             is RenameDismissed -> modify { copy(renaming = false) }
             is ConditionRemoved -> removeCondition(id = event.id)
             is ConditionAdded -> addCondition()
+            is ConditionOperatorToggled -> modify {
+                copy(
+                    conditionOperator = if (conditionOperator == ConditionOperator.Or) {
+                        ConditionOperator.And
+                    } else {
+                        ConditionOperator.Or
+                    },
+                )
+            }
             is ExperimentClicked -> launch { emitEvent(StepEditorEffect.ExplainExperimental) }
             is Save -> viewState.value.toStep()?.let { launch { emitEvent(StepEditorEffect.Saved(it)) } }
             is Cancel -> launch { emitEvent(StepEditorEffect.Cancelled) }

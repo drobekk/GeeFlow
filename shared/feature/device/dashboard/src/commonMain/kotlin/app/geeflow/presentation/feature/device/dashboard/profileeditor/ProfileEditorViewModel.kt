@@ -221,6 +221,7 @@ internal class ProfileEditorViewModel(
                     minimumDurationMillis = phase.minimumDurationMillis,
                     timeSec = (phase.maximumDurationMillis / 1000).toInt(),
                     exitConditions = phase.exitConditions,
+                    conditionOperator = phase.conditionOperator,
                 )
             }
         }

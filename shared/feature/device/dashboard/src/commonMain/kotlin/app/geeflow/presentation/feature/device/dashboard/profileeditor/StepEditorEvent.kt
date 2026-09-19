@@ -15,6 +15,7 @@ internal sealed interface StepEditorEvent {
     data class ConditionChanged(val condition: ConditionDraft) : StepEditorEvent
     data class ConditionRemoved(val id: Long) : StepEditorEvent
     data object ConditionAdded : StepEditorEvent
+    data object ConditionOperatorToggled : StepEditorEvent
     data object ExperimentClicked : StepEditorEvent
     data class InputClicked(val target: StepInput) : StepEditorEvent
     data class InputConfirmed(val value: Float) : StepEditorEvent

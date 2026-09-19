@@ -46,13 +46,14 @@ import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlin.time.TimeSource
 
 data class ProfileRunState(
     val deviceId: Long? = null,
     val active: Boolean = false,
     val trace: ProfileExecutionTrace? = null,
-    val manualStopRequired: Boolean = false,
+    val stopPending: Boolean = false,
     val message: String? = null,
 )
 
@@ -70,7 +71,7 @@ class ProfileExecutionCoordinator(
     private val foreground = MutableStateFlow(true)
 
     suspend fun start(deviceId: Long, profile: BrewProfile) = mutex.withLock {
-        if (job?.isActive == true || state.value.manualStopRequired) throw MachineBusyException(deviceId)
+        if (job?.isActive == true || state.value.stopPending) throw MachineBusyException(deviceId)
         val controller = provider.getController(deviceId)
         if (controller.deviceState.value.connectionStatus != DeviceState.ConnectionStatus.Connected) {
             throw DeviceNotConnectedException(deviceId)
@@ -90,17 +91,17 @@ class ProfileExecutionCoordinator(
             if (!foreground.value) throw AppBackgroundedException()
             // Copy collections into an immutable execution snapshot.
             val snapshot = Json.decodeFromString<BrewProfile>(Json.encodeToString(profile))
-            val clock = TimeSource.Monotonic.markNow()
             mutableState.value = ProfileRunState(deviceId, true, ProfileExecutionTrace(snapshot, Clock.System.now()))
-            job = scope.launch { run(controller, snapshot, clock) }
+            job = scope.launch { run(controller, snapshot) }
         }
     }
 
-    fun owns(deviceId: Long) = state.value.active && state.value.deviceId == deviceId
+    fun owns(deviceId: Long) = (state.value.active || state.value.stopPending) && state.value.deviceId == deviceId
 
     suspend fun stop(deviceId: Long): Boolean {
         val running = mutex.withLock {
             if (!owns(deviceId)) return false
+            if (state.value.stopPending) return true
             job
         }
         running?.cancelAndJoin()
@@ -113,7 +114,7 @@ class ProfileExecutionCoordinator(
     }
 
     fun checkUnowned(deviceId: Long) {
-        if (state.value.active || state.value.manualStopRequired) throw MachineBusyException(deviceId)
+        if (state.value.active || state.value.stopPending) throw MachineBusyException(deviceId)
     }
 
     suspend fun <T> withUnownedControl(deviceId: Long, action: suspend () -> T): T = mutex.withLock {
@@ -124,17 +125,28 @@ class ProfileExecutionCoordinator(
     private suspend fun run(
         controller: DeviceController,
         profile: BrewProfile,
-        clock: TimeSource.Monotonic.ValueTimeMark,
     ) {
         var session: LiveBrewSession? = null
         var reason = "user_stop"
         try {
             val oldStamp = controller.deviceState.value.telemetryTime
             session = controller.openLiveSession(profile.initialControl())
+            val clock = TimeSource.Monotonic.markNow()
+            val engine = ProfileProgramEngine(profile)
+            val initial = engine.tick(0, controller.telemetry())
+            val target = initial.target?.let(controller::quantize)
+            val sent = target?.let {
+                withTimeout(TELEMETRY_TIMEOUT_MS.milliseconds) { session.applyTarget(it) }
+            }
+            if (sent != null) {
+                mutableState.update { state ->
+                    state.copy(trace = state.trace?.copy(targets = listOf(EmittedTarget(0, initial.phaseId, sent))))
+                }
+            }
             withTimeout(TELEMETRY_TIMEOUT_MS.milliseconds) {
                 controller.deviceState.first { it.telemetryTime != oldStamp && controller.isLiveSessionActive(it) }
             }
-            reason = controlLoop(controller, session, profile, clock)
+            reason = initial.finish ?: controlLoop(controller, session, profile, clock, engine, target, sent)
         } catch (error: CancellationException) {
             reason = error.message ?: "user_stop"
         } catch (error: Exception) {
@@ -144,7 +156,7 @@ class ProfileExecutionCoordinator(
             mutableState.update {
                 it.copy(
                     active = false,
-                    manualStopRequired = !stopped,
+                    stopPending = !stopped,
                     message = reason,
                     trace = it.trace?.copy(endReason = reason),
                 )
@@ -154,7 +166,7 @@ class ProfileExecutionCoordinator(
             } catch (error: Exception) {
                 Logger.e(error) { "Could not save the app-controlled brew" }
             }
-            if (!stopped) reconcileOnReconnect(controller)
+            if (!stopped) retryStop(controller, session)
         }
     }
 
@@ -164,13 +176,15 @@ class ProfileExecutionCoordinator(
         session: LiveBrewSession,
         profile: BrewProfile,
         clock: TimeSource.Monotonic.ValueTimeMark,
+        engine: ProfileProgramEngine,
+        initialTarget: PhaseControl?,
+        initialSent: PhaseControl?,
     ): String {
         var freshAt = TimeSource.Monotonic.markNow()
-        var stamp: kotlin.time.Instant? = null
-        var lastWrite: Long? = null
-        var lastTarget: PhaseControl? = null
-        var lastSent: PhaseControl? = null
-        val engine = ProfileProgramEngine(profile)
+        var stamp: Instant? = null
+        var lastWrite = 0L
+        var lastTarget = initialTarget
+        var lastSent = initialSent
 
         while (currentCoroutineContext().isActive) {
             val device = controller.deviceState.value
@@ -202,7 +216,7 @@ class ProfileExecutionCoordinator(
             val target = controller.quantize(requireNotNull(output.target))
             val interval = maxOf(MINIMUM_WRITE_INTERVAL_MS, controller.profilingCapabilities.minimumWriteIntervalMillis)
             val shouldWriteTarget = target != lastTarget || session.requiresContinuousUpdates
-            val isIntervalPassed = lastWrite == null || elapsed - lastWrite >= interval
+            val isIntervalPassed = elapsed - lastWrite >= interval
 
             if (shouldWriteTarget && isIntervalPassed) {
                 val sent = withTimeout(TELEMETRY_TIMEOUT_MS.milliseconds) { session.applyTarget(target) }
@@ -224,15 +238,16 @@ class ProfileExecutionCoordinator(
     /** No more targets can be sent after this point, including after cancellation. */
     private suspend fun confirmStop(controller: DeviceController, session: LiveBrewSession?): Boolean =
         withContext(NonCancellable) {
-            // A partially acknowledged start must never be treated as a confirmed idle machine.
-            if (session == null) return@withContext false
             val startedAt = state.value.trace?.startedAt
 
             try {
                 withTimeout(STOP_TIMEOUT_MS.milliseconds) {
-                    if (controller.deviceState.value.brewStatus != DeviceState.BrewStatus.Idle) {
-                        check(controller.deviceState.value.connectionStatus == DeviceState.ConnectionStatus.Connected)
-                        session.stop()
+                    val device = controller.deviceState.value
+                    check(device.connectionStatus == DeviceState.ConnectionStatus.Connected)
+                    val confirmedIdle = device.brewStatus == DeviceState.BrewStatus.Idle &&
+                        device.statusTime?.let { startedAt != null && it >= startedAt } == true
+                    if (!confirmedIdle) {
+                        if (session != null) session.stop() else controller.stopLiveSession()
                     }
                     controller.deviceState.first {
                         it.brewStatus == DeviceState.BrewStatus.Idle &&
@@ -241,19 +256,21 @@ class ProfileExecutionCoordinator(
                     }
                 }
                 true
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                Logger.w(error) { "App-controlled brew stop was not confirmed; will retry" }
                 false
             }
         }
 
-    private fun reconcileOnReconnect(controller: DeviceController) {
-        val previousStatus = controller.deviceState.value.statusTime
+    private fun retryStop(controller: DeviceController, session: LiveBrewSession?) {
         scope.launch {
-            controller.deviceState.first {
-                it.connectionStatus == DeviceState.ConnectionStatus.Connected &&
-                    it.brewStatus == DeviceState.BrewStatus.Idle && it.statusTime != previousStatus
+            while (isActive && state.value.stopPending) {
+                delay(STOP_RETRY_INTERVAL_MS.milliseconds)
+                controller.deviceState.first { it.connectionStatus == DeviceState.ConnectionStatus.Connected }
+                if (confirmStop(controller, session)) {
+                    mutableState.update { it.copy(stopPending = false) }
+                }
             }
-            mutableState.update { it.copy(manualStopRequired = false) }
         }
     }
 
@@ -300,5 +317,6 @@ private fun DeviceController.quantize(target: PhaseControl): PhaseControl = when
 
 private const val TELEMETRY_TIMEOUT_MS = 2000L
 private const val STOP_TIMEOUT_MS = 3000L
-private const val MINIMUM_WRITE_INTERVAL_MS = 200L
-private const val EVALUATION_INTERVAL_MS = 100L
+private const val STOP_RETRY_INTERVAL_MS = 500L
+private const val MINIMUM_WRITE_INTERVAL_MS = 50L
+private const val EVALUATION_INTERVAL_MS = 50L

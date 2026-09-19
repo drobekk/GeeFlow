@@ -47,4 +47,5 @@ internal fun Step.toPhase() = BrewPhase(
     minimumDurationMillis = minimumDurationMillis,
     ramp = ramp,
     exitConditions = exitConditions,
+    conditionOperator = conditionOperator,
 )

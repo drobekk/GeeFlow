@@ -48,6 +48,7 @@ import dev.bluefalcon.core.BluetoothPeripheralState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -62,6 +63,8 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.annotation.Singleton
 import kotlin.time.Duration.Companion.milliseconds
@@ -393,7 +396,12 @@ class WendougeeDataSController(
             delay(POLL_BETWEEN_DELAY_MS)
             runCatching { pollShortOnce(active) }
                 .onFailure { Logger.withTag(TAG).w(it) { "Poll short missed" } }
-            delay(POLLING_INTERVAL_MS)
+            val interval = if (_deviceState.value.brewStatus == DeviceState.BrewStatus.FreeVariable) {
+                LIVE_POLLING_INTERVAL_MS
+            } else {
+                POLLING_INTERVAL_MS
+            }
+            delay(interval)
         }
     }
 
@@ -534,13 +542,13 @@ class WendougeeDataSController(
     }
 
     override suspend fun stopFreeVariableBrewing() {
+        val active = requireSession()
+        // The brew command toggles a coil. Refresh status before every attempt to avoid restarting an idle machine.
+        refreshBrewStatus(active)
         if (_deviceState.value.brewStatus == BrewStatus.FreeVariable) {
             _deviceState.update { it.copy(freeHandStopRequested = true) }
             Logger.withTag(TAG).i { "Stopping free variable brew..." }
-            requireSession().modbus.writeSingleRegister(
-                WendougeeRegisters.FREE_VAR_MODE,
-                if (_deviceState.value.freeHandControlMode == FreeHandControlMode.Flow) 1 else 0,
-            )
+            active.modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, listOf(0, 0))
             sendModbusPulse(
                 CMD_FREE_VAR_ON,
                 CMD_FREE_VAR_OFF,
@@ -548,6 +556,15 @@ class WendougeeDataSController(
                 0x00,
                 COIL_FREE_VAR_BREW.toByte()
             )
+            refreshBrewStatus(active)
+        }
+    }
+
+    private suspend fun refreshBrewStatus(active: Session) {
+        val previousStatusTime = _deviceState.value.statusTime
+        withTimeout(POLL_TIMEOUT_MS.milliseconds) {
+            pollShortOnce(active)
+            deviceState.first { it.statusTime != previousStatusTime }
         }
     }
 
@@ -661,9 +678,17 @@ class WendougeeDataSController(
     ) {
         val modbus = requireSession().modbus
         val matcher = ModbusSession.AddressMatcher(hi = regHi, lo = regLo)
-        modbus.sendAndAwaitFc(onCommand, FC_COIL_WRITE, matcher)
-        delay(BREW_PULSE_MS)
-        modbus.sendAndAwaitFc(offCommand, FC_COIL_WRITE, matcher)
+        try {
+            modbus.sendAndAwaitFc(onCommand, FC_COIL_WRITE, matcher)
+            delay(BREW_PULSE_MS)
+        } finally {
+            // Always release the coil, including cancellation or a missing acknowledgement of the press.
+            withContext(NonCancellable) {
+                withTimeout(PULSE_RELEASE_TIMEOUT_MS.milliseconds) {
+                    modbus.sendAndAwaitFc(offCommand, FC_COIL_WRITE, matcher)
+                }
+            }
+        }
         Logger.withTag(TAG).d { "$label pulse completed and confirmed" }
     }
 
@@ -760,7 +785,9 @@ private const val DATA_UUID_SUFFIX = "2b10"
 private const val CTRL_UUID_SUFFIX = "2c10"
 
 private const val POLLING_INTERVAL_MS = 200L
+private const val LIVE_POLLING_INTERVAL_MS = 70L
 private const val BREW_PULSE_MS = 100L
+private const val PULSE_RELEASE_TIMEOUT_MS = 1000L
 private const val HEARTBEAT_TIMEOUT_MS = 10_000L
 
 private const val MTU_SIZE = 512

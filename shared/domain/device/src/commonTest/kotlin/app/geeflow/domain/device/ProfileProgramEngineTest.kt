@@ -6,6 +6,7 @@ import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.FreeHandRecording
@@ -23,6 +24,31 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class ProfileProgramEngineTest {
+    @Test
+    fun `AND requires simultaneous measurements while OR accepts either condition`() {
+        val phase = first.copy(
+            conditionOperator = ConditionOperator.And,
+            exitConditions = listOf(
+                ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 1f),
+                ExitCondition(BrewMetric.PumpedVolume, ThresholdComparison.Above, 40f),
+                ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.Below, 2f),
+            ),
+        )
+        val and = ProfileProgramEngine(profile(phase))
+        assertNull(and.tick(0, telemetry(volume = 0f, pressure = 3f)).finish)
+        assertNull(and.tick(100, telemetry(volume = 0f, pressure = 1f)).finish)
+        assertNull(and.tick(200, telemetry(volume = 40f, pressure = 3f)).finish)
+        assertEquals("program_complete", and.tick(300, telemetry(volume = 40f, pressure = 1f)).finish)
+
+        val or = ProfileProgramEngine(profile(phase.copy(conditionOperator = ConditionOperator.Or)))
+        assertNull(or.tick(0, telemetry(volume = 0f, pressure = 3f)).finish)
+        assertEquals("program_complete", or.tick(100, telemetry(volume = 0f, pressure = 1f)).finish)
+
+        val timeout = ProfileProgramEngine(profile(phase))
+        timeout.tick(0, telemetry(volume = 0f, pressure = 3f))
+        assertEquals("program_complete", timeout.tick(1000, telemetry(volume = 0f, pressure = 3f)).finish)
+    }
+
     private fun profile(vararg phases: BrewPhase) = BrewProfile(
         userId = 1,
         name = "Test",

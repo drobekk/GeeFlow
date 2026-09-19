@@ -25,8 +25,9 @@ data class BrewPhase(
     val maximumDurationMillis: Long,
     val minimumDurationMillis: Long = 0,
     val ramp: PhaseRamp = PhaseRamp(),
-    /** A phase ends as soon as any condition matches. PhaseTime thresholds use seconds. */
+    /** PhaseTime thresholds use seconds. */
     val exitConditions: List<ExitCondition> = emptyList(),
+    val conditionOperator: ConditionOperator = ConditionOperator.Or,
 )
 
 @Serializable
@@ -137,6 +138,14 @@ fun BrewPhase.plannedDurationMillis(): Long {
     )
 }
 
-fun BrewPhase.conditionsMet(matches: (ExitCondition) -> Boolean): Boolean = exitConditions.any(matches)
+/** Time remains a deadline; AND combines the measurement conditions at the current instant. */
+fun BrewPhase.conditionsMet(matches: (ExitCondition) -> Boolean): Boolean = when (conditionOperator) {
+    ConditionOperator.Or -> exitConditions.any(matches)
+    ConditionOperator.And -> {
+        val measurements = exitConditions.filterNot { it.metric == BrewMetric.PhaseTime }
+        exitConditions.any { it.metric == BrewMetric.PhaseTime && matches(it) } ||
+            (measurements.isNotEmpty() && measurements.all(matches))
+    }
+}
 
 private const val MILLISECONDS_PER_SECOND = 1000L

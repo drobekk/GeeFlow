@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseRamp
 import app.geeflow.data.device.model.ProfileIssueCode
@@ -45,6 +46,7 @@ internal data class ProfileEditorViewState(
         val ramp: PhaseRamp = PhaseRamp(),
         val minimumDurationMillis: Long = 0,
         val exitConditions: List<ExitCondition> = emptyList(),
+        val conditionOperator: ConditionOperator = ConditionOperator.Or,
         val experimental: Boolean = false,
 
     )

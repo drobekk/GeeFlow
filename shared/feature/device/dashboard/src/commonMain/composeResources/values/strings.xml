@@ -148,12 +148,14 @@
     <string name="step_editor_metric_pump">Pump pressure</string>
     <string name="step_editor_metric_group">Group pressure</string>
     <string name="step_editor_metric_boiler">Boiler pressure</string>
-    <string name="step_editor_first_condition">The step ends when the first condition is met.</string>
+    <string name="step_editor_condition_and">AND</string>
+    <string name="step_editor_condition_or">OR</string>
     <string name="step_editor_required_time">Time (Required)</string>
     <string name="step_unit_pressure">bar</string>
     <string name="step_unit_flow">ml/s</string>
     <string name="step_unit_time">s</string>
     <string name="step_editor_conditions">Exit conditions</string>
+    <string name="step_editor_time_limit">Time limit</string>
     <string name="step_editor_pump_control">Pump control</string>
     <string name="step_editor_ramp_style">Style</string>
 </resources>
