@@ -142,6 +142,7 @@ jobs:
               NAME=$(security cms -D -i "$f" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || true)
               if [ -n "$UUID" ]; then
                 echo "Using Provisioning Profile: $NAME ($UUID)"
+                PROFILE_UUID="$UUID"
                 echo "PROFILE_UUID=$UUID" >> $GITHUB_ENV
                 break
               fi
