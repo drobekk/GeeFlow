@@ -55,14 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Checkout commerce module
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          repository: drobekk/GeeFlow-Commerce
-          ssh-key: ${{ secrets.COMMERCE_DEPLOY_KEY }}
-          path: commerce
-
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -110,14 +102,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Checkout commerce module
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          repository: drobekk/GeeFlow-Commerce
-          ssh-key: ${{ secrets.COMMERCE_DEPLOY_KEY }}
-          path: commerce
 
       - name: Set up JDK
         uses: actions/setup-java@v4

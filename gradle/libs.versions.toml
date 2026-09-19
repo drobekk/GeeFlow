@@ -44,8 +44,10 @@ reorderable = "3.1.0"
 detekt = "2.0.0-alpha.6"
 aboutLibraries = "15.2.0"
 buildKonfig = "0.22.0"
+inAppPurchase = "1.0.42"
 
 [libraries]
+inapppurchase = { module = "io.github.aditya-gupta99:inAppPurchase-kmp", version.ref = "inAppPurchase" }
 aboutLibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutLibraries-gradlePlugin = { module = "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin", version.ref = "aboutLibraries" }

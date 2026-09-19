@@ -4,8 +4,9 @@ import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
 @Module
-class NoOpCommerceModule {
+actual class CommercePlatformModule {
 
+    /** Desktop has no store front, so the About screen keeps hiding the tip jar. */
     @Single
     fun tipFeature(): TipFeature = NoOpTipFeature
 }

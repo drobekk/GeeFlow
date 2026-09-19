@@ -57,6 +57,3 @@ include(":shared:app")
 include(":androidApp")
 include(":desktopApp")
 
-if (file("commerce/build.gradle.kts").exists()) {
-    include(":commerce")
-}

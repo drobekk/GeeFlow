@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <!-- Tip jar -->
+    <string name="tip_section_prompt">Enjoying the app?</string>
+    <string name="tip_button">Buy me a coffee</string>
+    <string name="tip_dialog_title">Pick a cup</string>
+    <string name="tip_dialog_error">The store is not reachable right now. Please try again later.</string>
+    <string name="tip_dialog_retry">Try again</string>
+
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">A quick shot of encouragement</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Something to sip while the pump hums</string>
+    <string name="tip_tier_beans">Bag of Specialty Beans</string>
+    <string name="tip_tier_beans_description">The good stuff, for a long brew session</string>
+    <string name="tip_tier_year_of_coffee">Year of Coffee</string>
+    <string name="tip_tier_year_of_coffee_description">Keeping the grinder fed for 365 days of dialing in</string>
+
+</resources>
