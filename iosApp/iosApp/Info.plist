@@ -21,13 +21,13 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>$(PRODUCT_NAME) camera description.</string>
+	<string>$(PRODUCT_NAME) uses the camera to scan QR codes for pairing espresso machines and importing profiles.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>$(PRODUCT_NAME) photos description.</string>
+	<string>$(PRODUCT_NAME) needs access to your photo library to select a profile picture.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs Bluetooth access to find and connect to devices.</string>
+	<string>$(PRODUCT_NAME) uses Bluetooth to discover, connect to, and communicate with your espresso machine and coffee scale.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs Bluetooth access to find and connect to devices.</string>
+	<string>$(PRODUCT_NAME) uses Bluetooth to discover, connect to, and communicate with your espresso machine and coffee scale.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
