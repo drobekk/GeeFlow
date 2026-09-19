@@ -108,6 +108,8 @@ jobs:
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx8192M -XX:+UseParallelGC"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Checkout commerce module
         continue-on-error: true
@@ -186,6 +188,21 @@ jobs:
           # Ensure GeeFlow.ipa exists
           find $PWD/build -name "*.ipa" -exec cp {} $PWD/build/GeeFlow.ipa \;
 
+      - name: Prepare TestFlight Release Notes
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
+          if [ -n "$PREV_TAG" ]; then
+            MSG=$(git log "${PREV_TAG}..HEAD" --no-merges --pretty=format:"• %s" | head -n 25)
+          else
+            MSG=$(git log -10 --no-merges --pretty=format:"• %s")
+          fi
+          if [ -z "$MSG" ]; then
+            MSG="Bug fixes and performance improvements."
+          fi
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$MSG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v5
         with:
@@ -193,3 +210,4 @@ jobs:
           issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          release-notes: ${{ env.RELEASE_NOTES }}
