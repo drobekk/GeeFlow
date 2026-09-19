@@ -3,6 +3,10 @@ name: Release
 on:
   release:
     types: [published] # Triggers when a new GitHub Release is created
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
