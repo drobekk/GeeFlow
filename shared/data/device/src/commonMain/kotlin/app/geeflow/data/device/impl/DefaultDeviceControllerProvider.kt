@@ -12,8 +12,8 @@ import org.koin.core.annotation.Single
 @Single(binds = [DeviceControllerProvider::class])
 class DefaultDeviceControllerProvider(
     private val deviceRepository: DeviceRepository,
-    private val wendougeeDataSController: WendougeeDataSController,
-    private val demoDeviceController: DemoDeviceController,
+    private val wendougeeDataSController: Lazy<WendougeeDataSController>,
+    private val demoDeviceController: Lazy<DemoDeviceController>,
 ) : DeviceControllerProvider {
     override var currentDeviceId: Long? = null
         private set
@@ -22,9 +22,9 @@ class DefaultDeviceControllerProvider(
         currentDeviceId = deviceId
         val device = deviceRepository.getDeviceById(deviceId)
         return when (device?.supportedDevice) {
-            SupportedDevice.WendougeeDataS -> wendougeeDataSController
-            SupportedDevice.GeeFlowDemo -> demoDeviceController
-            null -> wendougeeDataSController
+            SupportedDevice.WendougeeDataS -> wendougeeDataSController.value
+            SupportedDevice.GeeFlowDemo -> demoDeviceController.value
+            null -> wendougeeDataSController.value
         }
     }
 
