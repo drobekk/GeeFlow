@@ -15,11 +15,9 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.dp
 import app.geeflow.ui.GeeFlowUrls
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -66,12 +64,10 @@ fun GeeFlowAgreementCheckbox(
             checked = checked,
             onCheckedChange = onCheckedChange,
         )
-        HorizontalSpacer(8.dp)
         Text(
             text = annotatedText,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
         )
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.ui.components.GeeFlowAgreementCheckbox
@@ -84,6 +86,7 @@ private fun IntroScreenContent(
 private fun Logo(expanded: Boolean, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
+            .fillMaxWidth()
             .layout { measurable, constraints ->
                 val resolvedConstraints = if (expanded) {
                     constraints.copy(minHeight = constraints.maxHeight)
@@ -96,13 +99,14 @@ private fun Logo(expanded: Boolean, modifier: Modifier = Modifier) {
                 }
             }
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(60.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        VerticalSpacer(24.dp)
         Icon(
             painter = rememberVectorPainter(GeeFlowIcon.Logo),
-            modifier = Modifier.size(140.dp),
+            modifier = Modifier.size(120.dp),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
         )
@@ -110,6 +114,11 @@ private fun Logo(expanded: Boolean, modifier: Modifier = Modifier) {
         Text(
             text = stringResource(UiRes.string.app_name),
             style = MaterialTheme.typography.displayMedium,
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 24.sp,
+                maxFontSize = 48.sp,
+            ),
         )
         Text(
             text = stringResource(Res.string.intro_screen_welcome_message),
@@ -161,7 +170,11 @@ private fun Form(
             painter = rememberVectorPainter(Icons.Filled.Check),
             enabled = userNameTextFieldState.text.isNotEmpty() && termsAgreed,
             contentDescription = stringResource(UiRes.string.common_confirm),
-            onClick = { onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString())) },
+            onClick = {
+                if (userNameTextFieldState.text.isNotEmpty() && termsAgreed) {
+                    onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString()))
+                }
+            },
         )
     }
 }
