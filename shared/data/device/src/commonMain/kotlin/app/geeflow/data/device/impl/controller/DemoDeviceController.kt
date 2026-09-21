@@ -2,6 +2,7 @@
 
 package app.geeflow.data.device.impl.controller
 
+import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
@@ -16,6 +17,7 @@ import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.SmartScale
 import app.geeflow.data.device.model.pumpTelemetry
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,7 +90,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     override fun connect(device: Device) {
         scope.launch {
             _deviceState.update { it.copy(connectionStatus = DeviceState.ConnectionStatus.Connecting) }
-            delay(CONNECT_DELAY_MS)
+            delay(CONNECT_DELAY_MS.milliseconds)
             _deviceState.update {
                 it.copy(
                     connectionStatus = DeviceState.ConnectionStatus.Connected,
@@ -118,10 +120,14 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override fun disconnect() {
+        brewJob?.cancel()
         _deviceState.update { DeviceState() }
     }
 
+    private var brewJob: Job? = null
+
     override suspend fun startManualBrewing() {
+        brewJob?.cancel()
         _deviceState.update {
             it.copy(
                 statusTime = Clock.System.now(),
@@ -131,44 +137,27 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                 volume = 0f,
             )
         }
-        scope.launch {
-            val dtSec = BREW_TICK_MS / MS_PER_SECOND
+        brewJob = scope.launch {
+            val simulation = DemoBrewSimulation()
             val durationMs =
-                ((_deviceState.value.config?.manualBrewTimeSec ?: DEFAULT_BREW_TIME_SEC) * MS_PER_SECOND).toInt().milliseconds
-            val startTime = Clock.System.now()
-            var pressure = 0f
+                ((_deviceState.value.config?.manualBrewTimeSec ?: DEFAULT_BREW_TIME_SEC) * MS_PER_SECOND).toLong()
             var elapsedMs = 0L
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.Manual) {
-                delay(BREW_TICK_MS)
+                delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
-                if (Clock.System.now() - startTime >= durationMs) {
+                if (elapsedMs >= durationMs) {
                     stopManualBrewing()
                     break
                 }
-                pressure = (pressure + PRESSURE_RAMP).coerceAtMost(MAX_PRESSURE)
-                val flowing = pressure > FLOW_THRESHOLD_PRESSURE
-                val flowRate = if (flowing) {
-                    ((pressure - FLOW_THRESHOLD_PRESSURE) / PRESSURE_RANGE * MAX_FLOW).coerceIn(0f, MAX_FLOW)
-                } else {
-                    0f
-                }
-                val weightActive = elapsedMs >= WEIGHT_ACTIVE_DELAY_MS
-                val weightRate = if (weightActive) flowRate * WEIGHT_FLOW_RATIO else 0f
-                _deviceState.update { state ->
-                    state.copy(
-                        pressure = pressure,
-                        flowRate = flowRate,
-                        weightRate = weightRate,
-                        volume = (state.volume ?: 0f) + flowRate * dtSec,
-                        weight = (state.weight ?: 0f) + weightRate * dtSec,
-                        time = (elapsedMs / BREW_TICK_MS).toInt(),
-                    )
-                }
+                val target = _deviceState.value.config?.manualBrewPressure ?: DEFAULT_FREE_VAR_PRESSURE
+                val point = simulation.advance(PhaseControl.Pressure(target), BREW_TICK_MS / MS_PER_SECOND)
+                _deviceState.update { it.withBrewPoint(point = point, elapsedMs = elapsedMs) }
             }
         }
     }
 
     override suspend fun stopManualBrewing() {
+        brewJob?.cancel()
         _deviceState.update {
             it.copy(
                 statusTime = Clock.System.now(),
@@ -183,6 +172,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun stopProfileBrewing() {
+        brewJob?.cancel()
         _deviceState.update {
             it.copy(
                 statusTime = Clock.System.now(),
@@ -198,6 +188,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
     @Suppress("LongMethod")
     override suspend fun startProfileBrewing(profile: BrewProfile) {
+        brewJob?.cancel()
         val recordingPoints = profile.recording?.playbackPoints()
         delay(500.milliseconds)
         _deviceState.update {
@@ -209,55 +200,37 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                 volume = 0f
             )
         }
-        scope.launch {
-            val dtSec = BREW_TICK_MS / MS_PER_SECOND
+        brewJob = scope.launch {
+            val simulation = DemoBrewSimulation()
             var elapsedMs = 0L
-
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.Profile) {
                 delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
-                val elapsedSec = elapsedMs / MS_PER_SECOND
-
-                val currentStep = findCurrentStep(profile.steps, elapsedSec)
+                val currentStep = findCurrentStep(profile.steps, elapsedMs / MS_PER_SECOND)
                 if (currentStep == null && recordingPoints == null) {
                     stopProfileBrewing()
                     break
                 }
-
                 val recorded = recordingPoints?.let { it[(elapsedMs / 500L).toInt().coerceAtMost(it.lastIndex)] }
-                val (targetPressure, targetFlow) = if (recorded != null) {
-                    recorded.pressure to recorded.flowRate
-                } else {
-                    computeTargetValues(requireNotNull(currentStep))
+                val control = when {
+                    recorded == null -> requireNotNull(currentStep).toControl()
+                    profile.recording?.controlMode == FreeHandControlMode.Flow -> PhaseControl.Flow(recorded.flowRate)
+                    else -> PhaseControl.Pressure(recorded.pressure)
                 }
-
+                val point = simulation.advance(control, BREW_TICK_MS / MS_PER_SECOND)
+                val finished = profile.reachedGoal(volume = point.volume, weight = point.weight)
                 _deviceState.update { state ->
-                    val newVolume = (state.volume ?: 0f) + targetFlow * dtSec
-                    val weightActive = elapsedMs >= WEIGHT_ACTIVE_DELAY_MS
-                    val newWeight = (state.weight ?: 0f) + if (weightActive) targetFlow * WEIGHT_FLOW_RATIO * dtSec else 0f
-                    val finished = profile.reachedGoal(volume = newVolume, weight = newWeight)
+                    val measured = state.withBrewPoint(point = point, elapsedMs = elapsedMs)
                     if (finished) {
-                        state.copy(
+                        measured.copy(
                             statusTime = Clock.System.now(),
-                            telemetryTime = Clock.System.now(),
                             brewStatus = DeviceState.BrewStatus.Idle,
                             pressure = 0f,
-                            weight = newWeight,
-                            volume = newVolume,
-                            flowRate = null,
-                            weightRate = null,
-                            time = null,
+                            flowRate = 0f,
+                            weightRate = 0f,
                         )
                     } else {
-                        state.copy(
-                            telemetryTime = Clock.System.now(),
-                            pressure = targetPressure,
-                            flowRate = targetFlow,
-                            weightRate = if (weightActive) targetFlow * WEIGHT_FLOW_RATIO else 0f,
-                            volume = newVolume,
-                            weight = newWeight,
-                            time = (elapsedMs / BREW_TICK_MS).toInt(),
-                        )
+                        measured
                     }
                 }
             }
@@ -274,22 +247,24 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         return null
     }
 
-    private fun computeTargetValues(step: ProfileStep): Pair<Float, Float> = when (step) {
-        is ProfileStep.Pressure -> {
-            val flow = ((step.pressure - FLOW_THRESHOLD_PRESSURE) / PRESSURE_RANGE * MAX_FLOW).coerceIn(0f, MAX_FLOW)
-            step.pressure to flow
-        }
-
-        is ProfileStep.Flow -> {
-            val pressure = (step.flow / MAX_FLOW * PRESSURE_RANGE + FLOW_THRESHOLD_PRESSURE).coerceIn(0f, MAX_PRESSURE)
-            pressure to step.flow
-        }
-
-        is ProfileStep.Wait -> 0f to 0f
+    private fun ProfileStep.toControl(): PhaseControl = when (this) {
+        is ProfileStep.Pressure -> PhaseControl.Pressure(pressure)
+        is ProfileStep.Flow -> PhaseControl.Flow(flow)
+        is ProfileStep.Wait -> PhaseControl.PumpPause
     }
 
+    private fun DeviceState.withBrewPoint(point: BrewDataPoint, elapsedMs: Long): DeviceState = copy(
+        telemetryTime = Clock.System.now(),
+        pressure = point.pressure,
+        flowRate = point.flowRate,
+        weightRate = point.weightRate,
+        volume = point.volume,
+        weight = point.weight,
+        time = (elapsedMs / BREW_TICK_MS).toInt(),
+    )
+
     override suspend fun startCleaning() {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update {
             it.copy(
                 statusTime = Clock.System.now(),
@@ -301,7 +276,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
             val config = _deviceState.value.config ?: return@launch
             val totalSeconds = (config.cleaningTimeSec + config.cleaningStandbySec).toInt() * config.cleaningCount
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.Cleaning) {
-                delay(CLEANING_TICK_MS)
+                delay(CLEANING_TICK_MS.milliseconds)
                 val current = _deviceState.value.time ?: 1
                 if (current >= totalSeconds) {
                     _deviceState.update {
@@ -329,7 +304,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setBoilerState(boilerType: DeviceState.BoilerType, enabled: Boolean) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(
@@ -342,7 +317,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setBrewTemperature(temp: Int) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(targetBrewTemp = temp.toFloat()))
@@ -350,7 +325,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setSteamTemperature(temp: Int) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(targetSteamTemp = temp.toFloat()))
@@ -358,7 +333,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setHeatingMode(heatingMode: DeviceState.HeatingMode) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(heatingMode = heatingMode))
@@ -366,7 +341,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setManualBrewPressure(pressure: Float) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(manualBrewPressure = pressure))
@@ -374,7 +349,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setManualBrewTime(timeSec: Float) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(config = config.copy(manualBrewTimeSec = timeSec))
@@ -382,7 +357,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(
@@ -392,7 +367,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun setWaterAlarm(enabled: Boolean) {
-        delay(DEMO_SETTER_DELAY_MS)
+        delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
             val config = state.config ?: return
             state.copy(
@@ -405,6 +380,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     private var freeVarFlowTarget = DEFAULT_FREE_VAR_FLOW
 
     override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
+        brewJob?.cancel()
         _deviceState.update {
             it.copy(
                 statusTime = Clock.System.now(),
@@ -416,48 +392,25 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                 freeHandControlMode = if (isFlow) FreeHandControlMode.Flow else FreeHandControlMode.Pressure,
             )
         }
-        scope.launch {
-            val dtSec = BREW_TICK_MS / MS_PER_SECOND
-            var pressure = 0f
-            var flowRate = 0f
+        brewJob = scope.launch {
+            val simulation = DemoBrewSimulation()
             var elapsedMs = 0L
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.FreeVariable) {
-                delay(BREW_TICK_MS)
+                delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
-                if (isFlow) {
-                    val target = freeVarFlowTarget
-                    flowRate = approach(flowRate, target, PRESSURE_RAMP)
-                    pressure = (flowRate / MAX_FLOW * PRESSURE_RANGE + FLOW_THRESHOLD_PRESSURE).coerceIn(
-                        0f,
-                        MAX_PRESSURE
-                    )
+                val control = if (isFlow) {
+                    PhaseControl.Flow(freeVarFlowTarget)
                 } else {
-                    val target = _deviceState.value.config?.manualBrewPressure ?: DEFAULT_FREE_VAR_PRESSURE
-                    pressure = approach(pressure, target, PRESSURE_RAMP)
-                    flowRate = if (pressure > FLOW_THRESHOLD_PRESSURE) {
-                        ((pressure - FLOW_THRESHOLD_PRESSURE) / PRESSURE_RANGE * MAX_FLOW).coerceIn(0f, MAX_FLOW)
-                    } else {
-                        0f
-                    }
+                    PhaseControl.Pressure(_deviceState.value.config?.manualBrewPressure ?: DEFAULT_FREE_VAR_PRESSURE)
                 }
-                val weightActive = elapsedMs >= WEIGHT_ACTIVE_DELAY_MS
-                val weightRate = if (weightActive) flowRate * WEIGHT_FLOW_RATIO else 0f
-                _deviceState.update { state ->
-                    state.copy(
-                        telemetryTime = Clock.System.now(),
-                        pressure = pressure,
-                        flowRate = flowRate,
-                        weightRate = weightRate,
-                        volume = (state.volume ?: 0f) + flowRate * dtSec,
-                        weight = (state.weight ?: 0f) + weightRate * dtSec,
-                        time = (elapsedMs / BREW_TICK_MS).toInt(),
-                    )
-                }
+                val point = simulation.advance(control, BREW_TICK_MS / MS_PER_SECOND)
+                _deviceState.update { it.withBrewPoint(point = point, elapsedMs = elapsedMs) }
             }
         }
     }
 
     override suspend fun stopFreeVariableBrewing() {
+        brewJob?.cancel()
         _deviceState.update { it.copy(freeHandStopRequested = true) }
         _deviceState.update {
             it.copy(
@@ -504,13 +457,13 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     private fun simulateScaleSearch() {
         scope.launch {
             _deviceState.update { it.copy(smartScaleSearchActive = true) }
-            delay(SCALE_SEARCH_DELAY_MS)
+            delay(SCALE_SEARCH_DELAY_MS.milliseconds)
             if (!_deviceState.value.smartScaleEnabled) return@launch
             _foundScales.value = listOf(
                 SmartScale("Bookoo Themis", isConnected = false),
                 SmartScale(SLOW_SCALE_NAME, isConnected = false),
             )
-            delay(SCALE_SEARCH_DURATION_MS)
+            delay(SCALE_SEARCH_DURATION_MS.milliseconds)
             if (_deviceState.value.smartScaleEnabled) {
                 _deviceState.update { it.copy(smartScaleSearchActive = false) }
             }
@@ -518,8 +471,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun connectSmartScale(name: String) {
-        // The Acaia is deliberately slow to pair so the connection help hint can be exercised.
-        delay(if (name == SLOW_SCALE_NAME) SLOW_SCALE_CONNECT_DELAY_MS else SCALE_CONNECT_DELAY_MS)
+        // The second scale is deliberately slow to pair so the connection help hint can be exercised.
+        delay((if (name == SLOW_SCALE_NAME) SLOW_SCALE_CONNECT_DELAY_MS else SCALE_CONNECT_DELAY_MS).milliseconds)
         val scale = SmartScale(name, isConnected = true)
         _foundScales.update { scales -> scales.map { if (it.name == name) scale else it } }
         _deviceState.update { it.copy(smartScale = scale) }
@@ -546,13 +499,6 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         private const val BREW_TICK_MS = 100L
         private const val MS_PER_SECOND = 1000f
         private const val DEFAULT_BREW_TIME_SEC = 5f
-        private const val PRESSURE_RAMP = 0.3f
-        private const val MAX_PRESSURE = 9f
-        private const val FLOW_THRESHOLD_PRESSURE = 2f
-        private const val PRESSURE_RANGE = 7f
-        private const val MAX_FLOW = 6f
-        private const val WEIGHT_ACTIVE_DELAY_MS = 5_000L
-        private const val WEIGHT_FLOW_RATIO = 0.9f
         private const val DEMO_SETTER_DELAY_MS = 100L
         private const val CLEANING_TICK_MS = 1000L
         private const val SCALE_SEARCH_DELAY_MS = 2000L
@@ -563,12 +509,6 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
         private const val DEFAULT_FREE_VAR_PRESSURE = 6f
         private const val DEFAULT_FREE_VAR_FLOW = 6f
-
-        private fun approach(current: Float, target: Float, step: Float): Float = if (current < target) {
-            (current + step).coerceAtMost(target)
-        } else {
-            (current - step).coerceAtLeast(target)
-        }
     }
 }
 
