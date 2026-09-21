@@ -41,6 +41,7 @@ import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import app.geeflow.presentation.feature.device.dashboard.components.TopBar
+import app.geeflow.presentation.feature.device.dashboard.model.chartModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
@@ -187,13 +188,7 @@ private fun ExpandedDashboard(
                         .padding(top = 16.dp, bottom = 16.dp),
                 )
                 BrewCharts(
-                    brew = viewState.brew,
-                    targetData = viewState.targetData(profileListViewState),
-                    program = if (viewState.brew.historyTarget != null) {
-                        viewState.brew.phaseProgram
-                    } else {
-                        profileListViewState.profiles.find { it.selected }?.program
-                    },
+                    model = viewState.chartModel(profileListViewState),
                     visibleCharts = viewState.visibleCharts,
                     modifier = Modifier.weight(MainColumnWeight),
                 )
@@ -300,14 +295,8 @@ private fun CompactDashboard(
                 when (page) {
                     CompactDashboardPage.Details.ordinal -> Column(modifier = Modifier.fillMaxSize()) {
                         BrewCharts(
-                            brew = viewState.brew,
+                            model = viewState.chartModel(profileListViewState),
                             visibleCharts = viewState.visibleCharts,
-                            targetData = viewState.targetData(profileListViewState),
-                            program = if (viewState.brew.historyTarget != null) {
-                                viewState.brew.phaseProgram
-                            } else {
-                                profileListViewState.profiles.find { it.selected }?.program
-                            },
                             modifier = Modifier
                                 .fillMaxSize()
                                 .weight(1f)
@@ -373,13 +362,6 @@ private fun TabRow(
         )
     }
 }
-
-/**
- * A replayed history brew brings its own target curve — only fall back to the profile selected in
- * the list while live data is on screen.
- */
-private fun DeviceDashboardViewState.targetData(profileListViewState: ProfileListViewState) =
-    brew.historyTarget ?: profileListViewState.profiles.find { it.selected }?.targetData.orEmpty()
 
 private enum class CompactDashboardPage {
     Details,

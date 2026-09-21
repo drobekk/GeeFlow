@@ -239,10 +239,11 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                     if (finished) {
                         state.copy(
                             statusTime = Clock.System.now(),
+                            telemetryTime = Clock.System.now(),
                             brewStatus = DeviceState.BrewStatus.Idle,
                             pressure = 0f,
-                            weight = null,
-                            volume = null,
+                            weight = newWeight,
+                            volume = newVolume,
                             flowRate = null,
                             weightRate = null,
                             time = null,

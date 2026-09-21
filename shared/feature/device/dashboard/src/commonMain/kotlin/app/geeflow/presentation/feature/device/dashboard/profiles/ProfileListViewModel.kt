@@ -281,6 +281,7 @@ internal class ProfileListViewModel(
         bound = bound,
         selected = selected,
         program = profile.program,
+        finishCondition = profile.finishCondition,
         targetData = profile.toTargetData(),
     )
 

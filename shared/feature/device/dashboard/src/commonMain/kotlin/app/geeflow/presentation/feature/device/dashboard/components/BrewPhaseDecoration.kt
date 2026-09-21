@@ -113,7 +113,7 @@ internal fun brewPhaseDecoration(boundaries: List<ChartPhaseBoundary>): Decorati
                                 BrewMetric.PumpFlow -> flow
                                 BrewMetric.PumpPressure, BrewMetric.GroupPressure, BrewMetric.BoilerPressure -> pressure
                             }
-                            val selected = condition == boundary.matchedCondition
+                            val selected = condition in boundary.matchedConditions
                             drawScope.draw(
                                 density = density,
                                 layoutDirection = layoutDirection,

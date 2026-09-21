@@ -54,6 +54,7 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.TargetChanged
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ToggleChartVisibility
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
+import app.geeflow.presentation.feature.device.dashboard.model.BrewChartModel
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
@@ -182,7 +183,7 @@ private fun ExpandedLayout(
                     .padding(top = 16.dp, bottom = 16.dp),
             )
             BrewCharts(
-                brew = viewState.brew,
+                model = BrewChartModel(measurements = viewState.brew.data),
                 visibleCharts = viewState.visibleCharts,
                 modifier = Modifier.weight(1f),
             )
@@ -318,7 +319,7 @@ private fun CompactLayout(
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             BrewCharts(
-                brew = viewState.brew,
+                model = BrewChartModel(measurements = viewState.brew.data),
                 visibleCharts = viewState.visibleCharts,
                 modifier = Modifier
                     .weight(1f)

@@ -20,17 +20,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.geeflow.data.brew.model.BrewProgram
-import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.FlowRate
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Pressure
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Volume
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.Weight
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType.WeightRate
+import app.geeflow.presentation.feature.device.dashboard.model.BrewChartModel
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.presentation.feature.device.dashboard.model.ChartPhaseBoundary
-import app.geeflow.presentation.feature.device.dashboard.model.chartBoundaries
 import app.geeflow.ui.isHeightCompact
 import app.geeflow.ui.theme.GeeFlowTheme
 import app.geeflow.ui.theme.disabled
@@ -87,19 +85,18 @@ private data class TargetBrewData(
 
 @Composable
 internal fun BrewCharts(
-    brew: Brew,
+    model: BrewChartModel,
     visibleCharts: Set<DashboardChartType>,
-    targetData: Map<Float, ChartData> = emptyMap(),
-    program: BrewProgram? = brew.phaseProgram,
     modifier: Modifier = Modifier,
 ) {
-    val boundaries = program.chartBoundaries(brew.phaseTransitions)
+    val boundaries = model.boundaries
+    val targetData = model.targets
     val chartModifier = Modifier
         .background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.medium)
         .fillMaxWidth()
         .padding(start = 8.dp, top = 16.dp, end = 16.dp, bottom = 8.dp)
 
-    val sortedEntries = brew.data.entries.sortedBy { it.key }
+    val sortedEntries = model.measurements.entries.sortedBy { it.key }
     val xValues = sortedEntries.map { it.key.toDouble() }
     val sortedPoints = sortedEntries.map { it.value }
 

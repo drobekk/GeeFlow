@@ -31,6 +31,30 @@ class DemoProfileAvailabilityTest {
     @Test
     fun weightConditionAndFinishTargetRequireAConnectedScale() = checkAvailability(BrewMetric.CupWeight)
 
+    @Test
+    fun `native completion retains the volume that reached the target`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val controller = DemoDeviceController(scope = scope)
+        val profile = BrewProfile(
+            userId = 1,
+            name = "Terminal measurement",
+            description = "",
+            finishCondition = Condition.Volume(target = 1f),
+            program = BrewProgram.Phases(
+                listOf(BrewPhase(id = "first", control = PhaseControl.Flow(4f), maximumDurationMillis = 10000)),
+            ),
+        )
+        try {
+            controller.startProfileBrewing(profile)
+            val terminal = withTimeout(3000) {
+                controller.deviceState.first { it.brewStatus == DeviceState.BrewStatus.Idle }
+            }
+            assertTrue(requireNotNull(terminal.volume) >= 1f)
+        } finally {
+            scope.cancel()
+        }
+    }
+
     private fun checkAvailability(metric: BrewMetric) = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val controller = DemoDeviceController(scope = scope)

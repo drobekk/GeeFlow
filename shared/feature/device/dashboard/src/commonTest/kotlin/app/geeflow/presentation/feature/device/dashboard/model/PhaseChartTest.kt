@@ -3,6 +3,8 @@ package app.geeflow.presentation.feature.device.dashboard.model
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.PhaseExitReason
@@ -88,8 +90,89 @@ class PhaseChartTest {
         )
         assertEquals(listOf(0.0, 3.2, 13.2), boundaries.map { it.seconds })
         assertEquals(1, boundaries[1].stepNumber)
-        assertEquals(below, boundaries[1].matchedCondition)
-        assertNull(boundaries.last().matchedCondition)
+        assertEquals(below, boundaries[1].matchedConditions.singleOrNull())
+        assertNull(boundaries.last().matchedConditions.singleOrNull())
         assertEquals(2, boundaries.last().stepNumber)
+    }
+
+    @Test
+    fun `native steps highlight elapsed time without marking future steps as completed`() {
+        val phase = BrewPhase(id = "first", control = PhaseControl.Pressure(3f), maximumDurationMillis = 10000)
+        val program = BrewProgram.Phases(listOf(phase, phase.copy(id = "second")))
+        val boundaries = program.nativeChartBoundaries(
+            data = mapOf(12f to ChartData(pressure = 0f, weight = 0f, weightPerSecond = 0f, volume = 0f, volumePerSecond = 0f)),
+            finishCondition = Condition.Volume(40f),
+        )
+        assertEquals(BrewMetric.PhaseTime, boundaries.first().matchedConditions.singleOrNull()?.metric)
+        assertNull(boundaries.last().matchedConditions.singleOrNull())
+        assertEquals(
+            listOf(BrewMetric.PumpedVolume),
+            boundaries.last().conditions.map { it.metric },
+        )
+    }
+
+    @Test
+    fun `native volume target ends the current step and removes future boundaries`() {
+        val phase = BrewPhase(id = "first", control = PhaseControl.Pressure(3f), maximumDurationMillis = 10000)
+        val program = BrewProgram.Phases(listOf(phase, phase.copy(id = "second")))
+        val boundaries = program.nativeChartBoundaries(
+            data = mapOf(5f to ChartData(pressure = 0f, weight = 0f, weightPerSecond = 0f, volume = 40f, volumePerSecond = 0f)),
+            finishCondition = Condition.Volume(40f),
+        )
+        assertEquals(1, boundaries.size)
+        assertEquals(5.0, boundaries.single().seconds)
+        assertEquals(BrewMetric.PumpedVolume, boundaries.single().matchedConditions.singleOrNull()?.metric)
+    }
+
+    @Test
+    fun `native weight target stays unhighlighted when stopped below target`() {
+        val program = BrewProgram.Phases(
+            listOf(BrewPhase(id = "first", control = PhaseControl.Pressure(3f), maximumDurationMillis = 10000)),
+        )
+        val stopped = program.nativeChartBoundaries(
+            data = mapOf(5f to ChartData(pressure = 0f, weight = 20f, weightPerSecond = 0f, volume = 0f, volumePerSecond = 0f)),
+            finishCondition = Condition.Weight(40f),
+        )
+        assertNull(stopped.single().matchedConditions.singleOrNull())
+        val finished = program.nativeChartBoundaries(
+            data = mapOf(5f to ChartData(pressure = 0f, weight = 40f, weightPerSecond = 0f, volume = 0f, volumePerSecond = 0f)),
+            finishCondition = Condition.Weight(40f),
+        )
+        assertEquals(BrewMetric.CupWeight, finished.single().matchedConditions.singleOrNull()?.metric)
+    }
+
+    @Test
+    fun `native goal after planned duration replaces the final boundary`() {
+        val phase = BrewPhase(id = "first", control = PhaseControl.Pressure(3f), maximumDurationMillis = 10000)
+        val program = BrewProgram.Phases(listOf(phase, phase.copy(id = "second")))
+        val boundaries = program.nativeChartBoundaries(
+            data = mapOf(25f to ChartData(pressure = 0f, weight = 40f, weightPerSecond = 0f, volume = 0f, volumePerSecond = 0f)),
+            finishCondition = Condition.Weight(40f),
+        )
+        assertEquals(listOf(1, 2), boundaries.map { it.stepNumber })
+        assertEquals(listOf(10.0, 25.0), boundaries.map { it.seconds })
+        assertEquals(BrewMetric.CupWeight, boundaries.last().matchedConditions.singleOrNull()?.metric)
+    }
+
+    @Test
+    fun `AND highlights all measurement conditions but not the time limit`() {
+        val pressure = ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.Above, 4f)
+        val volume = ExitCondition(BrewMetric.PumpedVolume, ThresholdComparison.Above, 20f)
+        val phase = BrewPhase(
+            id = "first",
+            control = PhaseControl.Pressure(6f),
+            maximumDurationMillis = 10000,
+            exitConditions = listOf(pressure, volume),
+            conditionOperator = ConditionOperator.And,
+        )
+        val program = BrewProgram.Phases(listOf(phase))
+        val matched = program.chartBoundaries(
+            listOf(PhaseTransition(5000, phase.id, PhaseExitReason.ConditionMatched, volume)),
+        ).last()
+        assertEquals(setOf(pressure, volume), matched.matchedConditions)
+        val timedOut = program.chartBoundaries(
+            listOf(PhaseTransition(10000, phase.id, PhaseExitReason.MaximumDuration)),
+        ).last()
+        assertEquals(setOf(BrewMetric.PhaseTime), timedOut.matchedConditions.map { it.metric }.toSet())
     }
 }

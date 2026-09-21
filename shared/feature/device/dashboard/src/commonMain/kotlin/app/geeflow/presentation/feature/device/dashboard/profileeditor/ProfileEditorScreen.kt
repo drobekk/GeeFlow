@@ -39,11 +39,11 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
+import app.geeflow.presentation.feature.device.dashboard.model.chartModel
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.BackClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.EditDetailsClicked
@@ -186,10 +186,8 @@ private fun ExpandedLayout(
                     .padding(vertical = 16.dp),
             )
             BrewCharts(
-                brew = viewState.brew,
+                model = viewState.chartModel(),
                 visibleCharts = viewState.visibleCharts,
-                targetData = viewState.targetData,
-                program = BrewProgram.Phases(viewState.steps.map { it.toPhase() }),
                 modifier = Modifier.weight(1f),
             )
             EditorBrewBar(
@@ -237,10 +235,8 @@ private fun CompactLayout(
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             BrewCharts(
-                brew = viewState.brew,
+                model = viewState.chartModel(),
                 visibleCharts = viewState.visibleCharts,
-                targetData = viewState.targetData,
-                program = BrewProgram.Phases(viewState.steps.map { it.toPhase() }),
                 modifier = Modifier.weight(1f).padding(horizontal = 24.dp),
             )
             EditorBrewBar(

@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.profiles
 
 import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.data.brew.model.Condition
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 data class ProfileListViewState(
@@ -21,6 +22,7 @@ data class ProfileListViewState(
         val bound: Boolean = false,
         val selected: Boolean = false,
         val program: BrewProgram? = null,
+        val finishCondition: Condition? = null,
         val targetData: Map<Float, ChartData> = emptyMap(),
     )
 

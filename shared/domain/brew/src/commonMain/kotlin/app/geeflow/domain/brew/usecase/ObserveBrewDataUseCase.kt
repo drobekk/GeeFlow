@@ -106,6 +106,13 @@ class ObserveBrewDataUseCase(
             acc.lastTick = currentTick
             acc.lastPoint = currentPoint
         } else {
+            if (acc.isBrewing && status == DeviceState.BrewStatus.Idle) {
+                acc.lastPoint?.let { previous ->
+                    val finalPoint = previous.withFinalTotals(state)
+                    acc.data[acc.lastTick / TICKS_PER_SECOND_FLOAT] = finalPoint
+                    acc.lastPoint = finalPoint
+                }
+            }
             acc.isBrewing = false
         }
         return acc
