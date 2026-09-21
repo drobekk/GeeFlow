@@ -29,8 +29,17 @@ class DefaultDeviceControllerProvider(
     }
 
     override fun disconnectCurrent() {
-        val id = currentDeviceId ?: return
-        getController(id).disconnect()
-        currentDeviceId = null
+        val id = currentDeviceId
+        if (id != null) {
+            getController(id).disconnect()
+            currentDeviceId = null
+        } else {
+            if (wendougeeDataSController.isInitialized()) {
+                wendougeeDataSController.value.disconnect()
+            }
+            if (demoDeviceController.isInitialized()) {
+                demoDeviceController.value.disconnect()
+            }
+        }
     }
 }

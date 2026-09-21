@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.user.settings.profile
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
+import app.geeflow.domain.device.usecase.DisconnectCurrentDeviceUseCase
 import app.geeflow.domain.user.usecase.DeleteUserUseCase
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import app.geeflow.domain.user.usecase.GetUsersUseCase
@@ -10,6 +11,7 @@ import app.geeflow.domain.user.usecase.RemoveUserPhotoUseCase
 import app.geeflow.domain.user.usecase.RenameUserUseCase
 import app.geeflow.domain.user.usecase.UpdateUserPhotoUseCase
 import app.geeflow.navigation.NavEvent
+import app.geeflow.navigation.NavEvent.ClearBackStack
 import app.geeflow.navigation.NavEvent.To
 import app.geeflow.navigation.destination.Intro
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsEvent.BackClicked
@@ -35,6 +37,7 @@ internal class ProfileSettingsViewModel(
     private val deleteUser: DeleteUserUseCase,
     private val updateUserPhoto: UpdateUserPhotoUseCase,
     private val removeUserPhoto: RemoveUserPhotoUseCase,
+    private val disconnectCurrentDevice: DisconnectCurrentDeviceUseCase,
 ) : BaseViewModel<ProfileSettingsViewState, ProfileSettingsViewModelEvent>(ProfileSettingsViewState()) {
 
     init {
@@ -64,8 +67,10 @@ internal class ProfileSettingsViewModel(
 
         is DeleteClicked -> modify { copy(dialog = Dialog.Delete) }
         is DeleteConfirmed -> launch {
+            disconnectCurrentDevice()
             deleteUser(viewState.value.userId)
             if (getUsers().value.isEmpty()) {
+                navigate(ClearBackStack)
                 navigate(To(Intro))
             } else {
                 navigate(NavEvent.Back)

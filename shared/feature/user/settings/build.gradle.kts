@@ -24,6 +24,7 @@ kotlin {
             implementation(projects.shared.core.presentation)
             implementation(projects.shared.core.ui)
             implementation(projects.shared.domain.brew)
+            implementation(projects.shared.domain.device)
             implementation(projects.shared.domain.user)
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptiveLayout)
