@@ -23,6 +23,7 @@
     <string name="common_times">times</string>
     <string name="common_brew_boiler">Brew Boiler</string>
     <string name="common_steam_boiler">Steam Boiler</string>
+    <string name="common_current_temperature">Current temperature: %1$s</string>
     <string name="common_avg">(avg)</string>
     <string name="common_on">ON</string>
     <string name="common_off">OFF</string>

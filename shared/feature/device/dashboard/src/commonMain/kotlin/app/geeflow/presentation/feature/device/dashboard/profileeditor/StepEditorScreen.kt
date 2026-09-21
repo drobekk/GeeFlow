@@ -272,10 +272,10 @@ private fun ControlPane(
     modifier: Modifier,
 ) {
     Column(modifier = modifier) {
-        VerticalSpacer(16.dp)
         Text(
             text = stringResource(Res.string.step_editor_pump_control),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         VerticalSpacer(16.dp)
         val types = listOf(StepType.Pressure, StepType.Flow, StepType.Wait)
@@ -306,7 +306,7 @@ private fun ControlPane(
                 }
             }
         }
-        VerticalSpacer(12.dp)
+        VerticalSpacer(24.dp)
         if (state.type != StepType.Wait) {
             GeeFlowSlider(
                 value = state.target.toFloatOrNull() ?: state.targetRange.start,
@@ -321,27 +321,9 @@ private fun ControlPane(
                     .height(SliderHeight),
                 onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.Target)) },
             )
-            VerticalSpacer(16.dp)
-            Text(
-                text = stringResource(Res.string.experimental_ramp),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            VerticalSpacer(12.dp)
-            RampSelector(state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
-            if (state.rampStyle != RampStyle.Instant) {
-                VerticalSpacer(12.dp)
-                EditorField(value = state.rampSeconds, label = stringResource(Res.string.experimental_ramp_duration)) {
-                    onEvent(StepEditorEvent.InputClicked(StepInput.RampDuration))
-                }
-                VerticalSpacer(12.dp)
-                EditorChoice(
-                    title = stringResource(resource = Res.string.experimental_start_from),
-                    values = RampStart.entries,
-                    selected = state.rampStart,
-                    label = { enumLabel(it) },
-                    onSelect = { onEvent(StepEditorEvent.RampStartChanged(it)) },
-                )
-            }
+            VerticalSpacer(24.dp)
+
+            RampPane(state, onEvent)
         } else {
             Text(
                 text = stringResource(Res.string.step_editor_pause_hint),
@@ -353,15 +335,44 @@ private fun ControlPane(
     }
 }
 
+@Composable
+private fun RampPane(
+    state: StepEditorViewState,
+    onEvent: (StepEditorEvent) -> Unit,
+) {
+    Text(
+        text = stringResource(Res.string.experimental_ramp),
+        style = MaterialTheme.typography.titleLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    VerticalSpacer(16.dp)
+    RampSelector(state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
+    if (state.rampStyle != RampStyle.Instant) {
+        VerticalSpacer(12.dp)
+        EditorField(value = state.rampSeconds, label = stringResource(Res.string.experimental_ramp_duration)) {
+            onEvent(StepEditorEvent.InputClicked(StepInput.RampDuration))
+        }
+        VerticalSpacer(12.dp)
+        EditorChoice(
+            title = stringResource(resource = Res.string.experimental_start_from),
+            values = RampStart.entries,
+            selected = state.rampStart,
+            label = { enumLabel(it) },
+            onSelect = { onEvent(StepEditorEvent.RampStartChanged(it)) },
+        )
+    }
+}
+
 private fun LazyListScope.conditionItems(
     state: StepEditorViewState,
     onEvent: (StepEditorEvent) -> Unit,
 ) {
     item(key = "time-limit-heading") {
-        VerticalSpacer(16.dp)
+        VerticalSpacer(24.dp)
         Text(
             text = stringResource(Res.string.step_editor_time_limit),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         VerticalSpacer(16.dp)
     }
@@ -372,11 +383,11 @@ private fun LazyListScope.conditionItems(
             onEvent = onEvent,
             modifier = Modifier.fillMaxWidth(),
         )
-        VerticalSpacer(16.dp)
+        VerticalSpacer(24.dp)
     }
     item(key = "conditions-heading") {
         ConditionsHeading(state, onEvent)
-        VerticalSpacer(16.dp)
+        VerticalSpacer(24.dp)
     }
     items(items = state.conditions.filterNot { it.metric == BrewMetric.PhaseTime }, key = { it.id }) { condition ->
         ConditionTile(condition = condition, state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
@@ -403,7 +414,8 @@ private fun ConditionsHeading(
     ) {
         Text(
             text = stringResource(Res.string.step_editor_conditions),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
         FilledTonalButton(

@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +27,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -35,10 +38,31 @@ import geeflow.shared.core.ui.generated.resources.common_off
 import geeflow.shared.core.ui.generated.resources.common_on
 import org.jetbrains.compose.resources.stringResource
 
+val DefaultControlWidth: Dp = 160.dp
+
 @Composable
 fun GeeFlowSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier.width(DefaultControlWidth),
+    enabled: Boolean = true,
+) {
+    GeeFlowSwitch(
+        checked = checked,
+        value = stringResource(Res.string.common_on),
+        onOffClick = { onCheckedChange(false) },
+        onValueClick = { onCheckedChange(true) },
+        modifier = modifier,
+        enabled = enabled,
+    )
+}
+
+@Composable
+fun GeeFlowSwitch(
+    checked: Boolean,
+    value: String,
+    onOffClick: () -> Unit,
+    onValueClick: () -> Unit,
     modifier: Modifier = Modifier.width(DefaultControlWidth),
     enabled: Boolean = true,
 ) {
@@ -88,32 +112,53 @@ fun GeeFlowSwitch(
                     .weight(1f)
                     .fillMaxHeight()
                     .clip(shape)
-                    .clickable(enabled = enabled) { onCheckedChange(!checked) }
-                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    .clickable(enabled = enabled, onClick = onOffClick)
+                    .padding(vertical = 8.dp, horizontal = 8.dp)
                     .wrapContentHeight(Alignment.CenterVertically),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = offTextColor,
                 textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
 
             Text(
-                text = stringResource(Res.string.common_on),
+                text = value,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
                     .clip(shape)
-                    .clickable(enabled = enabled) { onCheckedChange(!checked) }
-                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    .clickable(enabled = enabled, onClick = onValueClick)
+                    .padding(vertical = 8.dp, horizontal = 8.dp)
                     .wrapContentHeight(Alignment.CenterVertically),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = onTextColor,
                 textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
 }
+
+@Composable
+fun GeeFlowValueSwitch(
+    checked: Boolean,
+    value: String,
+    onOffClick: () -> Unit,
+    onValueClick: () -> Unit,
+    modifier: Modifier = Modifier.width(DefaultControlWidth),
+    enabled: Boolean = true,
+) = GeeFlowSwitch(
+    checked = checked,
+    value = value,
+    onOffClick = onOffClick,
+    onValueClick = onValueClick,
+    modifier = modifier,
+    enabled = enabled,
+)
 
 private const val DisabledAlpha = 0.38f
 private const val IndicatorWidthFraction = 0.5f
@@ -122,9 +167,29 @@ private const val IndicatorWidthFraction = 0.5f
 @Composable
 @GeeFlowComponentPreview
 private fun Preview() {
-    Row(Modifier.width(200.dp)) {
-        GeeFlowSwitch(checked = false, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(16.dp))
-        GeeFlowSwitch(checked = true, onCheckedChange = {}, modifier = Modifier.weight(1f))
+    Column(Modifier.width(320.dp)) {
+        Row {
+            GeeFlowSwitch(checked = false, onCheckedChange = {}, modifier = Modifier.weight(1f))
+            Spacer(Modifier.width(16.dp))
+            GeeFlowSwitch(checked = true, onCheckedChange = {}, modifier = Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(16.dp))
+        Row {
+            GeeFlowSwitch(
+                checked = false,
+                value = "93°C",
+                onOffClick = {},
+                onValueClick = {},
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(16.dp))
+            GeeFlowSwitch(
+                checked = true,
+                value = "93°C",
+                onOffClick = {},
+                onValueClick = {},
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }

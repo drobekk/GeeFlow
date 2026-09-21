@@ -38,8 +38,8 @@ import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceS
 import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModelEvent.ShowSnackbar
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowDetailScaffold
-import app.geeflow.ui.components.GeeFlowInfinitePicker
 import app.geeflow.ui.components.GeeFlowToggleListItem
+import app.geeflow.ui.components.GeeFlowValueListItem
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -48,12 +48,15 @@ import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_cycle
 import geeflow.shared.core.ui.generated.resources.common_flush
 import geeflow.shared.core.ui.generated.resources.common_rest
-import geeflow.shared.core.ui.generated.resources.common_seconds
+import geeflow.shared.core.ui.generated.resources.common_sec
 import geeflow.shared.core.ui.generated.resources.common_times
 import geeflow.shared.feature.device.settings.generated.resources.Res
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_alarms
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_cleaning
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_cleaning_cycle_description
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_cleaning_flush_description
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_cleaning_rest_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_water_alarm
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_water_alarm_description
@@ -178,67 +181,37 @@ private fun CleaningSection(
         text = stringResource(Res.string.device_settings_maintenance_cleaning),
         modifier = Modifier.fillMaxWidth(),
     )
-    VerticalSpacer(24.dp)
-    Row {
-        Picker(
-            title = stringResource(CoreRes.string.common_flush),
-            subtitle = stringResource(CoreRes.string.common_seconds),
-            items = cleaning.timeList,
-            selected = cleaning.timeSec,
-            onSelectionChanged = { onEvent(CleaningTimeChanged(it)) },
-            modifier = Modifier.weight(1f),
-        )
-        HorizontalSpacer(16.dp)
-        Picker(
-            title = stringResource(CoreRes.string.common_rest),
-            subtitle = stringResource(CoreRes.string.common_seconds),
-            items = cleaning.restList,
-            selected = cleaning.restSec,
-            onSelectionChanged = { onEvent(CleaningRestChanged(it)) },
-            modifier = Modifier.weight(1f),
-        )
-        HorizontalSpacer(16.dp)
-        Picker(
-            title = stringResource(CoreRes.string.common_cycle),
-            subtitle = stringResource(CoreRes.string.common_times),
-            items = cleaning.countList,
-            selected = cleaning.count,
-            onSelectionChanged = { onEvent(CleaningCountChanged(it)) },
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-@Composable
-private fun Picker(
-    title: String,
-    subtitle: String,
-    items: List<String>,
-    selected: String,
-
-    onSelectionChanged: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        VerticalSpacer(12.dp)
-        GeeFlowInfinitePicker(
-            items = items,
-            selected = selected,
-            enabled = true,
-            unit = subtitle,
-            onSelectionChanged = onSelectionChanged,
-        )
-    }
+    VerticalSpacer(16.dp)
+    GeeFlowValueListItem(
+        title = stringResource(CoreRes.string.common_flush),
+        subtitle = stringResource(Res.string.device_settings_maintenance_cleaning_flush_description),
+        value = "${cleaning.timeSec} ${stringResource(CoreRes.string.common_sec)}",
+        items = cleaning.timeList,
+        unit = stringResource(CoreRes.string.common_sec),
+        onValueConfirmed = { onEvent(CleaningTimeChanged(it)) },
+        contentPadding = PaddingValues(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
+    )
+    GeeFlowValueListItem(
+        title = stringResource(CoreRes.string.common_rest),
+        subtitle = stringResource(Res.string.device_settings_maintenance_cleaning_rest_description),
+        value = "${cleaning.restSec} ${stringResource(CoreRes.string.common_sec)}",
+        items = cleaning.restList,
+        unit = stringResource(CoreRes.string.common_sec),
+        onValueConfirmed = { onEvent(CleaningRestChanged(it)) },
+        contentPadding = PaddingValues(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
+    )
+    GeeFlowValueListItem(
+        title = stringResource(CoreRes.string.common_cycle),
+        subtitle = stringResource(Res.string.device_settings_maintenance_cleaning_cycle_description),
+        value = "${cleaning.count} ${stringResource(CoreRes.string.common_times)}",
+        items = cleaning.countList,
+        unit = stringResource(CoreRes.string.common_times),
+        onValueConfirmed = { onEvent(CleaningCountChanged(it)) },
+        contentPadding = PaddingValues(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable
@@ -250,14 +223,14 @@ private fun WaterAlarmSection(
         text = stringResource(Res.string.device_settings_maintenance_alarms),
         modifier = Modifier.fillMaxWidth(),
     )
-    VerticalSpacer(24.dp)
+    VerticalSpacer(16.dp)
     GeeFlowToggleListItem(
         title = stringResource(resource = Res.string.device_settings_maintenance_water_alarm),
         subtitle = stringResource(Res.string.device_settings_maintenance_water_alarm_description),
         checked = waterAlarm,
         onCheckedChanged = { onEvent(WaterAlarmToggled(it)) },
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(),
+        contentPadding = PaddingValues(vertical = 8.dp),
     )
 }
 

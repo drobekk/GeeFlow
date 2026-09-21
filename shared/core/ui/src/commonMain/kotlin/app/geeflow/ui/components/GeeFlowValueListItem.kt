@@ -1,10 +1,16 @@
 package app.geeflow.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import app.geeflow.ui.theme.GeeFlowComponentPreview
@@ -19,72 +30,61 @@ import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowTheme
 import kotlin.math.abs
 
-@Composable
-fun GeeFlowToggleListItem(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChanged: (Boolean) -> Unit,
-    contentPadding: PaddingValues = PaddingValues(
-        horizontal = GeeFlowTheme.spacing.contentHorizontal,
-        vertical = 16.dp,
-    ),
-    modifier: Modifier = Modifier,
-) {
-    GeeFlowListItem(
-        title = title,
-        subtitle = subtitle,
-        modifier = modifier,
-        contentPadding = contentPadding,
-        trailingContent = {
-            GeeFlowSwitch(
-                checked = checked,
-                onCheckedChange = onCheckedChanged,
-                enabled = true,
-            )
-        },
-    )
-}
+private const val DisabledAlpha = 0.38f
+private val DefaultPillMinWidth = 80.dp
 
 @Composable
-fun GeeFlowToggleListItem(
+fun GeeFlowValueListItem(
     title: String,
     subtitle: String,
-    checked: Boolean,
     value: String,
-    onOffClick: () -> Unit,
     onValueClick: () -> Unit,
-    contentPadding: PaddingValues = PaddingValues(
-        horizontal = GeeFlowTheme.spacing.contentHorizontal,
-        vertical = 16.dp,
-    ),
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues(
+        horizontal = GeeFlowTheme.spacing.contentHorizontal,
+        vertical = 16.dp,
+    ),
 ) {
+    val shape = MaterialTheme.shapes.large
+    val primaryColor = MaterialTheme.colorScheme.primary
+
     GeeFlowListItem(
         title = title,
         subtitle = subtitle,
         modifier = modifier,
         contentPadding = contentPadding,
         trailingContent = {
-            GeeFlowSwitch(
-                checked = checked,
-                value = value,
-                onOffClick = onOffClick,
-                onValueClick = onValueClick,
-                enabled = enabled,
-            )
+            Box(
+                modifier = Modifier
+                    .widthIn(min = DefaultPillMinWidth)
+                    .clip(shape)
+                    .background(primaryColor)
+                    .border(2.dp, primaryColor, shape)
+                    .clickable(enabled = enabled, onClick = onValueClick)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .alpha(if (enabled) 1f else DisabledAlpha),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         },
     )
 }
 
 @Composable
-fun GeeFlowToggleListItem(
+fun GeeFlowValueListItem(
     title: String,
     subtitle: String,
-    checked: Boolean,
     value: String,
-    onCheckedChanged: (Boolean) -> Unit,
     onValueConfirmed: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -113,19 +113,13 @@ fun GeeFlowToggleListItem(
         allowDecimal ?: items.any { it.contains('.') }
     }
 
-    GeeFlowToggleListItem(
+    GeeFlowValueListItem(
         title = title,
         subtitle = subtitle,
-        checked = checked,
         value = value,
-        onOffClick = { onCheckedChanged(false) },
         onValueClick = {
             if (enabled) {
-                if (checked) {
-                    showInputPad = true
-                } else {
-                    onCheckedChanged(true)
-                }
+                showInputPad = true
             }
         },
         modifier = modifier,
@@ -159,9 +153,6 @@ fun GeeFlowToggleListItem(
                                 confirmedValue.toInt().toString()
                             }
                         }
-                        if (!checked) {
-                            onCheckedChanged(true)
-                        }
                         onValueConfirmed(confirmedString)
                         showInputPad = false
                     },
@@ -177,21 +168,11 @@ fun GeeFlowToggleListItem(
 @GeeFlowComponentPreview
 private fun Preview() {
     Column {
-        GeeFlowToggleListItem(
-            title = "Toggle List Item",
-            subtitle = "Subtitle describing the toggle option.",
-            checked = true,
-            onCheckedChanged = {},
-        )
-        GeeFlowToggleListItem(
-            title = "Brew Boiler",
-            subtitle = "Current temperature: 93.0°",
-            checked = true,
-            value = "93.0°",
-            items = (85..100).map { "$it.0" },
-            unit = "°",
-            onCheckedChanged = {},
-            onValueConfirmed = {},
+        GeeFlowValueListItem(
+            title = "Value List Item",
+            subtitle = "Subtitle describing the value option.",
+            value = "10 sec",
+            onValueClick = {},
         )
     }
 }

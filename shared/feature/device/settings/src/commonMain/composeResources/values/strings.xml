@@ -12,6 +12,9 @@
 
     <!-- Device Settings Maintenance -->
     <string name="device_settings_maintenance_cleaning">Cleaning</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Flush duration per cycle</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Pause duration between cycles</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Number of cleaning repetitions</string>
     <string name="device_settings_maintenance_alarms">Alarms</string>
     <string name="device_settings_maintenance_water_alarm">Water shortage alarm</string>
     <string name="device_settings_maintenance_water_alarm_description">Low water level warning</string>
@@ -33,4 +36,6 @@
     <string name="device_settings_brewing_paddle">Paddle long press (M)</string>
     <string name="device_settings_brewing_pulse_heating">Pulse heating</string>
     <string name="device_settings_brewing_pulse_heating_description">Longer heating time but lower power consumption</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Target pressure</string>
+    <string name="device_settings_brewing_paddle_time_description">Target duration</string>
 </resources>
