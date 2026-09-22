@@ -33,7 +33,7 @@
 
     <!-- Device Settings Brewing -->
     <string name="device_settings_brewing_boiler">Boiler</string>
-    <string name="device_settings_brewing_paddle">Paddle long press (M)</string>
+    <string name="device_settings_brewing_paddle">Paddle long press</string>
     <string name="device_settings_brewing_pulse_heating">Pulse heating</string>
     <string name="device_settings_brewing_pulse_heating_description">Longer heating time but lower power consumption</string>
     <string name="device_settings_brewing_paddle_pressure_description">Target pressure</string>

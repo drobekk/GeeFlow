@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.settings.brewing
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -22,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
@@ -46,6 +51,9 @@ import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
+import app.geeflow.ui.icons.Flush
+import app.geeflow.ui.icons.GeeFlowIcon
+import app.geeflow.ui.isWidthLarge
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
@@ -137,7 +145,7 @@ private fun AdaptiveContent(
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier) {
-        if (maxWidth >= 640.dp) {
+        if (isWidthLarge()) {
             Row(
                 Modifier.padding(
                     horizontal = GeeFlowTheme.spacing.contentHorizontal,
@@ -230,10 +238,25 @@ private fun PaddleSection(
     paddle: Paddle,
     onEvent: (BrewingSettingsEvent) -> Unit,
 ) {
-    SectionTitle(
-        text = stringResource(Res.string.device_settings_brewing_paddle),
+    Row(
         modifier = Modifier.fillMaxWidth(),
-    )
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionTitle(
+            text = stringResource(Res.string.device_settings_brewing_paddle),
+            modifier = Modifier.weight(1f, fill = false),
+        )
+        HorizontalSpacer(8.dp)
+        Icon(
+            imageVector = GeeFlowIcon.Flush,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
+                .padding(6.dp)
+                .size(20.dp),
+        )
+    }
     VerticalSpacer(16.dp)
     GeeFlowToggleListItem(
         title = stringResource(CoreRes.string.common_pressure),

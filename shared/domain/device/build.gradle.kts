@@ -16,6 +16,7 @@ kotlin {
             api(projects.shared.core.domain)
             implementation(projects.shared.data.user)
             implementation(libs.kermit)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
         }

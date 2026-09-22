@@ -4,6 +4,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.DialogSceneStrategy
+import app.geeflow.data.device.model.CleaningType
 import app.geeflow.navigation.NavFeature
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.destination.DeviceDashboard
@@ -35,7 +36,7 @@ internal typealias Main = DeviceDashboard
 internal data class QuickSettings(val deviceId: Long) : NavKey
 
 @Serializable
-internal data class QuickMaintenance(val deviceId: Long) : NavKey
+internal data class QuickMaintenance(val deviceId: Long, val type: CleaningType = CleaningType.Daily) : NavKey
 
 @Serializable
 internal data class ProfileEditor(val deviceId: Long, val profileId: Long? = null) : NavKey

@@ -174,7 +174,7 @@ private fun SettingsItem(
             Text(
                 text = item.description,
                 style = MaterialTheme.typography.labelMedium,
-                color = contentColor,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         if (item is Item.Profile) {

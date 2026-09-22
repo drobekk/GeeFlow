@@ -2,9 +2,11 @@ package app.geeflow.presentation.feature.device.dashboard.main
 
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.PhaseTransition
+import app.geeflow.data.device.model.CleaningType
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
 sealed interface DeviceDashboardEvent {
+    data class MaintenanceReminderOpened(val type: CleaningType) : DeviceDashboardEvent
     data class ToggleChartVisibility(val type: DeviceDashboardViewState.DashboardChartType) : DeviceDashboardEvent
     data object UserClicked : DeviceDashboardEvent
     data object DeviceClicked : DeviceDashboardEvent

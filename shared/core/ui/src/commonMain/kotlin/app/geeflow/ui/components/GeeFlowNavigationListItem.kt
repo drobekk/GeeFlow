@@ -24,13 +24,14 @@ fun GeeFlowNavigationListItem(
         vertical = 16.dp,
     ),
     modifier: Modifier = Modifier,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     GeeFlowListItem(
         title = title,
         subtitle = subtitle,
         modifier = modifier,
         contentPadding = contentPadding,
-        trailingContent = {
+        trailingContent = trailingContent ?: {
             val tint = if (enabled) LocalContentColor.current else LocalContentColor.current.disabled()
             Icon(
                 imageVector = Icons.Default.ChevronRight,

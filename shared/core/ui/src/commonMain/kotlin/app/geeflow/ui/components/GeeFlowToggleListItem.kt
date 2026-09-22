@@ -1,10 +1,10 @@
 package app.geeflow.ui.components
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,6 +92,7 @@ fun GeeFlowToggleListItem(
     valueRange: ClosedFloatingPointRange<Float>? = null,
     unit: String = "",
     allowDecimal: Boolean? = null,
+    inputTitle: String? = null,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
         vertical = 16.dp,
@@ -137,12 +138,16 @@ fun GeeFlowToggleListItem(
         GeeFlowDialog(
             onDismissRequest = { showInputPad = false },
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .padding(24.dp)
-                    .wrapContentWidth(),
-                contentAlignment = Alignment.Center,
+                    .width(IntrinsicSize.Min),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                inputTitle?.let {
+                    GeeFlowDialogTopBar(title = it, onCloseClick = { showInputPad = false })
+                    VerticalSpacer(16.dp)
+                }
                 GeeFlowInputPad(
                     valueRange = effectiveRange,
                     unit = unit,

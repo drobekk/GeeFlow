@@ -67,4 +67,23 @@
     <string name="agreement_terms">Terms &amp; Conditions</string>
     <string name="agreement_and"> and </string>
     <string name="agreement_privacy">Privacy Policy</string>
+    <string name="maintenance_daily">Daily Cleaning</string>
+    <string name="maintenance_deep">Deep Cleaning</string>
+    <string name="maintenance_daily_description">Routine rinsing to help clear coffee residue from the brew group.</string>
+    <string name="maintenance_deep_description">A thorough cleaning with an espresso machine cleaning agent to remove coffee oils and buildup. Follow your machine and cleaner instructions.</string>
+    <string name="maintenance_reminder">Reminder</string>
+    <string name="maintenance_reminder_description">Notify when cleaning is due</string>
+    <string name="maintenance_reminder_never">Never</string>
+    <string name="maintenance_reminder_daily">Daily</string>
+    <plurals name="maintenance_reminder_interval">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="maintenance_reminder_enabled">Enable reminder</string>
+    <string name="maintenance_reminder_days">Repeat every</string>
+    <string name="maintenance_days">days</string>
+    <string name="maintenance_reminder_open">Maintenance</string>
+    <string name="maintenance_reminder_skip">Skip</string>
+    <string name="maintenance_reminder_due">Time for %1$s</string>
+    <string name="maintenance_reminder_both">Deep Cleaning also counts towards your Daily Cleaning reminder.</string>
 </resources>

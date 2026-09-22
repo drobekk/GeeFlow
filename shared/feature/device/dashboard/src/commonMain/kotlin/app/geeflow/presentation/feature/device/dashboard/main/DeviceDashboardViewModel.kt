@@ -140,6 +140,9 @@ internal class DeviceDashboardViewModel(
             navigate(To(DeviceSettings(args.deviceId, EntryPoint.Connectivity)))
         }
 
+        is DeviceDashboardEvent.MaintenanceReminderOpened -> withDeviceConnected {
+            navigate(To(QuickMaintenance(args.deviceId, event.type)))
+        }
         is CleaningClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
         is BrewDescriptionClicked -> modify {
             copy(dialog = Dialog.BrewDescription(brew.name, brew.description))

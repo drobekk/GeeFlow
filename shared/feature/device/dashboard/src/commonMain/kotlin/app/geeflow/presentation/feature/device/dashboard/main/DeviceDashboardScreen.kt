@@ -37,10 +37,12 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
+import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import app.geeflow.presentation.feature.device.dashboard.components.TopBar
+import app.geeflow.presentation.feature.device.dashboard.maintenance.MaintenanceReminderHost
 import app.geeflow.presentation.feature.device.dashboard.model.chartModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileList
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent
@@ -57,7 +59,10 @@ import app.geeflow.ui.modifier.geeFlowInsetsPadding
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.disabled
+import geeflow.shared.core.ui.generated.resources.Res
+import geeflow.shared.core.ui.generated.resources.error_generic
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 
 @Composable
 internal fun DeviceDashboardScreen(
@@ -124,6 +129,13 @@ internal fun DeviceDashboardScreen(
             }
         }
     }
+
+    MaintenanceReminderHost(
+        deviceId = viewState.device.id,
+        blocked = viewState.dialog != null || navigator.getCurrentDestination() != DeviceDashboard(viewState.device.id),
+        onOpen = { viewModel.handleEvent(DeviceDashboardEvent.MaintenanceReminderOpened(it)) },
+        onError = { coroutineScope.launch { snackbarState.showSnackbar(getString(Res.string.error_generic)) } },
+    )
 
     viewState.dialog?.let {
         DeviceDashboardDialog(

@@ -38,12 +38,12 @@ fun GeeFlowValueListItem(
     title: String,
     subtitle: String,
     value: String,
-    onValueClick: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
-        vertical = 16.dp,
+        vertical = 8.dp,
     ),
 ) {
     val shape = MaterialTheme.shapes.large
@@ -52,7 +52,8 @@ fun GeeFlowValueListItem(
     GeeFlowListItem(
         title = title,
         subtitle = subtitle,
-        modifier = modifier,
+        modifier = modifier
+            .clickable(enabled = enabled, onClick = onClick),
         contentPadding = contentPadding,
         trailingContent = {
             Box(
@@ -61,7 +62,6 @@ fun GeeFlowValueListItem(
                     .clip(shape)
                     .background(primaryColor)
                     .border(2.dp, primaryColor, shape)
-                    .clickable(enabled = enabled, onClick = onValueClick)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .alpha(if (enabled) 1f else DisabledAlpha),
                 contentAlignment = Alignment.Center,
@@ -94,7 +94,7 @@ fun GeeFlowValueListItem(
     allowDecimal: Boolean? = null,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
-        vertical = 16.dp,
+        vertical = 8.dp,
     ),
 ) {
     var showInputPad by remember { mutableStateOf(false) }
@@ -117,7 +117,7 @@ fun GeeFlowValueListItem(
         title = title,
         subtitle = subtitle,
         value = value,
-        onValueClick = {
+        onClick = {
             if (enabled) {
                 showInputPad = true
             }
@@ -172,7 +172,7 @@ private fun Preview() {
             title = "Value List Item",
             subtitle = "Subtitle describing the value option.",
             value = "10 sec",
-            onValueClick = {},
+            onClick = {},
         )
     }
 }

@@ -2,6 +2,7 @@ package app.geeflow.presentation.feature.device.list
 
 import androidx.lifecycle.viewModelScope
 import app.geeflow.core.presentation.BaseViewModel
+import app.geeflow.core.presentation.launchCatching
 import app.geeflow.data.device.model.DeviceConnection
 import app.geeflow.domain.device.usecase.DeleteDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectCurrentDeviceUseCase
@@ -68,7 +69,7 @@ internal class DeviceListViewModel(
             navigate(NavEvent.To(DeviceDashboard(event.device.id)))
         }
 
-        is DeviceRemoveClicked -> {
+        is DeviceRemoveClicked -> launchCatching {
             deleteDeviceUseCase(event.device.id)
             navigate(NavEvent.Remove(DeviceDashboard(event.device.id)))
         }
