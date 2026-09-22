@@ -1,4 +1,11 @@
 [![CI](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/v/release/drobekk/GeeFlow?label=version)](https://github.com/drobekk/GeeFlow/releases/latest)
+[![Kotlin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdrobekk%2FGeeFlow%2Fmain%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin&label=kotlin&color=blue)](./gradle/libs.versions.toml)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](./LICENSE)
+
+![Android](https://img.shields.io/badge/platform-android-brightgreen.svg?style=flat)
+![iOS](https://img.shields.io/badge/platform-ios-lightgrey.svg?style=flat)
+![JVM](https://img.shields.io/badge/platform-jvm-orange.svg?style=flat)
 
 <p align="center">
   <img src="./docs/Banner.png" alt="GeeFlow Banner" width="100%">
