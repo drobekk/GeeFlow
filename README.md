@@ -30,17 +30,17 @@ A Kotlin Multiplatform app for controlling and monitoring espresso machines over
 ### Tablet
 
 <p align="center">
-  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-1.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-1.png" width="220" alt="Dashboard on tablet" /></a>
-  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-2.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-2.png" width="220" alt="Profile Editor on tablet" /></a>
-  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-3.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-3.png" width="220" alt="Step Editor on tablet" /></a>
+  <a href="https://drobekk.github.io/GeeFlow/tablet-1.png"><img src="https://drobekk.github.io/GeeFlow/tablet-1.png" width="220" alt="Dashboard on tablet" /></a>
+  <a href="https://drobekk.github.io/GeeFlow/tablet-2.png"><img src="https://drobekk.github.io/GeeFlow/tablet-2.png" width="220" alt="Profile Editor on tablet" /></a>
+  <a href="https://drobekk.github.io/GeeFlow/tablet-3.png"><img src="https://drobekk.github.io/GeeFlow/tablet-3.png" width="220" alt="Step Editor on tablet" /></a>
 </p>
 
 ### Phone
 
 <p align="center">
-  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-1.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-1.png" width="140" alt="Dashboard on phone" /></a>
-  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-2.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-2.png" width="140" alt="Profile Editor on phone" /></a>
-  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-3.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-3.png" width="140" alt="Step Editor on phone" /></a>
+  <a href="https://drobekk.github.io/GeeFlow/phone-1.png"><img src="https://drobekk.github.io/GeeFlow/phone-1.png" width="140" alt="Dashboard on phone" /></a>
+  <a href="https://drobekk.github.io/GeeFlow/phone-2.png"><img src="https://drobekk.github.io/GeeFlow/phone-2.png" width="140" alt="Profile Editor on phone" /></a>
+  <a href="https://drobekk.github.io/GeeFlow/phone-3.png"><img src="https://drobekk.github.io/GeeFlow/phone-3.png" width="140" alt="Step Editor on phone" /></a>
 </p>
 
 ## Supported Hardware

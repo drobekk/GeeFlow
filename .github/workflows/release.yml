@@ -219,18 +219,38 @@ jobs:
       - name: Render Compose previews
         run: .\gradlew.bat :shared:feature:device:dashboard:generateStoreScreenshots
 
-      - name: Upload screenshot artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: store-screenshots
-          path: |
-            docs/screenshots/phone-*.png
-            docs/screenshots/tablet-*.png
+      - name: Prepare screenshots for GitHub Pages
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build/store-screenshots | Out-Null
+          @(
+            'phone-1.png', 'phone-2.png', 'phone-3.png',
+            'tablet-1.png', 'tablet-2.png', 'tablet-3.png'
+          ) | ForEach-Object {
+            Copy-Item -LiteralPath "docs/screenshots/$_" -Destination build/store-screenshots
+          }
 
-      - name: Upload screenshots to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
-          files: |
-            docs/screenshots/phone-*.png
-            docs/screenshots/tablet-*.png
+          path: build/store-screenshots
+
+  publish-screenshots:
+    name: Publish screenshots to GitHub Pages
+    needs: store-screenshots
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: store-screenshots
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy screenshots
+        id: deployment
+        uses: actions/deploy-pages@v4
