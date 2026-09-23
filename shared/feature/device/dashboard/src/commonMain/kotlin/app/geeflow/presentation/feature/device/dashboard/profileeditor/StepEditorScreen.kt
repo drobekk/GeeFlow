@@ -1,5 +1,12 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +26,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -27,6 +35,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +85,9 @@ import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowSlider
 import app.geeflow.ui.components.VerticalSpacer
+import app.geeflow.ui.icons.GeeFlowIcon
+import app.geeflow.ui.icons.LessThanOrEqual
+import app.geeflow.ui.icons.MoreThanOrEqual
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
@@ -292,8 +304,15 @@ private fun ControlPane(
                     onClick = { onEvent(StepEditorEvent.TypeChanged(type)) },
                     shape = SegmentedButtonDefaults.itemShape(index, types.size, baseShape = MaterialTheme.shapes.large),
                     colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = MaterialTheme.colorScheme.primary,
-                        activeContentColor = MaterialTheme.colorScheme.onPrimary,
+                        activeContainerColor = when (type) {
+                            StepType.Pressure, StepType.Flow -> type.color()
+                            StepType.Wait -> MaterialTheme.colorScheme.primary
+                        },
+                        activeContentColor = when (type) {
+                            StepType.Pressure -> MaterialTheme.colorScheme.onError
+                            StepType.Flow -> MaterialTheme.colorScheme.surface
+                            StepType.Wait -> MaterialTheme.colorScheme.onPrimary
+                        },
                         inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                         activeBorderColor = Color.Transparent,
                         inactiveBorderColor = Color.Transparent,
@@ -337,6 +356,7 @@ private fun ControlPane(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
             )
         }
+        VerticalSpacer(16.dp)
     }
 }
 
@@ -358,23 +378,25 @@ private fun RampPane(
             .background(MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
         RampSelector(state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
-        if (state.rampStyle != RampStyle.Instant) {
-            EditorField(
-                value = state.rampSeconds,
-                label = stringResource(Res.string.experimental_ramp_duration),
-                modifier = Modifier.padding(horizontal = 12.dp),
-                onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.RampDuration)) },
-            )
-            VerticalSpacer(12.dp)
-            EditorChoice(
-                title = stringResource(resource = Res.string.experimental_start_from),
-                values = RampStart.entries,
-                selected = state.rampStart,
-                modifier = Modifier.padding(horizontal = 12.dp),
-                label = { enumLabel(it) },
-                onSelect = { onEvent(StepEditorEvent.RampStartChanged(it)) },
-            )
-            VerticalSpacer(12.dp)
+        AnimatedVisibility(visible = state.rampStyle != RampStyle.Instant) {
+            Column {
+                EditorField(
+                    value = state.rampSeconds,
+                    label = stringResource(Res.string.experimental_ramp_duration),
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.RampDuration)) },
+                )
+                VerticalSpacer(12.dp)
+                EditorChoice(
+                    title = stringResource(resource = Res.string.experimental_start_from),
+                    values = RampStart.entries,
+                    selected = state.rampStart,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    label = { enumLabel(it) },
+                    onSelect = { onEvent(StepEditorEvent.RampStartChanged(it)) },
+                )
+                VerticalSpacer(12.dp)
+            }
         }
     }
 }
@@ -384,7 +406,6 @@ private fun LazyListScope.conditionItems(
     onEvent: (StepEditorEvent) -> Unit,
 ) {
     item(key = "time-limit-heading") {
-        VerticalSpacer(24.dp)
         Text(
             text = stringResource(Res.string.step_editor_time_limit),
             style = MaterialTheme.typography.titleLarge,
@@ -397,7 +418,7 @@ private fun LazyListScope.conditionItems(
             condition = condition,
             state = state,
             onEvent = onEvent,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().animateItem(),
         )
         VerticalSpacer(24.dp)
     }
@@ -406,14 +427,21 @@ private fun LazyListScope.conditionItems(
         VerticalSpacer(24.dp)
     }
     items(items = state.conditions.filterNot { it.metric == BrewMetric.PhaseTime }, key = { it.id }) { condition ->
-        ConditionTile(condition = condition, state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
+        ConditionTile(
+            condition = condition,
+            state = state,
+            onEvent = onEvent,
+            modifier = Modifier.fillMaxWidth().animateItem(),
+        )
         VerticalSpacer(16.dp)
     }
     item(key = "add-condition") {
         AddConditionButton(
             onEvent = onEvent,
             enabled = state.availableConditionMetrics.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateItem(),
         )
     }
 }
@@ -539,28 +567,46 @@ private fun ConditionContent(
                 )
             },
         )
-        if (condition.metric in PressureAndFlowMetrics) {
-            FilledTonalButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 12.dp),
-                onClick = {
-                    val comparison = if (condition.comparison == ThresholdComparison.Above) {
-                        ThresholdComparison.Below
-                    } else {
-                        ThresholdComparison.Above
-                    }
-                    onEvent(StepEditorEvent.ConditionChanged(condition.copy(comparison = comparison)))
-                },
-                content = { Text(text = enumLabel(condition.comparison)) },
-            )
-            VerticalSpacer(12.dp)
-        }
         EditorField(
             value = condition.value,
             label = condition.metric.thresholdLabel(),
             modifier = Modifier.padding(horizontal = 12.dp),
-        ) {
-            onEvent(StepEditorEvent.InputClicked(StepInput.Condition(condition.id)))
-        }
+            leading = if (condition.metric in PressureAndFlowMetrics) {
+                {
+                    FilledTonalIconButton(
+                        onClick = {
+                            val comparison = if (condition.comparison == ThresholdComparison.Above) {
+                                ThresholdComparison.Below
+                            } else {
+                                ThresholdComparison.Above
+                            }
+                            onEvent(StepEditorEvent.ConditionChanged(condition.copy(comparison = comparison)))
+                        },
+                        shape = CircleShape,
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        AnimatedContent(
+                            targetState = condition.comparison,
+                            transitionSpec = {
+                                (fadeIn() + scaleIn()).togetherWith(fadeOut() + scaleOut())
+                            },
+                        ) { comparison ->
+                            Icon(
+                                imageVector = when (comparison) {
+                                    ThresholdComparison.Above -> GeeFlowIcon.MoreThanOrEqual
+                                    ThresholdComparison.Below -> GeeFlowIcon.LessThanOrEqual
+                                },
+                                contentDescription = enumLabel(comparison),
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                }
+            } else {
+                null
+            },
+            onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.Condition(condition.id))) },
+        )
         VerticalSpacer(12.dp)
     }
 }

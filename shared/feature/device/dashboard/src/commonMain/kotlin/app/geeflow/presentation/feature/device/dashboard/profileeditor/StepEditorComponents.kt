@@ -1,5 +1,12 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,6 +86,7 @@ internal fun EditorButton(
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     enabled: Boolean = true,
     icon: ImageVector? = null,
+    leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     Button(
@@ -92,9 +100,22 @@ internal fun EditorButton(
             contentColor = MaterialTheme.colorScheme.onSurface,
             disabledContainerColor = containerColor,
             disabledContentColor = MaterialTheme.colorScheme.onSurface,
-        )
+        ),
     ) {
-        if (icon != null) {
+        var lastLeading by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+        if (leading != null) {
+            lastLeading = leading
+        }
+        AnimatedVisibility(
+            visible = leading != null,
+            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start) + scaleIn(),
+            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start) + scaleOut(),
+        ) {
+            Box(modifier = Modifier.padding(end = 12.dp)) {
+                lastLeading?.invoke()
+            }
+        }
+        if (leading == null && icon != null) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
@@ -108,7 +129,19 @@ internal fun EditorButton(
             Text(text = title, style = MaterialTheme.typography.labelSmall)
             Text(text = value, style = MaterialTheme.typography.bodyLarge)
         }
-        trailing?.invoke()
+        var lastTrailing by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+        if (trailing != null) {
+            lastTrailing = trailing
+        }
+        AnimatedVisibility(
+            visible = trailing != null,
+            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.End) + scaleIn(),
+            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.End) + scaleOut(),
+        ) {
+            Box(modifier = Modifier.padding(start = 12.dp)) {
+                lastTrailing?.invoke()
+            }
+        }
     }
 }
 
@@ -117,6 +150,7 @@ internal fun EditorField(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
+    leading: (@Composable () -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     EditorButton(
@@ -124,6 +158,7 @@ internal fun EditorField(
         value = value,
         onClick = onClick,
         modifier = modifier,
+        leading = leading,
     )
 }
 
