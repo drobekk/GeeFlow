@@ -52,6 +52,9 @@ jobs:
   release-android:
     name: Release Android to Play Store (Internal)
     runs-on: ubuntu-latest
+    concurrency:
+      group: play-store-app-geeflow
+      queue: max
     steps:
       - uses: actions/checkout@v4
 
@@ -85,12 +88,12 @@ jobs:
           -Pandroid.injected.signing.key.password=$KEY_PASSWORD
         
       - name: Upload to Play Store (Internal)
-        uses: r0adkll/upload-google-play@v1
+        uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: app.geeflow
           releaseFiles: androidApp/build/outputs/bundle/release/androidApp-release.aab
-          track: internal
+          tracks: internal
           status: completed
 
   release-ios:
