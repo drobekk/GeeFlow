@@ -437,7 +437,7 @@ private fun FinishTargetButton(
     modifier: Modifier = Modifier,
 ) {
     // Only the border carries the target's colour; the icon and labels stay in the normal palette.
-    val borderColor by animateColorAsState(if (selected) type.color() else Color.Transparent)
+    val borderColor by animateColorAsState(if (selected) type.color() else MaterialTheme.colorScheme.outlineVariant)
 
     Surface(
         onClick = onClick,

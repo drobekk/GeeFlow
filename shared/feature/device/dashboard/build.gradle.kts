@@ -27,5 +27,20 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.kotlinx.datetime)
         }
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.materialKolor)
+        }
     }
+}
+
+val screenshotCompilation = kotlin.targets.getByName("jvm").compilations.getByName("main")
+
+tasks.register<JavaExec>("generateStoreScreenshots") {
+    group = "documentation"
+    description = "Render store screenshots from Compose previews."
+    dependsOn(screenshotCompilation.compileTaskProvider)
+    classpath = files(screenshotCompilation.output.allOutputs, screenshotCompilation.runtimeDependencyFiles)
+    mainClass.set("app.geeflow.presentation.feature.device.dashboard.StoreScreenshotGeneratorKt")
+    args(rootProject.layout.projectDirectory.dir("docs/screenshots").asFile.absolutePath)
 }

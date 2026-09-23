@@ -328,17 +328,17 @@ private val StepsColumnWidth = 320.dp
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun Preview() {
+internal fun ProfileEditorPreviewContent() {
     val steps = listOf(
-        Step(id = 0, type = StepType.Flow, timeSec = 5, value = 6f),
-        Step(id = 1, type = StepType.Wait, timeSec = 2, value = 0f),
-        Step(id = 2, type = StepType.Pressure, timeSec = 20, value = 9f),
+        Step(id = 0, type = StepType.Pressure, timeSec = 5, value = 3f),
+        Step(id = 1, type = StepType.Wait, timeSec = 5, value = 0f),
+        Step(id = 2, type = StepType.Pressure, timeSec = 30, value = 6f),
     )
     ProfileEditorContent(
         viewState = ProfileEditorViewState(
-            profileName = "Zuppa",
+            profileName = "Preinfusion",
             steps = steps,
-            finishTarget = FinishTarget(type = FinishTargetType.Weight, weight = 60f),
+            finishTarget = FinishTarget(type = FinishTargetType.Weight, weight = 36f),
             targetData = steps.map { it.toDomain() }.toTargetData(),
         ),
         snackbarState = remember { SnackbarHostState() },

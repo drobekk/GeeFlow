@@ -63,10 +63,15 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.ConditionOperator
+import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.PhaseRamp
+import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStart
 import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.brew.model.ThresholdComparison
+import app.geeflow.data.device.model.NativeProfilingCapabilities
 import app.geeflow.data.device.model.ProfilingCapabilities
+import app.geeflow.data.device.model.TargetRange
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowSlider
@@ -346,20 +351,31 @@ private fun RampPane(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     VerticalSpacer(16.dp)
-    RampSelector(state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
-    if (state.rampStyle != RampStyle.Instant) {
-        VerticalSpacer(12.dp)
-        EditorField(value = state.rampSeconds, label = stringResource(Res.string.experimental_ramp_duration)) {
-            onEvent(StepEditorEvent.InputClicked(StepInput.RampDuration))
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        RampSelector(state = state, onEvent = onEvent, modifier = Modifier.fillMaxWidth())
+        if (state.rampStyle != RampStyle.Instant) {
+            EditorField(
+                value = state.rampSeconds,
+                label = stringResource(Res.string.experimental_ramp_duration),
+                modifier = Modifier.padding(horizontal = 12.dp),
+                onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.RampDuration)) },
+            )
+            VerticalSpacer(12.dp)
+            EditorChoice(
+                title = stringResource(resource = Res.string.experimental_start_from),
+                values = RampStart.entries,
+                selected = state.rampStart,
+                modifier = Modifier.padding(horizontal = 12.dp),
+                label = { enumLabel(it) },
+                onSelect = { onEvent(StepEditorEvent.RampStartChanged(it)) },
+            )
+            VerticalSpacer(12.dp)
         }
-        VerticalSpacer(12.dp)
-        EditorChoice(
-            title = stringResource(resource = Res.string.experimental_start_from),
-            values = RampStart.entries,
-            selected = state.rampStart,
-            label = { enumLabel(it) },
-            onSelect = { onEvent(StepEditorEvent.RampStartChanged(it)) },
-        )
     }
 }
 
@@ -497,10 +513,7 @@ private fun ConditionContent(
     onEvent: (StepEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+    Column(modifier = modifier) {
         EditorChoice(
             title = stringResource(Res.string.experimental_measurement),
             values = if (condition.metric == BrewMetric.PhaseTime) {
@@ -510,6 +523,7 @@ private fun ConditionContent(
             },
             selected = condition.metric,
             modifier = Modifier.fillMaxWidth(),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             label = { it.conditionLabel() },
             icon = { it.icon() },
             experimental = { state.conditionExperimental(it) },
@@ -527,7 +541,7 @@ private fun ConditionContent(
         )
         if (condition.metric in PressureAndFlowMetrics) {
             FilledTonalButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 12.dp),
                 onClick = {
                     val comparison = if (condition.comparison == ThresholdComparison.Above) {
                         ThresholdComparison.Below
@@ -536,11 +550,18 @@ private fun ConditionContent(
                     }
                     onEvent(StepEditorEvent.ConditionChanged(condition.copy(comparison = comparison)))
                 },
-            ) { Text(text = enumLabel(condition.comparison)) }
+                content = { Text(text = enumLabel(condition.comparison)) },
+            )
+            VerticalSpacer(12.dp)
         }
-        EditorField(value = condition.value, label = condition.metric.thresholdLabel()) {
+        EditorField(
+            value = condition.value,
+            label = condition.metric.thresholdLabel(),
+            modifier = Modifier.padding(horizontal = 12.dp),
+        ) {
             onEvent(StepEditorEvent.InputClicked(StepInput.Condition(condition.id)))
         }
+        VerticalSpacer(12.dp)
     }
 }
 
@@ -574,17 +595,34 @@ private fun AddConditionButton(
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun Preview() {
+internal fun StepEditorPreviewContent() {
     StepEditorContent(
         state = StepEditorViewState(
             source = ProfileEditorViewState.Step(
                 id = 1,
-                type = StepType.Pressure,
-                timeSec = 25,
-                value = 9f,
+                type = StepType.Flow,
+                timeSec = 10,
+                value = 4f,
                 phaseName = "Extraction",
+                ramp = PhaseRamp(style = RampStyle.EaseIn, durationMillis = 2000),
+                exitConditions = listOf(
+                    ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f),
+                    ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.Above, 40f),
+                ),
             ),
-            capabilities = ProfilingCapabilities(),
+            capabilities = ProfilingCapabilities(
+                native = NativeProfilingCapabilities(
+                    pressureLocations = setOf(PressureLocation.Pump),
+                    flow = true,
+                    pause = true,
+                    ramps = setOf(RampStyle.Instant),
+                    exitMetrics = setOf(BrewMetric.PhaseTime),
+                ),
+                livePressure = mapOf(PressureLocation.Pump to TargetRange(0f, 12f, 0.1f)),
+                liveFlow = TargetRange(0f, 8f, 0.1f),
+                livePause = true,
+                telemetry = setOf(BrewMetric.CupWeight, BrewMetric.PumpFlow),
+            ),
             pressureRange = 0f..12f,
             flowRange = 0f..8f,
         ),

@@ -66,6 +66,7 @@ fun GeeFlowSlider(
                     Modifier.waveBackground(
                         progress = fraction,
                         color = fillColor,
+                        amplitude = (1.2).dp,
                         orientation = if (vertical) WaveOrientation.Horizontal else WaveOrientation.Vertical,
                     )
                 } else {

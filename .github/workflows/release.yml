@@ -199,3 +199,38 @@ jobs:
           api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           release-notes: ${{ env.RELEASE_NOTES }}
+
+  store-screenshots:
+    name: Generate store screenshots
+    needs: [release-desktop, release-android, release-ios]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Render Compose previews
+        run: .\gradlew.bat :shared:feature:device:dashboard:generateStoreScreenshots
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-screenshots
+          path: |
+            docs/screenshots/phone-*.png
+            docs/screenshots/tablet-*.png
+
+      - name: Upload screenshots to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            docs/screenshots/phone-*.png
+            docs/screenshots/tablet-*.png

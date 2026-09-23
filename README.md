@@ -1,4 +1,4 @@
-[![CI](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/drobekk/GeeFlow/actions/workflows/ci.yml)
+[![Project Health Checks](https://github.com/drobekk/GeeFlow/actions/workflows/project-health.yml/badge.svg)](https://github.com/drobekk/GeeFlow/actions/workflows/project-health.yml)
 [![Version](https://img.shields.io/github/v/release/drobekk/GeeFlow?label=version)](https://github.com/drobekk/GeeFlow/releases/latest)
 [![Kotlin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdrobekk%2FGeeFlow%2Fmain%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin&label=kotlin&color=blue)](./gradle/libs.versions.toml)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](./LICENSE)
@@ -27,15 +27,20 @@ A Kotlin Multiplatform app for controlling and monitoring espresso machines over
 
 ## Screenshots
 
+### Tablet
+
 <p align="center">
-  <a href="./docs/1.png"><img src="./docs/1.png" width="220" alt="Dashboard" /></a>
-  <a href="./docs/2.png"><img src="./docs/2.png" width="220" alt="Profile Editor" /></a>
-  <a href="./docs/3.png"><img src="./docs/3.png" width="220" alt="Step Editor" /></a>
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-1.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-1.png" width="220" alt="Dashboard on tablet" /></a>
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-2.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-2.png" width="220" alt="Profile Editor on tablet" /></a>
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-3.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/tablet-3.png" width="220" alt="Step Editor on tablet" /></a>
 </p>
+
+### Phone
+
 <p align="center">
-  <a href="./docs/5.png"><img src="./docs/5.png" width="220" alt="Device Settings" /></a>
-  <a href="./docs/6.png"><img src="./docs/6.png" width="220" alt="User Preferences" /></a>
-  <a href="./docs/7.png"><img src="./docs/7.png" width="220" alt="Quick Settings" /></a>
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-1.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-1.png" width="140" alt="Dashboard on phone" /></a>
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-2.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-2.png" width="140" alt="Profile Editor on phone" /></a>
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-3.png"><img src="https://github.com/drobekk/GeeFlow/releases/latest/download/phone-3.png" width="140" alt="Step Editor on phone" /></a>
 </p>
 
 ## Supported Hardware

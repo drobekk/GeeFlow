@@ -20,7 +20,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -76,23 +76,23 @@ internal fun EditorButton(
     value: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     enabled: Boolean = true,
     icon: ImageVector? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    OutlinedButton(
+    Button(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         contentPadding = PaddingValues(12.dp),
         enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
             contentColor = MaterialTheme.colorScheme.onSurface,
-            disabledContainerColor = MaterialTheme.colorScheme.surface,
+            disabledContainerColor = containerColor,
             disabledContentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        border = ButtonDefaults.outlinedButtonBorder(enabled = true),
+        )
     ) {
         if (icon != null) {
             Icon(
@@ -133,6 +133,7 @@ internal fun <T> EditorChoice(
     values: List<T>,
     selected: T,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     label: @Composable (T) -> String,
     icon: ((T) -> ImageVector)? = null,
     experimental: (T) -> Boolean = { false },
@@ -147,6 +148,7 @@ internal fun <T> EditorChoice(
             value = label(selected),
             onClick = { if (isInteractive) expanded = true },
             enabled = isInteractive,
+            containerColor = containerColor,
             icon = icon?.invoke(selected),
             trailing = if (experimental(selected)) {
                 { ExperimentButton(onClick = onExplain, modifier = Modifier.size(40.dp)) }
@@ -288,7 +290,7 @@ internal fun RampSelector(
             onClick = { expanded = true },
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surfaceContainer,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             Row(
                 modifier = Modifier.padding(12.dp),

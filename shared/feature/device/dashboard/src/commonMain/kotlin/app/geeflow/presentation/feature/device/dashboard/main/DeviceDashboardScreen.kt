@@ -274,7 +274,7 @@ private fun CompactDashboard(
                 onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 24.dp, end = 24.dp),
+                    .padding(start = 24.dp, top = 16.dp, end = 24.dp),
             )
         },
         bottomBar = {
@@ -286,7 +286,7 @@ private fun CompactDashboard(
                 onEndButtonClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp),
+                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 12.dp),
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarState, modifier = Modifier.padding(horizontal = 16.dp)) },
@@ -386,7 +386,7 @@ private const val SideColumnWeight = 0.3f
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable
 @GeeFlowScreenPreview
-private fun Preview() {
+internal fun DeviceDashboardPreviewContent() {
     val state = remember { mutableStateOf(getMockDeviceDashboardViewState()) }
     val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
     DeviceDashboardContent(
