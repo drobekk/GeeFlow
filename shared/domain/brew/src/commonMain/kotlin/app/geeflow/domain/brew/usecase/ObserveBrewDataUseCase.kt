@@ -27,15 +27,21 @@ class ObserveBrewDataUseCase(
 ) {
     @Suppress("CyclomaticComplexMethod")
     operator fun invoke(deviceId: Long): Flow<BrewSession> {
-        val deviceState = provider.getController(deviceId).deviceState.combine(coordinator.state) { state, run ->
+        val telemetry = provider.getController(deviceId).deviceState
+        val deviceState = telemetry.combine(coordinator.state) { state, run ->
             if (run.active && run.deviceId == deviceId) state.copy(brewStatus = DeviceState.BrewStatus.Profile) else state
         }
         val sessionFlow = flow {
             val acc = Accumulator()
             deviceState.collect { state ->
+                val finalState = if (acc.isBrewing && acc.trace == null) {
+                    telemetry.awaitFinalBrewTelemetry(stopped = state, previousTelemetryTime = acc.lastTelemetryTime)
+                } else {
+                    state
+                }
                 accumulateBrewData(
                     acc = acc,
-                    state = state,
+                    state = finalState,
                     trace = coordinator.state.value.takeIf { it.active && it.deviceId == deviceId }?.trace,
                 )
                 val run = coordinator.state.value
@@ -105,6 +111,7 @@ class ObserveBrewDataUseCase(
             }
             acc.lastTick = currentTick
             acc.lastPoint = currentPoint
+            acc.lastTelemetryTime = state.telemetryTime
         } else {
             if (acc.isBrewing && status == DeviceState.BrewStatus.Idle) {
                 acc.lastPoint?.let { previous ->
@@ -136,6 +143,7 @@ class ObserveBrewDataUseCase(
         var timeInSeconds: Int = 0
         var lastTick: Int = -1
         var lastPoint: BrewDataPoint? = null
+        var lastTelemetryTime: Instant? = null
 
         fun reset(now: Instant, state: DeviceState) {
             trace = null
@@ -151,6 +159,7 @@ class ObserveBrewDataUseCase(
             this.status = status
             lastTick = -1
             lastPoint = null
+            lastTelemetryTime = null
         }
     }
 }

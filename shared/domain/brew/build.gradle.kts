@@ -10,6 +10,9 @@ koinCompiler {
 
 kotlin {
     sourceSets {
+        commonTest.dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+        }
         commonMain.dependencies {
             api(projects.shared.core.domain)
             api(projects.shared.data.brew)

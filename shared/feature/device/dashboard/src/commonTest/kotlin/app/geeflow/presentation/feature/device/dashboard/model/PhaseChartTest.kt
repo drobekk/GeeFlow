@@ -125,6 +125,41 @@ class PhaseChartTest {
     }
 
     @Test
+    fun `native final weight highlights the last step at the recorded end time`() {
+        val phase = BrewPhase(id = "first", control = PhaseControl.Pressure(6f), maximumDurationMillis = 5000)
+        val program = BrewProgram.Phases(
+            listOf(
+                phase,
+                phase.copy(id = "second", maximumDurationMillis = 2000),
+                phase.copy(id = "third", maximumDurationMillis = 13000),
+            ),
+        )
+        val point = ChartData(pressure = 7f, weight = 59f, weightPerSecond = 6f, volume = 88f, volumePerSecond = 6f)
+        val before = program.nativeChartBoundaries(mapOf(17f to point), Condition.Weight(60f))
+        assertNull(before.last().matchedConditions.singleOrNull())
+        val after = program.nativeChartBoundaries(mapOf(17f to point.copy(weight = 60f)), Condition.Weight(60f))
+        assertEquals(listOf(5.0, 7.0, 17.0), after.map { it.seconds })
+        assertEquals(3, after.last().stepNumber)
+        assertEquals(BrewMetric.CupWeight, after.last().matchedConditions.single().metric)
+    }
+
+    @Test
+    fun `native volume completion after the planned duration moves and highlights the final marker`() {
+        val program = BrewProgram.Phases(
+            listOf(BrewPhase(id = "first", control = PhaseControl.Pressure(9f), maximumDurationMillis = 30000)),
+        )
+        val point = ChartData(pressure = 9f, weight = 86f, weightPerSecond = 3f, volume = 93.7f, volumePerSecond = 3f)
+        val before = program.nativeChartBoundaries(mapOf(30f to point), Condition.Volume(100f))
+        assertNull(before.single().matchedConditions.singleOrNull())
+        val after = program.nativeChartBoundaries(
+            mapOf(30f to point, 32f to point.copy(volume = 100f)),
+            Condition.Volume(100f),
+        )
+        assertEquals(32.0, after.single().seconds)
+        assertEquals(BrewMetric.PumpedVolume, after.single().matchedConditions.single().metric)
+    }
+
+    @Test
     fun `native weight target stays unhighlighted when stopped below target`() {
         val program = BrewProgram.Phases(
             listOf(BrewPhase(id = "first", control = PhaseControl.Pressure(3f), maximumDurationMillis = 10000)),

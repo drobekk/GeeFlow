@@ -207,6 +207,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                 delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
                 val currentStep = findCurrentStep(profile.steps, elapsedMs / MS_PER_SECOND)
+                    ?: profile.steps.lastOrNull().takeIf { profile.finishCondition != null }
                 if (currentStep == null && recordingPoints == null) {
                     stopProfileBrewing()
                     break
@@ -223,7 +224,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                     val measured = state.withBrewPoint(point = point, elapsedMs = elapsedMs)
                     if (finished) {
                         measured.copy(
-                            statusTime = Clock.System.now(),
+                            statusTime = measured.telemetryTime,
                             brewStatus = DeviceState.BrewStatus.Idle,
                             pressure = 0f,
                             flowRate = 0f,
