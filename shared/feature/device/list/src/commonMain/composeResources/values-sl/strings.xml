@@ -1,0 +1,7 @@
+<resources>
+    <string name="device_list_screen_title">Naprave</string>
+    <string name="device_list_screen_subtitle">Upravljanje aparatov</string>
+    <string name="device_list_screen_add_device">Dodaj napravo</string>
+    <string name="device_list_screen_set_as_default">Nastavi kot privzeto</string>
+    <string name="device_list_screen_empty">Ni še naprav.\nTo pojasnjuje pomanjkanje vrhunskih espressorjev.</string>
+</resources>

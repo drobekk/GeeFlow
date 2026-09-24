@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Добавить устройство</string>
+    <string name="add_device_screen_description">Подключите кофемашину, чтобы начать</string>
+    <string name="add_device_screen_show_nearby">Устройства рядом</string>
+    <string name="add_device_screen_scan_qr">Сканировать QR-код</string>
+    <string name="add_device_screen_no_camera_permission">Нет доступа к камере, разрешите в настройках</string>
+    <string name="add_device_screen_qr_parsing_error">Не удалось прочитать данные устройства</string>
+    <string name="add_device_screen_empty">Устройства не найдены. Включите кофемашину.</string>
+    <string name="add_device_demo">Добавить демо-машину</string>
+    <string name="add_device_warning_title">Предупреждение</string>
+    <string name="add_device_warning_message">Неофициальное стороннее приложение. Использует протокол производителя через реверс-инжиниринг без официальной сертификации.\n\nПрямые команды оборудованию могут вызвать сбои при ошибках прошивки.\n\nПродолжая, вы соглашаетесь:\n• Используете ПО на свой страх и риск.\n• Это может вызвать поломку или аннулировать гарантию.\n• Не оставляйте машину без присмотра под управлением приложения.</string>
+    <string name="add_device_warning_accept">Принимаю риски</string>
+    <string name="add_device_warning_cancel">Отмена</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Користувачі</string>
+    <string name="user_list_screen_subtitle">Оберіть профіль</string>
+    <string name="user_list_screen_empty">Користувачів не знайдено.</string>
+    <string name="user_list_screen_add_profile">Додати профіль</string>
+    <string name="user_list_add_profile_title">Додати профіль</string>
+    <string name="user_list_add_profile_subtitle">Створити новий профіль</string>
+    <string name="user_list_add_profile_name_hint">Ім\'я</string>
+    <string name="user_list_add_profile_save">Зберегти</string>
+</resources>

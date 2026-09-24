@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Nastavenia kávovaru</string>
+    <string name="device_settings_placeholder">Vyberte položku pre zobrazenie detailov</string>
+    <string name="device_settings_subtitle">Nastavenia extrakcie a správa zariadenia</string>
+    <string name="device_settings_brewing">Príprava kávy</string>
+    <string name="device_settings_brewing_description">Parametre bojlera a páky</string>
+    <string name="device_settings_maintenance">Údržba</string>
+    <string name="device_settings_maintenance_description">Čistenie a alarm hladiny vody</string>
+    <string name="device_settings_connectivity">Konektivita</string>
+    <string name="device_settings_connectivity_description">Externé inteligentné príslušenstvo</string>
+    <string name="device_settings_maintenance_cleaning">Čistenie</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Trvanie preplachu v cykle</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Trvanie pauzy medzi cyklami</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Počet opakovaní cyklu</string>
+    <string name="device_settings_maintenance_alarms">Alarmy</string>
+    <string name="device_settings_maintenance_water_alarm">Alarm nedostatku vody</string>
+    <string name="device_settings_maintenance_water_alarm_description">Varovanie pred nízkou hladinou</string>
+    <string name="device_water_alarm_error">Nízka hladina vody. Doplňte nádržku.</string>
+    <string name="device_dashboard_connecting">Pripájanie…</string>
+    <string name="device_settings_connectivity_smart_scale">Inteligentná váha</string>
+    <string name="device_settings_connectivity_smart_scale_description">Automaticky zastaví pri dosiahnutí hmotnosti</string>
+    <string name="device_settings_connectivity_smart_scale_info">Pripojte váhu pre automatické ukončenie pri cieľovej hmotnosti.</string>
+    <string name="device_settings_connectivity_searching">Vyhľadávanie zariadení…</string>
+    <string name="device_settings_connectivity_not_found">Nevidíte svoje zariadenie?</string>
+    <string name="device_settings_connectivity_rescan">Skenovať znova</string>
+    <string name="device_settings_connectivity_scale_help">Stále sa nedarí? Kávovar vypnite a zapnite a skúste znova.</string>
+    <string name="device_settings_brewing_boiler">Bojler</string>
+    <string name="device_settings_brewing_paddle">Dlhé stlačenie páky</string>
+    <string name="device_settings_brewing_pulse_heating">Pulzný ohrev</string>
+    <string name="device_settings_brewing_pulse_heating_description">Dlhší čas ohrevu, nižšia spotreba energie</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Cieľový tlak</string>
+    <string name="device_settings_brewing_paddle_time_description">Cieľový čas</string>
+</resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Keittimen asetukset</string>
+    <string name="device_settings_placeholder">Valitse kohde nähdäksesi tiedot</string>
+    <string name="device_settings_subtitle">Hallitse uuttoasetuksia ja laitetta</string>
+    <string name="device_settings_brewing">Uutto</string>
+    <string name="device_settings_brewing_description">Boilerin parametrit ja vivun toiminnot</string>
+    <string name="device_settings_maintenance">Huolto</string>
+    <string name="device_settings_maintenance_description">Puhdistus ja vesitason hälytys</string>
+    <string name="device_settings_connectivity">Yhteydet</string>
+    <string name="device_settings_connectivity_description">Ulkoiset älylaitteet</string>
+    <string name="device_settings_maintenance_cleaning">Puhdistus</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Huuhtelun kesto syklissä</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Tauon kesto syklien välillä</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Puhdistussyklien määrä</string>
+    <string name="device_settings_maintenance_alarms">Hälytykset</string>
+    <string name="device_settings_maintenance_water_alarm">Vedenpuutehälytys</string>
+    <string name="device_settings_maintenance_water_alarm_description">Varoitus alhaisesta vedenpinnasta</string>
+    <string name="device_water_alarm_error">Vesi vähissä. Täytä vesisäiliö.</string>
+    <string name="device_dashboard_connecting">Yhdistetään…</string>
+    <string name="device_settings_connectivity_smart_scale">Älyvaaka</string>
+    <string name="device_settings_connectivity_smart_scale_description">Pysäyttää uuton automaattisesti tavoitepainossa</string>
+    <string name="device_settings_connectivity_smart_scale_info">Yhdistä älyvaaka katkaistaksesi uuton halutussa painossa.</string>
+    <string name="device_settings_connectivity_searching">Etsitään yhteensopivia laitteita…</string>
+    <string name="device_settings_connectivity_not_found">Etkö löydä laitettasi?</string>
+    <string name="device_settings_connectivity_rescan">Skannaa uudelleen</string>
+    <string name="device_settings_connectivity_scale_help">Yhdistääkö edelleen? Sammuta keitin ja käynnistä uudelleen, yritä sitten yhdistää vaaka.</string>
+    <string name="device_settings_brewing_boiler">Boileri</string>
+    <string name="device_settings_brewing_paddle">Vivun pitkä painallus</string>
+    <string name="device_settings_brewing_pulse_heating">Pulssilämmitys</string>
+    <string name="device_settings_brewing_pulse_heating_description">Pidempi lämpenemisaika, pienempi virrankulutus</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Tavoitepaine</string>
+    <string name="device_settings_brewing_paddle_time_description">Tavoitekesto</string>
+</resources>

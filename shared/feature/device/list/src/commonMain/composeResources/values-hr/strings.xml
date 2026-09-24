@@ -1,0 +1,7 @@
+<resources>
+    <string name="device_list_screen_title">Uređaji</string>
+    <string name="device_list_screen_subtitle">Upravljajte svojim aparatima</string>
+    <string name="device_list_screen_add_device">Dodaj uređaj</string>
+    <string name="device_list_screen_set_as_default">Postavi kao zadano</string>
+    <string name="device_list_screen_empty">Još nema uređaja.\nTo objašnjava nedostatak vrhunskih espressa.</string>
+</resources>

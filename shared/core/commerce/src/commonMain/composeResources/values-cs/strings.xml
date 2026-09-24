@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Líbí se vám aplikace?</string>
+    <string name="tip_button">Koupit kávu</string>
+    <string name="tip_dialog_title">Vyberte šálek</string>
+    <string name="tip_dialog_error">Obchod je nyní nedostupný. Zkuste to prosím později.</string>
+    <string name="tip_dialog_retry">Zkusit znovu</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Rychlá dávka povzbuzení</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Něco k popíjení za zvuku čerpadla</string>
+    <string name="tip_tier_beans">Balíček výběrové kávy</string>
+    <string name="tip_tier_beans_description">Pořádná zrna na dlouhé přípravy</string>
+    <string name="tip_tier_year_of_coffee">Rok kávy</string>
+    <string name="tip_tier_year_of_coffee_description">Mlýnek plný zrn po celých 365 dní</string>
+</resources>

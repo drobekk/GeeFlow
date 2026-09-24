@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Додати пристрій</string>
+    <string name="add_device_screen_description">Під\'єднайте кавомашину, щоб почати</string>
+    <string name="add_device_screen_show_nearby">Пристрої поблизу</string>
+    <string name="add_device_screen_scan_qr">Сканувати QR-код</string>
+    <string name="add_device_screen_no_camera_permission">Немає доступу до камери, надайте в налаштуваннях</string>
+    <string name="add_device_screen_qr_parsing_error">Не вдалося прочитати дані пристрою</string>
+    <string name="add_device_screen_empty">Пристроїв не знайдено. Увімкніть кавомашину.</string>
+    <string name="add_device_demo">Додати демо-машину</string>
+    <string name="add_device_warning_title">Застереження та попередження</string>
+    <string name="add_device_warning_message">Неофіційний сторонній застосунок. Використовує протокол виробника через реверс-інжиніринг без офіційної сертифікації.\n\nПрямі команди обладнанню можуть спричинити збої через помилки в прошивці.\n\nПродовжуючи, ви погоджуєтеся, що:\n• Використовуєте ПЗ на власний ризик.\n• Це може призвести до пошкоджень або анулювання гарантії.\n• Ніколи не залишайте кавомашину без нагляду під керуванням застосунку.</string>
+    <string name="add_device_warning_accept">Приймаю ризики</string>
+    <string name="add_device_warning_cancel">Скасувати</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Пользователи</string>
+    <string name="user_list_screen_subtitle">Выберите профиль</string>
+    <string name="user_list_screen_empty">Пользователи не найдены.</string>
+    <string name="user_list_screen_add_profile">Добавить профиль</string>
+    <string name="user_list_add_profile_title">Добавить профиль</string>
+    <string name="user_list_add_profile_subtitle">Создать новый профиль</string>
+    <string name="user_list_add_profile_name_hint">Имя</string>
+    <string name="user_list_add_profile_save">Сохранить</string>
+</resources>

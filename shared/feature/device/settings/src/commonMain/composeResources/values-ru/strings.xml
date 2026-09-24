@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Настройки кофемашины</string>
+    <string name="device_settings_placeholder">Выберите пункт для просмотра</string>
+    <string name="device_settings_subtitle">Параметры экстракции и устройство</string>
+    <string name="device_settings_brewing">Экстракция</string>
+    <string name="device_settings_brewing_description">Параметры бойлера и рычага</string>
+    <string name="device_settings_maintenance">Обслуживание</string>
+    <string name="device_settings_maintenance_description">Очистка и уровень воды</string>
+    <string name="device_settings_connectivity">Связь</string>
+    <string name="device_settings_connectivity_description">Внешние умные аксессуары</string>
+    <string name="device_settings_maintenance_cleaning">Очистка</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Время пролива за цикл</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Время паузы между циклами</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Количество повторений</string>
+    <string name="device_settings_maintenance_alarms">Оповещения</string>
+    <string name="device_settings_maintenance_water_alarm">Сигнал отсутствия воды</string>
+    <string name="device_settings_maintenance_water_alarm_description">Предупреждение о низком уровне</string>
+    <string name="device_water_alarm_error">Мало воды. Наполните резервуар.</string>
+    <string name="device_dashboard_connecting">Подключение…</string>
+    <string name="device_settings_connectivity_smart_scale">Умные весы</string>
+    <string name="device_settings_connectivity_smart_scale_description">Автостоп при достижении целевого веса</string>
+    <string name="device_settings_connectivity_smart_scale_info">Подключите умные весы для остановки пролива на нужном весе.</string>
+    <string name="device_settings_connectivity_searching">Поиск совместимых устройств…</string>
+    <string name="device_settings_connectivity_not_found">Не видите своё устройство?</string>
+    <string name="device_settings_connectivity_rescan">Искать снова</string>
+    <string name="device_settings_connectivity_scale_help">Всё ещё подключается? Выключите и включите машину, затем повторите.</string>
+    <string name="device_settings_brewing_boiler">Бойлер</string>
+    <string name="device_settings_brewing_paddle">Долгое нажатие рычага</string>
+    <string name="device_settings_brewing_pulse_heating">Импульсный нагрев</string>
+    <string name="device_settings_brewing_pulse_heating_description">Медленнее нагрев, ниже энергопотребление</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Целевое давление</string>
+    <string name="device_settings_brewing_paddle_time_description">Целевое время</string>
+</resources>

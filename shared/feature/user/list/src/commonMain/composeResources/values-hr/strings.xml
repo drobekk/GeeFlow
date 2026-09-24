@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Korisnici</string>
+    <string name="user_list_screen_subtitle">Odaberite korisnički profil</string>
+    <string name="user_list_screen_empty">Nema korisnika.</string>
+    <string name="user_list_screen_add_profile">Dodaj profil</string>
+    <string name="user_list_add_profile_title">Dodaj profil</string>
+    <string name="user_list_add_profile_subtitle">Stvori novi profil</string>
+    <string name="user_list_add_profile_name_hint">Ime</string>
+    <string name="user_list_add_profile_save">Spremi</string>
+</resources>

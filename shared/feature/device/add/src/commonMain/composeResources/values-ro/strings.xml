@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Adaugă dispozitiv</string>
+    <string name="add_device_screen_description">Conectează espressorul pentru a începe</string>
+    <string name="add_device_screen_show_nearby">Dispozitive în apropiere</string>
+    <string name="add_device_screen_scan_qr">Scanează codul QR</string>
+    <string name="add_device_screen_no_camera_permission">Permisiunea pentru cameră lipsește, acord-o în setări</string>
+    <string name="add_device_screen_qr_parsing_error">Datele dispozitivului nu au putut fi citite</string>
+    <string name="add_device_screen_empty">Niciun dispozitiv găsit. Pornește espressorul.</string>
+    <string name="add_device_demo">Adaugă aparat demo</string>
+    <string name="add_device_warning_title">Declinare a răspunderii</string>
+    <string name="add_device_warning_message">Aplicație neoficială terță. Folosește protocolul producătorului prin inginerie inversă, fără aprobare oficială.\n\nDeoarece trimite comenzi directe hardware-ului, erorile pot provoca funcționarea incorectă a aparatului.\n\nContinuând, accepți că:\n• Folosești software-ul pe propriul risc.\n• Poate provoca daune sau anula garanția.\n• Nu lăsa niciodată espressorul nesupravegheat sub controlul aplicației.</string>
+    <string name="add_device_warning_accept">Accept riscurile</string>
+    <string name="add_device_warning_cancel">Anulează</string>
+</resources>

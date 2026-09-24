@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Gerät hinzufügen</string>
+    <string name="add_device_screen_description">Espressomaschine verbinden und loslegen</string>
+    <string name="add_device_screen_show_nearby">Geräte in der Nähe</string>
+    <string name="add_device_screen_scan_qr">QR-Code scannen</string>
+    <string name="add_device_screen_no_camera_permission">Kamera-Berechtigung fehlt. Bitte in Einstellungen erlauben.</string>
+    <string name="add_device_screen_qr_parsing_error">Gerätedaten konnten nicht gelesen werden</string>
+    <string name="add_device_screen_empty">Keine Geräte gefunden. Zeit, die Espressomaschine aufzuwecken.</string>
+    <string name="add_device_demo">Demo-Gerät hinzufügen</string>
+    <string name="add_device_warning_title">Hinweis &amp; Warnung</string>
+    <string name="add_device_warning_message">Dies ist eine inoffizielle Drittanbieter-App. Sie nutzt das Protokoll des Herstellers über Reverse-Engineering und wird von diesem weder unterstützt noch zertifiziert.\n\nDa die App direkte Hardwarebefehle sendet, können Fehler Fehlfunktionen der Maschine verursachen.\n\nMit dem Fortfahren bestätigst du:\n• Nutzung erfolgt auf eigenes Risiko.\n• Kann Schäden oder Garantieverlust verursachen.\n• Maschine während App-Steuerung nie unbeaufsichtigt lassen.</string>
+    <string name="add_device_warning_accept">Risiken akzeptieren</string>
+    <string name="add_device_warning_cancel">Abbrechen</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Profils</string>
+    <string name="user_list_screen_subtitle">Sélectionnez un utilisateur</string>
+    <string name="user_list_screen_empty">Aucun profil trouvé.</string>
+    <string name="user_list_screen_add_profile">Ajouter un profil</string>
+    <string name="user_list_add_profile_title">Ajouter un profil</string>
+    <string name="user_list_add_profile_subtitle">Créer un profil utilisateur</string>
+    <string name="user_list_add_profile_name_hint">Nom</string>
+    <string name="user_list_add_profile_save">Enregistrer</string>
+</resources>

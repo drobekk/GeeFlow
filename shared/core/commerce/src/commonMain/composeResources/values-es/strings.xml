@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">¿Disfrutas de la app?</string>
+    <string name="tip_button">Invítame a un café</string>
+    <string name="tip_dialog_title">Elige una taza</string>
+    <string name="tip_dialog_error">La tienda no está disponible ahora. Inténtalo más tarde.</string>
+    <string name="tip_dialog_retry">Reintentar</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Un shot rápido de motivación</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Para saborear mientras vibra la bomba</string>
+    <string name="tip_tier_beans">Bolsa de café de especialidad</string>
+    <string name="tip_tier_beans_description">Buen grano para largas sesiones de extracción</string>
+    <string name="tip_tier_year_of_coffee">Un año de café</string>
+    <string name="tip_tier_year_of_coffee_description">Molino lleno durante 365 días de calibración</string>
+</resources>

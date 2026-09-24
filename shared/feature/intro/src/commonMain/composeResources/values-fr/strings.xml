@@ -1,0 +1,4 @@
+<resources>
+    <string name="intro_screen_welcome_message">Chaque goutte compte</string>
+    <string name="intro_screen_set_up">Configurons votre profil.</string>
+</resources>

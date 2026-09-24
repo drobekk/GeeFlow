@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Apparaat toevoegen</string>
+    <string name="add_device_screen_description">Verbind je espressomachine om te beginnen</string>
+    <string name="add_device_screen_show_nearby">Apparaten in de buurt</string>
+    <string name="add_device_screen_scan_qr">QR-code scannen</string>
+    <string name="add_device_screen_no_camera_permission">Camera-toegang ontbreekt. Schakel in bij instellingen.</string>
+    <string name="add_device_screen_qr_parsing_error">Kan apparaatgegevens niet lezen</string>
+    <string name="add_device_screen_empty">Geen apparaten gevonden. Zet je espressomachine aan.</string>
+    <string name="add_device_demo">Demo-apparaat toevoegen</string>
+    <string name="add_device_warning_title">Disclaimer &amp; waarschuwing</string>
+    <string name="add_device_warning_message">Dit is een niet-officiële app van derden. Het gebruikt het fabrieksprotocol via reverse-engineering en wordt niet door de fabrikant ondersteund.\n\nOmdat de app directe hardwarecommando’s verstuurt, kunnen bugs storingen veroorzaken.\n\nDoor door te gaan erken je dat:\n• Je de software op eigen risico gebruikt.\n• Dit schade kan veroorzaken of garantie kan laten vervallen.\n• Laat de machine nooit onbeheerd achter onder app-bediening.</string>
+    <string name="add_device_warning_accept">Ik accepteer de risico’s</string>
+    <string name="add_device_warning_cancel">Annuleren</string>
+</resources>

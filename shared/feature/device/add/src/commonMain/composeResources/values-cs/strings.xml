@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Přidat zařízení</string>
+    <string name="add_device_screen_description">Připojte kávovar a začněte připravovat kávu</string>
+    <string name="add_device_screen_show_nearby">Zařízení v okolí</string>
+    <string name="add_device_screen_scan_qr">Naskenovat QR kód</string>
+    <string name="add_device_screen_no_camera_permission">Chybí oprávnění k fotoaparátu, povolte v nastavení</string>
+    <string name="add_device_screen_qr_parsing_error">Nepodařilo se načíst data zařízení</string>
+    <string name="add_device_screen_empty">Žádná zařízení. Je čas zapnout kávovar.</string>
+    <string name="add_device_demo">Přidat demo zařízení</string>
+    <string name="add_device_warning_title">Upozornění a varování</string>
+    <string name="add_device_warning_message">Neoficiální aplikace třetí strany. Využívá protokol výrobce přes reverzní inženýrství, bez oficiální podpory či certifikace.\n\nAplikace posílá přímé příkazy hardwaru – chyby firmwaru mohou způsobit nesprávnou funkci.\n\nPokračováním souhlasíte, že:\n• Software používáte zcela na vlastní riziko.\n• Může dojít k poškození nebo ztrátě záruky.\n• Nikdy nenechávejte kávovar bez dozoru pod kontrolou aplikace.</string>
+    <string name="add_device_warning_accept">Přijímám rizika</string>
+    <string name="add_device_warning_cancel">Zrušit</string>
+</resources>

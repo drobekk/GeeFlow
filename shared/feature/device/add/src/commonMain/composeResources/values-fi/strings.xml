@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Lisää laite</string>
+    <string name="add_device_screen_description">Yhdistä espressokeitin aloittaaksesi</string>
+    <string name="add_device_screen_show_nearby">Lähistöllä olevat laitteet</string>
+    <string name="add_device_screen_scan_qr">Lue QR-koodi</string>
+    <string name="add_device_screen_no_camera_permission">Kameran käyttöoikeus puuttuu. Salli se asetuksissa.</string>
+    <string name="add_device_screen_qr_parsing_error">Laitetietoja ei voitu lukea</string>
+    <string name="add_device_screen_empty">Laitteita ei löytynyt. Laita keitin päälle.</string>
+    <string name="add_device_demo">Lisää demo-laite</string>
+    <string name="add_device_warning_title">Vastuuvapauslauseke</string>
+    <string name="add_device_warning_message">Tämä on epävirallinen kolmannen osapuolen sovellus. Se käyttää valmistajan protokollaa takaisinmallinnettuna ilman valmistajan tukea.\n\nKoska sovellus lähettää suoria laitekomentoja, virheet voivat aiheuttaa laitteen toimintahäiriöitä.\n\nJatkamalla hyväksyt, että:\n• Käytät ohjelmistoa omalla vastuullasi.\n• Käyttö voi vahingoittaa laitetta tai mitätöidä takuun.\n• Älä koskaan jätä keitintä valvomatta sovellusohjauksessa.</string>
+    <string name="add_device_warning_accept">Hyväksyn riskit</string>
+    <string name="add_device_warning_cancel">Peruuta</string>
+</resources>

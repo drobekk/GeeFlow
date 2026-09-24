@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Gefällt dir die App?</string>
+    <string name="tip_button">Kaffee spendieren</string>
+    <string name="tip_dialog_title">Tasse wählen</string>
+    <string name="tip_dialog_error">Der Store ist derzeit nicht erreichbar. Bitte später versuchen.</string>
+    <string name="tip_dialog_retry">Erneut versuchen</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Ein kleiner Energieschub</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Für gemütliches Nippen beim Pumpensummen</string>
+    <string name="tip_tier_beans">Packung Specialty Beans</string>
+    <string name="tip_tier_beans_description">Gute Bohnen für lange Brüh-Sessions</string>
+    <string name="tip_tier_year_of_coffee">Ein Jahr Kaffee</string>
+    <string name="tip_tier_year_of_coffee_description">Die Mühle bleibt 365 Tage lang gefüllt</string>
+</resources>

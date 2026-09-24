@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Adicionar dispositivo</string>
+    <string name="add_device_screen_description">Conecte sua máquina de café para começar</string>
+    <string name="add_device_screen_show_nearby">Dispositivos próximos</string>
+    <string name="add_device_screen_scan_qr">Escanear QR Code</string>
+    <string name="add_device_screen_no_camera_permission">Permissão de câmera necessária, conceda nas configurações</string>
+    <string name="add_device_screen_qr_parsing_error">Não foi possível ler os dados do dispositivo</string>
+    <string name="add_device_screen_empty">Nenhum dispositivo encontrado. Ligue sua cafeteira.</string>
+    <string name="add_device_demo">Adicionar máquina demo</string>
+    <string name="add_device_warning_title">Aviso e Isenção</string>
+    <string name="add_device_warning_message">Este é um aplicativo não oficial. Utiliza o protocolo do fabricante via engenharia reversa, sem endosso ou certificação deste.\n\nPor enviar comandos diretos, falhas de firmware podem causar mau funcionamento da máquina.\n\nAo continuar, você concorda que:\n• Usa este software por sua conta e risco.\n• Pode causar danos ou anular a garantia.\n• Nunca deixe a máquina sem supervisão enquanto controlada pelo app.</string>
+    <string name="add_device_warning_accept">Aceito os riscos</string>
+    <string name="add_device_warning_cancel">Cancelar</string>
+</resources>

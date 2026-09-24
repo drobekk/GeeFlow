@@ -1,0 +1,7 @@
+<resources>
+    <string name="device_list_screen_title">Dispositivos</string>
+    <string name="device_list_screen_subtitle">Gerencie suas cafeteiras</string>
+    <string name="device_list_screen_add_device">Adicionar dispositivo</string>
+    <string name="device_list_screen_set_as_default">Definir padrão</string>
+    <string name="device_list_screen_empty">Nenhum dispositivo.\nIsso explica a falta de espressos perfeitos.</string>
+</resources>

@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Gostando do app?</string>
+    <string name="tip_button">Pagar um café</string>
+    <string name="tip_dialog_title">Escolha uma xícara</string>
+    <string name="tip_dialog_error">A loja está indisponível no momento. Tente mais tarde.</string>
+    <string name="tip_dialog_retry">Tentar novamente</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Uma dose rápida de motivação</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Para saborear enquanto a bomba vibra</string>
+    <string name="tip_tier_beans">Pacote de café especial</string>
+    <string name="tip_tier_beans_description">Grãos de qualidade para longas sessões</string>
+    <string name="tip_tier_year_of_coffee">Um ano de café</string>
+    <string name="tip_tier_year_of_coffee_description">Moedor abastecido por 365 dias de ajustes</string>
+</resources>

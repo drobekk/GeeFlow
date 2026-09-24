@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Maschineneinstellungen</string>
+    <string name="device_settings_placeholder">Eintrag für Details wählen</string>
+    <string name="device_settings_subtitle">Brüheinstellungen und Gerätesetup verwalten</string>
+    <string name="device_settings_brewing">Brühen</string>
+    <string name="device_settings_brewing_description">Kesselparameter und Tastenbelegung</string>
+    <string name="device_settings_maintenance">Wartung</string>
+    <string name="device_settings_maintenance_description">Reinigung und Wasserstandsalarm</string>
+    <string name="device_settings_connectivity">Konnektivität</string>
+    <string name="device_settings_connectivity_description">Externes smartes Zubehör</string>
+    <string name="device_settings_maintenance_cleaning">Reinigung</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Spüldauer pro Zyklus</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Pausendauer zwischen Zyklen</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Anzahl der Reinigungszyklen</string>
+    <string name="device_settings_maintenance_alarms">Alarme</string>
+    <string name="device_settings_maintenance_water_alarm">Wassermangelalarm</string>
+    <string name="device_settings_maintenance_water_alarm_description">Warnung bei niedrigem Wasserstand</string>
+    <string name="device_water_alarm_error">Wasserstand niedrig. Wassertank nachfüllen.</string>
+    <string name="device_dashboard_connecting">Verbindet</string>
+    <string name="device_settings_connectivity_smart_scale">Smarte Waage</string>
+    <string name="device_settings_connectivity_smart_scale_description">Automatischer Bezugsstopp bei Zielgewicht</string>
+    <string name="device_settings_connectivity_smart_scale_info">Smarte Waage verbinden, um Bezug bei Zielgewicht automatisch zu stoppen.</string>
+    <string name="device_settings_connectivity_searching">Suche nach Geräten…</string>
+    <string name="device_settings_connectivity_not_found">Gerät nicht gefunden?</string>
+    <string name="device_settings_connectivity_rescan">Jetzt scannen</string>
+    <string name="device_settings_connectivity_scale_help">Verbindet immer noch? Maschine aus- und einschalten, dann erneut versuchen.</string>
+    <string name="device_settings_brewing_boiler">Kessel</string>
+    <string name="device_settings_brewing_paddle">Langer Paddle-Druck</string>
+    <string name="device_settings_brewing_pulse_heating">Pulsheizen</string>
+    <string name="device_settings_brewing_pulse_heating_description">Längere Aufheizzeit, geringerer Stromverbrauch</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Zieldruck</string>
+    <string name="device_settings_brewing_paddle_time_description">Zieldauer</string>
+</resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Maskinindstillinger</string>
+    <string name="device_settings_placeholder">Vælg et punkt for detaljer</string>
+    <string name="device_settings_subtitle">Administrer brygindstillinger og opsætning</string>
+    <string name="device_settings_brewing">Brygning</string>
+    <string name="device_settings_brewing_description">Kedelparametre og knapper</string>
+    <string name="device_settings_maintenance">Vedligeholdelse</string>
+    <string name="device_settings_maintenance_description">Rengøring og vandstandsalarm</string>
+    <string name="device_settings_connectivity">Forbindelser</string>
+    <string name="device_settings_connectivity_description">Eksternt smart-tilbehør</string>
+    <string name="device_settings_maintenance_cleaning">Rengøring</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Skylletid pr. cyklus</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Pausetid mellem cyklusser</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Antal gentagelser</string>
+    <string name="device_settings_maintenance_alarms">Alarmer</string>
+    <string name="device_settings_maintenance_water_alarm">Vandmangelalarm</string>
+    <string name="device_settings_maintenance_water_alarm_description">Advarsel om lav vandstand</string>
+    <string name="device_water_alarm_error">Lav vandstand. Fyld vandtanken.</string>
+    <string name="device_dashboard_connecting">Forbinder…</string>
+    <string name="device_settings_connectivity_smart_scale">Smart-vægt</string>
+    <string name="device_settings_connectivity_smart_scale_description">Stopper automatisk ved målvægt</string>
+    <string name="device_settings_connectivity_smart_scale_info">Forbind en smart-vægt for at stoppe brygget ved den ønskede vægt.</string>
+    <string name="device_settings_connectivity_searching">Søger efter enheder…</string>
+    <string name="device_settings_connectivity_not_found">Ser du ikke din enhed?</string>
+    <string name="device_settings_connectivity_rescan">Scan nu</string>
+    <string name="device_settings_connectivity_scale_help">Stadig problemer? Sluk og tænd maskinen, og prøv igen.</string>
+    <string name="device_settings_brewing_boiler">Kedel</string>
+    <string name="device_settings_brewing_paddle">Langt tryk på padle</string>
+    <string name="device_settings_brewing_pulse_heating">Pulsopvarmning</string>
+    <string name="device_settings_brewing_pulse_heating_description">Længere opvarmning med lavere strømforbrug</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Måltryk</string>
+    <string name="device_settings_brewing_paddle_time_description">Måltid</string>
+</resources>

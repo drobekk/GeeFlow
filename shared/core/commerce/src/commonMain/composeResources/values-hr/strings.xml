@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Sviđa vam se aplikacija?</string>
+    <string name="tip_button">Počasti kavom</string>
+    <string name="tip_dialog_title">Odaberi šalicu</string>
+    <string name="tip_dialog_error">Trgovina trenutno nije dostupna. Pokušajte ponovno kasnije.</string>
+    <string name="tip_dialog_retry">Pokušaj ponovno</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Brzi gutljaj motivacije</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Za pijuckanje dok pumpa zuji</string>
+    <string name="tip_tier_beans">Vrećica specialty kave</string>
+    <string name="tip_tier_beans_description">Vrhunska zrna za duge pripreme</string>
+    <string name="tip_tier_year_of_coffee">Godina kave</string>
+    <string name="tip_tier_year_of_coffee_description">Mlinac pun kave tijekom 365 dana podešavanja</string>
+</resources>

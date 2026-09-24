@@ -1,0 +1,7 @@
+<resources>
+    <string name="device_list_screen_title">Urządzenia</string>
+    <string name="device_list_screen_subtitle">Przeglądaj i zarządzaj urządzeniami</string>
+    <string name="device_list_screen_add_device">Dodaj urządzenie</string>
+    <string name="device_list_screen_set_as_default">Ustaw jako domyślne</string>
+    <string name="device_list_screen_empty">Brak urządzeń.\nTo wyjaśnia brak boskich shotów.</string>
+</resources>

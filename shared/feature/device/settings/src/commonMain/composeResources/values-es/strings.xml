@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Ajustes de cafetera</string>
+    <string name="device_settings_placeholder">Selecciona un elemento para ver detalles</string>
+    <string name="device_settings_subtitle">Preferencias de extracción y configuración</string>
+    <string name="device_settings_brewing">Extracción</string>
+    <string name="device_settings_brewing_description">Parámetros de caldera y botones</string>
+    <string name="device_settings_maintenance">Mantenimiento</string>
+    <string name="device_settings_maintenance_description">Limpieza y alarma de nivel de agua</string>
+    <string name="device_settings_connectivity">Conectividad</string>
+    <string name="device_settings_connectivity_description">Accesorios inteligentes externos</string>
+    <string name="device_settings_maintenance_cleaning">Limpieza</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Duración purga por ciclo</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Pausa entre ciclos</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Repeticiones del ciclo</string>
+    <string name="device_settings_maintenance_alarms">Alarmas</string>
+    <string name="device_settings_maintenance_water_alarm">Alarma falta de agua</string>
+    <string name="device_settings_maintenance_water_alarm_description">Aviso de nivel de agua bajo</string>
+    <string name="device_water_alarm_error">Nivel de agua bajo. Rellena el depósito.</string>
+    <string name="device_dashboard_connecting">Conectando…</string>
+    <string name="device_settings_connectivity_smart_scale">Báscula inteligente</string>
+    <string name="device_settings_connectivity_smart_scale_description">Detiene la extracción al alcanzar el peso</string>
+    <string name="device_settings_connectivity_smart_scale_info">Conecta una báscula inteligente para parar la extracción al peso deseado.</string>
+    <string name="device_settings_connectivity_searching">Buscando dispositivos compatibles…</string>
+    <string name="device_settings_connectivity_not_found">¿No ves tu dispositivo?</string>
+    <string name="device_settings_connectivity_rescan">Escanear ahora</string>
+    <string name="device_settings_connectivity_scale_help">¿Sigue conectando? Apaga y enciende la cafetera, y reconecta la báscula.</string>
+    <string name="device_settings_brewing_boiler">Caldera</string>
+    <string name="device_settings_brewing_paddle">Pulsación larga palanca</string>
+    <string name="device_settings_brewing_pulse_heating">Calentamiento a pulsos</string>
+    <string name="device_settings_brewing_pulse_heating_description">Calienta más lento con menor consumo eléctrico</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Presión objetivo</string>
+    <string name="device_settings_brewing_paddle_time_description">Duración objetivo</string>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="device_list_screen_title">Zariadenia</string>
+    <string name="device_list_screen_subtitle">Správa vašich kávovarov</string>
+    <string name="device_list_screen_add_device">Pridať zariadenie</string>
+    <string name="device_list_screen_set_as_default">Nastaviť ako predvolené</string>
+    <string name="device_list_screen_empty">Zatiaľ žiadne zariadenia.\nTo vysvetľuje absenciu dokonalého espressa.</string>
+</resources>

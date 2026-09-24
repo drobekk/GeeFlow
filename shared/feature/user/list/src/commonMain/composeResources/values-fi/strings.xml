@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Käyttäjät</string>
+    <string name="user_list_screen_subtitle">Valitse käyttäjäprofiili</string>
+    <string name="user_list_screen_empty">Käyttäjiä ei löytynyt.</string>
+    <string name="user_list_screen_add_profile">Lisää profiili</string>
+    <string name="user_list_add_profile_title">Lisää profiili</string>
+    <string name="user_list_add_profile_subtitle">Luo uusi profiili</string>
+    <string name="user_list_add_profile_name_hint">Nimi</string>
+    <string name="user_list_add_profile_save">Tallenna</string>
+</resources>

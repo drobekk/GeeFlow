@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Tilføj enhed</string>
+    <string name="add_device_screen_description">Forbind din espressomaskine for at brygge</string>
+    <string name="add_device_screen_show_nearby">Enheder i nærheden</string>
+    <string name="add_device_screen_scan_qr">Scan QR-kode</string>
+    <string name="add_device_screen_no_camera_permission">Kameratilladelse mangler. Tillad i indstillinger.</string>
+    <string name="add_device_screen_qr_parsing_error">Kunne ikke læse enhedsdata</string>
+    <string name="add_device_screen_empty">Ingen enheder fundet. Tænd din maskine.</string>
+    <string name="add_device_demo">Tilføj demo-maskine</string>
+    <string name="add_device_warning_title">Ansvarsfraskrivelse</string>
+    <string name="add_device_warning_message">Uofficiel tredjeparts-app. Benytter producentens protokol via reverse-engineering, uden officiel godkendelse.\n\nDa appen sender direkte hardwarekommandoer, kan fejl forårsage forkert drift.\n\nVed at fortsætte accepterer du:\n• Brug sker helt på eget ansvar.\n• Kan forårsage skader eller ophæve garantien.\n• Efterlad aldrig maskinen uden opsyn under app-styring.</string>
+    <string name="add_device_warning_accept">Jeg accepterer risikoen</string>
+    <string name="add_device_warning_cancel">Annuller</string>
+</resources>

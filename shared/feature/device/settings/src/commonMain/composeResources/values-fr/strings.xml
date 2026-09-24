@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Réglages machine</string>
+    <string name="device_settings_placeholder">Sélectionnez un élément pour voir les détails</string>
+    <string name="device_settings_subtitle">Préférences d’extraction et configuration</string>
+    <string name="device_settings_brewing">Extraction</string>
+    <string name="device_settings_brewing_description">Paramètres chaudière et palette</string>
+    <string name="device_settings_maintenance">Entretien</string>
+    <string name="device_settings_maintenance_description">Nettoyage et alerte niveau d’eau</string>
+    <string name="device_settings_connectivity">Connectivité</string>
+    <string name="device_settings_connectivity_description">Accessoires intelligents externes</string>
+    <string name="device_settings_maintenance_cleaning">Nettoyage</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Durée de rinçage par cycle</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Temps de pause entre cycles</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Nombre de répétitions</string>
+    <string name="device_settings_maintenance_alarms">Alarmes</string>
+    <string name="device_settings_maintenance_water_alarm">Alerte manque d’eau</string>
+    <string name="device_settings_maintenance_water_alarm_description">Avertissement niveau d’eau bas</string>
+    <string name="device_water_alarm_error">Niveau d’eau bas. Remplissez le réservoir.</string>
+    <string name="device_dashboard_connecting">Connexion…</string>
+    <string name="device_settings_connectivity_smart_scale">Balance connectée</string>
+    <string name="device_settings_connectivity_smart_scale_description">Arrêt automatique au poids cible</string>
+    <string name="device_settings_connectivity_smart_scale_info">Connectez une balance pour couper l’extraction au poids souhaité.</string>
+    <string name="device_settings_connectivity_searching">Recherche d’appareils…</string>
+    <string name="device_settings_connectivity_not_found">Appareil introuvable ?</string>
+    <string name="device_settings_connectivity_rescan">Scanner à nouveau</string>
+    <string name="device_settings_connectivity_scale_help">Connexion impossible ? Éteignez puis rallumez la machine, puis réessayez.</string>
+    <string name="device_settings_brewing_boiler">Chaudière</string>
+    <string name="device_settings_brewing_paddle">Appui long sur palette</string>
+    <string name="device_settings_brewing_pulse_heating">Chauffe par impulsions</string>
+    <string name="device_settings_brewing_pulse_heating_description">Chauffe plus lente mais consommation réduite</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Pression cible</string>
+    <string name="device_settings_brewing_paddle_time_description">Durée cible</string>
+</resources>

@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Blij met de app?</string>
+    <string name="tip_button">Trakteer op koffie</string>
+    <string name="tip_dialog_title">Kies een kopje</string>
+    <string name="tip_dialog_error">Winkel momenteel niet bereikbaar. Probeer later opnieuw.</string>
+    <string name="tip_dialog_retry">Opnieuw proberen</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Een snelle shot motivatie</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Lekker nippen terwijl de pomp zoemt</string>
+    <string name="tip_tier_beans">Zak specialty bonen</string>
+    <string name="tip_tier_beans_description">Goede bonen voor lange zetsessies</string>
+    <string name="tip_tier_year_of_coffee">Een jaar koffie</string>
+    <string name="tip_tier_year_of_coffee_description">De molen 365 dagen lang gevuld</string>
+</resources>

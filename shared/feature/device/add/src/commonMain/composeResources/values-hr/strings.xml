@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Dodaj uređaj</string>
+    <string name="add_device_screen_description">Povežite aparat za kavu za početak pripreme</string>
+    <string name="add_device_screen_show_nearby">Uređaji u blizini</string>
+    <string name="add_device_screen_scan_qr">Skeniraj QR kod</string>
+    <string name="add_device_screen_no_camera_permission">Nedostaje dopuštenje za kameru. Omogućite u postavkama.</string>
+    <string name="add_device_screen_qr_parsing_error">Nije moguće pročitati podatke uređaja</string>
+    <string name="add_device_screen_empty">Nema pronađenih uređaja. Uključite aparat.</string>
+    <string name="add_device_demo">Dodaj demo uređaj</string>
+    <string name="add_device_warning_title">Upozorenje i odricanje</string>
+    <string name="add_device_warning_message">Neslužbena aplikacija treće strane. Koristi protokol proizvođača putem obrnutog inženjeringa, bez službene certifikacije.\n\nSlanje izravnih naredbi hardveru može uzrokovati kvarove aparata zbog grešaka u softveru.\n\nNastavkom prihvaćate da:\n• Softver koristite isključivo na vlastiti rizik.\n• Može uzrokovati štetu ili poništiti jamstvo.\n• Nikada ne ostavljajte aparat bez nadzora dok njime upravlja aplikacija.</string>
+    <string name="add_device_warning_accept">Prihvaćam rizike</string>
+    <string name="add_device_warning_cancel">Odustani</string>
+</resources>

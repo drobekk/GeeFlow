@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Glad for appen?</string>
+    <string name="tip_button">Giv en kop kaffe</string>
+    <string name="tip_dialog_title">Vælg en kop</string>
+    <string name="tip_dialog_error">Butikken er utilgængelig lige nu. Prøv igen senere.</string>
+    <string name="tip_dialog_retry">Prøv igen</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Et hurtigt skud motivation</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Lidt at nippe til, mens pumpen summer</string>
+    <string name="tip_tier_beans">Pose specialkaffe</string>
+    <string name="tip_tier_beans_description">Gode bønner til lange bryggesessioner</string>
+    <string name="tip_tier_year_of_coffee">Et års kaffe</string>
+    <string name="tip_tier_year_of_coffee_description">Kværnen holdes fyldt i 365 dage</string>
+</resources>

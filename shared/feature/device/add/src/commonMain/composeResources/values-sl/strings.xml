@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Dodaj napravo</string>
+    <string name="add_device_screen_description">Povežite aparat za kavo in začnite s pripravo</string>
+    <string name="add_device_screen_show_nearby">Naprave v bližini</string>
+    <string name="add_device_screen_scan_qr">Skeniraj QR kodo</string>
+    <string name="add_device_screen_no_camera_permission">Dovoljenje za kamero manjka, omogočite v nastavitvah</string>
+    <string name="add_device_screen_qr_parsing_error">Podatkov naprave ni bilo mogoče prebrati</string>
+    <string name="add_device_screen_empty">Ni najdenih naprav. Vklopite aparat.</string>
+    <string name="add_device_demo">Dodaj demo napravo</string>
+    <string name="add_device_warning_title">Opozorilo in izjava</string>
+    <string name="add_device_warning_message">Neuradna aplikacija tretje osebe. Uporablja protokol proizvajalca prek vzvratnega inženiringa, brez uradne podpore.\n\nKer pošilja neposredne ukaze strojni opremi, lahko napake povzročijo nepravilno delovanje aparata.\n\nZ nadaljevanjem potrjujete, da:\n• Aplikacijo uporabljate na lastno odgovornost.\n• Lahko povzroči poškodbe ali izgubo garancije.\n• Aparata nikoli ne puščajte brez nadzora pod nadzorom aplikacije.</string>
+    <string name="add_device_warning_accept">Sprejemam tveganja</string>
+    <string name="add_device_warning_cancel">Prekliči</string>
+</resources>

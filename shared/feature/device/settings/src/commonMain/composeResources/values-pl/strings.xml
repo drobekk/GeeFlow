@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Ustawienia ekspresu</string>
+    <string name="device_settings_placeholder">Wybierz pozycję, aby zobaczyć szczegóły</string>
+    <string name="device_settings_subtitle">Zarządzaj preferencjami parzenia i urządzeniem</string>
+    <string name="device_settings_brewing">Parzenie</string>
+    <string name="device_settings_brewing_description">Parametry bojlera i przypisanie przycisków</string>
+    <string name="device_settings_maintenance">Konserwacja</string>
+    <string name="device_settings_maintenance_description">Czyszczenie i alarm poziomu wody</string>
+    <string name="device_settings_connectivity">Łączność</string>
+    <string name="device_settings_connectivity_description">Zewnętrzne akcesoria smart</string>
+    <string name="device_settings_maintenance_cleaning">Czyszczenie</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Czas płukania w cyklu</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Czas pauzy między cyklami</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Liczba powtórzeń cyklu</string>
+    <string name="device_settings_maintenance_alarms">Alarmy</string>
+    <string name="device_settings_maintenance_water_alarm">Alarm braku wody</string>
+    <string name="device_settings_maintenance_water_alarm_description">Ostrzeżenie o niskim poziomie wody</string>
+    <string name="device_water_alarm_error">Niski poziom wody. Napełnij zbiornik.</string>
+    <string name="device_dashboard_connecting">Łączenie</string>
+    <string name="device_settings_connectivity_smart_scale">Waga inteligentna</string>
+    <string name="device_settings_connectivity_smart_scale_description">Automatycznie zatrzymaj po osiągnięciu docelowej wagi</string>
+    <string name="device_settings_connectivity_smart_scale_info">Połącz inteligentną wagę, aby automatycznie zatrzymać parzenie po osiągnięciu wagi.</string>
+    <string name="device_settings_connectivity_searching">Szukanie zgodnych urządzeń…</string>
+    <string name="device_settings_connectivity_not_found">Nie widzisz swojego urządzenia?</string>
+    <string name="device_settings_connectivity_rescan">Skanuj teraz</string>
+    <string name="device_settings_connectivity_scale_help">Nadal się łączy? Wyłącz i włącz ekspres, a potem spróbuj ponownie połączyć wagę.</string>
+    <string name="device_settings_brewing_boiler">Bojler</string>
+    <string name="device_settings_brewing_paddle">Długie wciśnięcie łopatki</string>
+    <string name="device_settings_brewing_pulse_heating">Ogrzewanie impulsowe</string>
+    <string name="device_settings_brewing_pulse_heating_description">Dłuższy czas grzania, mniejszy pobór mocy</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Docelowe ciśnienie</string>
+    <string name="device_settings_brewing_paddle_time_description">Docelowy czas</string>
+</resources>

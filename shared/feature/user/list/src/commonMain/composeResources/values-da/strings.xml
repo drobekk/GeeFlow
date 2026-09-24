@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Brugere</string>
+    <string name="user_list_screen_subtitle">Vælg en brugerprofil</string>
+    <string name="user_list_screen_empty">Ingen brugere fundet.</string>
+    <string name="user_list_screen_add_profile">Tilføj profil</string>
+    <string name="user_list_add_profile_title">Tilføj profil</string>
+    <string name="user_list_add_profile_subtitle">Opret ny profil</string>
+    <string name="user_list_add_profile_name_hint">Navn</string>
+    <string name="user_list_add_profile_save">Gem</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Gebruikers</string>
+    <string name="user_list_screen_subtitle">Selecteer een gebruikersprofiel</string>
+    <string name="user_list_screen_empty">Geen gebruikers gevonden.</string>
+    <string name="user_list_screen_add_profile">Profiel toevoegen</string>
+    <string name="user_list_add_profile_title">Profiel toevoegen</string>
+    <string name="user_list_add_profile_subtitle">Nieuw profiel maken</string>
+    <string name="user_list_add_profile_name_hint">Naam</string>
+    <string name="user_list_add_profile_save">Opslaan</string>
+</resources>

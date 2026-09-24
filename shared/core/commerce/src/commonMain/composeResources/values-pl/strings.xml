@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Podoba Ci się aplikacja?</string>
+    <string name="tip_button">Postaw kawę</string>
+    <string name="tip_dialog_title">Wybierz kawę</string>
+    <string name="tip_dialog_error">Sklep jest teraz niedostępny. Spróbuj później.</string>
+    <string name="tip_dialog_retry">Spróbuj ponownie</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Szybki zastrzyk motywacji</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Coś do popijania, gdy pompa szumi</string>
+    <string name="tip_tier_beans">Paczka kawy Specialty</string>
+    <string name="tip_tier_beans_description">Świetne ziarna na długie parzenie</string>
+    <string name="tip_tier_year_of_coffee">Rok kawy</string>
+    <string name="tip_tier_year_of_coffee_description">Pełny młynek przez 365 dni dialingu</string>
+</resources>

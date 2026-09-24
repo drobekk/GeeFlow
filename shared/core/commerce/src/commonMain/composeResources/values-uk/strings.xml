@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Подобається застосунок?</string>
+    <string name="tip_button">Пригостити кавою</string>
+    <string name="tip_dialog_title">Оберіть чашку</string>
+    <string name="tip_dialog_error">Магазин зараз недоступний. Спробуйте пізніше.</string>
+    <string name="tip_dialog_retry">Спробувати знову</string>
+    <string name="tip_tier_espresso">Еспресо</string>
+    <string name="tip_tier_espresso_description">Швидкий заряд мотивації</string>
+    <string name="tip_tier_cappuccino">Капучино</string>
+    <string name="tip_tier_cappuccino_description">Смакувати під розмірене гудіння помпи</string>
+    <string name="tip_tier_beans">Пачка спешелті кави</string>
+    <string name="tip_tier_beans_description">Чудове зерно для довгих сесій заварювання</string>
+    <string name="tip_tier_year_of_coffee">Рік кави</string>
+    <string name="tip_tier_year_of_coffee_description">Повна кавомолка зерен на 365 днів налаштувань</string>
+</resources>

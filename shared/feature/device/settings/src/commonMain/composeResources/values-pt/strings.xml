@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Configurações da máquina</string>
+    <string name="device_settings_placeholder">Selecione um item para ver detalhes</string>
+    <string name="device_settings_subtitle">Preferências de extração e configuração</string>
+    <string name="device_settings_brewing">Extração</string>
+    <string name="device_settings_brewing_description">Parâmetros da caldeira e botões</string>
+    <string name="device_settings_maintenance">Manutenção</string>
+    <string name="device_settings_maintenance_description">Limpeza e alarme de nível de água</string>
+    <string name="device_settings_connectivity">Conectividade</string>
+    <string name="device_settings_connectivity_description">Acessórios inteligentes externos</string>
+    <string name="device_settings_maintenance_cleaning">Limpeza</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Duração da purga por ciclo</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Pausa entre ciclos</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Repetições do ciclo</string>
+    <string name="device_settings_maintenance_alarms">Alarmes</string>
+    <string name="device_settings_maintenance_water_alarm">Alarme de falta de água</string>
+    <string name="device_settings_maintenance_water_alarm_description">Aviso de nível baixo de água</string>
+    <string name="device_water_alarm_error">Nível de água baixo. Encha o reservatório.</string>
+    <string name="device_dashboard_connecting">Conectando…</string>
+    <string name="device_settings_connectivity_smart_scale">Balança inteligente</string>
+    <string name="device_settings_connectivity_smart_scale_description">Para a extração ao atingir o peso alvo</string>
+    <string name="device_settings_connectivity_smart_scale_info">Conecte uma balança para parar a extração no peso exato.</string>
+    <string name="device_settings_connectivity_searching">Buscando dispositivos compatíveis…</string>
+    <string name="device_settings_connectivity_not_found">Não encontrou seu dispositivo?</string>
+    <string name="device_settings_connectivity_rescan">Escanear agora</string>
+    <string name="device_settings_connectivity_scale_help">Ainda conectando? Desligue e ligue a máquina e tente reconectar a balança.</string>
+    <string name="device_settings_brewing_boiler">Caldeira</string>
+    <string name="device_settings_brewing_paddle">Toque longo na alavanca</string>
+    <string name="device_settings_brewing_pulse_heating">Aquecimento por pulsos</string>
+    <string name="device_settings_brewing_pulse_heating_description">Aquecimento mais lento com menor consumo</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Pressão alvo</string>
+    <string name="device_settings_brewing_paddle_time_description">Duração alvo</string>
+</resources>

@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Îți place aplicația?</string>
+    <string name="tip_button">Fă-mi cinste cu o cafea</string>
+    <string name="tip_dialog_title">Alege o ceașcă</string>
+    <string name="tip_dialog_error">Magazinul nu este disponibil acum. Încearcă mai târziu.</string>
+    <string name="tip_dialog_retry">Reîncearcă</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Un shot rapid de încurajare</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">De savurat cât toarce pompa</string>
+    <string name="tip_tier_beans">Pungă de cafea de specialitate</string>
+    <string name="tip_tier_beans_description">Boabe bune pentru sesiuni lungi de preparare</string>
+    <string name="tip_tier_year_of_coffee">Un an de cafea</string>
+    <string name="tip_tier_year_of_coffee_description">Râșnița plină timp de 365 de zile de reglaje</string>
+</resources>

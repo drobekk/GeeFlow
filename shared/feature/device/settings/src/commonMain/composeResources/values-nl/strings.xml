@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Machine-instellingen</string>
+    <string name="device_settings_placeholder">Selecteer een item voor details</string>
+    <string name="device_settings_subtitle">Beheer zetvoorkeuren en apparaat</string>
+    <string name="device_settings_brewing">Zetten</string>
+    <string name="device_settings_brewing_description">Boilerparameters en knoppen</string>
+    <string name="device_settings_maintenance">Onderhoud</string>
+    <string name="device_settings_maintenance_description">Reiniging en waterniveau-alarm</string>
+    <string name="device_settings_connectivity">Connectiviteit</string>
+    <string name="device_settings_connectivity_description">Externe slimme accessoires</string>
+    <string name="device_settings_maintenance_cleaning">Reiniging</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Spoelduur per cyclus</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Pauzeduur tussen cycli</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Aantal herhalingen</string>
+    <string name="device_settings_maintenance_alarms">Alarmen</string>
+    <string name="device_settings_maintenance_water_alarm">Watertekortalarm</string>
+    <string name="device_settings_maintenance_water_alarm_description">Waarschuwing laag waterniveau</string>
+    <string name="device_water_alarm_error">Waterniveau is laag. Vul het waterreservoir bij.</string>
+    <string name="device_dashboard_connecting">Verbinden…</string>
+    <string name="device_settings_connectivity_smart_scale">Slimme weegschaal</string>
+    <string name="device_settings_connectivity_smart_scale_description">Stopt automatisch bij doelgewicht</string>
+    <string name="device_settings_connectivity_smart_scale_info">Verbind een weegschaal om bij het gewenste gewicht te stoppen.</string>
+    <string name="device_settings_connectivity_searching">Zoeken naar apparaten…</string>
+    <string name="device_settings_connectivity_not_found">Zie je apparaat niet?</string>
+    <string name="device_settings_connectivity_rescan">Nu scannen</string>
+    <string name="device_settings_connectivity_scale_help">Nog steeds bezig? Zet de machine uit en aan, en probeer opnieuw.</string>
+    <string name="device_settings_brewing_boiler">Boiler</string>
+    <string name="device_settings_brewing_paddle">Lange druk op paddle</string>
+    <string name="device_settings_brewing_pulse_heating">Pulsverwarming</string>
+    <string name="device_settings_brewing_pulse_heating_description">Langere opwarmtijd maar lager stroomverbruik</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Doeldruk</string>
+    <string name="device_settings_brewing_paddle_time_description">Doelduur</string>
+</resources>

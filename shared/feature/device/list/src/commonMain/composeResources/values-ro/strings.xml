@@ -1,0 +1,7 @@
+<resources>
+    <string name="device_list_screen_title">Dispozitive</string>
+    <string name="device_list_screen_subtitle">Gestionează-ți espressoarele</string>
+    <string name="device_list_screen_add_device">Adaugă dispozitiv</string>
+    <string name="device_list_screen_set_as_default">Setează ca prestabilit</string>
+    <string name="device_list_screen_empty">Niciun aparat încă.\nAsta explică lipsa shot-urilor divine.</string>
+</resources>

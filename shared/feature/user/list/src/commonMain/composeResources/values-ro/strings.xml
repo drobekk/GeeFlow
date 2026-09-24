@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Utilizatori</string>
+    <string name="user_list_screen_subtitle">Selectează un profil</string>
+    <string name="user_list_screen_empty">Niciun utilizator găsit.</string>
+    <string name="user_list_screen_add_profile">Adaugă profil</string>
+    <string name="user_list_add_profile_title">Adaugă profil</string>
+    <string name="user_list_add_profile_subtitle">Creează un profil nou</string>
+    <string name="user_list_add_profile_name_hint">Nume</string>
+    <string name="user_list_add_profile_save">Salvează</string>
+</resources>

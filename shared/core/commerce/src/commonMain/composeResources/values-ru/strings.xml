@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Нравится приложение?</string>
+    <string name="tip_button">Угостить кофе</string>
+    <string name="tip_dialog_title">Выберите чашку</string>
+    <string name="tip_dialog_error">Магазин сейчас недоступен. Попробуйте позже.</string>
+    <string name="tip_dialog_retry">Повторить</string>
+    <string name="tip_tier_espresso">Эспрессо</string>
+    <string name="tip_tier_espresso_description">Быстрый заряд мотивации</string>
+    <string name="tip_tier_cappuccino">Капучино</string>
+    <string name="tip_tier_cappuccino_description">Потягивать под мерное гудение помпы</string>
+    <string name="tip_tier_beans">Пачка спешелти кофе</string>
+    <string name="tip_tier_beans_description">Отличное зерно для долгих сессий</string>
+    <string name="tip_tier_year_of_coffee">Год кофе</string>
+    <string name="tip_tier_year_of_coffee_description">Кофемолка полна 365 дней настройки</string>
+</resources>

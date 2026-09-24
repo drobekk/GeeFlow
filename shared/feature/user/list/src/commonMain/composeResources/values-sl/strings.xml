@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Uporabniki</string>
+    <string name="user_list_screen_subtitle">Izberite uporabniški profil</string>
+    <string name="user_list_screen_empty">Ni najdenih uporabnikov.</string>
+    <string name="user_list_screen_add_profile">Dodaj profil</string>
+    <string name="user_list_add_profile_title">Dodaj profil</string>
+    <string name="user_list_add_profile_subtitle">Ustvari nov profil</string>
+    <string name="user_list_add_profile_name_hint">Ime</string>
+    <string name="user_list_add_profile_save">Shrani</string>
+</resources>

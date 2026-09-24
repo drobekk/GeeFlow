@@ -1,0 +1,14 @@
+<resources>
+    <string name="add_device_screen_title">Dodaj urządzenie</string>
+    <string name="add_device_screen_description">Połącz ekspres, aby zacząć parzyć</string>
+    <string name="add_device_screen_show_nearby">Pokaż urządzenia w pobliżu</string>
+    <string name="add_device_screen_scan_qr">Skanuj kod QR</string>
+    <string name="add_device_screen_no_camera_permission">Brak uprawnień do aparatu, zezwól w ustawieniach</string>
+    <string name="add_device_screen_qr_parsing_error">Nie udało się odczytać danych urządzenia</string>
+    <string name="add_device_screen_empty">Nie znaleziono urządzeń. Czas wybudzić ekspres.</string>
+    <string name="add_device_demo">Dodaj urządzenie demo</string>
+    <string name="add_device_warning_title">Zastrzeżenia i ostrzeżenie</string>
+    <string name="add_device_warning_message">To nieoficjalna aplikacja. Wykorzystuje protokół producenta na podstawie inżynierii wstecznej i nie jest przez niego wspierana ani certyfikowana.\n\nAplikacja wysyła bezpośrednie polecenia do maszyny – błędy lub niezgodność oprogramowania mogą spowodować nieprawidłowe działanie ekspresu.\n\nKontynuując, potwierdzasz i akceptujesz, że:\n• Używasz oprogramowania wyłącznie na własne ryzyko.\n• Może ono spowodować nieprzewidziane działanie, uszkodzić ekspres lub unieważnić gwarancję.\n• Nigdy nie zostawiaj ekspresu bez nadzoru podczas pracy z aplikacją.</string>
+    <string name="add_device_warning_accept">Akceptuję ryzyko</string>
+    <string name="add_device_warning_cancel">Anuluj</string>
+</resources>

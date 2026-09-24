@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Nastavitve aparata</string>
+    <string name="device_settings_placeholder">Izberite element za ogled podrobnosti</string>
+    <string name="device_settings_subtitle">Upravljajte nastavitve priprave in napravo</string>
+    <string name="device_settings_brewing">Priprava kave</string>
+    <string name="device_settings_brewing_description">Parametri kotlička in ročice</string>
+    <string name="device_settings_maintenance">Vzdrževanje</string>
+    <string name="device_settings_maintenance_description">Čiščenje in alarm za vodo</string>
+    <string name="device_settings_connectivity">Povezljivost</string>
+    <string name="device_settings_connectivity_description">Zunanji pametni dodatki</string>
+    <string name="device_settings_maintenance_cleaning">Čiščenje</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Trajanje izpiranja na cikel</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Premor med cikli</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Število ponovitev cikla</string>
+    <string name="device_settings_maintenance_alarms">Alarmi</string>
+    <string name="device_settings_maintenance_water_alarm">Alarm za pomanjkanje vode</string>
+    <string name="device_settings_maintenance_water_alarm_description">Opozorilo na nizek nivo vode</string>
+    <string name="device_water_alarm_error">Nivo vode je nizek. Napolnite posodo za vodo.</string>
+    <string name="device_dashboard_connecting">Povezovanje…</string>
+    <string name="device_settings_connectivity_smart_scale">Pametna tehtnica</string>
+    <string name="device_settings_connectivity_smart_scale_description">Samodejno ustavi pripravo pri ciljni teži</string>
+    <string name="device_settings_connectivity_smart_scale_info">Povežite pametno tehtnico za samodejno zaustavitev pri želeni teži.</string>
+    <string name="device_settings_connectivity_searching">Iskanje naprav…</string>
+    <string name="device_settings_connectivity_not_found">Ne najdete svoje naprave?</string>
+    <string name="device_settings_connectivity_rescan">Preišči znova</string>
+    <string name="device_settings_connectivity_scale_help">Še vedno povezuje? Izklopite in vklopite aparat ter poskusite znova.</string>
+    <string name="device_settings_brewing_boiler">Kotliček</string>
+    <string name="device_settings_brewing_paddle">Dolg pritisk na ročico</string>
+    <string name="device_settings_brewing_pulse_heating">Pulzno gretje</string>
+    <string name="device_settings_brewing_pulse_heating_description">Daljši čas segrevanja, manjša poraba</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Ciljni tlak</string>
+    <string name="device_settings_brewing_paddle_time_description">Ciljni čas</string>
+</resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Налаштування кавомашини</string>
+    <string name="device_settings_placeholder">Оберіть пункт для перегляду деталей</string>
+    <string name="device_settings_subtitle">Параметри заварювання та пристрою</string>
+    <string name="device_settings_brewing">Заварювання</string>
+    <string name="device_settings_brewing_description">Параметри бойлера та важеля</string>
+    <string name="device_settings_maintenance">Обслуговування</string>
+    <string name="device_settings_maintenance_description">Очищення та рівень води</string>
+    <string name="device_settings_connectivity">Зв\'язок</string>
+    <string name="device_settings_connectivity_description">Зовнішні розумні аксесуари</string>
+    <string name="device_settings_maintenance_cleaning">Очищення</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Час проливу за цикл</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Час паузи між циклами</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Кількість повторень</string>
+    <string name="device_settings_maintenance_alarms">Сповіщення</string>
+    <string name="device_settings_maintenance_water_alarm">Сигнал нестачі води</string>
+    <string name="device_settings_maintenance_water_alarm_description">Попередження про низький рівень</string>
+    <string name="device_water_alarm_error">Мало води. Наповніть резервуар.</string>
+    <string name="device_dashboard_connecting">Під\'єднання…</string>
+    <string name="device_settings_connectivity_smart_scale">Розумні ваги</string>
+    <string name="device_settings_connectivity_smart_scale_description">Автостоп при досягненні цільової ваги</string>
+    <string name="device_settings_connectivity_smart_scale_info">Під\'єднайте ваги для зупинки проливу на потрібній вазі.</string>
+    <string name="device_settings_connectivity_searching">Пошук сумісних пристроїв…</string>
+    <string name="device_settings_connectivity_not_found">Не бачите свій пристрій?</string>
+    <string name="device_settings_connectivity_rescan">Шукати знову</string>
+    <string name="device_settings_connectivity_scale_help">Досі під\'єднується? Перезавантажте кавомашину та спробуйте ще раз.</string>
+    <string name="device_settings_brewing_boiler">Бойлер</string>
+    <string name="device_settings_brewing_paddle">Довге натискання важеля</string>
+    <string name="device_settings_brewing_pulse_heating">Імпульсний нагрів</string>
+    <string name="device_settings_brewing_pulse_heating_description">Повільніший нагрів, менше споживання енергії</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Цільовий тиск</string>
+    <string name="device_settings_brewing_paddle_time_description">Цільовий час</string>
+</resources>

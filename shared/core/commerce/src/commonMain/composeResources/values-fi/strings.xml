@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Pidätkö sovelluksesta?</string>
+    <string name="tip_button">Osta minulle kahvi</string>
+    <string name="tip_dialog_title">Valitse kuppi</string>
+    <string name="tip_dialog_error">Kauppaan ei saada yhteyttä juuri nyt. Yritä myöhemmin uudelleen.</string>
+    <string name="tip_dialog_retry">Yritä uudelleen</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Nopea piristysannos</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">Nautittavaksi pumpun huristessa</string>
+    <string name="tip_tier_beans">Pussi erikoiskahvia</string>
+    <string name="tip_tier_beans_description">Laatupapuja pitkiin uuttohetkiin</string>
+    <string name="tip_tier_year_of_coffee">Vuoden kahvit</string>
+    <string name="tip_tier_year_of_coffee_description">Mylly pysyy täynnä 365 päivää</string>
+</resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="device_settings_title">Setări aparat</string>
+    <string name="device_settings_placeholder">Selectează un element pentru detalii</string>
+    <string name="device_settings_subtitle">Preferințe de extracție și configurare</string>
+    <string name="device_settings_brewing">Extracție</string>
+    <string name="device_settings_brewing_description">Parametri boiler și asociere comenzi</string>
+    <string name="device_settings_maintenance">Întreținere</string>
+    <string name="device_settings_maintenance_description">Curățare și alarmă nivel apă</string>
+    <string name="device_settings_connectivity">Conectivitate</string>
+    <string name="device_settings_connectivity_description">Accesorii smart externe</string>
+    <string name="device_settings_maintenance_cleaning">Curățare</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">Durată clătire per ciclu</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">Durată pauză între cicluri</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">Număr de repetări</string>
+    <string name="device_settings_maintenance_alarms">Alarme</string>
+    <string name="device_settings_maintenance_water_alarm">Alarmă lipsă apă</string>
+    <string name="device_settings_maintenance_water_alarm_description">Avertisment nivel scăzut de apă</string>
+    <string name="device_water_alarm_error">Nivel scăzut de apă. Umple rezervorul.</string>
+    <string name="device_dashboard_connecting">Conectare…</string>
+    <string name="device_settings_connectivity_smart_scale">Cântar inteligent</string>
+    <string name="device_settings_connectivity_smart_scale_description">Oprește automat la greutatea țintă</string>
+    <string name="device_settings_connectivity_smart_scale_info">Conectează un cântar inteligent pentru oprire la greutatea dorită.</string>
+    <string name="device_settings_connectivity_searching">Căutare dispozitive…</string>
+    <string name="device_settings_connectivity_not_found">Nu găsești dispozitivul?</string>
+    <string name="device_settings_connectivity_rescan">Scanează acum</string>
+    <string name="device_settings_connectivity_scale_help">Tot nu se conectează? Repornește espressorul și încearcă din nou.</string>
+    <string name="device_settings_brewing_boiler">Boiler</string>
+    <string name="device_settings_brewing_paddle">Apăsare lungă clapetă</string>
+    <string name="device_settings_brewing_pulse_heating">Încălzire în impulsuri</string>
+    <string name="device_settings_brewing_pulse_heating_description">Încălzire mai lentă, consum redus</string>
+    <string name="device_settings_brewing_paddle_pressure_description">Presiune țintă</string>
+    <string name="device_settings_brewing_paddle_time_description">Durată țintă</string>
+</resources>

@@ -1,0 +1,15 @@
+<resources>
+    <string name="tip_section_prompt">Vous appréciez l’application ?</string>
+    <string name="tip_button">M’offrir un café</string>
+    <string name="tip_dialog_title">Choisir une tasse</string>
+    <string name="tip_dialog_error">Boutique inaccessible pour le moment. Réessayez plus tard.</string>
+    <string name="tip_dialog_retry">Réessayer</string>
+    <string name="tip_tier_espresso">Espresso</string>
+    <string name="tip_tier_espresso_description">Un shot d’encouragement</string>
+    <string name="tip_tier_cappuccino">Cappuccino</string>
+    <string name="tip_tier_cappuccino_description">À siroter au doux son de la pompe</string>
+    <string name="tip_tier_beans">Paquet de café de spécialité</string>
+    <string name="tip_tier_beans_description">Du bon grain pour de longues sessions</string>
+    <string name="tip_tier_year_of_coffee">Un an de café</string>
+    <string name="tip_tier_year_of_coffee_description">De quoi alimenter le moulin 365 jours</string>
+</resources>

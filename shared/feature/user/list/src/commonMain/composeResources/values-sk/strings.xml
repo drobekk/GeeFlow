@@ -1,0 +1,10 @@
+<resources>
+    <string name="user_list_screen_title">Používatelia</string>
+    <string name="user_list_screen_subtitle">Vyberte profil používateľa</string>
+    <string name="user_list_screen_empty">Žiadni používatelia.</string>
+    <string name="user_list_screen_add_profile">Pridať profil</string>
+    <string name="user_list_add_profile_title">Pridať profil</string>
+    <string name="user_list_add_profile_subtitle">Vytvoriť nový používateľský profil</string>
+    <string name="user_list_add_profile_name_hint">Meno</string>
+    <string name="user_list_add_profile_save">Uložiť</string>
+</resources>
