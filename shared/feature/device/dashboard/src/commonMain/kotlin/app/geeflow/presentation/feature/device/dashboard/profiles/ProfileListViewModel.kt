@@ -45,11 +45,8 @@ import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_description
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_freehand
-import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_freehand_badge
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual
-import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual_badge
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile
-import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile_badge
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_duplicate_name
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -188,13 +185,6 @@ internal class ProfileListViewModel(
 
     private suspend fun BrewHistoryEntry.toHistoryBrew() = ProfileListViewState.HistoryBrew(
         id = id.toString(),
-        badge = getString(
-            when (mode) {
-                BrewMode.Manual -> Res.string.brew_history_manual_badge
-                BrewMode.Freehand -> Res.string.brew_history_freehand_badge
-                BrewMode.Profile -> Res.string.brew_history_profile_badge
-            },
-        ),
         name = displayName(),
         description = getString(Res.string.brew_history_description, startedAt.formatted(), durationSeconds),
     )

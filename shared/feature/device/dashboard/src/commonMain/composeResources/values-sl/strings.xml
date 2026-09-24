@@ -25,9 +25,6 @@
     <string name="brew_history_manual">Ročna ekstrakcija</string>
     <string name="brew_history_freehand">Prosta ekstrakcija</string>
     <string name="brew_history_profile">Profilna ekstrakcija</string>
-    <string name="brew_history_manual_badge">R</string>
-    <string name="brew_history_freehand_badge">P</string>
-    <string name="brew_history_profile_badge">O</string>
     <string name="brew_history_description">%1$s • %2$d s</string>
     <string name="settings_quick_title">Hitre nastavitve</string>
     <string name="settings_quick_more">Več nastavitev</string>

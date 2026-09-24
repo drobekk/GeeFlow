@@ -117,11 +117,6 @@ fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewS
     history = List(12) { index ->
         HistoryBrew(
             id = index.toString(),
-            badge = if (index % 3 == 0) {
-                "M"
-            } else {
-                "P"
-            },
             name = if (index % 3 == 0) {
                 "Manual brew"
             } else if (index % 2 == 0) {

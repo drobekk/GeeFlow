@@ -34,9 +34,6 @@
     <string name="brew_history_manual">Manual brew</string>
     <string name="brew_history_freehand">Freehand brew</string>
     <string name="brew_history_profile">Profile brew</string>
-    <string name="brew_history_manual_badge">M</string>
-    <string name="brew_history_freehand_badge">F</string>
-    <string name="brew_history_profile_badge">P</string>
     <string name="brew_history_description">%1$s • %2$d s</string>
 
     <!-- Device Settings Quick -->

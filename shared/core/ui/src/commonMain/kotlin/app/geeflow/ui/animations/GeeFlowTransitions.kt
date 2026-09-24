@@ -18,7 +18,7 @@ val ForwardTransition: ContentTransform
 val BackwardTransition: ContentTransform
     get() = slideTransform(enterFromRight = false)
 
-private fun slideTransform(enterFromRight: Boolean): ContentTransform {
+fun slideTransform(enterFromRight: Boolean): ContentTransform {
     val direction = if (enterFromRight) 1 else -1
     val enter = fadeIn(tween(EnterDurationMillis)) +
         slideInHorizontally(tween(EnterDurationMillis)) { direction * it / SlideFraction }

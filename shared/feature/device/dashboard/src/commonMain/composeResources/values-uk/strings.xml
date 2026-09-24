@@ -25,9 +25,6 @@
     <string name="brew_history_manual">Ручний пролив</string>
     <string name="brew_history_freehand">Вільний пролив</string>
     <string name="brew_history_profile">Пролив за профілем</string>
-    <string name="brew_history_manual_badge">Р</string>
-    <string name="brew_history_freehand_badge">В</string>
-    <string name="brew_history_profile_badge">П</string>
     <string name="brew_history_description">%1$s • %2$d с</string>
     <string name="settings_quick_title">Швидкі налаштування</string>
     <string name="settings_quick_more">Більше налаштувань</string>

@@ -28,7 +28,6 @@ data class ProfileListViewState(
 
     data class HistoryBrew(
         val id: String,
-        val badge: String,
         val name: String,
         val description: String,
         val selected: Boolean = false,

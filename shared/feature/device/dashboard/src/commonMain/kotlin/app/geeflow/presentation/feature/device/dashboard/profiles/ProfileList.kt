@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.device.dashboard.main.getMockProfileListViewState
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.HistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
+import app.geeflow.ui.animations.slideTransform
 import app.geeflow.ui.components.GeeFlowSwipeToRevealBox
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.SwipeToRevealBoxValue
@@ -134,23 +135,29 @@ private fun ProfileListContent(
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large),
     ) {
-        if (viewState.showHistory) {
-            HistoryColumn(
-                history = viewState.history,
-                loading = viewState.historyLoading,
-                topContentPadding = topContentPadding,
-                onEvent = onEvent,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            ProfilesColumn(
-                viewState = viewState,
-                searchQuery = searchQuery,
-                topContentPadding = topContentPadding,
-                onEvent = onEvent,
-                modifier = Modifier.fillMaxSize(),
-            )
+        AnimatedContent(
+            targetState = viewState.showHistory,
+            transitionSpec = { slideTransform(targetState) },
+        ) { showHistory ->
+            if (showHistory) {
+                HistoryColumn(
+                    history = viewState.history,
+                    loading = viewState.historyLoading,
+                    topContentPadding = topContentPadding,
+                    onEvent = onEvent,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            } else {
+                ProfilesColumn(
+                    viewState = viewState,
+                    searchQuery = searchQuery,
+                    topContentPadding = topContentPadding,
+                    onEvent = onEvent,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
+
         BottomBar(
             searchQuery = searchQuery,
             searchExpanded = isSearchExpanded,
@@ -292,44 +299,25 @@ private fun HistoryItem(
         brew.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
         else -> MaterialTheme.colorScheme.surfaceContainer
     }
-    val badgeColor = when {
-        brew.selected -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surfaceContainerHigh
-    }
-    val badgeTextColor = when {
-        brew.selected -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurface
-    }
-    Row(
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = brew.badge,
+            text = brew.name,
             style = MaterialTheme.typography.titleSmall,
-            color = badgeTextColor,
-            modifier = Modifier
-                .background(badgeColor, CircleShape)
-                .squareSize()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+            color = MaterialTheme.colorScheme.onSurface,
         )
-        HorizontalSpacer(12.dp)
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = brew.name,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = brew.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        Text(
+            text = brew.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -640,6 +628,7 @@ private fun ProfileItemContent(
             if (bound) {
                 Icon(
                     modifier = Modifier
+                        .size(ProfileBadgeSize)
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                         .padding(4.dp),
                     painter = rememberVectorPainter(Icons.Filled.InsertLink),
@@ -651,10 +640,12 @@ private fun ProfileItemContent(
                     text = profile.number,
                     style = MaterialTheme.typography.titleSmall,
                     color = numberTextColor,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
+                        .size(ProfileBadgeSize)
                         .background(numberColor, CircleShape)
                         .squareSize()
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .padding(vertical = 6.dp),
                 )
             }
         }
@@ -697,6 +688,7 @@ private fun ProfileItemContent(
     }
 }
 
+private val ProfileBadgeSize = 32.dp
 private const val FocusDelayMs = 150L
 private const val LoadMoreThreshold = 5
 

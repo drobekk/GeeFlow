@@ -25,9 +25,6 @@
     <string name="brew_history_manual">Manuaaliuutto</string>
     <string name="brew_history_freehand">Vapaa uutto</string>
     <string name="brew_history_profile">Profiiliuutto</string>
-    <string name="brew_history_manual_badge">M</string>
-    <string name="brew_history_freehand_badge">V</string>
-    <string name="brew_history_profile_badge">P</string>
     <string name="brew_history_description">%1$s • %2$d s</string>
     <string name="settings_quick_title">Pika-asetukset</string>
     <string name="settings_quick_more">Lisää asetuksia</string>
