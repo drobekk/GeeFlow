@@ -13,7 +13,7 @@ import app.geeflow.data.device.model.DeviceCapability.SmartScaleConnectivity
 import app.geeflow.data.device.model.DeviceCapability.SteamBoiler
 import app.geeflow.data.device.model.DeviceCapability.WaterAlarm
 import app.geeflow.domain.device.usecase.GetDeviceCapabilitiesUseCase
-import app.geeflow.domain.device.usecase.GetDeviceUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.navigation.destination.DeviceSettings
 import app.geeflow.navigation.destination.DeviceSettings.EntryPoint
 import app.geeflow.presentation.feature.device.settings.BrewingSettings
@@ -36,7 +36,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class DeviceSettingsViewModel(
     @InjectedParam val args: DeviceSettings,
-    getDeviceUseCase: GetDeviceUseCase,
+    private val observeDeviceUseCase: ObserveDeviceUseCase,
     private val getDeviceCapabilitiesUseCase: GetDeviceCapabilitiesUseCase,
 ) : BaseViewModel<DeviceSettingsViewState, Unit>(DeviceSettingsViewState()) {
 
@@ -49,7 +49,11 @@ internal class DeviceSettingsViewModel(
     private val maintenanceCapabilities = setOf(CleaningMode, CleaningSettings, WaterAlarm)
 
     init {
-        modify { copy(deviceName = getDeviceUseCase(args.deviceId)?.name.orEmpty()) }
+        launch {
+            observeDeviceUseCase(args.deviceId).collect { device ->
+                device?.let { modify { copy(deviceName = device.name) } }
+            }
+        }
         buildOptions()
 
         when (args.entryPoint) {

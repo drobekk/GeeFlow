@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Appareils</string>
     <string name="device_list_screen_subtitle">Gérez vos machines</string>
     <string name="device_list_screen_add_device">Ajouter un appareil</string>
     <string name="device_list_screen_set_as_default">Définir par défaut</string>
     <string name="device_list_screen_empty">Aucun appareil.\nVoilà qui explique l’absence d’extractions divines.</string>
+    <string name="device_list_screen_rename">Renommer</string>
+    <string name="device_list_screen_rename_title">Modifier le nom</string>
+    <string name="device_list_screen_rename_name_hint">Nom</string>
 </resources>

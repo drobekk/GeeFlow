@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Geräte</string>
     <string name="device_list_screen_subtitle">Geräte anzeigen und verwalten</string>
     <string name="device_list_screen_add_device">Gerät hinzufügen</string>
     <string name="device_list_screen_set_as_default">Als Standard festlegen</string>
     <string name="device_list_screen_empty">Noch keine Geräte.\nDas erklärt das Fehlen göttlicher Shots.</string>
+    <string name="device_list_screen_rename">Umbenennen</string>
+    <string name="device_list_screen_rename_title">Name ändern</string>
+    <string name="device_list_screen_rename_name_hint">Name</string>
 </resources>

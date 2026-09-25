@@ -21,8 +21,8 @@ import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewToHistoryUseCase
 import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
-import app.geeflow.domain.device.usecase.GetDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import app.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
@@ -91,7 +91,7 @@ import app.geeflow.data.device.model.Device as Machine
 internal class DeviceDashboardViewModel(
     @InjectedParam private val args: DeviceDashboard,
     @InjectedParam val permissionsController: PermissionsController,
-    getDevice: GetDeviceUseCase,
+    private val observeDevice: ObserveDeviceUseCase,
     private val observeDeviceState: ObserveDeviceStateUseCase,
     private val connectDevice: ConnectDeviceUseCase,
     private val disconnectDevice: DisconnectDeviceUseCase,
@@ -119,8 +119,16 @@ internal class DeviceDashboardViewModel(
     private var skipManualBrews = true
 
     init {
-        machine = getDevice(args.deviceId)
-        modify { copy(device = device.copy(id = args.deviceId, name = machine?.name ?: args.deviceId.toString())) }
+        launch {
+            observeDevice(args.deviceId).collect {
+                machine = it
+                it?.let {
+                    modify {
+                        copy(device = device.copy(id = args.deviceId, name = machine?.name ?: args.deviceId.toString()))
+                    }
+                }
+            }
+        }
         launch { observeDeviceState(args.deviceId).collect { state -> updateMachineStateUi(state) } }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
         launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
@@ -143,6 +151,7 @@ internal class DeviceDashboardViewModel(
         is DeviceDashboardEvent.MaintenanceReminderOpened -> withDeviceConnected {
             navigate(To(QuickMaintenance(args.deviceId, event.type)))
         }
+
         is CleaningClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
         is BrewDescriptionClicked -> modify {
             copy(dialog = Dialog.BrewDescription(brew.name, brew.description))

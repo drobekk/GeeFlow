@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Apparaten</string>
     <string name="device_list_screen_subtitle">Beheer je apparaten</string>
     <string name="device_list_screen_add_device">Apparaat toevoegen</string>
     <string name="device_list_screen_set_as_default">Instellen als standaard</string>
     <string name="device_list_screen_empty">Nog geen apparaten.\nDat verklaart het gebrek aan god shots.</string>
+    <string name="device_list_screen_rename">Hernoemen</string>
+    <string name="device_list_screen_rename_title">Naam wijzigen</string>
+    <string name="device_list_screen_rename_name_hint">Naam</string>
 </resources>

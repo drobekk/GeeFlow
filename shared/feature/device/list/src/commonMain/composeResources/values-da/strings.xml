@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Enheder</string>
     <string name="device_list_screen_subtitle">Administrer dine maskiner</string>
     <string name="device_list_screen_add_device">Tilføj enhed</string>
     <string name="device_list_screen_set_as_default">Vælg som standard</string>
     <string name="device_list_screen_empty">Ingen enheder endnu.\nDet forklarer manglen på god shots.</string>
+    <string name="device_list_screen_rename">Omdøb</string>
+    <string name="device_list_screen_rename_title">Omdøb</string>
+    <string name="device_list_screen_rename_name_hint">Navn</string>
 </resources>

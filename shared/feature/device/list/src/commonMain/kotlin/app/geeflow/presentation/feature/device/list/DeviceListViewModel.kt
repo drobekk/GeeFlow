@@ -7,7 +7,8 @@ import app.geeflow.data.device.model.DeviceConnection
 import app.geeflow.domain.device.usecase.DeleteDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectCurrentDeviceUseCase
 import app.geeflow.domain.device.usecase.GetCurrentDeviceIdUseCase
-import app.geeflow.domain.device.usecase.GetDevicesUseCase
+import app.geeflow.domain.device.usecase.ObserveDevicesUseCase
+import app.geeflow.domain.device.usecase.RenameDeviceUseCase
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import app.geeflow.domain.user.usecase.SetFavoriteDeviceUseCase
 import app.geeflow.navigation.NavEvent
@@ -17,24 +18,29 @@ import app.geeflow.presentation.feature.device.list.DeviceListEvent.AddDeviceCli
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.BackClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRemoveClicked
+import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRenameClicked
+import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRenameConfirmed
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceSetAsDefaultClicked
+import app.geeflow.presentation.feature.device.list.DeviceListEvent.DialogDismissed
+import app.geeflow.presentation.feature.device.list.DeviceListViewState.Dialog
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 internal class DeviceListViewModel(
-    getDevicesUseCase: GetDevicesUseCase,
+    observeDevicesUseCase: ObserveDevicesUseCase,
     private val deleteDeviceUseCase: DeleteDeviceUseCase,
     private val disconnectCurrentDevice: DisconnectCurrentDeviceUseCase,
     private val getCurrentDeviceId: GetCurrentDeviceIdUseCase,
     private val setFavoriteDeviceUseCase: SetFavoriteDeviceUseCase,
+    private val renameDeviceUseCase: RenameDeviceUseCase,
     getSelectedUserUseCase: GetSelectedUserUseCase,
 ) : BaseViewModel<DeviceListViewState, Unit>(DeviceListViewState()) {
 
     init {
         combine(
-            getDevicesUseCase(),
+            observeDevicesUseCase(),
             getSelectedUserUseCase(),
         ) { domainDevices, selectedUser ->
             modify {
@@ -73,6 +79,20 @@ internal class DeviceListViewModel(
             deleteDeviceUseCase(event.device.id)
             navigate(NavEvent.Remove(DeviceDashboard(event.device.id)))
         }
+
+        is DeviceRenameClicked -> modify { copy(dialog = Dialog.Rename(event.device)) }
+
+        is DeviceRenameConfirmed -> {
+            modify { copy(dialog = null) }
+            launchCatching {
+                val trimmedName = event.name.trim()
+                if (trimmedName.isNotBlank()) {
+                    renameDeviceUseCase(event.device.id, trimmedName)
+                }
+            }
+        }
+
+        is DialogDismissed -> modify { copy(dialog = null) }
 
         is DeviceSetAsDefaultClicked -> {
             viewState.value.user?.let { user ->

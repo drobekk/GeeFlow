@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Laitteet</string>
     <string name="device_list_screen_subtitle">Hallitse laitteitasi</string>
     <string name="device_list_screen_add_device">Lisää laite</string>
     <string name="device_list_screen_set_as_default">Aseta oletukseksi</string>
     <string name="device_list_screen_empty">Ei vielä laitteita.\nSe selittää täydellisten espressojen puutteen.</string>
+    <string name="device_list_screen_rename">Nimeä</string>
+    <string name="device_list_screen_rename_title">Muuta nimeä</string>
+    <string name="device_list_screen_rename_name_hint">Nimi</string>
 </resources>

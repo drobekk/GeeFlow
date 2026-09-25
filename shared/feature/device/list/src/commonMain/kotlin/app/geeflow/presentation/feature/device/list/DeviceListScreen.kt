@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DropdownMenu
@@ -53,6 +54,7 @@ import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.BackClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRemoveClicked
+import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRenameClicked
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceSetAsDefaultClicked
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -64,6 +66,7 @@ import geeflow.shared.core.ui.generated.resources.common_remove
 import geeflow.shared.feature.device.list.generated.resources.Res
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_add_device
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_empty
+import geeflow.shared.feature.device.list.generated.resources.device_list_screen_rename
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_set_as_default
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_subtitle
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_title
@@ -85,6 +88,11 @@ fun DeviceListScreen(navigator: Navigator) {
     DevicesListContent(
         viewState = viewState,
         showBackButton = showBackButton,
+        onEvent = viewModel::handleEvent,
+    )
+
+    DeviceListDialogs(
+        dialog = viewState.dialog,
         onEvent = viewModel::handleEvent,
     )
 
@@ -219,6 +227,19 @@ private fun DeviceItemMenu(device: DeviceListViewState.Device, onEvent: (DeviceL
                 },
                 onClick = {
                     onEvent(DeviceSetAsDefaultClicked(device))
+                    isMenuVisible = false
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(text = stringResource(Res.string.device_list_screen_rename)) },
+                leadingIcon = {
+                    Icon(
+                        painter = rememberVectorPainter(image = Icons.Filled.Edit),
+                        contentDescription = null,
+                    )
+                },
+                onClick = {
+                    onEvent(DeviceRenameClicked(device))
                     isMenuVisible = false
                 },
             )

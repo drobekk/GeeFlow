@@ -4,5 +4,8 @@
     <string name="device_list_screen_subtitle">View and manage your devices</string>
     <string name="device_list_screen_add_device">Add device</string>
     <string name="device_list_screen_set_as_default">Set as default</string>
+    <string name="device_list_screen_rename">Rename</string>
+    <string name="device_list_screen_rename_title">Change name</string>
+    <string name="device_list_screen_rename_name_hint">Name</string>
     <string name="device_list_screen_empty">No devices yet.\nThat explains the lack of god shots.</string>
 </resources>

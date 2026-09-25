@@ -10,6 +10,7 @@ interface DeviceRepository {
     fun addDevice(device: Device): Long
     fun getDeviceById(id: Long): Device?
     fun getDeviceByBleMacAddress(macAddress: String): Device?
+    fun renameDevice(id: Long, name: String)
     fun removeDeviceById(id: Long)
     fun setLastUsedDevice(id: Long)
     fun updateConnection(id: Long, connection: DeviceConnection)

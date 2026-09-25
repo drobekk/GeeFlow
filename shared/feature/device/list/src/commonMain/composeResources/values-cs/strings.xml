@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Zařízení</string>
     <string name="device_list_screen_subtitle">Správa vašich kávovarů</string>
     <string name="device_list_screen_add_device">Přidat zařízení</string>
     <string name="device_list_screen_set_as_default">Nastavit jako výchozí</string>
     <string name="device_list_screen_empty">Zatím žádná zařízení.\nTo vysvětluje absenci dokonalého espressa.</string>
+    <string name="device_list_screen_rename">Přejmenovat</string>
+    <string name="device_list_screen_rename_title">Přejmenovat</string>
+    <string name="device_list_screen_rename_name_hint">Jméno</string>
 </resources>

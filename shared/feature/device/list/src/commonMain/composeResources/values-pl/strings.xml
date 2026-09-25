@@ -3,5 +3,8 @@
     <string name="device_list_screen_subtitle">Przeglądaj i zarządzaj urządzeniami</string>
     <string name="device_list_screen_add_device">Dodaj urządzenie</string>
     <string name="device_list_screen_set_as_default">Ustaw jako domyślne</string>
+    <string name="device_list_screen_rename">Zmień nazwę</string>
+    <string name="device_list_screen_rename_title">Zmień nazwę</string>
+    <string name="device_list_screen_rename_name_hint">Nazwa</string>
     <string name="device_list_screen_empty">Brak urządzeń.\nTo wyjaśnia brak boskich shotów.</string>
 </resources>

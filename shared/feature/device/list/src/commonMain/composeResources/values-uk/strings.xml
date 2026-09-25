@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Пристрої</string>
     <string name="device_list_screen_subtitle">Керування вашими кавомашинами</string>
     <string name="device_list_screen_add_device">Додати пристрій</string>
     <string name="device_list_screen_set_as_default">Зробити основним</string>
     <string name="device_list_screen_empty">Пристроїв поки немає.\nЦе пояснює відсутність божественних шотів.</string>
+    <string name="device_list_screen_rename">Перейменувати</string>
+    <string name="device_list_screen_rename_title">Змінити ім\'я</string>
+    <string name="device_list_screen_rename_name_hint">Ім\'я</string>
 </resources>

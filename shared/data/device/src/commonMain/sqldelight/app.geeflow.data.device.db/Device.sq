@@ -35,6 +35,9 @@ UPDATE devices SET name = ?, isLastUsed = ?, manufacturer = ?, model = ?, versio
 updateBlePeripheralId:
 UPDATE devices SET blePeripheralId = ? WHERE id = ?;
 
+updateName:
+UPDATE devices SET name = ? WHERE id = ?;
+
 resetLastUsed:
 UPDATE devices SET isLastUsed = 0;
 

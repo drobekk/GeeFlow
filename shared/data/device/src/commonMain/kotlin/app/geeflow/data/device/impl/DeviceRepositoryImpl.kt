@@ -30,6 +30,11 @@ class DeviceRepositoryImpl(
 
     override fun getDeviceByBleMacAddress(macAddress: String): Device? = devicesDao.getDeviceByBleMac(macAddress)
 
+    override fun renameDevice(id: Long, name: String) {
+        devicesDao.updateName(id, name)
+        refresh()
+    }
+
     override fun removeDeviceById(id: Long) {
         devicesDao.deleteDevice(id)
         refresh()

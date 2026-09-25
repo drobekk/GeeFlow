@@ -56,6 +56,10 @@ class DevicesDao(database: AppDatabase) {
         }
     }
 
+    fun updateName(id: Long, name: String) {
+        dbQuery.updateName(name, id)
+    }
+
     fun bindProfile(deviceId: Long, profileId: Long) {
         dbQuery.bindProfile(profileId, deviceId)
     }

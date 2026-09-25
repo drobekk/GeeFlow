@@ -1,7 +1,10 @@
-<resources>
+﻿<resources>
     <string name="device_list_screen_title">Dispositivos</string>
     <string name="device_list_screen_subtitle">Gestiona tus cafeteras</string>
     <string name="device_list_screen_add_device">Añadir dispositivo</string>
     <string name="device_list_screen_set_as_default">Fijar predeterminado</string>
     <string name="device_list_screen_empty">Sin dispositivos aún.\nEso explica la falta de espressos divinos.</string>
+    <string name="device_list_screen_rename">Renombrar</string>
+    <string name="device_list_screen_rename_title">Cambiar nombre</string>
+    <string name="device_list_screen_rename_name_hint">Nombre</string>
 </resources>

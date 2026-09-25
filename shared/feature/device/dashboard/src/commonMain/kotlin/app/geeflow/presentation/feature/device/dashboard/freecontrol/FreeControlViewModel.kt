@@ -12,8 +12,8 @@ import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.SaveFreeVariableProfileUseCase
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
-import app.geeflow.domain.device.usecase.GetDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.domain.device.usecase.SetFreeBrewFlowUseCase
 import app.geeflow.domain.device.usecase.SetFreeBrewPressureUseCase
 import app.geeflow.domain.device.usecase.StartFreeVariableBrewingUseCase
@@ -54,9 +54,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @KoinViewModel
 internal class FreeControlViewModel(
     @InjectedParam private val args: FreeControl,
-    getDevice: GetDeviceUseCase,
     observeDeviceState: ObserveDeviceStateUseCase,
     observeBrewData: ObserveBrewDataUseCase,
+    observeDevice: ObserveDeviceUseCase,
     private val startFreeVariableBrewing: StartFreeVariableBrewingUseCase,
     private val stopFreeVariableBrewing: StopFreeVariableBrewingUseCase,
     private val setFreeBrewPressure: SetFreeBrewPressureUseCase,
@@ -72,8 +72,11 @@ internal class FreeControlViewModel(
     private var targetUpdateJob: Job? = null
 
     init {
-        val device = getDevice(args.deviceId)
-        modify { copy(deviceName = device?.name.orEmpty()) }
+        launch {
+            observeDevice(args.deviceId).collect { device ->
+                device?.let { modify { copy(deviceName = it.name) } }
+            }
+        }
         launch {
             val constraints = getDeviceConstraints(args.deviceId)
             modify { copy(pressureRange = constraints.pressureRange, flowRange = constraints.flowRange) }

@@ -1,7 +1,7 @@
 package app.geeflow.app.navigation
 
 import androidx.navigation3.runtime.NavKey
-import app.geeflow.domain.device.usecase.GetDevicesUseCase
+import app.geeflow.domain.device.usecase.ObserveDevicesUseCase
 import app.geeflow.domain.user.usecase.GetUsersUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.navigation.destination.DeviceList
@@ -11,11 +11,11 @@ import org.koin.core.annotation.Factory
 @Factory
 class GetInitialDestinationUseCase(
     private val getUsersUseCase: GetUsersUseCase,
-    private val getDevicesUseCase: GetDevicesUseCase,
+    private val observeDevicesUseCase: ObserveDevicesUseCase,
 ) {
     operator fun invoke(): NavKey {
         val users = getUsersUseCase().value
-        val devices = getDevicesUseCase().value
+        val devices = observeDevicesUseCase().value
 
         return when {
             devices.isNotEmpty() -> {
