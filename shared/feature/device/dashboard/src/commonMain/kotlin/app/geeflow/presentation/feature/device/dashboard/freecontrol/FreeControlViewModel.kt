@@ -107,25 +107,13 @@ internal class FreeControlViewModel(
 
     private fun startBrewing(): Job = launchCatching(::onError) {
         targetUpdateJob?.cancel()
-        modify { copy(sessionCompleted = false) }
+        modify { copy(sessionCompleted = false, brewButtonState = BrewButtonState.Syncing) }
         val isFlow = viewState.value.mode == ControlMode.Flow
-        try {
-            modify { copy(brewButtonState = BrewButtonState.Syncing) }
-            startFreeVariableBrewing(args.deviceId, isFlow)
-            if (isFlow) {
-                setFreeBrewFlow(args.deviceId, viewState.value.flowTarget)
-            } else {
-                setFreeBrewPressure(args.deviceId, viewState.value.pressureTarget)
-            }
-        } finally {
-            val currentButtonState = if (viewState.value.brewButtonState == BrewButtonState.Syncing) {
-                BrewButtonState.Syncing
-            } else if (viewState.value.brewButtonState == BrewButtonState.Brewing) {
-                BrewButtonState.Brewing
-            } else {
-                BrewButtonState.Idle
-            }
-            modify { copy(brewButtonState = currentButtonState) }
+        startFreeVariableBrewing(args.deviceId, isFlow)
+        if (isFlow) {
+            setFreeBrewFlow(args.deviceId, viewState.value.flowTarget)
+        } else {
+            setFreeBrewPressure(args.deviceId, viewState.value.pressureTarget)
         }
     }
 
@@ -171,7 +159,7 @@ internal class FreeControlViewModel(
             copy(
                 brewButtonState = if (state.brewStatus == DeviceState.BrewStatus.FreeVariable) {
                     BrewButtonState.Brewing
-                } else if (viewState.value.brewButtonState == BrewButtonState.Syncing) {
+                } else if (brewButtonState == BrewButtonState.Syncing) {
                     BrewButtonState.Syncing
                 } else {
                     BrewButtonState.Idle
@@ -191,6 +179,7 @@ internal class FreeControlViewModel(
 
     private fun onError(throwable: Throwable) {
         Logger.e(throwable = throwable) { "${this::class.simpleName}" }
+        modify { copy(brewButtonState = BrewButtonState.Idle) }
         launch {
             val message = if (throwable is RecordingCapacityExceededException) {
                 getString(Res.string.free_control_recording_too_long)
