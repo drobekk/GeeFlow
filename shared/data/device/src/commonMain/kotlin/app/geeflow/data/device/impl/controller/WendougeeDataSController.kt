@@ -732,8 +732,10 @@ class WendougeeDataSController(
     }
 
     override suspend fun requestSmartScaleList() {
-        Logger.withTag(TAG).d { "Requesting smart scale list..." }
+        Logger.withTag(TAG).d { "Refreshing smart scale status and list..." }
         val active = requireSession()
+        write(active, active.ctrlChar, CMD_SCALE_STATUS_REQUEST)
+        delay(SCALE_LIST_DELAY_MS)
         write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
     }
 

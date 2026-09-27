@@ -23,6 +23,7 @@ import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
+import app.geeflow.domain.device.usecase.RequestSmartScaleListUseCase
 import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import app.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
@@ -95,6 +96,7 @@ internal class DeviceDashboardViewModel(
     private val observeDeviceState: ObserveDeviceStateUseCase,
     private val connectDevice: ConnectDeviceUseCase,
     private val disconnectDevice: DisconnectDeviceUseCase,
+    private val requestSmartScaleList: RequestSmartScaleListUseCase,
     private val startManualBrewing: StartManualBrewingUseCase,
     private val startProfileBrewing: StartProfileBrewingUseCase,
     private val stopBrewing: StopBrewingUseCase,
@@ -195,8 +197,12 @@ internal class DeviceDashboardViewModel(
 
     private fun connect() {
         withBluetoothPermissions {
-            if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Disconnected) {
-                connectDevice(args.deviceId)
+            when (viewState.value.device.connectionStatus) {
+                Device.ConnectionStatus.Disconnected -> connectDevice(args.deviceId)
+                Device.ConnectionStatus.Connected -> launchCatching(
+                    onError = { Logger.w(it) { "Could not refresh smart scale status" } },
+                ) { requestSmartScaleList(args.deviceId) }
+                else -> Unit
             }
         }
     }
