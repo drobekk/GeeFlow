@@ -78,7 +78,9 @@ internal class ProfileEditorViewModel(
     getVisibleCharts: GetVisibleChartsUseCase,
     observeDeviceProfile: ObserveDeviceProfileUseCase,
     getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
-) : BaseViewModel<ProfileEditorViewState, ProfileEditorViewModelEvent>(ProfileEditorViewState()) {
+) : BaseViewModel<ProfileEditorViewState, ProfileEditorViewModelEvent>(
+    ProfileEditorViewState(profilingCapabilities = getProfilingCapabilities(args.deviceId)),
+) {
 
     private var sourceProfile: BrewProfile? = null
     private var nextStepId = 0L
@@ -92,7 +94,6 @@ internal class ProfileEditorViewModel(
                 copy(
                     pressureRange = constraints.pressureRange,
                     flowRange = constraints.flowRange,
-                    profilingCapabilities = getProfilingCapabilities(args.deviceId),
                 )
             }
         }
@@ -233,11 +234,12 @@ internal class ProfileEditorViewModel(
         if (viewState.value.isRecording) return
         val step = if (id == null) {
             val newId = nextStepId++
+            val type = viewState.value.experimentalControlType ?: StepType.Pressure
             Step(
-                newId,
-                StepType.Pressure,
-                60,
-                9f,
+                id = newId,
+                type = type,
+                timeSec = 60,
+                value = if (type == StepType.Flow) 4f else 9f,
                 phaseId = "phase-$newId-${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
                 exitConditions = listOf(ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f)),
             )

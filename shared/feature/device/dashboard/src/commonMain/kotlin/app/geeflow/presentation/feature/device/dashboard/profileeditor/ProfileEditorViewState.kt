@@ -35,6 +35,12 @@ internal data class ProfileEditorViewState(
     private val hasProgram: Boolean = (isRecording && targetData.isNotEmpty()) || steps.any { it.type != StepType.Wait }
     val canTest: Boolean = supportIssues.isEmpty() && hasProgram
     val canSave: Boolean = profileName.isNotBlank() && hasProgram
+    val experimentalControlType: StepType? get() = if (steps.any { it.experimental }) {
+        steps.firstOrNull { it.experimental && it.type != StepType.Wait }?.type
+            ?: steps.firstOrNull { it.type != StepType.Wait }?.type
+    } else {
+        null
+    }
 
     data class Step(
         val id: Long,

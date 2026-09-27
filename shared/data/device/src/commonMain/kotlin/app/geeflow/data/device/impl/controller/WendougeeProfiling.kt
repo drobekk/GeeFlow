@@ -41,7 +41,6 @@ internal object WendougeeProfiling {
         livePause = true,
         // Live register changes were acknowledged but did not switch the active regulator in device tests.
         liveModeSwitch = false,
-        liveFlowViaPressure = true,
         minimumWriteIntervalMillis = 100L,
         telemetry = setOf(BrewMetric.PumpPressure, BrewMetric.PumpFlow, BrewMetric.PumpedVolume, BrewMetric.CupWeight),
         binding = true,

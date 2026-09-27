@@ -4,6 +4,7 @@ import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
+import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.ThresholdComparison
@@ -67,22 +68,27 @@ class ProfileSupportTest {
         assertTrue(demo.assessProfile(weighted, checkAvailability = true).issues.isNotEmpty())
     }
 
-    @Test fun unknownLiveModeSwitchIsRejectedWithoutDroppingConditions() {
+    @Test fun `mixed app controlled profile is rejected`() {
         val phases = (recipe.program as BrewProgram.Phases).phases
         val mixed = recipe.copy(
             program = BrewProgram.Phases(phases + phases.first().copy(id = "flow", control = PhaseControl.Flow(4f)))
         )
         assertEquals(ProfileExecution.Unsupported, demo.assessProfile(mixed).execution)
-        val pressureAdapter = object : DeviceController by demo {
-            override val profilingCapabilities = demo.profilingCapabilities.copy(liveFlowViaPressure = true)
-        }
-        assertEquals(ProfileExecution.AppControlled, pressureAdapter.assessProfile(mixed).execution)
-        assertFalse(pressureAdapter.assessProfile(mixed).bindingAllowed)
-        val missingSensor = object : DeviceController by pressureAdapter {
-            override val profilingCapabilities = pressureAdapter.profilingCapabilities.copy(
-                telemetry = pressureAdapter.profilingCapabilities.telemetry - BrewMetric.PumpFlow,
-            )
-        }
-        assertEquals(ProfileExecution.Unsupported, missingSensor.assessProfile(mixed).execution)
+        assertFalse(demo.assessProfile(mixed).bindingAllowed)
+    }
+
+    @Test
+    fun `native profile may combine pressure and flow steps`() {
+        val mixed = recipe.copy(
+            finishCondition = Condition.Volume(120f),
+            program = BrewProgram.Phases(
+                listOf(
+                    BrewPhase("pressure", control = PhaseControl.Pressure(3f), maximumDurationMillis = 8000L),
+                    BrewPhase("flow", control = PhaseControl.Flow(4f), maximumDurationMillis = 8000L),
+                ),
+            ),
+        )
+
+        assertEquals(ProfileExecution.Native, demo.assessProfile(mixed).execution)
     }
 }

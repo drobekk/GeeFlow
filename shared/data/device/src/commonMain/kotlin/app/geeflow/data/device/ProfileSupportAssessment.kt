@@ -1,12 +1,10 @@
 package app.geeflow.data.device
 
-import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.PhaseControl
-import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.validate
 import app.geeflow.data.device.model.ProfileExecution
 import app.geeflow.data.device.model.ProfileIssue
@@ -34,13 +32,8 @@ fun DeviceController.assessProfile(profile: BrewProfile, checkAvailability: Bool
         )
     }
     val native = assessNativeProfile(profile)
-    val feedbackMetrics = if (native.isNotEmpty() && profilingCapabilities.liveFlowViaPressure && profile.hasFlowControl()) {
-        setOf(BrewMetric.PumpFlow, BrewMetric.PumpPressure)
-    } else {
-        emptySet()
-    }
     val unavailable = if (checkAvailability) {
-        (profile.requiredMetrics() + feedbackMetrics).filter { telemetry()[it] == null }
+        profile.requiredMetrics().filter { telemetry()[it] == null }
             .map { ProfileIssue(ProfileIssueCode.NotAvailable, metric = it) }
     } else {
         emptyList()
@@ -53,19 +46,12 @@ fun DeviceController.assessProfile(profile: BrewProfile, checkAvailability: Bool
             profilingCapabilities.binding,
         )
     }
-    val issues = liveIssues(profile) + feedbackMetrics.filter { it !in profilingCapabilities.telemetry }.map {
-        ProfileIssue(ProfileIssueCode.UnsupportedMetric, metric = it)
-    }
+    val issues = liveIssues(profile)
     return ProfileSupport(
         if (issues.isEmpty()) ProfileExecution.AppControlled else ProfileExecution.Unsupported,
         native,
         issues + unavailable,
     )
-}
-
-private fun BrewProfile.hasFlowControl(): Boolean = when (val program = program) {
-    is BrewProgram.Phases -> program.phases.any { it.control is PhaseControl.Flow }
-    is BrewProgram.Recording -> program.recording.controlMode == FreeHandControlMode.Flow
 }
 
 private fun DeviceController.liveIssues(profile: BrewProfile): List<ProfileIssue> {
@@ -79,10 +65,7 @@ private fun DeviceController.liveIssues(profile: BrewProfile): List<ProfileIssue
             }
         }
         val metrics = controls.mapNotNull { it.second.metric() }.distinct()
-        val pressureAdapter = caps.liveFlowViaPressure && metrics.all {
-            it == BrewMetric.PumpPressure || it == BrewMetric.PumpFlow
-        }
-        if (!caps.liveModeSwitch && !pressureAdapter && metrics.size > 1) {
+        if (!caps.liveModeSwitch && metrics.size > 1) {
             add(ProfileIssue(ProfileIssueCode.ModeSwitch))
         }
         profile.requiredMetrics().filter { it !in caps.telemetry }.forEach {
@@ -104,7 +87,7 @@ private fun BrewProfile.extractPhaseControls(): List<Pair<String?, PhaseControl>
 
 private fun ProfilingCapabilities.isControlSupported(control: PhaseControl): Boolean = when (control) {
     is PhaseControl.Pressure -> livePressure.containsKey(control.location)
-    is PhaseControl.Flow -> liveFlow != null && (!liveFlowViaPressure || PressureLocation.Pump in livePressure)
+    is PhaseControl.Flow -> liveFlow != null
     is PhaseControl.PumpPause -> livePause
 }
 

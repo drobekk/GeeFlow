@@ -21,6 +21,7 @@ internal data class StepEditorViewState(
     val capabilities: ProfilingCapabilities,
     val pressureRange: ClosedFloatingPointRange<Float>,
     val flowRange: ClosedFloatingPointRange<Float>,
+    val profileSteps: List<ProfileEditorViewState.Step> = emptyList(),
     val stepNumber: Int = 1,
     val conditionOperator: ConditionOperator = source.conditionOperator,
     val renaming: Boolean = false,
@@ -46,8 +47,16 @@ internal data class StepEditorViewState(
     },
 ) {
     val isExperimental get() = rampExperimental || conditions.any { conditionExperimental(it.metric) }
+    val lockedControlType: StepType? get() {
+        if (profileSteps.none { it.experimental }) return null
+        return profileSteps.firstOrNull { it.experimental && it.type != StepType.Wait }?.type
+            ?: profileSteps.firstOrNull { it.type != StepType.Wait }?.type
+    }
     val target get() = if (type == StepType.Flow) flow else pressure
     val targetRange get() = if (type == StepType.Flow) flowRange else pressureRange
+    fun acceptsTarget(value: Float): Boolean =
+        (type == StepType.Wait || value in targetRange) &&
+            (type == StepType.Wait || lockedControlType == null || lockedControlType == type)
     val rampExperimental get() = type != StepType.Wait && rampStyle !in capabilities.native?.ramps.orEmpty()
     fun conditionExperimental(metric: BrewMetric) = metric !in capabilities.native?.exitMetrics.orEmpty()
 
@@ -62,10 +71,15 @@ internal data class StepEditorViewState(
         StepType.Wait -> capabilities.livePause
     }
 
-    fun controlSupported(control: StepType): Boolean = liveControlSupported(control) || when (control) {
+    fun controlAvailable(control: StepType): Boolean = liveControlSupported(control) || when (control) {
         StepType.Pressure -> PressureLocation.Pump in capabilities.native?.pressureLocations.orEmpty()
         StepType.Flow -> capabilities.native?.flow == true
         StepType.Wait -> capabilities.native?.pause == true
+    }
+
+    fun controlSupported(control: StepType): Boolean {
+        if (control != StepType.Wait && lockedControlType?.let { it != control } == true) return false
+        return controlAvailable(control)
     }
 
     fun rampSupported(style: RampStyle): Boolean = style in capabilities.native?.ramps.orEmpty() ||

@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class DemoDeviceController(private val scope: CoroutineScope) : DeviceController {
     override suspend fun stopLiveSession() = stopFreeVariableBrewing()
     override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == DeviceState.BrewStatus.FreeVariable
-    override val profilingCapabilities = WendougeeProfiling.capabilities.copy(liveFlowViaPressure = false)
+    override val profilingCapabilities = WendougeeProfiling.capabilities
     override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
     override fun telemetry() = deviceState.value.let { state ->
         // A connected simulator has working pump sensors even before the first brew.

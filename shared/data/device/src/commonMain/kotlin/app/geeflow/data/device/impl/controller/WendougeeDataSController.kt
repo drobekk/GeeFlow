@@ -90,10 +90,7 @@ class WendougeeDataSController(
 
     override fun telemetry() = deviceState.value.pumpTelemetry()
 
-    override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession {
-        startFreeVariableBrewing(isFlow = false)
-        return WendougeePressureSession(controller = this)
-    }
+    override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession = openFreeHandSession(initial)
 
     private val _deviceState = MutableStateFlow(DeviceState())
     override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()

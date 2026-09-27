@@ -4,4 +4,5 @@ internal sealed interface StepEditorEffect {
     data class Saved(val step: ProfileEditorViewState.Step) : StepEditorEffect
     data object Cancelled : StepEditorEffect
     data object ExplainExperimental : StepEditorEffect
+    data object ExplainControlLock : StepEditorEffect
 }

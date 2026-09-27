@@ -154,5 +154,6 @@
     <string name="step_editor_conditions">Exit conditions</string>
     <string name="step_editor_time_limit">Time limit</string>
     <string name="step_editor_pump_control">Pump control</string>
+    <string name="step_editor_control_locked">Experimental steps use one pump control mode. This profile uses %1$s.</string>
     <string name="step_editor_ramp_style">Style</string>
 </resources>

@@ -15,7 +15,7 @@ internal fun StepEditorViewState.toStep(): ProfileEditorViewState.Step? {
     val thresholds = conditions.map { it.value.finiteNumber() }
     val validThresholds = thresholds.all { it != null && it >= 0 }
     val validRamp = !usesRamp || (rampDuration != null && rampDuration > 0 && rampDuration <= maximum)
-    val validTarget = type == StepType.Wait || value in targetRange
+    val validTarget = acceptsTarget(value)
     if (!validThresholds || !validRamp || !validTarget) return null
     val ramp = if (usesRamp) {
         PhaseRamp(

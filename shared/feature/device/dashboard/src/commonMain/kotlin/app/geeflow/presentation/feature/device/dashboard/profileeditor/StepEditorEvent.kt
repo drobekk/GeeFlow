@@ -5,6 +5,7 @@ import app.geeflow.data.brew.model.RampStyle
 
 internal sealed interface StepEditorEvent {
     data class TypeChanged(val type: StepType) : StepEditorEvent
+    data object ControlLockClicked : StepEditorEvent
     data class NameChanged(val value: String) : StepEditorEvent
     data class TargetChanged(val value: String) : StepEditorEvent
     data class RampChanged(val style: RampStyle) : StepEditorEvent

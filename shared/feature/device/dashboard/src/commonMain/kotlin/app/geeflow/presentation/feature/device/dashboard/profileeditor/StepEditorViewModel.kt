@@ -10,6 +10,7 @@ import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEdito
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionChanged
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionOperatorToggled
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ConditionRemoved
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ControlLockClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.ExperimentClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.InputClicked
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEvent.InputConfirmed
@@ -29,6 +30,7 @@ internal class StepEditorViewModel(
     capabilities: ProfilingCapabilities,
     pressureRange: ClosedFloatingPointRange<Float>,
     flowRange: ClosedFloatingPointRange<Float>,
+    profileSteps: List<ProfileEditorViewState.Step> = emptyList(),
     stepNumber: Int = 1,
 ) : BaseViewModel<StepEditorViewState, StepEditorEffect>(
     StepEditorViewState(
@@ -36,6 +38,7 @@ internal class StepEditorViewModel(
         capabilities = capabilities,
         pressureRange = pressureRange,
         flowRange = flowRange,
+        profileSteps = profileSteps,
         stepNumber = stepNumber,
     ),
 ) {
@@ -59,7 +62,9 @@ internal class StepEditorViewModel(
                     },
                 )
             }
+
             is ExperimentClicked -> launch { emitEvent(StepEditorEffect.ExplainExperimental) }
+            is ControlLockClicked -> launch { emitEvent(StepEditorEffect.ExplainControlLock) }
             is Save -> viewState.value.toStep()?.let { launch { emitEvent(StepEditorEffect.Saved(it)) } }
             is Cancel -> launch { emitEvent(StepEditorEffect.Cancelled) }
             else -> updateDraft(event = event)

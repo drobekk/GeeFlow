@@ -81,6 +81,10 @@ import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.data.device.model.NativeProfilingCapabilities
 import app.geeflow.data.device.model.ProfilingCapabilities
 import app.geeflow.data.device.model.TargetRange
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEffect.Cancelled
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEffect.ExplainControlLock
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEffect.ExplainExperimental
+import app.geeflow.presentation.feature.device.dashboard.profileeditor.StepEditorEffect.Saved
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowSlider
@@ -105,6 +109,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.profile_exper
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_condition_and
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_condition_or
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_conditions
+import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_control_locked
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_default_name
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_pause_hint
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_pump_control
@@ -133,6 +138,7 @@ internal fun ScopedStepEditor(
                 capabilities = parent.profilingCapabilities,
                 pressureRange = parent.pressureRange,
                 flowRange = parent.flowRange,
+                profileSteps = parent.steps,
                 stepNumber = if (request.isNew) {
                     parent.steps.size + 1
                 } else {
@@ -154,17 +160,25 @@ private fun StepEditorScreen(
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val explanation = stringResource(Res.string.profile_experimental_info)
+    val lockExplanation = state.lockedControlType?.let {
+        stringResource(Res.string.step_editor_control_locked, it.label())
+    }
     val ok = stringResource(CoreRes.string.common_ok)
     if (LocalNavigationEventDispatcherOwner.current != null) {
         NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None)) { onCancel() }
     }
     EventsDispatcher(viewModel.events) { event ->
         when (event) {
-            is StepEditorEffect.Saved -> onSaved(event.step)
-            StepEditorEffect.Cancelled -> onCancel()
-            StepEditorEffect.ExplainExperimental -> scope.launch {
+            is Saved -> onSaved(event.step)
+            is Cancelled -> onCancel()
+            is ExplainExperimental -> scope.launch {
                 snackbar.currentSnackbarData?.dismiss()
                 snackbar.showSnackbar(explanation, actionLabel = ok, duration = SnackbarDuration.Indefinite)
+            }
+
+            is ExplainControlLock -> scope.launch {
+                snackbar.currentSnackbarData?.dismiss()
+                lockExplanation?.let { snackbar.showSnackbar(it, duration = SnackbarDuration.Short) }
             }
         }
     }
@@ -300,8 +314,18 @@ private fun ControlPane(
             types.forEachIndexed { index, type ->
                 SegmentedButton(
                     selected = state.type == type,
-                    enabled = state.controlSupported(type),
-                    onClick = { onEvent(StepEditorEvent.TypeChanged(type)) },
+                    enabled = state.type == type || state.controlAvailable(type),
+                    onClick = {
+                        onEvent(
+                            if (state.lockedControlType != null &&
+                                (state.type == type || !state.controlSupported(type))
+                            ) {
+                                StepEditorEvent.ControlLockClicked
+                            } else {
+                                StepEditorEvent.TypeChanged(type)
+                            },
+                        )
+                    },
                     shape = SegmentedButtonDefaults.itemShape(index, types.size, baseShape = MaterialTheme.shapes.large),
                     colors = SegmentedButtonDefaults.colors(
                         activeContainerColor = when (type) {

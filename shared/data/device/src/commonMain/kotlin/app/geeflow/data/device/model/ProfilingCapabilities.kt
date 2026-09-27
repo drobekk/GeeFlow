@@ -21,8 +21,6 @@ data class ProfilingCapabilities(
     val liveFlow: TargetRange? = null,
     val livePause: Boolean = false,
     val liveModeSwitch: Boolean = false,
-    /** App-controlled pump flow is realized by adjusting pump pressure, without switching hardware modes. */
-    val liveFlowViaPressure: Boolean = false,
     val minimumWriteIntervalMillis: Long = 200,
     val telemetry: Set<BrewMetric> = emptySet(),
     val binding: Boolean = false,
