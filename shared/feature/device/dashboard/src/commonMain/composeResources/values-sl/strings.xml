@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Čas</string>
     <string name="step_editor_metric_water">Skupna prostornina</string>
     <string name="step_editor_metric_weight">Skupna teža</string>
+    <string name="step_editor_metric_step_volume">Prostornina v tem koraku</string>
+    <string name="step_editor_metric_step_weight">Teža v tem koraku</string>
     <string name="step_editor_metric_flow">Pretok črpalke</string>
     <string name="step_editor_metric_pump">Tlak črpalke</string>
     <string name="step_editor_metric_group">Tlak v glavi</string>

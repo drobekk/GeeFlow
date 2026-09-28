@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Timp</string>
     <string name="step_editor_metric_water">Volum total</string>
     <string name="step_editor_metric_weight">Greutate totală</string>
+    <string name="step_editor_metric_step_volume">Volum în acest pas</string>
+    <string name="step_editor_metric_step_weight">Greutate în acest pas</string>
     <string name="step_editor_metric_flow">Debit pompă</string>
     <string name="step_editor_metric_pump">Presiune pompă</string>
     <string name="step_editor_metric_group">Presiune grup</string>

@@ -60,7 +60,14 @@ sealed interface PhaseControl {
 @Serializable enum class ThresholdComparison { Above, Below }
 
 @Serializable
-data class ExitCondition(val metric: BrewMetric, val comparison: ThresholdComparison, val threshold: Float)
+data class ExitCondition(
+    val metric: BrewMetric,
+    val comparison: ThresholdComparison,
+    val threshold: Float,
+    val scope: MeasurementScope = MeasurementScope.Total,
+)
+
+@Serializable enum class MeasurementScope { Total, Step }
 
 @Serializable enum class RampStyle { Instant, Linear, EaseIn, EaseOut, EaseInOut }
 
@@ -116,13 +123,20 @@ fun BrewProgram.validate() {
                     PhaseControl.PumpPause -> 0f
                 }
                 require(value.isFinite() && value >= 0f) { "Invalid phase target" }
-                require(phase.exitConditions.all { it.threshold.isFinite() && it.threshold >= 0f })
+                require(
+                    phase.exitConditions.all {
+                        it.threshold.isFinite() && it.threshold >= 0f && it.hasValidScope()
+                    },
+                )
             }
         }
     }
 }
 
 private const val RAMP_MIDPOINT = .5f
+
+private fun ExitCondition.hasValidScope(): Boolean = scope == MeasurementScope.Total ||
+    metric == BrewMetric.PumpedVolume || metric == BrewMetric.CupWeight
 
 /** A single time condition has a known deadline even when a longer safety limit is configured. */
 fun BrewPhase.plannedDurationMillis(): Long {

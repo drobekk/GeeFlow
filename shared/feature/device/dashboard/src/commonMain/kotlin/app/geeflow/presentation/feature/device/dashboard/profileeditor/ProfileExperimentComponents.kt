@@ -81,7 +81,7 @@ internal fun PhaseDetails(step: ProfileEditorViewState.Step) {
             Text(
                 stringResource(
                     Res.string.experimental_condition_summary,
-                    condition.metric.unitLabel(),
+                    ConditionMeasure(condition.metric, condition.scope).conditionLabel(),
                     enumLabel(condition.comparison),
                     condition.threshold.toString(),
                 ),

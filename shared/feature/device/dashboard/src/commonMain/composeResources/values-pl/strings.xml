@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Czas</string>
     <string name="step_editor_metric_water">Całkowita objętość</string>
     <string name="step_editor_metric_weight">Całkowita waga</string>
+    <string name="step_editor_metric_step_volume">Objętość w tym kroku</string>
+    <string name="step_editor_metric_step_weight">Waga w tym kroku</string>
     <string name="step_editor_metric_flow">Przepływ pompy</string>
     <string name="step_editor_metric_pump">Ciśnienie pompy</string>
     <string name="step_editor_metric_group">Ciśnienie w grupie</string>

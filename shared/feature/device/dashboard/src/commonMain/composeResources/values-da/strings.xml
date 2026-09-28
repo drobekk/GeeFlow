@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Tid</string>
     <string name="step_editor_metric_water">Samlet volumen</string>
     <string name="step_editor_metric_weight">Samlet vægt</string>
+    <string name="step_editor_metric_step_volume">Volumen i dette trin</string>
+    <string name="step_editor_metric_step_weight">Vægt i dette trin</string>
     <string name="step_editor_metric_flow">Pumpeflow</string>
     <string name="step_editor_metric_pump">Pumpetryk</string>
     <string name="step_editor_metric_group">Gruppetryk</string>

@@ -74,6 +74,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.MeasurementScope
 import app.geeflow.data.brew.model.PhaseRamp
 import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStart
@@ -570,22 +571,23 @@ private fun ConditionContent(
         EditorChoice(
             title = stringResource(Res.string.experimental_measurement),
             values = if (condition.metric == BrewMetric.PhaseTime) {
-                listOf(BrewMetric.PhaseTime)
+                listOf(ConditionMeasure(BrewMetric.PhaseTime))
             } else {
-                state.availableConditionMetrics
+                state.availableConditionMeasures
             },
-            selected = condition.metric,
+            selected = condition.measure,
             modifier = Modifier.fillMaxWidth(),
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             label = { it.conditionLabel() },
-            icon = { it.icon() },
+            icon = { it.metric.icon() },
             experimental = { state.conditionExperimental(it) },
             onExplain = { onEvent(StepEditorEvent.ExperimentClicked) },
             onSelect = {
                 onEvent(
                     StepEditorEvent.ConditionChanged(
                         condition.copy(
-                            metric = it,
+                            metric = it.metric,
+                            scope = it.scope,
                             comparison = ThresholdComparison.Above,
                         ),
                     ),
@@ -684,7 +686,7 @@ internal fun StepEditorPreviewContent() {
                 ramp = PhaseRamp(style = RampStyle.EaseIn, durationMillis = 2000),
                 exitConditions = listOf(
                     ExitCondition(BrewMetric.PhaseTime, ThresholdComparison.Above, 10f),
-                    ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.Above, 40f),
+                    ExitCondition(BrewMetric.CupWeight, ThresholdComparison.Above, 10f, MeasurementScope.Step),
                 ),
             ),
             capabilities = ProfilingCapabilities(
@@ -698,7 +700,7 @@ internal fun StepEditorPreviewContent() {
                 livePressure = mapOf(PressureLocation.Pump to TargetRange(0f, 12f, 0.1f)),
                 liveFlow = TargetRange(0f, 8f, 0.1f),
                 livePause = true,
-                telemetry = setOf(BrewMetric.CupWeight, BrewMetric.PumpFlow),
+                telemetry = setOf(BrewMetric.CupWeight, BrewMetric.PumpFlow, BrewMetric.PumpedVolume),
             ),
             pressureRange = 0f..12f,
             flowRange = 0f..8f,

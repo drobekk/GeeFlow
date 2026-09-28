@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Tempo</string>
     <string name="step_editor_metric_water">Volume total</string>
     <string name="step_editor_metric_weight">Peso total</string>
+    <string name="step_editor_metric_step_volume">Volume nesta etapa</string>
+    <string name="step_editor_metric_step_weight">Peso nesta etapa</string>
     <string name="step_editor_metric_flow">Fluxo da bomba</string>
     <string name="step_editor_metric_pump">Pressão da bomba</string>
     <string name="step_editor_metric_group">Pressão no grupo</string>

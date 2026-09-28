@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.MeasurementScope
 import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStart
 import app.geeflow.data.brew.model.RampStyle
@@ -12,9 +13,12 @@ import app.geeflow.data.device.model.ProfilingCapabilities
 internal data class ConditionDraft(
     val id: Long,
     val metric: BrewMetric,
+    val scope: MeasurementScope = MeasurementScope.Total,
     val comparison: ThresholdComparison = ThresholdComparison.Above,
     val value: String,
 )
+
+internal data class ConditionMeasure(val metric: BrewMetric, val scope: MeasurementScope = MeasurementScope.Total)
 
 internal data class StepEditorViewState(
     val source: ProfileEditorViewState.Step,
@@ -41,12 +45,13 @@ internal data class StepEditorViewState(
         ConditionDraft(
             id = index.toLong(),
             metric = condition.metric,
+            scope = condition.scope,
             comparison = condition.comparison,
             value = condition.threshold.toString(),
         )
     },
 ) {
-    val isExperimental get() = rampExperimental || conditions.any { conditionExperimental(it.metric) }
+    val isExperimental get() = rampExperimental || conditions.any { conditionExperimental(it.measure) }
     val lockedControlType: StepType? get() {
         if (profileSteps.none { it.experimental }) return null
         return profileSteps.firstOrNull { it.experimental && it.type != StepType.Wait }?.type
@@ -58,12 +63,24 @@ internal data class StepEditorViewState(
         (type == StepType.Wait || value in targetRange) &&
             (type == StepType.Wait || lockedControlType == null || lockedControlType == type)
     val rampExperimental get() = type != StepType.Wait && rampStyle !in capabilities.native?.ramps.orEmpty()
-    fun conditionExperimental(metric: BrewMetric) = metric !in capabilities.native?.exitMetrics.orEmpty()
+    fun conditionExperimental(measure: ConditionMeasure) = measure.scope == MeasurementScope.Step ||
+        measure.metric !in capabilities.native?.exitMetrics.orEmpty()
 
     val availableConditionMetrics: List<BrewMetric>
         get() = (capabilities.native?.exitMetrics.orEmpty() + capabilities.telemetry)
             .filter { it != BrewMetric.PhaseTime }
             .sortedBy { it.ordinal }
+
+    val availableConditionMeasures: List<ConditionMeasure>
+        get() = availableConditionMetrics.flatMap { metric ->
+            if (metric in capabilities.telemetry &&
+                (metric == BrewMetric.PumpedVolume || metric == BrewMetric.CupWeight)
+            ) {
+                listOf(ConditionMeasure(metric), ConditionMeasure(metric, MeasurementScope.Step))
+            } else {
+                listOf(ConditionMeasure(metric))
+            }
+        }
 
     fun liveControlSupported(control: StepType): Boolean = when (control) {
         StepType.Pressure -> PressureLocation.Pump in capabilities.livePressure
@@ -87,6 +104,8 @@ internal data class StepEditorViewState(
 }
 
 private const val MillisecondsPerSecond = 1000f
+
+internal val ConditionDraft.measure get() = ConditionMeasure(metric, scope)
 
 private fun ProfileEditorViewState.Step.editorConditions(): List<ExitCondition> {
     val time = exitConditions.firstOrNull { it.metric == BrewMetric.PhaseTime }

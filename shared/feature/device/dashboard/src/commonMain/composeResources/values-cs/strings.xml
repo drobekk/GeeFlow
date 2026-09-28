@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Čas</string>
     <string name="step_editor_metric_water">Celkový objem</string>
     <string name="step_editor_metric_weight">Celková hmotnost</string>
+    <string name="step_editor_metric_step_volume">Objem v tomto kroku</string>
+    <string name="step_editor_metric_step_weight">Hmotnost v tomto kroku</string>
     <string name="step_editor_metric_flow">Průtok čerpadla</string>
     <string name="step_editor_metric_pump">Tlak čerpadla</string>
     <string name="step_editor_metric_group">Tlak v hlavě</string>

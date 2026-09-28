@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Время</string>
     <string name="step_editor_metric_water">Общий объём</string>
     <string name="step_editor_metric_weight">Общий вес</string>
+    <string name="step_editor_metric_step_volume">Объём на этом этапе</string>
+    <string name="step_editor_metric_step_weight">Вес на этом этапе</string>
     <string name="step_editor_metric_flow">Поток помпы</string>
     <string name="step_editor_metric_pump">Давление помпы</string>
     <string name="step_editor_metric_group">Давление в группе</string>

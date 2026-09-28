@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Zeit</string>
     <string name="step_editor_metric_water">Gesamtvolumen</string>
     <string name="step_editor_metric_weight">Gesamtgewicht</string>
+    <string name="step_editor_metric_step_volume">Volumen in diesem Schritt</string>
+    <string name="step_editor_metric_step_weight">Gewicht in diesem Schritt</string>
     <string name="step_editor_metric_flow">Pumpenfluss</string>
     <string name="step_editor_metric_pump">Pumpendruck</string>
     <string name="step_editor_metric_group">Gruppendruck</string>

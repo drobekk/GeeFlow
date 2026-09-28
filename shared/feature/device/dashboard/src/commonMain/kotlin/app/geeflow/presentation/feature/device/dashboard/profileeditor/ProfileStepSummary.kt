@@ -110,13 +110,14 @@ private fun StepIndicators(step: Step) {
                 color = MaterialTheme.colorScheme.primary,
             )
         }
-        step.exitConditions.map { it.metric }.distinct().filter { it != BrewMetric.PhaseTime }.forEach { metric ->
-            StepIndicator(
-                icon = metric.icon(),
-                label = metric.conditionLabel(),
-                color = metric.indicatorColor(),
-            )
-        }
+        step.exitConditions.map { ConditionMeasure(it.metric, it.scope) }.distinct()
+            .filter { it.metric != BrewMetric.PhaseTime }.forEach { measure ->
+                StepIndicator(
+                    icon = measure.metric.icon(),
+                    label = measure.conditionLabel(),
+                    color = measure.metric.indicatorColor(),
+                )
+            }
     }
 }
 

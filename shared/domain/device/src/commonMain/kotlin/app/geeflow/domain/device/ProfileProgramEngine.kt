@@ -8,6 +8,7 @@ import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.FreeHandRecording
+import app.geeflow.data.brew.model.MeasurementScope
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.PhaseExitReason
 import app.geeflow.data.brew.model.PhaseTransition
@@ -27,6 +28,8 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
     private var entered = false
     private var rampFrom = 0f
     private var previousTarget: PhaseControl? = null
+    private var stepVolume: Float? = null
+    private var stepWeight: Float? = null
     val transitions = mutableListOf<PhaseTransition>()
 
     data class Output(val target: PhaseControl? = null, val phaseId: String? = null, val finish: String? = null)
@@ -64,16 +67,14 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
             if (!entered) {
                 enteredAt = elapsed
                 rampFrom = rampStartValue(phase, telemetry)
+                stepVolume = telemetry[BrewMetric.PumpedVolume]
+                stepWeight = telemetry[BrewMetric.CupWeight]
                 entered = true
             }
             val phaseTime = elapsed - enteredAt
             var matchedCondition: ExitCondition? = null
             val conditionsMet = phaseTime >= phase.minimumDurationMillis && phase.conditionsMet { condition ->
-                val measured = if (condition.metric == BrewMetric.PhaseTime) {
-                    phaseTime / 1000f
-                } else {
-                    telemetry[condition.metric] ?: return@conditionsMet false
-                }
+                val measured = measurement(condition, phaseTime, telemetry) ?: return@conditionsMet false
                 val matches = when (condition.comparison) {
                     ThresholdComparison.Above -> measured >= condition.threshold
                     ThresholdComparison.Below -> measured <= condition.threshold
@@ -104,6 +105,20 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
         return Output(finish = "program_complete")
     }
 
+    private fun measurement(condition: ExitCondition, phaseTime: Long, telemetry: BrewTelemetry): Float? = when {
+        condition.metric == BrewMetric.PhaseTime -> phaseTime / MILLISECONDS_PER_SECOND
+        condition.scope == MeasurementScope.Total -> telemetry[condition.metric]
+        else -> {
+            val current = telemetry[condition.metric]
+            val baseline = when (condition.metric) {
+                BrewMetric.PumpedVolume -> stepVolume
+                BrewMetric.CupWeight -> stepWeight
+                else -> null
+            }
+            if (current != null && baseline != null) (current - baseline).takeIf { it >= 0f } else null
+        }
+    }
+
     private fun rampStartValue(phase: BrewPhase, telemetry: BrewTelemetry): Float {
         if (phase.ramp.style == RampStyle.Instant) return phase.control.value()
         val metric = phase.control.metric()
@@ -115,3 +130,4 @@ class ProfileProgramEngine(private val profile: BrewProfile) {
 }
 
 private const val MINIMUM_RECORDING_TIMEOUT_MS = 30000L
+private const val MILLISECONDS_PER_SECOND = 1000f

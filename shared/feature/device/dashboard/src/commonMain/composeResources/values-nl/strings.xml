@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Tijd</string>
     <string name="step_editor_metric_water">Totaal volume</string>
     <string name="step_editor_metric_weight">Totaal gewicht</string>
+    <string name="step_editor_metric_step_volume">Volume in deze stap</string>
+    <string name="step_editor_metric_step_weight">Gewicht in deze stap</string>
     <string name="step_editor_metric_flow">Pompflow</string>
     <string name="step_editor_metric_pump">Pompdruk</string>
     <string name="step_editor_metric_group">Groepsdruk</string>

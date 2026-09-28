@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Vrijeme</string>
     <string name="step_editor_metric_water">Ukupni volumen</string>
     <string name="step_editor_metric_weight">Ukupna težina</string>
+    <string name="step_editor_metric_step_volume">Volumen u ovom koraku</string>
+    <string name="step_editor_metric_step_weight">Težina u ovom koraku</string>
     <string name="step_editor_metric_flow">Protok pumpe</string>
     <string name="step_editor_metric_pump">Tlak pumpe</string>
     <string name="step_editor_metric_group">Tlak u glavi</string>

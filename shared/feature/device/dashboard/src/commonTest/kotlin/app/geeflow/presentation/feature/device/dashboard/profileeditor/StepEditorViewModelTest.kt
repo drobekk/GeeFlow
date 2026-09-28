@@ -2,6 +2,7 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import app.geeflow.data.brew.model.BrewMetric
 import app.geeflow.data.brew.model.ConditionOperator
+import app.geeflow.data.brew.model.MeasurementScope
 import app.geeflow.data.brew.model.PressureLocation
 import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.device.model.NativeProfilingCapabilities
@@ -26,6 +27,27 @@ class StepEditorViewModelTest {
         assertEquals(ConditionOperator.And, reopened.conditionOperator)
         editor.handleEvent(StepEditorEvent.ConditionOperatorToggled)
         assertEquals(ConditionOperator.Or, editor.viewState.value.conditionOperator)
+    }
+
+    @Test
+    fun `volume and weight in this step remain available after saving and reopening`() {
+        val editor = editor(
+            capabilities = ProfilingCapabilities(
+                native = NativeProfilingCapabilities(exitMetrics = setOf(BrewMetric.PhaseTime)),
+                telemetry = setOf(BrewMetric.PumpedVolume, BrewMetric.CupWeight),
+            ),
+        )
+        val available = editor.viewState.value.availableConditionMeasures
+        assertTrue(ConditionMeasure(BrewMetric.PumpedVolume, MeasurementScope.Step) in available)
+        assertTrue(ConditionMeasure(BrewMetric.CupWeight, MeasurementScope.Step) in available)
+        editor.handleEvent(StepEditorEvent.ConditionAdded)
+        val draft = editor.viewState.value.conditions.last()
+        editor.handleEvent(StepEditorEvent.ConditionChanged(draft.copy(scope = MeasurementScope.Step)))
+        val step = assertNotNull(editor.viewState.value.toStep())
+        assertEquals(MeasurementScope.Step, step.exitConditions.last().scope)
+        val reopened = StepEditorViewState(step, editor.viewState.value.capabilities, 0f..12f, 0f..8f)
+        assertEquals(MeasurementScope.Step, reopened.conditions.last().scope)
+        assertTrue(reopened.isExperimental)
     }
 
     private fun editor(

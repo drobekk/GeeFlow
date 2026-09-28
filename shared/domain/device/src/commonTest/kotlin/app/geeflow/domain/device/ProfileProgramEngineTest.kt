@@ -11,6 +11,7 @@ import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.FreeHandSample
+import app.geeflow.data.brew.model.MeasurementScope
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.PhaseExitReason
 import app.geeflow.data.brew.model.PhaseRamp
@@ -96,6 +97,44 @@ class ProfileProgramEngineTest {
         assertEquals("program_complete", engine.tick(1600, telemetry(volume = 50f)).finish)
         assertEquals(PhaseExitReason.ConditionMatched, engine.transitions.last().reason)
         assertEquals(BrewMetric.PumpedVolume, engine.transitions.last().condition?.metric)
+    }
+
+    @Test
+    fun `volume and weight in this step use values captured at the step start`() {
+        val second = first.copy(
+            id = "second",
+            maximumDurationMillis = 10000,
+            exitConditions = listOf(
+                ExitCondition(BrewMetric.PumpedVolume, ThresholdComparison.Above, 20f, MeasurementScope.Step),
+                ExitCondition(BrewMetric.CupWeight, ThresholdComparison.Above, 10f, MeasurementScope.Step),
+            ),
+        )
+        val engine = ProfileProgramEngine(profile(first, second))
+        engine.tick(0, telemetry())
+        engine.tick(1000, telemetry(volume = 50f, weight = 15f))
+        assertNull(engine.tick(1100, telemetry(volume = 69f, weight = 24f)).finish)
+        assertEquals("program_complete", engine.tick(1200, telemetry(volume = 70f, weight = 24f)).finish)
+        assertEquals(second.exitConditions.first(), engine.transitions.last().condition)
+
+        val weightEngine = ProfileProgramEngine(profile(first, second))
+        weightEngine.tick(0, telemetry())
+        weightEngine.tick(1000, telemetry(volume = 50f, weight = 15f))
+        assertEquals("program_complete", weightEngine.tick(1100, telemetry(volume = 51f, weight = 25f)).finish)
+        assertEquals(second.exitConditions.last(), weightEngine.transitions.last().condition)
+    }
+
+    @Test
+    fun `missing baseline cannot satisfy a step relative condition`() {
+        val phase = first.copy(
+            exitConditions = listOf(
+                ExitCondition(BrewMetric.CupWeight, ThresholdComparison.Above, 5f, MeasurementScope.Step),
+            ),
+        )
+        val engine = ProfileProgramEngine(profile(phase))
+        assertNull(engine.tick(0, BrewTelemetry(emptyMap())).finish)
+        assertNull(engine.tick(100, telemetry(weight = 20f)).finish)
+        assertEquals("program_complete", engine.tick(1000, telemetry(weight = 30f)).finish)
+        assertEquals(PhaseExitReason.MaximumDuration, engine.transitions.last().reason)
     }
 
     @Test fun missingPressureCannotSatisfyBelowCondition() {

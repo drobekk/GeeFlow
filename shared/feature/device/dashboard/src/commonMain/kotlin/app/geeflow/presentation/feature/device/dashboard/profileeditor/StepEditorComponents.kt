@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.MeasurementScope
 import app.geeflow.data.brew.model.PhaseRamp
 import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.ui.components.GeeFlowDialog
@@ -60,6 +61,8 @@ import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_m
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_flow
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_group
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_pump
+import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_step_volume
+import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_step_weight
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_water
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_metric_weight
 import geeflow.shared.feature.device.dashboard.generated.resources.step_editor_name
@@ -272,6 +275,16 @@ internal fun BrewMetric.conditionLabel(): String = stringResource(
         BrewMetric.BoilerPressure -> Res.string.step_editor_metric_boiler
     },
 )
+
+@Composable
+internal fun ConditionMeasure.conditionLabel(): String = when (scope) {
+    MeasurementScope.Total -> metric.conditionLabel()
+    MeasurementScope.Step -> when (metric) {
+        BrewMetric.PumpedVolume -> stringResource(Res.string.step_editor_metric_step_volume)
+        BrewMetric.CupWeight -> stringResource(Res.string.step_editor_metric_step_weight)
+        else -> metric.conditionLabel()
+    }
+}
 
 @Composable
 internal fun StepInputDialog(state: StepEditorViewState, onEvent: (StepEditorEvent) -> Unit) {

@@ -110,7 +110,8 @@ internal class StepEditorViewModel(
             when {
                 condition.id != event.condition.id -> condition
                 condition.metric == BrewMetric.PhaseTime -> condition.copy(value = event.condition.value)
-                event.condition.metric != condition.metric && event.condition.metric !in availableConditionMetrics -> condition
+                event.condition.measure != condition.measure &&
+                    event.condition.measure !in availableConditionMeasures -> condition
                 else -> event.condition
             }
         },

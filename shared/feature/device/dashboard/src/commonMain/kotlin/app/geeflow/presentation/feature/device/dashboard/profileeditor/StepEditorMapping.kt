@@ -29,6 +29,7 @@ internal fun StepEditorViewState.toStep(): ProfileEditorViewState.Step? {
     val exits = conditions.zip(thresholds) { condition, threshold ->
         ExitCondition(
             metric = condition.metric,
+            scope = condition.scope,
             comparison = condition.comparison,
             threshold = requireNotNull(threshold),
         )

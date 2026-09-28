@@ -124,6 +124,8 @@
     <string name="step_editor_metric_time">Aika</string>
     <string name="step_editor_metric_water">Kokonaistilavuus</string>
     <string name="step_editor_metric_weight">Kokonaispaino</string>
+    <string name="step_editor_metric_step_volume">Tilavuus tässä vaiheessa</string>
+    <string name="step_editor_metric_step_weight">Paino tässä vaiheessa</string>
     <string name="step_editor_metric_flow">Pumpun virtaus</string>
     <string name="step_editor_metric_pump">Pumpun paine</string>
     <string name="step_editor_metric_group">Ryhmän paine</string>
