@@ -49,6 +49,7 @@ import app.geeflow.presentation.feature.device.settings.components.SettingsApply
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
+import app.geeflow.ui.components.GeeFlowValueListItem
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.icons.Flush
@@ -148,7 +149,6 @@ private fun AdaptiveContent(
         if (isWidthLarge()) {
             Row(
                 Modifier.padding(
-                    horizontal = GeeFlowTheme.spacing.contentHorizontal,
                     vertical = GeeFlowTheme.spacing.contentVertical,
                 ),
             ) {
@@ -171,13 +171,12 @@ private fun CompactContent(
     Column(
         modifier = modifier
             .padding(
-                horizontal = GeeFlowTheme.spacing.contentHorizontal,
                 vertical = GeeFlowTheme.spacing.contentVertical,
             ),
     ) {
         BoilerSection(viewState, onEvent)
         VerticalSpacer(24.dp)
-        HorizontalDivider()
+        HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
         VerticalSpacer(24.dp)
         PaddleSection(viewState.paddle, onEvent)
     }
@@ -190,7 +189,7 @@ private fun BoilerSection(
 ) {
     SectionTitle(
         text = stringResource(Res.string.device_settings_brewing_boiler),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
     )
     VerticalSpacer(16.dp)
     GeeFlowToggleListItem(
@@ -205,7 +204,7 @@ private fun BoilerSection(
         unit = "°",
         onCheckedChanged = { onEvent(BrewBoilerToggled(it)) },
         onValueConfirmed = { onEvent(BrewTempChanged(it)) },
-        contentPadding = PaddingValues(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 8.dp),
         modifier = Modifier.fillMaxWidth(),
     )
     GeeFlowToggleListItem(
@@ -220,7 +219,7 @@ private fun BoilerSection(
         unit = "°",
         onCheckedChanged = { onEvent(SteamBoilerToggled(it)) },
         onValueConfirmed = { onEvent(SteamTempChanged(it)) },
-        contentPadding = PaddingValues(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 8.dp),
         modifier = Modifier.fillMaxWidth(),
     )
     GeeFlowToggleListItem(
@@ -229,7 +228,7 @@ private fun BoilerSection(
         checked = viewState.pulseHeatingEnabled,
         onCheckedChanged = { onEvent(PulseHeatingToggled(it)) },
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 8.dp),
     )
 }
 
@@ -239,7 +238,7 @@ private fun PaddleSection(
     onEvent: (BrewingSettingsEvent) -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SectionTitle(
@@ -258,28 +257,22 @@ private fun PaddleSection(
         )
     }
     VerticalSpacer(16.dp)
-    GeeFlowToggleListItem(
+    GeeFlowValueListItem(
         title = stringResource(CoreRes.string.common_pressure),
         subtitle = stringResource(Res.string.device_settings_brewing_paddle_pressure_description),
-        checked = true,
         value = "${paddle.pressure} ${stringResource(CoreRes.string.unit_bar)}",
         items = paddle.pressureList,
         unit = stringResource(CoreRes.string.unit_bar),
-        onCheckedChanged = {},
         onValueConfirmed = { onEvent(PaddlePressureChanged(it)) },
-        contentPadding = PaddingValues(vertical = 8.dp),
         modifier = Modifier.fillMaxWidth(),
     )
-    GeeFlowToggleListItem(
+    GeeFlowValueListItem(
         title = stringResource(CoreRes.string.common_time),
         subtitle = stringResource(Res.string.device_settings_brewing_paddle_time_description),
-        checked = paddle.time != "0",
         value = "${paddle.time} ${stringResource(CoreRes.string.common_sec)}",
         items = paddle.timeList,
         unit = stringResource(CoreRes.string.common_sec),
-        onCheckedChanged = { onEvent(PaddleTimeChanged(if (it) "30" else "0")) },
         onValueConfirmed = { onEvent(PaddleTimeChanged(it)) },
-        contentPadding = PaddingValues(vertical = 8.dp),
         modifier = Modifier.fillMaxWidth(),
     )
 }
