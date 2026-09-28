@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.window.core.layout.WindowSizeClass
 import app.geeflow.ui.theme.ThemeMode
@@ -15,9 +16,13 @@ import platform.Foundation.NSDate
 import platform.Foundation.NSDateFormatter
 import platform.Foundation.NSDateFormatterNoStyle
 import platform.Foundation.NSDateFormatterShortStyle
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationDidBecomeActiveNotification
 import platform.UIKit.UIApplicationOpenSettingsURLString
+import platform.UIKit.UIApplicationState
 import platform.UIKit.UIStatusBarAnimation
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.setStatusBarHidden
@@ -28,6 +33,23 @@ actual fun getThemeProvider() = object : ThemeProvider {}
 
 @Composable
 actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+
+@Composable
+actual fun ForegroundEffect(key: Any, onForeground: () -> Unit) {
+    val currentOnForeground by rememberUpdatedState(onForeground)
+    DisposableEffect(key) {
+        val center = NSNotificationCenter.defaultCenter
+        val observer = center.addObserverForName(
+            name = UIApplicationDidBecomeActiveNotification,
+            `object` = null,
+            queue = NSOperationQueue.mainQueue,
+        ) { currentOnForeground() }
+        if (UIApplication.sharedApplication.applicationState == UIApplicationState.UIApplicationStateActive) {
+            currentOnForeground()
+        }
+        onDispose { center.removeObserver(observer) }
+    }
+}
 
 @Composable
 actual fun KeepScreenOnEffect(enabled: Boolean) {

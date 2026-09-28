@@ -33,11 +33,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.navigation.destination.DeviceDashboard
+import app.geeflow.platform.ForegroundEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
@@ -76,9 +76,8 @@ internal fun DeviceDashboardScreen(
     val profileListViewState by profileListViewModel.viewState.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState { CompactDashboardPage.entries.size }
 
-    LifecycleResumeEffect(viewModel) {
+    ForegroundEffect(viewModel) {
         viewModel.handleEvent(DeviceDashboardEvent.Resumed)
-        onPauseOrDispose { }
     }
 
     DeviceDashboardContent(

@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.window.core.layout.WindowSizeClass
 import app.geeflow.ui.theme.ThemeMode
 import kotlinx.coroutines.delay
@@ -21,6 +22,14 @@ actual fun getThemeProvider() = object : ThemeProvider {}
 
 @Composable
 actual fun calculateWindowSizeClass(): WindowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+
+@Composable
+actual fun ForegroundEffect(key: Any, onForeground: () -> Unit) {
+    LifecycleResumeEffect(key) {
+        onForeground()
+        onPauseOrDispose { }
+    }
+}
 
 @Composable
 actual fun KeepScreenOnEffect(enabled: Boolean) = Unit

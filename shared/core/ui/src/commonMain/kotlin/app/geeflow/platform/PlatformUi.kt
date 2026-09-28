@@ -20,6 +20,9 @@ expect fun FullScreenEffect(enabled: Boolean)
 expect fun ThemeModeEffect(themeMode: ThemeMode)
 
 @Composable
+expect fun ForegroundEffect(key: Any, onForeground: () -> Unit)
+
+@Composable
 expect fun rememberLanguageSettingsLauncher(): (() -> Unit)?
 
 expect val isFullScreenSupported: Boolean
