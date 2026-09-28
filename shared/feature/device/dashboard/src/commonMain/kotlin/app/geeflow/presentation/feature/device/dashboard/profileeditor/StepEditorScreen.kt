@@ -22,11 +22,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -38,6 +38,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -591,46 +592,52 @@ private fun ConditionContent(
                 )
             },
         )
-        EditorField(
-            value = condition.value,
-            label = condition.metric.thresholdLabel(),
-            modifier = Modifier.padding(horizontal = 12.dp),
-            leading = if (condition.metric in PressureAndFlowMetrics) {
-                {
-                    FilledTonalIconButton(
-                        onClick = {
-                            val comparison = if (condition.comparison == ThresholdComparison.Above) {
-                                ThresholdComparison.Below
-                            } else {
-                                ThresholdComparison.Above
-                            }
-                            onEvent(StepEditorEvent.ConditionChanged(condition.copy(comparison = comparison)))
-                        },
-                        shape = CircleShape,
-                        modifier = Modifier.size(40.dp),
-                    ) {
-                        AnimatedContent(
-                            targetState = condition.comparison,
-                            transitionSpec = {
-                                (fadeIn() + scaleIn()).togetherWith(fadeOut() + scaleOut())
-                            },
-                        ) { comparison ->
-                            Icon(
-                                imageVector = when (comparison) {
-                                    ThresholdComparison.Above -> GeeFlowIcon.MoreThanOrEqual
-                                    ThresholdComparison.Below -> GeeFlowIcon.LessThanOrEqual
-                                },
-                                contentDescription = enumLabel(comparison),
-                                modifier = Modifier.size(20.dp),
-                            )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (condition.metric in PressureAndFlowMetrics) {
+                FilledTonalIconButton(
+                    onClick = {
+                        val comparison = if (condition.comparison == ThresholdComparison.Above) {
+                            ThresholdComparison.Below
+                        } else {
+                            ThresholdComparison.Above
                         }
+                        onEvent(StepEditorEvent.ConditionChanged(condition.copy(comparison = comparison)))
+                    },
+                    shape = MaterialTheme.shapes.large,
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    modifier = Modifier.fillMaxHeight().width(64.dp),
+                ) {
+                    AnimatedContent(
+                        targetState = condition.comparison,
+                        transitionSpec = {
+                            (fadeIn() + scaleIn()).togetherWith(fadeOut() + scaleOut())
+                        },
+                    ) { comparison ->
+                        Icon(
+                            imageVector = when (comparison) {
+                                ThresholdComparison.Above -> GeeFlowIcon.MoreThanOrEqual
+                                ThresholdComparison.Below -> GeeFlowIcon.LessThanOrEqual
+                            },
+                            contentDescription = enumLabel(comparison),
+                            modifier = Modifier.size(24.dp),
+                        )
                     }
                 }
-            } else {
-                null
-            },
-            onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.Condition(condition.id))) },
-        )
+            }
+            EditorField(
+                value = condition.value,
+                label = condition.metric.thresholdLabel(),
+                modifier = Modifier.weight(1f),
+                onClick = { onEvent(StepEditorEvent.InputClicked(StepInput.Condition(condition.id))) },
+            )
+        }
         VerticalSpacer(12.dp)
     }
 }

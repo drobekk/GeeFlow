@@ -86,7 +86,6 @@ internal fun EditorButton(
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     enabled: Boolean = true,
     icon: ImageVector? = null,
-    leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     Button(
@@ -102,20 +101,7 @@ internal fun EditorButton(
             disabledContentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
-        var lastLeading by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
-        if (leading != null) {
-            lastLeading = leading
-        }
-        AnimatedVisibility(
-            visible = leading != null,
-            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start) + scaleIn(),
-            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start) + scaleOut(),
-        ) {
-            Box(modifier = Modifier.padding(end = 12.dp)) {
-                lastLeading?.invoke()
-            }
-        }
-        if (leading == null && icon != null) {
+        if (icon != null) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
@@ -150,7 +136,6 @@ internal fun EditorField(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
-    leading: (@Composable () -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     EditorButton(
@@ -158,7 +143,6 @@ internal fun EditorField(
         value = value,
         onClick = onClick,
         modifier = modifier,
-        leading = leading,
     )
 }
 
