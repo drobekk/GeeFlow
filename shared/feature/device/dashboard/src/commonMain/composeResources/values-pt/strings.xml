@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Condições de saída</string>
     <string name="step_editor_time_limit">Limite de tempo</string>
     <string name="step_editor_pump_control">Controle da bomba</string>
+    <string name="step_editor_control_locked">As etapas experimentais usam um único modo de controle da bomba. Este perfil usa %1$s.</string>
     <string name="step_editor_ramp_style">Estilo</string>
 </resources>

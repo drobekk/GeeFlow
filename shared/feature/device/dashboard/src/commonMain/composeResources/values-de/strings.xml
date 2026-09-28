@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Ausstiegsbedingungen</string>
     <string name="step_editor_time_limit">Zeitlimit</string>
     <string name="step_editor_pump_control">Pumpensteuerung</string>
+    <string name="step_editor_control_locked">Experimentelle Schritte verwenden nur einen Pumpensteuerungsmodus. Dieses Profil verwendet %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
 </resources>

@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Poistumisehdot</string>
     <string name="step_editor_time_limit">Aikaraja</string>
     <string name="step_editor_pump_control">Pumpun ohjaus</string>
+    <string name="step_editor_control_locked">Kokeelliset vaiheet käyttävät yhtä pumpun ohjaustilaa. Tässä profiilissa käytetään tilaa %1$s.</string>
     <string name="step_editor_ramp_style">Tyyli</string>
 </resources>

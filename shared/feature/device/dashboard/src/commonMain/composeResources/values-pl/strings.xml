@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Warunki wyjścia</string>
     <string name="step_editor_time_limit">Limit czasu</string>
     <string name="step_editor_pump_control">Sterowanie pompą</string>
+    <string name="step_editor_control_locked">Kroki eksperymentalne używają jednego trybu sterowania pompą. W tym profilu jest to %1$s.</string>
     <string name="step_editor_ramp_style">Styl</string>
 </resources>

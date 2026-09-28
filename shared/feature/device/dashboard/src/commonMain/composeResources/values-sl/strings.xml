@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Izhodni pogoji</string>
     <string name="step_editor_time_limit">Časovna omejitev</string>
     <string name="step_editor_pump_control">Nadzor črpalke</string>
+    <string name="step_editor_control_locked">Eksperimentalni koraki uporabljajo en način upravljanja črpalke. Ta profil uporablja %1$s.</string>
     <string name="step_editor_ramp_style">Slog</string>
 </resources>

@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Conditions de sortie</string>
     <string name="step_editor_time_limit">Limite de temps</string>
     <string name="step_editor_pump_control">Contrôle de pompe</string>
+    <string name="step_editor_control_locked">Les étapes expérimentales utilisent un seul mode de contrôle de la pompe. Ce profil utilise %1$s.</string>
     <string name="step_editor_ramp_style">Style</string>
 </resources>

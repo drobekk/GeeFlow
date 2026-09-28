@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Uitgangscondities</string>
     <string name="step_editor_time_limit">Tijdslimiet</string>
     <string name="step_editor_pump_control">Pompbediening</string>
+    <string name="step_editor_control_locked">Experimentele stappen gebruiken één pompbedieningsmodus. Dit profiel gebruikt %1$s.</string>
     <string name="step_editor_ramp_style">Stijl</string>
 </resources>

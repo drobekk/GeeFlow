@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Условия выхода</string>
     <string name="step_editor_time_limit">Лимит времени</string>
     <string name="step_editor_pump_control">Управление помпой</string>
+    <string name="step_editor_control_locked">Экспериментальные шаги используют один режим управления помпой. В этом профиле используется %1$s.</string>
     <string name="step_editor_ramp_style">Стиль</string>
 </resources>

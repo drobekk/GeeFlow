@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Podmienky ukončenia</string>
     <string name="step_editor_time_limit">Časový limit</string>
     <string name="step_editor_pump_control">Ovládanie čerpadla</string>
+    <string name="step_editor_control_locked">Experimentálne kroky používajú jeden režim ovládania čerpadla. Tento profil používa %1$s.</string>
     <string name="step_editor_ramp_style">Štýl</string>
 </resources>

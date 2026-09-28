@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Condiții de ieșire</string>
     <string name="step_editor_time_limit">Limită de timp</string>
     <string name="step_editor_pump_control">Control pompă</string>
+    <string name="step_editor_control_locked">Pașii experimentali folosesc un singur mod de control al pompei. Acest profil folosește %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
 </resources>

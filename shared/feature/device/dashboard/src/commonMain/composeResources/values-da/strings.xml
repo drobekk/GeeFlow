@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Slutbetingelser</string>
     <string name="step_editor_time_limit">Tidsgrænse</string>
     <string name="step_editor_pump_control">Pumpestyring</string>
+    <string name="step_editor_control_locked">Eksperimentelle trin bruger én tilstand til pumpestyring. Denne profil bruger %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
 </resources>

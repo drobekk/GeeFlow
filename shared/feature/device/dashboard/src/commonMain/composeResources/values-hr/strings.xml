@@ -137,5 +137,6 @@
     <string name="step_editor_conditions">Uvjeti izlaza</string>
     <string name="step_editor_time_limit">Vremensko ograničenje</string>
     <string name="step_editor_pump_control">Kontrola pumpe</string>
+    <string name="step_editor_control_locked">Eksperimentalni koraci koriste jedan način upravljanja pumpom. Ovaj profil koristi %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
 </resources>
