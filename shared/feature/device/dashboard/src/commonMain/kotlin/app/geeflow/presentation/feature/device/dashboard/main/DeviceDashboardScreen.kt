@@ -122,6 +122,9 @@ internal fun DeviceDashboardScreen(
                 pagerState.animateScrollToPage(CompactDashboardPage.Details.ordinal)
             }
 
+            is DeviceDashboardViewModelEvent.SelectProfile ->
+                profileListViewModel.handleEvent(ProfileListEvent.ProfileSelected(it.id))
+
             is DeviceDashboardViewModelEvent.ShowSnackbar -> coroutineScope.launch {
                 snackbarState.currentSnackbarData?.dismiss()
                 snackbarState.showSnackbar(it.message)

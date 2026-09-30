@@ -7,9 +7,8 @@ import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewMode
+import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewSession
-import app.geeflow.data.brew.model.FreeHandRecording
-import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BoilerType
 import app.geeflow.data.device.model.DeviceState.BrewStatus
@@ -18,6 +17,7 @@ import app.geeflow.data.device.model.isDemo
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.GetBrewProfileUseCase
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
+import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewToHistoryUseCase
 import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
@@ -81,6 +81,7 @@ import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_off
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_on
+import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -101,6 +102,7 @@ internal class DeviceDashboardViewModel(
     private val startProfileBrewing: StartProfileBrewingUseCase,
     private val stopBrewing: StopBrewingUseCase,
     private val observeBrewData: ObserveBrewDataUseCase,
+    private val observeDeviceProfile: ObserveDeviceProfileUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val getBrewProfileUseCase: GetBrewProfileUseCase,
@@ -113,11 +115,11 @@ internal class DeviceDashboardViewModel(
     private var selectedProfileId: String? = null
     private var selectedProfileName: String? = null
     private var selectedProfileDescription: String? = null
-    private var selectedProfileSteps: List<ProfileStep> = emptyList()
-    private var selectedProfileRecording: FreeHandRecording? = null
     private var machine: Machine? = null
     private var deviceConfig: DeviceState.Config? = null
     private var brewInProgress = false
+    private var pendingAppProfile: BrewProfile? = null
+    private var activeBrewProfile: BrewProfile? = null
     private var skipManualBrews = true
 
     init {
@@ -154,6 +156,7 @@ internal class DeviceDashboardViewModel(
         is DeviceDashboardEvent.MaintenanceReminderOpened -> withDeviceConnected {
             navigate(To(QuickMaintenance(args.deviceId, event.type)))
         }
+
         is BrewDescriptionClicked -> modify {
             copy(dialog = Dialog.BrewDescription(brew.name, brew.description))
         }
@@ -201,6 +204,7 @@ internal class DeviceDashboardViewModel(
                 Device.ConnectionStatus.Connected -> launchCatching(
                     onError = { Logger.w(it) { "Could not refresh smart scale status" } },
                 ) { requestSmartScaleList(args.deviceId) }
+
                 else -> Unit
             }
         }
@@ -217,10 +221,14 @@ internal class DeviceDashboardViewModel(
             ?.toLongOrNull()
             ?.let { getBrewProfileUseCase(it) }
             ?.let { profile ->
+                var started = false
                 try {
                     modify { copy(brewButtonState = BrewButtonState.Syncing) }
+                    pendingAppProfile = profile
                     startProfileBrewing(args.deviceId, profile)
+                    started = true
                 } finally {
+                    if (!started) pendingAppProfile = null
                     modify {
                         copy(
                             brewButtonState = if (device.isBrewing) {
@@ -239,10 +247,13 @@ internal class DeviceDashboardViewModel(
         selectedProfileId = id
         val profileId = id?.toLongOrNull() ?: return@launchCatching
         val profile = getBrewProfileUseCase(profileId) ?: return@launchCatching
+        selectProfile(profile)
+    }
+
+    private suspend fun selectProfile(profile: BrewProfile) {
+        selectedProfileId = profile.id.toString()
         selectedProfileName = profile.name
         selectedProfileDescription = profile.displayDescription()
-        selectedProfileSteps = profile.steps
-        selectedProfileRecording = profile.recording
         modify { copy(brew = Brew(name = profile.name, description = selectedProfileDescription.orEmpty())) }
     }
 
@@ -312,18 +323,20 @@ internal class DeviceDashboardViewModel(
         }
     }
 
-    private fun brewSessionDataChanged(session: BrewSession) {
+    private suspend fun brewSessionDataChanged(session: BrewSession) {
         val wasBrewing = brewInProgress
         brewInProgress = session.inProgress
 
         if (session.mode == BrewMode.Manual && skipManualBrews) return
 
         if (!wasBrewing && session.inProgress) {
+            selectBrewSessionProfile(session)
+            val description = activeBrewProfile?.displayDescription().orEmpty()
             modify {
                 copy(
                     brew = Brew(
-                        name = selectedProfileName.orEmpty(),
-                        description = selectedProfileDescription.orEmpty(),
+                        name = activeBrewProfile?.name.orEmpty(),
+                        description = description,
                     ),
                 )
             }
@@ -344,16 +357,34 @@ internal class DeviceDashboardViewModel(
         if (wasBrewing && !session.inProgress) recordBrew(session)
     }
 
+    /**
+     * Selects the started profile, using the bound profile for brews started on the machine.
+     * Opens its details and remembers it for brew history.
+     */
+    private suspend fun selectBrewSessionProfile(session: BrewSession) {
+        val appProfile = pendingAppProfile
+        pendingAppProfile = null
+        activeBrewProfile = session.executionTrace?.profile ?: appProfile
+            ?: if (session.mode == BrewMode.Profile) observeDeviceProfile(args.deviceId).first() else null
+        activeBrewProfile?.let { profile ->
+            selectProfile(profile)
+            emitEvent(DeviceDashboardViewModelEvent.SelectProfile(profile.id.toString()))
+            emitEvent(DeviceDashboardViewModelEvent.SwitchToDetails)
+        }
+    }
+
     /** Only profile brews carry a profile — manual and freehand shots are labelled from their mode. */
-    private fun recordBrew(session: BrewSession) = launchCatching(::onError) {
-        val isProfileBrew = session.mode == BrewMode.Profile
-        saveBrewToHistory(
-            session = session,
-            profileId = selectedProfileId?.toLongOrNull()?.takeIf { isProfileBrew },
-            profileName = selectedProfileName?.takeIf { isProfileBrew },
-            profileSteps = if (isProfileBrew) selectedProfileSteps else emptyList(),
-            profileRecording = selectedProfileRecording.takeIf { isProfileBrew },
-        )
+    private fun recordBrew(session: BrewSession) {
+        val profile = activeBrewProfile
+        launchCatching(::onError) {
+            saveBrewToHistory(
+                session = session,
+                profileId = profile?.id,
+                profileName = profile?.name,
+                profileSteps = profile?.steps.orEmpty(),
+                profileRecording = profile?.recording,
+            )
+        }
     }
 
     private fun chartsVisibilityChanged(charts: Set<ChartType>) = modify {
