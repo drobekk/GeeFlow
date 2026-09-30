@@ -24,7 +24,7 @@
     <string name="user_settings_about">O aplikaciji</string>
     <string name="user_settings_about_description">Pogoji, zasebnost, licence in različica</string>
     <string name="user_settings_appearance_title">Videz in zaslon</string>
-    <string name="user_settings_appearance_dark_mode">Temni način</string>
+    <string name="user_settings_appearance_dark_mode">Videz</string>
     <string name="user_settings_appearance_dark_mode_system">Sistemsko</string>
     <string name="user_settings_appearance_dark_mode_light">Svetlo</string>
     <string name="user_settings_appearance_dark_mode_dark">Temno</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Celozaslonski način</string>
     <string name="user_settings_appearance_full_screen_description">Skrij sistemske vrstice v aplikaciji</string>
     <string name="user_settings_appearance_keep_screen_on">Ohrani vklopljen zaslon</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Prepreči izklop zaslona med pripravo</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Prepreči izklop zaslona, ko je aplikacija odprta</string>
     <string name="user_settings_appearance_screensaver">Ohranjevalnik zaslona</string>
     <string name="user_settings_appearance_screensaver_description">Prikaži uro ob nedejavnosti</string>
     <string name="user_settings_appearance_screensaver_timeout">Čas do ohranjevalnika</string>

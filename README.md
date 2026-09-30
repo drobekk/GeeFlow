@@ -69,7 +69,7 @@ The error codes reported by the machine have **not** been mapped. The only fault
 
 **Brewing**
 - Manual brewing with configurable time and pressure
-- Per-machine paddle settings: treat manual brews as flushes (no history or chart) and Autostart after brewing with a configurable delay; Autostart requires the app to stay active and connected
+- Per-machine paddle settings: treat manual brews as flushes (no history or chart) and Auto flush after brewing with a configurable delay; Auto flush requires the app to stay active and connected
 - Profile brewing with multi-step pressure, flow, and wait stages (variable-pressure and constant-pressure modes)
 - Experimental profiles with app-controlled ramps and measurement-based step transitions
 - Freehand ("free variable") brewing - steer pressure or flow live from a control screen, and optionally save the result as a profile

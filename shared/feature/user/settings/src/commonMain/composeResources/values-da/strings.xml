@@ -24,7 +24,7 @@
     <string name="user_settings_about">Om</string>
     <string name="user_settings_about_description">Vilkår, privatliv, licenser og version</string>
     <string name="user_settings_appearance_title">Udseende og skærm</string>
-    <string name="user_settings_appearance_dark_mode">Mørk tilstand</string>
+    <string name="user_settings_appearance_dark_mode">Udseende</string>
     <string name="user_settings_appearance_dark_mode_system">Følg system</string>
     <string name="user_settings_appearance_dark_mode_light">Lys</string>
     <string name="user_settings_appearance_dark_mode_dark">Mørk</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Fuldskærmstilstand</string>
     <string name="user_settings_appearance_full_screen_description">Skjul systembjælker i appen</string>
     <string name="user_settings_appearance_keep_screen_on">Hold skærmen tændt</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Forhindrer skærmen i at slukke under brygning</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Forhindrer skærmen i at slukke, mens appen er åben</string>
     <string name="user_settings_appearance_screensaver">Pauseskærm</string>
     <string name="user_settings_appearance_screensaver_description">Vis ur ved inaktivitet</string>
     <string name="user_settings_appearance_screensaver_timeout">Pauseskærm timeout</string>

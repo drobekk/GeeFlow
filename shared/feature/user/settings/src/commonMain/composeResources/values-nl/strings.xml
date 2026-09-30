@@ -24,7 +24,7 @@
     <string name="user_settings_about">Over</string>
     <string name="user_settings_about_description">Voorwaarden, privacy, licenties en versie</string>
     <string name="user_settings_appearance_title">Uiterlijk &amp; weergave</string>
-    <string name="user_settings_appearance_dark_mode">Donkere modus</string>
+    <string name="user_settings_appearance_dark_mode">Weergave</string>
     <string name="user_settings_appearance_dark_mode_system">Systeem volgen</string>
     <string name="user_settings_appearance_dark_mode_light">Licht</string>
     <string name="user_settings_appearance_dark_mode_dark">Donker</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Volledig scherm</string>
     <string name="user_settings_appearance_full_screen_description">Systeembalken verbergen in app</string>
     <string name="user_settings_appearance_keep_screen_on">Scherm aanhouden</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Uitschakelen tijdens zetten voorkomen</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Voorkom dat het scherm uitgaat terwijl de app geopend is</string>
     <string name="user_settings_appearance_screensaver">Schermbeveiliging</string>
     <string name="user_settings_appearance_screensaver_description">Klok tonen bij inactiviteit</string>
     <string name="user_settings_appearance_screensaver_timeout">Time-out schermbeveiliging</string>

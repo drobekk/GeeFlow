@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Chauffe plus lente mais consommation réduite</string>
     <string name="device_settings_brewing_paddle_pressure_description">Pression cible</string>
     <string name="device_settings_brewing_paddle_time_description">Durée cible</string>
-    <string name="device_settings_auto_flush">Démarrage automatique</string>
+    <string name="device_settings_auto_flush">Rinçage automatique</string>
     <string name="device_settings_auto_flush_delay">Délai après extraction</string>
-    <string name="device_settings_auto_flush_description">Démarrer automatiquement après extraction</string>
+    <string name="device_settings_auto_flush_description">Rincer automatiquement après extraction</string>
     <string name="device_settings_treat_manual_as_flush">Appui long palette = rinçage</string>
     <string name="device_settings_treat_manual_as_flush_description">Sans historique ni graphique</string>
 </resources>

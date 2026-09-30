@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Повільніший нагрів, менше споживання енергії</string>
     <string name="device_settings_brewing_paddle_pressure_description">Цільовий тиск</string>
     <string name="device_settings_brewing_paddle_time_description">Цільовий час</string>
-    <string name="device_settings_auto_flush">Автозапуск</string>
+    <string name="device_settings_auto_flush">Автоматичний пролив</string>
     <string name="device_settings_auto_flush_delay">Затримка після приготування</string>
-    <string name="device_settings_auto_flush_description">Запускати автоматично після приготування</string>
+    <string name="device_settings_auto_flush_description">Автоматичний пролив після приготування</string>
     <string name="device_settings_treat_manual_as_flush">Довге натискання як пролив</string>
     <string name="device_settings_treat_manual_as_flush_description">Без історії та графіка</string>
 </resources>

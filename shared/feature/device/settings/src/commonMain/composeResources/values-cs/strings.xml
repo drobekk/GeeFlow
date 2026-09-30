@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Delší doba ohřevu, nižší spotřeba energie</string>
     <string name="device_settings_brewing_paddle_pressure_description">Cílový tlak</string>
     <string name="device_settings_brewing_paddle_time_description">Cílová doba</string>
-    <string name="device_settings_auto_flush">Automatický start</string>
+    <string name="device_settings_auto_flush">Automatický proplach</string>
     <string name="device_settings_auto_flush_delay">Prodleva po přípravě</string>
-    <string name="device_settings_auto_flush_description">Automaticky spustit po přípravě kávy</string>
+    <string name="device_settings_auto_flush_description">Automaticky propláchnout po přípravě kávy</string>
     <string name="device_settings_treat_manual_as_flush">Dlouhý stisk pádla jako proplach</string>
     <string name="device_settings_treat_manual_as_flush_description">Bez historie a grafu</string>
 </resources>

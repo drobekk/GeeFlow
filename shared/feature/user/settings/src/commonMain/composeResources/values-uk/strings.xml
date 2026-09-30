@@ -24,7 +24,7 @@
     <string name="user_settings_about">Про застосунок</string>
     <string name="user_settings_about_description">Умови, конфіденційність, ліцензії та версія</string>
     <string name="user_settings_appearance_title">Зовнішній вигляд та екран</string>
-    <string name="user_settings_appearance_dark_mode">Темна тема</string>
+    <string name="user_settings_appearance_dark_mode">Вигляд</string>
     <string name="user_settings_appearance_dark_mode_system">Як у системі</string>
     <string name="user_settings_appearance_dark_mode_light">Світла</string>
     <string name="user_settings_appearance_dark_mode_dark">Темна</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Повноекранний режим</string>
     <string name="user_settings_appearance_full_screen_description">Приховати панелі системи в застосунку</string>
     <string name="user_settings_appearance_keep_screen_on">Не вимикати екран</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Запобігати вимкненню екрана під час заварювання</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Не вимикати екран, поки застосунок відкритий</string>
     <string name="user_settings_appearance_screensaver">Заставка</string>
     <string name="user_settings_appearance_screensaver_description">Показувати годинник під час бездіяльності</string>
     <string name="user_settings_appearance_screensaver_timeout">Таймаут заставки</string>

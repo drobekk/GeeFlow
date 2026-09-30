@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Langere opwarmtijd maar lager stroomverbruik</string>
     <string name="device_settings_brewing_paddle_pressure_description">Doeldruk</string>
     <string name="device_settings_brewing_paddle_time_description">Doelduur</string>
-    <string name="device_settings_auto_flush">Autostart</string>
+    <string name="device_settings_auto_flush">Automatisch spoelen</string>
     <string name="device_settings_auto_flush_delay">Vertraging na het zetten</string>
-    <string name="device_settings_auto_flush_description">Automatisch starten na het zetten</string>
+    <string name="device_settings_auto_flush_description">Spoel automatisch na het zetten</string>
     <string name="device_settings_treat_manual_as_flush">Lange drukpaddle als spoelen</string>
     <string name="device_settings_treat_manual_as_flush_description">Geen geschiedenis of grafiek</string>
 </resources>

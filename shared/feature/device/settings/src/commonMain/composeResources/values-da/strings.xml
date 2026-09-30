@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Længere opvarmning med lavere strømforbrug</string>
     <string name="device_settings_brewing_paddle_pressure_description">Måltryk</string>
     <string name="device_settings_brewing_paddle_time_description">Måltid</string>
-    <string name="device_settings_auto_flush">Autostart</string>
+    <string name="device_settings_auto_flush">Automatisk skylning</string>
     <string name="device_settings_auto_flush_delay">Ventetid efter brygning</string>
-    <string name="device_settings_auto_flush_description">Start automatisk efter brygning</string>
+    <string name="device_settings_auto_flush_description">Skyl automatisk efter brygning</string>
     <string name="device_settings_treat_manual_as_flush">Langt padletryk som skyl</string>
     <string name="device_settings_treat_manual_as_flush_description">Ingen historik eller graf</string>
 </resources>

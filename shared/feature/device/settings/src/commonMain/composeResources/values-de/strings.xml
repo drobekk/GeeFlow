@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Längere Aufheizzeit, geringerer Stromverbrauch</string>
     <string name="device_settings_brewing_paddle_pressure_description">Zieldruck</string>
     <string name="device_settings_brewing_paddle_time_description">Zieldauer</string>
-    <string name="device_settings_auto_flush">Autostart</string>
+    <string name="device_settings_auto_flush">Automatisches Spülen</string>
     <string name="device_settings_auto_flush_delay">Verzögerung nach dem Bezug</string>
-    <string name="device_settings_auto_flush_description">Nach dem Brühen automatisch starten</string>
+    <string name="device_settings_auto_flush_description">Nach dem Brühen automatisch spülen</string>
     <string name="device_settings_treat_manual_as_flush">Langer Paddle-Druck als Spülen</string>
     <string name="device_settings_treat_manual_as_flush_description">Ohne Verlauf und Diagramm</string>
 </resources>

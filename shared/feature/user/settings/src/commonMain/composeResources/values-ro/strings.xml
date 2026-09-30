@@ -24,7 +24,7 @@
     <string name="user_settings_about">Despre</string>
     <string name="user_settings_about_description">Termeni, confidențialitate, licențe și versiune</string>
     <string name="user_settings_appearance_title">Aspect și afișaj</string>
-    <string name="user_settings_appearance_dark_mode">Mod întunecat</string>
+    <string name="user_settings_appearance_dark_mode">Aspect</string>
     <string name="user_settings_appearance_dark_mode_system">După sistem</string>
     <string name="user_settings_appearance_dark_mode_light">Luminos</string>
     <string name="user_settings_appearance_dark_mode_dark">Întunecat</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Ecran complet</string>
     <string name="user_settings_appearance_full_screen_description">Ascunde barele de sistem în aplicație</string>
     <string name="user_settings_appearance_keep_screen_on">Păstrează ecranul aprins</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Previne oprirea ecranului în timpul extracției</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Previne oprirea ecranului cât timp aplicația este deschisă</string>
     <string name="user_settings_appearance_screensaver">Screensaver</string>
     <string name="user_settings_appearance_screensaver_description">Afișează ceasul la inactivitate</string>
     <string name="user_settings_appearance_screensaver_timeout">Timp de așteptare screensaver</string>

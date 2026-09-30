@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Aquecimento mais lento com menor consumo</string>
     <string name="device_settings_brewing_paddle_pressure_description">Pressão alvo</string>
     <string name="device_settings_brewing_paddle_time_description">Duração alvo</string>
-    <string name="device_settings_auto_flush">Início automático</string>
+    <string name="device_settings_auto_flush">Purga automática</string>
     <string name="device_settings_auto_flush_delay">Atraso após a extração</string>
-    <string name="device_settings_auto_flush_description">Iniciar automaticamente após a extração</string>
+    <string name="device_settings_auto_flush_description">Purgar automaticamente após a extração</string>
     <string name="device_settings_treat_manual_as_flush">Toque longo como purga</string>
     <string name="device_settings_treat_manual_as_flush_description">Sem histórico ou gráfico</string>
 </resources>

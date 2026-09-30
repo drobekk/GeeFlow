@@ -24,7 +24,7 @@
     <string name="user_settings_about">À propos</string>
     <string name="user_settings_about_description">Conditions, confidentialité, licences et version</string>
     <string name="user_settings_appearance_title">Apparence &amp; Affichage</string>
-    <string name="user_settings_appearance_dark_mode">Mode sombre</string>
+    <string name="user_settings_appearance_dark_mode">Apparence</string>
     <string name="user_settings_appearance_dark_mode_system">Système</string>
     <string name="user_settings_appearance_dark_mode_light">Clair</string>
     <string name="user_settings_appearance_dark_mode_dark">Sombre</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Plein écran</string>
     <string name="user_settings_appearance_full_screen_description">Masquer les barres système dans l’app</string>
     <string name="user_settings_appearance_keep_screen_on">Garder l’écran allumé</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Empêcher la mise en veille pendant l’extraction</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Empêcher la mise en veille lorsque l’application est ouverte</string>
     <string name="user_settings_appearance_screensaver">Écran de veille</string>
     <string name="user_settings_appearance_screensaver_description">Afficher l’horloge en veille</string>
     <string name="user_settings_appearance_screensaver_timeout">Délai de veille</string>

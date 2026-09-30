@@ -24,7 +24,7 @@
     <string name="user_settings_about">Acerca de</string>
     <string name="user_settings_about_description">Términos, privacidad, licencias y versión</string>
     <string name="user_settings_appearance_title">Aspecto y pantalla</string>
-    <string name="user_settings_appearance_dark_mode">Modo oscuro</string>
+    <string name="user_settings_appearance_dark_mode">Apariencia</string>
     <string name="user_settings_appearance_dark_mode_system">Predeterminado del sistema</string>
     <string name="user_settings_appearance_dark_mode_light">Claro</string>
     <string name="user_settings_appearance_dark_mode_dark">Oscuro</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Pantalla completa</string>
     <string name="user_settings_appearance_full_screen_description">Ocultar barras del sistema en la app</string>
     <string name="user_settings_appearance_keep_screen_on">Mantener pantalla encendida</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Evitar apagado de pantalla durante extracción</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Evitar que la pantalla se apague mientras la aplicación está abierta</string>
     <string name="user_settings_appearance_screensaver">Salvapantallas</string>
     <string name="user_settings_appearance_screensaver_description">Mostrar reloj en inactividad</string>
     <string name="user_settings_appearance_screensaver_timeout">Tiempo de espera</string>

@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Pidempi lämpenemisaika, pienempi virrankulutus</string>
     <string name="device_settings_brewing_paddle_pressure_description">Tavoitepaine</string>
     <string name="device_settings_brewing_paddle_time_description">Tavoitekesto</string>
-    <string name="device_settings_auto_flush">Automaattikäynnistys</string>
+    <string name="device_settings_auto_flush">Automaattinen huuhtelu</string>
     <string name="device_settings_auto_flush_delay">Viive uuton jälkeen</string>
-    <string name="device_settings_auto_flush_description">Käynnistä automaattisesti uuton jälkeen</string>
+    <string name="device_settings_auto_flush_description">Huuhtele automaattisesti uuton jälkeen</string>
     <string name="device_settings_treat_manual_as_flush">Vivun pitkä painallus huuhteluna</string>
     <string name="device_settings_treat_manual_as_flush_description">Ei historiaa tai käyrää</string>
 </resources>

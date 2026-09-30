@@ -31,7 +31,7 @@
 
     <!-- Appearance Settings -->
     <string name="user_settings_appearance_title">Appearance &amp; Display</string>
-    <string name="user_settings_appearance_dark_mode">Dark Mode</string>
+    <string name="user_settings_appearance_dark_mode">Appearance</string>
     <string name="user_settings_appearance_dark_mode_system">Follow system</string>
     <string name="user_settings_appearance_dark_mode_light">Light</string>
     <string name="user_settings_appearance_dark_mode_dark">Dark</string>
@@ -46,7 +46,7 @@
     <string name="user_settings_appearance_full_screen">Full Screen Mode</string>
     <string name="user_settings_appearance_full_screen_description">Hide system bars while using the app</string>
     <string name="user_settings_appearance_keep_screen_on">Keep Screen On</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Prevent screen from turning off during brew</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Prevent screen from turning off while the app is open</string>
     <string name="user_settings_appearance_screensaver">Screensaver</string>
     <string name="user_settings_appearance_screensaver_description">Show clock when inactive</string>
     <string name="user_settings_appearance_screensaver_timeout">Screensaver Timeout</string>

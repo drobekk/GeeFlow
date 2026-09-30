@@ -30,9 +30,9 @@
     <string name="device_settings_brewing_pulse_heating_description">Încălzire mai lentă, consum redus</string>
     <string name="device_settings_brewing_paddle_pressure_description">Presiune țintă</string>
     <string name="device_settings_brewing_paddle_time_description">Durată țintă</string>
-    <string name="device_settings_auto_flush">Pornire automată</string>
+    <string name="device_settings_auto_flush">Clătire automată</string>
     <string name="device_settings_auto_flush_delay">Întârziere după preparare</string>
-    <string name="device_settings_auto_flush_description">Pornește automat după preparare</string>
+    <string name="device_settings_auto_flush_description">Clătește automat după preparare</string>
     <string name="device_settings_treat_manual_as_flush">Apăsare lungă ca și clătire</string>
     <string name="device_settings_treat_manual_as_flush_description">Fără istoric sau grafic</string>
 </resources>

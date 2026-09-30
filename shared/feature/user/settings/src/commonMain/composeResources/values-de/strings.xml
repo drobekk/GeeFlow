@@ -24,7 +24,7 @@
     <string name="user_settings_about">Über</string>
     <string name="user_settings_about_description">AGB, Datenschutz, Lizenzen und Version</string>
     <string name="user_settings_appearance_title">Darstellung &amp; Anzeige</string>
-    <string name="user_settings_appearance_dark_mode">Dunkelmodus</string>
+    <string name="user_settings_appearance_dark_mode">Erscheinungsbild</string>
     <string name="user_settings_appearance_dark_mode_system">Systemstandard</string>
     <string name="user_settings_appearance_dark_mode_light">Hell</string>
     <string name="user_settings_appearance_dark_mode_dark">Dunkel</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Vollbildmodus</string>
     <string name="user_settings_appearance_full_screen_description">Systemleisten in der App ausblenden</string>
     <string name="user_settings_appearance_keep_screen_on">Bildschirm anlassen</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Ausschalten während des Bezugs verhindern</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Verhindert das Ausschalten des Bildschirms, solange die App geöffnet ist</string>
     <string name="user_settings_appearance_screensaver">Bildschirmschoner</string>
     <string name="user_settings_appearance_screensaver_description">Uhr bei Inaktivität anzeigen</string>
     <string name="user_settings_appearance_screensaver_timeout">Schoner-Timeout</string>

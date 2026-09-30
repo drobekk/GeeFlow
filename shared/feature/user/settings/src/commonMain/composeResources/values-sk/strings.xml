@@ -24,7 +24,7 @@
     <string name="user_settings_about">O aplikácii</string>
     <string name="user_settings_about_description">Podmienky, súkromie, licencie a verzia</string>
     <string name="user_settings_appearance_title">Vzhľad a zobrazenie</string>
-    <string name="user_settings_appearance_dark_mode">Tmavý režim</string>
+    <string name="user_settings_appearance_dark_mode">Vzhľad</string>
     <string name="user_settings_appearance_dark_mode_system">Podľa systému</string>
     <string name="user_settings_appearance_dark_mode_light">Svetlý</string>
     <string name="user_settings_appearance_dark_mode_dark">Tmavý</string>
@@ -39,7 +39,7 @@
     <string name="user_settings_appearance_full_screen">Celá obrazovka</string>
     <string name="user_settings_appearance_full_screen_description">Skryť systémové lišty v aplikácii</string>
     <string name="user_settings_appearance_keep_screen_on">Ponechať zapnutú obrazovku</string>
-    <string name="user_settings_appearance_keep_screen_on_description">Zabrániť vypnutiu displeja počas prípravy</string>
+    <string name="user_settings_appearance_keep_screen_on_description">Zabrániť vypnutiu obrazovky, keď je aplikácia otvorená</string>
     <string name="user_settings_appearance_screensaver">Šetrič obrazovky</string>
     <string name="user_settings_appearance_screensaver_description">Zobraziť hodiny pri nečinnosti</string>
     <string name="user_settings_appearance_screensaver_timeout">Limit šetriča</string>
