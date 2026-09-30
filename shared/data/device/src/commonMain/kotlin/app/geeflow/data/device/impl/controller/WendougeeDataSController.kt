@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions")
+@file:Suppress("TooManyFunctions", "LargeClass")
 @file:OptIn(kotlin.uuid.ExperimentalUuidApi::class)
 
 package app.geeflow.data.device.impl.controller
@@ -45,11 +45,14 @@ import dev.bluefalcon.core.BlueFalcon
 import dev.bluefalcon.core.BluetoothCharacteristic
 import dev.bluefalcon.core.BluetoothPeripheral
 import dev.bluefalcon.core.BluetoothPeripheralState
+import dev.bluefalcon.core.ServiceDiscoveryPhase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -276,9 +279,17 @@ class WendougeeDataSController(
         peripheral: BluetoothPeripheral,
     ): Pair<BluetoothCharacteristic, BluetoothCharacteristic>? = withTimeoutOrNull(CHARS_READY_TIMEOUT_MS) {
         delay(POST_CONNECT_SETTLE_MS)
+        // Reconnect retains the Kotlin service list, but the native GATT handles are new.
+        // Subscribe before discovery and wait for fresh services before requesting characteristics.
+        val servicesDiscovered = async(start = CoroutineStart.UNDISPATCHED) {
+            blueFalcon.serviceDiscoveryUpdates.first {
+                it.peripheral.uuid == peripheral.uuid &&
+                    it.phase == ServiceDiscoveryPhase.ServicesDiscovered
+            }
+        }
         Logger.withTag(TAG).d { "Triggering discoverServices" }
-        runCatching { blueFalcon.discoverServices(peripheral) }
-            .onFailure { Logger.withTag(TAG).w(it) { "discoverServices threw" } }
+        blueFalcon.discoverServices(peripheral)
+        servicesDiscovered.await()
         val requested = mutableSetOf<String>()
         var lastServiceCount = -1
         var lastCharCount = -1
