@@ -86,8 +86,10 @@ class DemoProfileAvailabilityTest {
             withTimeout(3000) {
                 controller.deviceState.first { it.connectionStatus == DeviceState.ConnectionStatus.Connected }
             }
-            assertNull(controller.telemetry()[BrewMetric.CupWeight])
+            assertDefaultScaleConnected(controller)
             if (metric == BrewMetric.CupWeight) {
+                assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isEmpty())
+                controller.disconnectSmartScale()
                 assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isNotEmpty())
                 controller.connectSmartScale(name = "Bookoo Themis")
             }
@@ -112,5 +114,12 @@ class DemoProfileAvailabilityTest {
         } finally {
             scope.cancel()
         }
+    }
+    private fun assertDefaultScaleConnected(controller: DemoDeviceController) {
+        assertEquals("Bookoo Themis", controller.deviceState.value.smartScale?.name)
+        assertTrue(controller.deviceState.value.smartScaleEnabled)
+        assertTrue(controller.deviceState.value.smartScale?.isConnected == true)
+        assertEquals(0f, controller.telemetry()[BrewMetric.CupWeight])
+        assertEquals(controller.deviceState.value.smartScale, controller.foundScales.value.single())
     }
 }

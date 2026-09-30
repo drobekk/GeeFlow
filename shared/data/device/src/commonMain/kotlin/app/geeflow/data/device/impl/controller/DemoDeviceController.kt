@@ -50,10 +50,10 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
     override suspend fun openLiveSession(initial: PhaseControl) = openFreeHandSession(initial)
 
-    private val _deviceState = MutableStateFlow(DeviceState())
+    private val _deviceState = MutableStateFlow(defaultDeviceState())
     override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()
 
-    private val _foundScales = MutableStateFlow<List<SmartScale>>(emptyList())
+    private val _foundScales = MutableStateFlow(listOfNotNull(_deviceState.value.smartScale))
     override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
 
     private val _resolvedConnection = MutableSharedFlow<DeviceConnection>(extraBufferCapacity = 1)
@@ -121,7 +121,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
     override fun disconnect() {
         brewJob?.cancel()
-        _deviceState.update { DeviceState() }
+        _deviceState.update { defaultDeviceState() }
+        _foundScales.value = listOfNotNull(_deviceState.value.smartScale)
     }
 
     private var brewJob: Job? = null
@@ -442,7 +443,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
         _deviceState.update { it.copy(smartScaleEnabled = enabled) }
         if (enabled) {
-            _foundScales.value = emptyList()
+            _foundScales.value = listOfNotNull(_deviceState.value.smartScale)
             simulateScaleSearch()
         } else {
             _deviceState.update { it.copy(smartScaleSearchActive = false, smartScale = null) }
@@ -460,10 +461,13 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
             _deviceState.update { it.copy(smartScaleSearchActive = true) }
             delay(SCALE_SEARCH_DELAY_MS.milliseconds)
             if (!_deviceState.value.smartScaleEnabled) return@launch
+            val connectedScaleName = _deviceState.value.smartScale?.takeIf { it.isConnected }?.name
             _foundScales.value = listOf(
-                SmartScale("Bookoo Themis", isConnected = false),
+                SmartScale(DEFAULT_SCALE_NAME, isConnected = false),
                 SmartScale(SLOW_SCALE_NAME, isConnected = false),
-            )
+            ).map { scale ->
+                scale.copy(isConnected = scale.name == connectedScaleName)
+            }
             delay(SCALE_SEARCH_DURATION_MS.milliseconds)
             if (_deviceState.value.smartScaleEnabled) {
                 _deviceState.update { it.copy(smartScaleSearchActive = false) }
@@ -475,7 +479,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         // The second scale is deliberately slow to pair so the connection help hint can be exercised.
         delay((if (name == SLOW_SCALE_NAME) SLOW_SCALE_CONNECT_DELAY_MS else SCALE_CONNECT_DELAY_MS).milliseconds)
         val scale = SmartScale(name, isConnected = true)
-        _foundScales.update { scales -> scales.map { if (it.name == name) scale else it } }
+        _foundScales.update { scales -> scales.map { it.copy(isConnected = it.name == name) } }
         _deviceState.update { it.copy(smartScale = scale) }
     }
 
@@ -505,7 +509,13 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         private const val SCALE_SEARCH_DELAY_MS = 2000L
         private const val SCALE_SEARCH_DURATION_MS = 8000L
         private const val SCALE_CONNECT_DELAY_MS = 1500L
+        private const val DEFAULT_SCALE_NAME = "Bookoo Themis"
         private const val SLOW_SCALE_NAME = "Bookoo Themis Ultra"
+
+        private fun defaultDeviceState() = DeviceState(
+            smartScaleEnabled = true,
+            smartScale = SmartScale(DEFAULT_SCALE_NAME, isConnected = true),
+        )
         private const val SLOW_SCALE_CONNECT_DELAY_MS = 8000L
 
         private const val DEFAULT_FREE_VAR_PRESSURE = 6f
