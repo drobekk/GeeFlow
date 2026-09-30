@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Медленнее нагрев, ниже энергопотребление</string>
     <string name="device_settings_brewing_paddle_pressure_description">Целевое давление</string>
     <string name="device_settings_brewing_paddle_time_description">Целевое время</string>
+    <string name="device_settings_auto_flush">Автоматическая промывка</string>
+    <string name="device_settings_auto_flush_delay">Задержка после приготовления</string>
+    <string name="device_settings_auto_flush_description">Запускает ручное приготовление с давлением и временем рычага. Нажмите на таймер для отмены.</string>
 </resources>

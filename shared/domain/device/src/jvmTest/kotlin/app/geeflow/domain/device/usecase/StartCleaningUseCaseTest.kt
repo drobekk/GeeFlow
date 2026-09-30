@@ -118,7 +118,7 @@ class StartCleaningUseCaseTest {
             override suspend fun stopCleaning() = Unit
         }
         private val provider = object : DeviceControllerProvider {
-            override val currentDeviceId = 1L
+            override val currentDeviceId = MutableStateFlow<Long?>(1L)
             override fun getController(deviceId: Long) = controller
             override fun disconnectCurrent() = Unit
         }

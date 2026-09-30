@@ -76,4 +76,6 @@
     <string name="maintenance_reminder_skip">Ohita</string>
     <string name="maintenance_reminder_due">Aika tehdä: %1$s</string>
     <string name="maintenance_reminder_both">Perusteellinen puhdistus lasketaan myös päivittäiseen muistutukseen.</string>
+    <string name="auto_flush_countdown_title">Huuhtelu alkaa</string>
+    <string name="auto_flush_tap_to_cancel">Peruuta napauttamalla</string>
 </resources>

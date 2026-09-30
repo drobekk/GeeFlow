@@ -1,7 +1,9 @@
 package app.geeflow.data.device
 
+import kotlinx.coroutines.flow.StateFlow
+
 interface DeviceControllerProvider {
-    val currentDeviceId: Long?
+    val currentDeviceId: StateFlow<Long?>
     fun getController(deviceId: Long): DeviceController
     fun disconnectCurrent()
 }

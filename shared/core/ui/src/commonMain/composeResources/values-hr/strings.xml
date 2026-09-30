@@ -77,4 +77,6 @@
     <string name="maintenance_reminder_skip">Preskoči</string>
     <string name="maintenance_reminder_due">Vrijeme za: %1$s</string>
     <string name="maintenance_reminder_both">Dubinsko čišćenje se računa i za dnevni podsjetnik.</string>
+    <string name="auto_flush_countdown_title">Ispiranje za</string>
+    <string name="auto_flush_tap_to_cancel">Dodirnite za otkazivanje</string>
 </resources>

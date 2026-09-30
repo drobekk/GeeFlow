@@ -78,4 +78,6 @@
     <string name="maintenance_reminder_skip">Пропустити</string>
     <string name="maintenance_reminder_due">Час для: %1$s</string>
     <string name="maintenance_reminder_both">Глибоке очищення також зараховується до щоденного нагадування.</string>
+    <string name="auto_flush_countdown_title">Промивання через</string>
+    <string name="auto_flush_tap_to_cancel">Натисніть для скасування</string>
 </resources>

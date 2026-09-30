@@ -78,4 +78,6 @@
     <string name="maintenance_reminder_skip">Пропустить</string>
     <string name="maintenance_reminder_due">Пора сделать: %1$s</string>
     <string name="maintenance_reminder_both">Глубокая очистка засчитывается в ежедневное напоминание.</string>
+    <string name="auto_flush_countdown_title">Промывка через</string>
+    <string name="auto_flush_tap_to_cancel">Нажмите для отмены</string>
 </resources>

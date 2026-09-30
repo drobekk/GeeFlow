@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.dashboard.maintenance
 
 import app.geeflow.core.presentation.BaseViewModel
+import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.data.device.model.CleaningType
 import app.geeflow.data.device.model.DeviceState
@@ -16,31 +17,34 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 internal class MaintenanceReminderViewModel(
     @InjectedParam private val deviceId: Long,
-    observeMaintenance: ObserveMaintenanceSettingsUseCase,
-    observeDevice: ObserveDeviceStateUseCase,
+    private val observeMaintenance: ObserveMaintenanceSettingsUseCase,
+    private val observeDevice: ObserveDeviceStateUseCase,
     private val skipReminder: SkipMaintenanceReminderUseCase,
 ) : BaseViewModel<MaintenanceReminderViewState, Unit>(MaintenanceReminderViewState()) {
     private var settings: MaintenanceSettings? = null
     private var today = maintenanceDay()
-    private var connected = false
 
     init {
-        launchCatching {
-            combine(observeMaintenance(deviceId), observeDevice(deviceId)) { saved, state -> saved to state }
-                .collect { (saved, state) ->
-                    settings = saved
-                    val nowConnected = state.connectionStatus == DeviceState.ConnectionStatus.Connected
-                    if (nowConnected && !connected) today = maintenanceDay()
-                    connected = nowConnected
-                    modify {
-                        copy(
-                            dueTypes = saved.dueTypes(today),
-                            eligible = state.connectionStatus == DeviceState.ConnectionStatus.Connected &&
-                                state.brewStatus == DeviceState.BrewStatus.Idle && !state.waterLevelAlarm,
-                        )
-                    }
-                }
+        launch {
+            observeMachine()
         }
+    }
+
+    private suspend fun observeMachine() {
+        var connected = false
+        combine(observeMaintenance(deviceId), observeDevice(deviceId)) { saved, state -> saved to state }
+            .collect { (saved, state) ->
+                settings = saved
+                val nowConnected = state.connectionStatus == DeviceState.ConnectionStatus.Connected
+                if (nowConnected && !connected) today = maintenanceDay()
+                connected = nowConnected
+                modify {
+                    copy(
+                        dueTypes = saved.dueTypes(today),
+                        eligible = nowConnected && state.brewStatus == DeviceState.BrewStatus.Idle && !state.waterLevelAlarm,
+                    )
+                }
+            }
     }
 
     fun resumed() {

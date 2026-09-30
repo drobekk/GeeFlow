@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Delší doba ohřevu, nižší spotřeba energie</string>
     <string name="device_settings_brewing_paddle_pressure_description">Cílový tlak</string>
     <string name="device_settings_brewing_paddle_time_description">Cílová doba</string>
+    <string name="device_settings_auto_flush">Automatický proplach</string>
+    <string name="device_settings_auto_flush_delay">Prodleva po přípravě</string>
+    <string name="device_settings_auto_flush_description">Spustí ruční přípravu s tlakem a dobou páčky. Klepnutím na odpočet ji zrušíte.</string>
 </resources>

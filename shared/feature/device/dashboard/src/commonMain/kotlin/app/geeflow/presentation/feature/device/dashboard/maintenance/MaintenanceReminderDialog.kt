@@ -12,19 +12,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.data.device.model.CleaningType
-import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.VerticalSpacer
@@ -40,41 +33,9 @@ import geeflow.shared.core.ui.generated.resources.maintenance_reminder_due
 import geeflow.shared.core.ui.generated.resources.maintenance_reminder_open
 import geeflow.shared.core.ui.generated.resources.maintenance_reminder_skip
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @Composable
-internal fun MaintenanceReminderHost(
-    deviceId: Long,
-    blocked: Boolean,
-    onOpen: (CleaningType) -> Unit,
-    onError: () -> Unit,
-) {
-    val viewModel = koinViewModel<MaintenanceReminderViewModel>(key = "maintenance-$deviceId") {
-        parametersOf(deviceId)
-    }
-    val state by viewModel.viewState.collectAsStateWithLifecycle()
-    var active by remember { mutableStateOf(false) }
-    val visible = state.eligible && state.dueTypes.isNotEmpty()
-
-    LifecycleResumeEffect(viewModel) {
-        active = true
-        viewModel.resumed()
-        onPauseOrDispose { active = false }
-    }
-    EventsDispatcher(viewModel.events) { onError() }
-
-    if (active && !blocked && visible) {
-        MaintenanceReminderDialog(
-            state = state,
-            onOpen = onOpen,
-            onSkip = { viewModel.skip(state.dueTypes) },
-        )
-    }
-}
-
-@Composable
-private fun MaintenanceReminderDialog(
+internal fun MaintenanceReminderDialog(
     state: MaintenanceReminderViewState,
     onOpen: (CleaningType) -> Unit,
     onSkip: () -> Unit,

@@ -76,4 +76,6 @@
     <string name="maintenance_reminder_skip">Omitir</string>
     <string name="maintenance_reminder_due">Hora de: %1$s</string>
     <string name="maintenance_reminder_both">La limpieza profunda también cuenta para el recordatorio diario.</string>
+    <string name="auto_flush_countdown_title">Enjuague en</string>
+    <string name="auto_flush_tap_to_cancel">Toca para cancelar</string>
 </resources>

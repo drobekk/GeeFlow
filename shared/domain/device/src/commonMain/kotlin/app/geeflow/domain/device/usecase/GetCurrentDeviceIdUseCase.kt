@@ -5,5 +5,5 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class GetCurrentDeviceIdUseCase(private val provider: DeviceControllerProvider) {
-    operator fun invoke(): Long? = provider.currentDeviceId
+    operator fun invoke(): Long? = provider.currentDeviceId.value
 }

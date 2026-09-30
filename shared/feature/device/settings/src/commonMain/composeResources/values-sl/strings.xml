@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Daljši čas segrevanja, manjša poraba</string>
     <string name="device_settings_brewing_paddle_pressure_description">Ciljni tlak</string>
     <string name="device_settings_brewing_paddle_time_description">Ciljni čas</string>
+    <string name="device_settings_auto_flush">Samodejno izpiranje</string>
+    <string name="device_settings_auto_flush_delay">Zamik po pripravi</string>
+    <string name="device_settings_auto_flush_description">Zažene ročno pripravo s tlakom in trajanjem ročice. Dotaknite se odštevanja za preklic.</string>
 </resources>

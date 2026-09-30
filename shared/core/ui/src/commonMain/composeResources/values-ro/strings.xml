@@ -77,4 +77,6 @@
     <string name="maintenance_reminder_skip">Omite</string>
     <string name="maintenance_reminder_due">E timpul pentru: %1$s</string>
     <string name="maintenance_reminder_both">Curățarea profundă se contorizează și la memento-ul zilnic.</string>
+    <string name="auto_flush_countdown_title">Clătire în</string>
+    <string name="auto_flush_tap_to_cancel">Atingeți pentru anulare</string>
 </resources>

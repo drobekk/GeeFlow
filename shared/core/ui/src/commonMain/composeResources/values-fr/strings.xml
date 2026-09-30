@@ -76,4 +76,6 @@
     <string name="maintenance_reminder_skip">Ignorer</string>
     <string name="maintenance_reminder_due">C’est l’heure de : %1$s</string>
     <string name="maintenance_reminder_both">Le nettoyage approfondi compte aussi pour le rappel quotidien.</string>
+    <string name="auto_flush_countdown_title">Rinçage dans</string>
+    <string name="auto_flush_tap_to_cancel">Touchez pour annuler</string>
 </resources>

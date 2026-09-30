@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Calienta más lento con menor consumo eléctrico</string>
     <string name="device_settings_brewing_paddle_pressure_description">Presión objetivo</string>
     <string name="device_settings_brewing_paddle_time_description">Duración objetivo</string>
+    <string name="device_settings_auto_flush">Enjuague automático</string>
+    <string name="device_settings_auto_flush_delay">Espera tras la extracción</string>
+    <string name="device_settings_auto_flush_description">Inicia una extracción manual con la presión y duración de la palanca. Toca la cuenta atrás para cancelar.</string>
 </resources>

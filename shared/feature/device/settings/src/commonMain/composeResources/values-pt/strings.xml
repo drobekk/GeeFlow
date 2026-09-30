@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Aquecimento mais lento com menor consumo</string>
     <string name="device_settings_brewing_paddle_pressure_description">Pressão alvo</string>
     <string name="device_settings_brewing_paddle_time_description">Duração alvo</string>
+    <string name="device_settings_auto_flush">Enxaguamento automático</string>
+    <string name="device_settings_auto_flush_delay">Atraso após a extração</string>
+    <string name="device_settings_auto_flush_description">Inicia uma extração manual com a pressão e duração da alavanca. Toque na contagem para cancelar.</string>
 </resources>

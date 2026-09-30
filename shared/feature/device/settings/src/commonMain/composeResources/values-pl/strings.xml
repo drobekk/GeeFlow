@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Dłuższy czas grzania, mniejszy pobór mocy</string>
     <string name="device_settings_brewing_paddle_pressure_description">Docelowe ciśnienie</string>
     <string name="device_settings_brewing_paddle_time_description">Docelowy czas</string>
+    <string name="device_settings_auto_flush">Automatyczne płukanie</string>
+    <string name="device_settings_auto_flush_delay">Opóźnienie po parzeniu</string>
+    <string name="device_settings_auto_flush_description">Uruchamia ręczne parzenie z ciśnieniem i czasem łopatki. Dotknij odliczania, aby anulować.</string>
 </resources>

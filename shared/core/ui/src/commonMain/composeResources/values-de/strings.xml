@@ -76,4 +76,6 @@
     <string name="maintenance_reminder_skip">Überspringen</string>
     <string name="maintenance_reminder_due">Zeit für %1$s</string>
     <string name="maintenance_reminder_both">Intensivreinigung zählt auch für die tägliche Erinnerung.</string>
+    <string name="auto_flush_countdown_title">Spülung in</string>
+    <string name="auto_flush_tap_to_cancel">Zum Abbrechen tippen</string>
 </resources>

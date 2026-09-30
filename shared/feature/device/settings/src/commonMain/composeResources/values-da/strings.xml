@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Længere opvarmning med lavere strømforbrug</string>
     <string name="device_settings_brewing_paddle_pressure_description">Måltryk</string>
     <string name="device_settings_brewing_paddle_time_description">Måltid</string>
+    <string name="device_settings_auto_flush">Automatisk skylning</string>
+    <string name="device_settings_auto_flush_delay">Ventetid efter brygning</string>
+    <string name="device_settings_auto_flush_description">Starter manuel brygning med paddlens tryk og varighed. Tryk på nedtællingen for at annullere.</string>
 </resources>

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import app.geeflow.app.autoflush.AutoFlushHost
 import app.geeflow.app.navigation.RootNavigation
 import app.geeflow.app.screensaver.ScreensaverContainer
 import app.geeflow.app.theme.rememberAppColorScheme
@@ -51,6 +52,7 @@ fun App(closeApp: () -> Unit) {
                 RootNavigation(closeApp)
             }
             ProfileExecutionEffect(appearance.keepScreenOn)
+            AutoFlushHost()
         }
     }
 }

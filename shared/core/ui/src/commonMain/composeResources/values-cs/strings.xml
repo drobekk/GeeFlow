@@ -78,4 +78,6 @@
     <string name="maintenance_reminder_skip">Přeskočit</string>
     <string name="maintenance_reminder_due">Čas na: %1$s</string>
     <string name="maintenance_reminder_both">Hloubkové čištění se započítává i do denní připomínky.</string>
+    <string name="auto_flush_countdown_title">Proplach za</string>
+    <string name="auto_flush_tap_to_cancel">Klepnutím zrušit</string>
 </resources>

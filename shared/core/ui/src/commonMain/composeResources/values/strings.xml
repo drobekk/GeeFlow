@@ -86,4 +86,6 @@
     <string name="maintenance_reminder_skip">Skip</string>
     <string name="maintenance_reminder_due">Time for %1$s</string>
     <string name="maintenance_reminder_both">Deep Cleaning also counts towards your Daily Cleaning reminder.</string>
+    <string name="auto_flush_countdown_title">Auto-flush in</string>
+    <string name="auto_flush_tap_to_cancel">Tap to cancel</string>
 </resources>

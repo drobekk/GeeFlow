@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Pidempi lämpenemisaika, pienempi virrankulutus</string>
     <string name="device_settings_brewing_paddle_pressure_description">Tavoitepaine</string>
     <string name="device_settings_brewing_paddle_time_description">Tavoitekesto</string>
+    <string name="device_settings_auto_flush">Automaattinen huuhtelu</string>
+    <string name="device_settings_auto_flush_delay">Viive uuton jälkeen</string>
+    <string name="device_settings_auto_flush_description">Käynnistää manuaalisen uuton vivun paineella ja kestolla. Peruuta napauttamalla ajastinta.</string>
 </resources>

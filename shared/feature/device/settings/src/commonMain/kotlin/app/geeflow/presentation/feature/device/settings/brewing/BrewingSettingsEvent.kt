@@ -8,6 +8,8 @@ sealed interface BrewingSettingsEvent {
     data class BrewTempChanged(val temp: String) : BrewingSettingsEvent
     data class PaddlePressureChanged(val pressure: String) : BrewingSettingsEvent
     data class PaddleTimeChanged(val time: String) : BrewingSettingsEvent
+    data class AutoFlushToggled(val enabled: Boolean) : BrewingSettingsEvent
+    data class AutoFlushDelayChanged(val seconds: String) : BrewingSettingsEvent
     data object ApplyClicked : BrewingSettingsEvent
     data object CloseClicked : BrewingSettingsEvent
 }

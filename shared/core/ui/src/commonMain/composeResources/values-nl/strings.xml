@@ -76,4 +76,6 @@
     <string name="maintenance_reminder_skip">Overslaan</string>
     <string name="maintenance_reminder_due">Tijd voor %1$s</string>
     <string name="maintenance_reminder_both">Grondige reiniging telt ook voor dagelijkse herinnering.</string>
+    <string name="auto_flush_countdown_title">Spoelen over</string>
+    <string name="auto_flush_tap_to_cancel">Tik om te annuleren</string>
 </resources>

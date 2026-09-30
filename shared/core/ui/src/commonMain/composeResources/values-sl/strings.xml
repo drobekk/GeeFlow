@@ -78,4 +78,6 @@
     <string name="maintenance_reminder_skip">Preskoči</string>
     <string name="maintenance_reminder_due">Čas za: %1$s</string>
     <string name="maintenance_reminder_both">Temeljito čiščenje šteje tudi k dnevnemu opomniku.</string>
+    <string name="auto_flush_countdown_title">Izpiranje čez</string>
+    <string name="auto_flush_tap_to_cancel">Dotaknite se za preklic</string>
 </resources>

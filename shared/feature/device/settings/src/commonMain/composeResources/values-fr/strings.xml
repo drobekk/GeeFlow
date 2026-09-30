@@ -30,4 +30,7 @@
     <string name="device_settings_brewing_pulse_heating_description">Chauffe plus lente mais consommation réduite</string>
     <string name="device_settings_brewing_paddle_pressure_description">Pression cible</string>
     <string name="device_settings_brewing_paddle_time_description">Durée cible</string>
+    <string name="device_settings_auto_flush">Rinçage automatique</string>
+    <string name="device_settings_auto_flush_delay">Délai après extraction</string>
+    <string name="device_settings_auto_flush_description">Lance une extraction manuelle avec la pression et la durée du levier. Touchez le compte à rebours pour annuler.</string>
 </resources>

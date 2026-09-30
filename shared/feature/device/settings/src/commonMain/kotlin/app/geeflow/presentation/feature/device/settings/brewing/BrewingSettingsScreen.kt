@@ -31,8 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.geeflow.data.device.model.AutoFlushSettings
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
+import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.AutoFlushDelayChanged
+import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.AutoFlushToggled
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewTempChanged
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.CloseClicked
@@ -66,6 +69,9 @@ import geeflow.shared.core.ui.generated.resources.common_steam_boiler
 import geeflow.shared.core.ui.generated.resources.common_time
 import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.feature.device.settings.generated.resources.Res
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_auto_flush
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_auto_flush_delay
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_auto_flush_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_boiler
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_description
@@ -154,7 +160,13 @@ private fun AdaptiveContent(
             ) {
                 Column(Modifier.weight(1f)) { BoilerSection(viewState, onEvent) }
                 HorizontalSpacer(24.dp)
-                Column(Modifier.weight(1f)) { PaddleSection(viewState.paddle, onEvent) }
+                Column(Modifier.weight(1f)) {
+                    PaddleSection(viewState.paddle, onEvent)
+                    VerticalSpacer(24.dp)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
+                    VerticalSpacer(24.dp)
+                    AutoFlushSection(viewState, onEvent)
+                }
             }
         } else {
             CompactContent(viewState, onEvent)
@@ -179,6 +191,10 @@ private fun CompactContent(
         HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
         VerticalSpacer(24.dp)
         PaddleSection(viewState.paddle, onEvent)
+        VerticalSpacer(24.dp)
+        HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
+        VerticalSpacer(24.dp)
+        AutoFlushSection(viewState, onEvent)
     }
 }
 
@@ -278,6 +294,31 @@ private fun PaddleSection(
 }
 
 @Composable
+private fun AutoFlushSection(
+    state: BrewingSettingsViewState,
+    onEvent: (BrewingSettingsEvent) -> Unit,
+) {
+    SectionTitle(
+        text = stringResource(Res.string.device_settings_auto_flush),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
+    )
+    VerticalSpacer(16.dp)
+    GeeFlowToggleListItem(
+        title = stringResource(Res.string.device_settings_auto_flush_delay),
+        subtitle = stringResource(Res.string.device_settings_auto_flush_description),
+        checked = state.autoFlushEnabled,
+        value = "${state.autoFlushDelaySeconds} ${stringResource(CoreRes.string.common_sec)}",
+        valueRange = AutoFlushSettings.MinimumDelaySeconds.toFloat()..AutoFlushSettings.MaximumDelaySeconds.toFloat(),
+        allowDecimal = false,
+        unit = stringResource(CoreRes.string.common_sec),
+        inputTitle = stringResource(Res.string.device_settings_auto_flush_delay),
+        onCheckedChanged = { onEvent(AutoFlushToggled(it)) },
+        onValueConfirmed = { onEvent(AutoFlushDelayChanged(it)) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
 private fun SectionTitle(
     text: String,
     modifier: Modifier = Modifier,
@@ -314,6 +355,7 @@ private fun Preview() {
                 timeList = (1..60).map { "$it" },
             ),
             pulseHeatingEnabled = true,
+            autoFlushEnabled = true,
         ),
     )
 }
