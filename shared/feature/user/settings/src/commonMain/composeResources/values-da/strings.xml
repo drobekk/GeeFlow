@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Bryggepræferencer</string>
     <string name="user_settings_brewing_auto_connect">Auto-forbind</string>
     <string name="user_settings_brewing_auto_connect_description">Forbind til maskinen ved åbning af appen</string>
-    <string name="user_settings_brewing_skip_manual_history">Langt padletryk som skyl</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Langt tryk (M) tæller som skyl – ingen historik eller graf</string>
     <string name="user_settings_brewing_temperature_unit">Temperaturnhed</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

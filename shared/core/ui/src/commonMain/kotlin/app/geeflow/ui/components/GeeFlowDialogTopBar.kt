@@ -1,8 +1,7 @@
 package app.geeflow.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material.icons.Icons
@@ -34,6 +33,7 @@ fun GeeFlowDialogTopBar(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().weight(1f),
         )
     },
 )
@@ -42,22 +42,18 @@ fun GeeFlowDialogTopBar(
 fun GeeFlowDialogTopBar(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
-    title: @Composable () -> Unit,
+    title: @Composable RowScope.() -> Unit,
 ) {
-    Box(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            content = { title() },
-        )
+    Row(
+        modifier = modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        HorizontalSpacer(32.dp)
+        title()
         IconButton(
             onClick = onCloseClick,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .offset(x = 8.dp),
+            modifier = Modifier.offset(x = 8.dp),
         ) {
             Icon(
                 imageVector = Icons.Default.Close,

@@ -33,12 +33,14 @@
 
     <!-- Device Settings Brewing -->
     <string name="device_settings_brewing_boiler">Boiler</string>
-    <string name="device_settings_brewing_paddle">Paddle long press</string>
+    <string name="device_settings_brewing_paddle">Long paddle press</string>
     <string name="device_settings_brewing_pulse_heating">Pulse heating</string>
     <string name="device_settings_brewing_pulse_heating_description">Longer heating time but lower power consumption</string>
     <string name="device_settings_brewing_paddle_pressure_description">Target pressure</string>
     <string name="device_settings_brewing_paddle_time_description">Target duration</string>
-    <string name="device_settings_auto_flush">Auto-flush</string>
+    <string name="device_settings_auto_flush">Autostart</string>
     <string name="device_settings_auto_flush_delay">Delay after brewing</string>
-    <string name="device_settings_auto_flush_description">Starts manual brew using paddle pressure and duration. Tap the countdown to cancel.</string>
+    <string name="device_settings_auto_flush_description">Automatically start after brewing</string>
+    <string name="device_settings_treat_manual_as_flush">Treat as flush</string>
+    <string name="device_settings_treat_manual_as_flush_description">No history or chart</string>
 </resources>

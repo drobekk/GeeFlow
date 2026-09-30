@@ -1,29 +1,21 @@
 package app.geeflow.domain.device
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
 import app.geeflow.data.brew.BrewHistoryRepository
 import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewHistoryEntry
-import app.geeflow.data.device.AutoFlushSettingsRepository
+import app.geeflow.data.device.DeviceBrewingSettingsRepository
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.impl.controller.DemoDeviceController
-import app.geeflow.data.device.model.AutoFlushSettings
+import app.geeflow.data.device.model.DeviceBrewingSettings
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
-import app.geeflow.data.user.UserRepository
-import app.geeflow.data.user.UserSettingsRepository
-import app.geeflow.data.user.impl.UserSettingsRepositoryImpl
-import app.geeflow.data.user.model.User
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -38,7 +30,7 @@ class AutoFlushCoordinatorTest {
     @Test
     fun `manual flush does not schedule auto flush while profile and freehand brewing still do`() = runTest {
         val fixture = Fixture(backgroundScope)
-        fixture.manualBrewsAsFlush.value = true
+        fixture.settings.value = fixture.settings.value.copy(treatManualAsFlush = true)
         runCurrent()
         fixture.state.value = fixture.state.value.copy(brewStatus = BrewStatus.Manual)
         runCurrent()
@@ -61,7 +53,7 @@ class AutoFlushCoordinatorTest {
     }
 
     @Test
-    fun `changing manual flush preference or selected user cancels a pending manual countdown`() = runTest {
+    fun `changing device manual flush setting cancels a pending manual countdown`() = runTest {
         val fixture = Fixture(backgroundScope)
         runCurrent()
         fixture.state.value = fixture.state.value.copy(brewStatus = BrewStatus.Manual)
@@ -70,17 +62,17 @@ class AutoFlushCoordinatorTest {
         runCurrent()
         assertNotNull(fixture.coordinator.countdown.value)
 
-        fixture.manualBrewsAsFlush.value = true
+        fixture.settings.value = fixture.settings.value.copy(treatManualAsFlush = true)
         runCurrent()
         assertNull(fixture.coordinator.countdown.value)
-        fixture.manualBrewsAsFlush.value = false
+        fixture.settings.value = fixture.settings.value.copy(treatManualAsFlush = false)
         fixture.state.value = fixture.state.value.copy(brewStatus = BrewStatus.Manual)
         runCurrent()
         fixture.state.value = fixture.state.value.copy(brewStatus = BrewStatus.Idle)
         runCurrent()
         assertNotNull(fixture.coordinator.countdown.value)
 
-        fixture.selectedUser.value = User(id = 2, name = "Second")
+        fixture.settings.value = fixture.settings.value.copy(treatManualAsFlush = true)
         runCurrent()
         advanceTimeBy(5000)
         runCurrent()
@@ -221,7 +213,11 @@ class AutoFlushCoordinatorTest {
         runCurrent()
         fixture.state.value = fixture.state.value.copy(brewStatus = BrewStatus.Idle)
         runCurrent()
-        fixture.settings.value = AutoFlushSettings(enabled = true, delaySeconds = 4)
+        fixture.settings.value = DeviceBrewingSettings(
+            treatManualAsFlush = false,
+            autoFlushEnabled = true,
+            autoFlushDelaySeconds = 4,
+        )
         runCurrent()
         assertNull(fixture.coordinator.countdown.value)
 
@@ -285,11 +281,11 @@ class AutoFlushCoordinatorTest {
 
     private class Fixture(scope: CoroutineScope) {
         val currentDeviceId = MutableStateFlow<Long?>(1L)
-        val manualBrewsAsFlush = MutableStateFlow(false)
-        val selectedUser = MutableStateFlow<User?>(User(id = 1, name = "Test"))
         val state = MutableStateFlow(DeviceState(connectionStatus = ConnectionStatus.Connected))
-        val settings = MutableStateFlow(AutoFlushSettings(enabled = true, delaySeconds = 3))
-        private val otherSettings = MutableStateFlow(AutoFlushSettings())
+        val settings = MutableStateFlow(
+            DeviceBrewingSettings(treatManualAsFlush = false, autoFlushEnabled = true, autoFlushDelaySeconds = 3),
+        )
+        private val otherSettings = MutableStateFlow(DeviceBrewingSettings())
         var starts = 0
         var failStart = false
 
@@ -306,9 +302,9 @@ class AutoFlushCoordinatorTest {
             override fun getController(deviceId: Long) = controller
             override fun disconnectCurrent() = Unit
         }
-        private val repository = object : AutoFlushSettingsRepository {
+        private val repository = object : DeviceBrewingSettingsRepository {
             override fun observe(deviceId: Long) = if (deviceId == 1L) settings else otherSettings
-            override suspend fun save(deviceId: Long, settings: AutoFlushSettings) = Unit
+            override suspend fun save(deviceId: Long, settings: DeviceBrewingSettings) = Unit
             override suspend fun remove(deviceId: Long) = Unit
         }
         private val history = object : BrewHistoryRepository {
@@ -317,32 +313,12 @@ class AutoFlushCoordinatorTest {
             override fun getBrewDataPoints(id: Long) = emptyMap<Float, BrewDataPoint>()
             override fun deleteBrew(id: Long) = Unit
         }
-        private val users = object : UserRepository {
-            override val users = MutableStateFlow(emptyList<User>())
-            override val selectedUser = this@Fixture.selectedUser
-            override fun addUser(user: User) = user.id
-            override fun getUserById(id: Long) = selectedUser.value
-            override fun removeUser(id: Long) = Unit
-            override fun setSelectedUser(id: Long) = Unit
-            override fun renameUser(id: Long, name: String) = Unit
-            override fun updatePhotoUri(id: Long, uri: String?) = Unit
-            override fun setFavoriteDevice(userId: Long, deviceId: Long?) = Unit
-        }
-        private val preferences = object : DataStore<Preferences> {
-            override val data = flowOf(emptyPreferences())
-            override suspend fun updateData(transform: suspend (Preferences) -> Preferences) = transform(emptyPreferences())
-        }
-        private val userSettings = object : UserSettingsRepository by UserSettingsRepositoryImpl(preferences) {
-            override fun skipManualBrewHistory(userId: Long) = if (userId == 1L) manualBrewsAsFlush else flowOf(true)
-        }
         val execution = ProfileExecutionCoordinator(provider, scope, ProfileExecutionRecorder(history))
         val coordinator = AutoFlushCoordinator(
             settingsRepository = repository,
             provider = provider,
             execution = execution,
             scope = scope,
-            users = users,
-            userSettings = userSettings,
         )
 
         init {

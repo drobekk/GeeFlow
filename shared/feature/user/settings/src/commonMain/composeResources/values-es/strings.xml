@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Preferencias de extracción</string>
     <string name="user_settings_brewing_auto_connect">Conexión automática</string>
     <string name="user_settings_brewing_auto_connect_description">Conectar a la cafetera al volver a la app</string>
-    <string name="user_settings_brewing_skip_manual_history">Pulsación larga como purga</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Pulsación larga de palanca (M) cuenta como purga – sin historial ni gráfica</string>
     <string name="user_settings_brewing_temperature_unit">Unidad de temperatura</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

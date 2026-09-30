@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Préférences d’extraction</string>
     <string name="user_settings_brewing_auto_connect">Auto-connexion</string>
     <string name="user_settings_brewing_auto_connect_description">Connexion à la machine au retour dans l’app</string>
-    <string name="user_settings_brewing_skip_manual_history">Appui long palette = rinçage</string>
-    <string name="user_settings_brewing_skip_manual_history_description">L’appui long (M) compte comme rinçage – sans historique ni graphique</string>
     <string name="user_settings_brewing_temperature_unit">Unité de température</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

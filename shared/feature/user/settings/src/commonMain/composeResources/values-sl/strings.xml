@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Nastavitve priprave</string>
     <string name="user_settings_brewing_auto_connect">Samodejna povezava</string>
     <string name="user_settings_brewing_auto_connect_description">Poveži z aparatom ob vrnitvi v aplikacijo</string>
-    <string name="user_settings_brewing_skip_manual_history">Dolg pritisk ročice kot izpiranje</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Dolg pritisk (M) velja kot izpiranje – brez zapisa ali grafa</string>
     <string name="user_settings_brewing_temperature_unit">Enota za temperaturo</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

@@ -22,12 +22,10 @@ class GetBrewingPreferencesUseCase(
             combine(
                 repository.autoConnect(userId),
                 repository.temperatureUnit(userId),
-                repository.skipManualBrewHistory(userId),
-            ) { autoConnect, temperatureUnit, skipManualBrewHistory ->
+            ) { autoConnect, temperatureUnit ->
                 BrewingPreferencesSettings(
                     autoConnect = autoConnect,
                     temperatureUnit = temperatureUnit,
-                    skipManualBrewHistory = skipManualBrewHistory,
                 )
             }
         }

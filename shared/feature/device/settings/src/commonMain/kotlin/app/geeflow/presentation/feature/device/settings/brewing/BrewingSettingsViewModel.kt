@@ -3,13 +3,13 @@ package app.geeflow.presentation.feature.device.settings.brewing
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
-import app.geeflow.data.device.model.AutoFlushSettings
+import app.geeflow.data.device.model.DeviceBrewingSettings
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BoilerType
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
-import app.geeflow.domain.device.usecase.ObserveAutoFlushSettingsUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceBrewingSettingsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
-import app.geeflow.domain.device.usecase.SaveAutoFlushSettingsUseCase
+import app.geeflow.domain.device.usecase.SaveDeviceBrewingSettingsUseCase
 import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import app.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
 import app.geeflow.domain.device.usecase.SetPulseHeatingModeUseCase
@@ -44,13 +44,13 @@ internal class BrewingSettingsViewModel(
     private val setBoilerSettings: SetBoilerSettingsUseCase,
     private val setPulseHeatingMode: SetPulseHeatingModeUseCase,
     private val setManualBrewSettings: SetManualBrewSettingsUseCase,
-    private val observeAutoFlushSettings: ObserveAutoFlushSettingsUseCase,
-    private val saveAutoFlushSettings: SaveAutoFlushSettingsUseCase,
+    private val observeDeviceBrewingSettings: ObserveDeviceBrewingSettingsUseCase,
+    private val saveDeviceBrewingSettings: SaveDeviceBrewingSettingsUseCase,
 ) : BaseViewModel<BrewingSettingsViewState, BrewingSettingsViewModelEvent>(BrewingSettingsViewState()) {
 
     private var deviceSnapshot: DeviceSnapshot? = null
-    private var savedAutoFlushSettings = AutoFlushSettings()
-    private var autoFlushEdited = false
+    private var savedDeviceBrewingSettings = DeviceBrewingSettings()
+    private var deviceBrewingSettingsEdited = false
 
     private var saveJob: Job? = null
 
@@ -91,22 +91,27 @@ internal class BrewingSettingsViewModel(
                 }
         }
         launch {
-            observeAutoFlushSettings(arguments.deviceId).collect { settings ->
-                savedAutoFlushSettings = settings
+            observeDeviceBrewingSettings(arguments.deviceId).collect { settings ->
+                savedDeviceBrewingSettings = settings
                 deviceSnapshot = deviceSnapshot?.copy(
-                    autoFlushEnabled = settings.enabled,
-                    autoFlushDelaySeconds = settings.delaySeconds.toString(),
+                    treatManualAsFlush = settings.treatManualAsFlush,
+                    autoFlushEnabled = settings.autoFlushEnabled,
+                    autoFlushDelaySeconds = settings.autoFlushDelaySeconds.toString(),
                 ) ?: snapshotFromState(viewState.value).copy(
-                    autoFlushEnabled = settings.enabled,
-                    autoFlushDelaySeconds = settings.delaySeconds.toString(),
+                    treatManualAsFlush = settings.treatManualAsFlush,
+                    autoFlushEnabled = settings.autoFlushEnabled,
+                    autoFlushDelaySeconds = settings.autoFlushDelaySeconds.toString(),
                 )
-                if (!autoFlushEdited) {
+                if (!deviceBrewingSettingsEdited) {
                     modify {
                         copy(
-                            autoFlushEnabled = settings.enabled,
-                            autoFlushDelaySeconds = settings.delaySeconds.toString(),
+                            treatManualAsFlush = settings.treatManualAsFlush,
+                            autoFlushEnabled = settings.autoFlushEnabled,
+                            autoFlushDelaySeconds = settings.autoFlushDelaySeconds.toString(),
                         ).withApplyVisible()
                     }
+                } else {
+                    modify { withApplyVisible() }
                 }
             }
         }
@@ -134,9 +139,11 @@ internal class BrewingSettingsViewModel(
             )
         }
         deviceSnapshot = snapshotFromState(viewState.value).copy(
-            autoFlushEnabled = savedAutoFlushSettings.enabled,
-            autoFlushDelaySeconds = savedAutoFlushSettings.delaySeconds.toString(),
+            treatManualAsFlush = savedDeviceBrewingSettings.treatManualAsFlush,
+            autoFlushEnabled = savedDeviceBrewingSettings.autoFlushEnabled,
+            autoFlushDelaySeconds = savedDeviceBrewingSettings.autoFlushDelaySeconds.toString(),
         )
+        modify { withApplyVisible() }
     }
 
     fun handleEvent(event: BrewingSettingsEvent) = when (event) {
@@ -168,18 +175,23 @@ internal class BrewingSettingsViewModel(
         is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
         is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
         is AutoFlushToggled -> {
-            autoFlushEdited = true
+            deviceBrewingSettingsEdited = true
             modify { copy(autoFlushEnabled = event.enabled).withApplyVisible() }
         }
         is AutoFlushDelayChanged -> {
-            autoFlushEdited = true
+            deviceBrewingSettingsEdited = true
             modify { copy(autoFlushDelaySeconds = event.seconds).withApplyVisible() }
+        }
+        is BrewingSettingsEvent.TreatManualAsFlushChanged -> {
+            deviceBrewingSettingsEdited = true
+            modify { copy(treatManualAsFlush = event.enabled).withApplyVisible() }
         }
         is ApplyClicked -> saveSettings()
         is CloseClicked -> navigate(NavEvent.Back)
     }
 
     private fun saveSettings() = with(viewState.value) {
+        val submittedState = this
         saveJob?.cancel()
         saveJob = launchCatching(
             onError = (::showError),
@@ -203,15 +215,18 @@ internal class BrewingSettingsViewModel(
                     pressure = paddle.pressure.toFloat(),
                     timeSec = paddle.time.toFloat(),
                 )
-                val autoFlush = AutoFlushSettings(
-                    enabled = autoFlushEnabled,
-                    delaySeconds = autoFlushDelaySeconds.toInt(),
+                val settings = DeviceBrewingSettings(
+                    treatManualAsFlush = treatManualAsFlush,
+                    autoFlushEnabled = autoFlushEnabled,
+                    autoFlushDelaySeconds = autoFlushDelaySeconds.toInt(),
                 )
-                saveAutoFlushSettings(arguments.deviceId, autoFlush)
-                savedAutoFlushSettings = autoFlush
-                autoFlushEdited = false
-                deviceSnapshot = snapshotFromState(viewState.value)
-                modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
+                saveDeviceBrewingSettings(arguments.deviceId, settings)
+                savedDeviceBrewingSettings = settings
+                deviceBrewingSettingsEdited = viewState.value.treatManualAsFlush != settings.treatManualAsFlush ||
+                    viewState.value.autoFlushEnabled != settings.autoFlushEnabled ||
+                    viewState.value.autoFlushDelaySeconds != settings.autoFlushDelaySeconds.toString()
+                deviceSnapshot = snapshotFromState(submittedState)
+                modify { copy(applyButtonLoading = false).withApplyVisible() }
                 emitEvent(ShowSnackbar(getString(Res.string.common_settings_applied)))
             },
         )
@@ -231,6 +246,7 @@ internal class BrewingSettingsViewModel(
         pulseHeatingEnabled = state.pulseHeatingEnabled,
         paddlePressure = state.paddle.pressure,
         paddleTime = state.paddle.time,
+        treatManualAsFlush = state.treatManualAsFlush,
         autoFlushEnabled = state.autoFlushEnabled,
         autoFlushDelaySeconds = state.autoFlushDelaySeconds,
     )
@@ -244,6 +260,7 @@ internal class BrewingSettingsViewModel(
             pulseHeatingEnabled != snapshot.pulseHeatingEnabled ||
             paddle.pressure != snapshot.paddlePressure ||
             paddle.time != snapshot.paddleTime ||
+            treatManualAsFlush != snapshot.treatManualAsFlush ||
             autoFlushEnabled != snapshot.autoFlushEnabled ||
             autoFlushDelaySeconds != snapshot.autoFlushDelaySeconds
         return copy(applyButtonVisible = changed)
@@ -257,6 +274,7 @@ internal class BrewingSettingsViewModel(
         val pulseHeatingEnabled: Boolean,
         val paddlePressure: String,
         val paddleTime: String,
+        val treatManualAsFlush: Boolean,
         val autoFlushEnabled: Boolean,
         val autoFlushDelaySeconds: String,
     )

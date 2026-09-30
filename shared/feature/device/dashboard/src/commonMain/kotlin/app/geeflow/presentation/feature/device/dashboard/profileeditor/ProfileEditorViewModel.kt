@@ -21,11 +21,11 @@ import app.geeflow.domain.brew.usecase.SaveBrewProfileUseCase
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import app.geeflow.domain.device.usecase.GetProfileSupportUseCase
 import app.geeflow.domain.device.usecase.GetProfilingCapabilitiesUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceBrewingSettingsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
 import app.geeflow.domain.exception.DeviceNotConnectedException
-import app.geeflow.domain.user.usecase.GetSkipManualBrewHistoryUseCase
 import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent
@@ -77,7 +77,7 @@ internal class ProfileEditorViewModel(
     observeDeviceState: ObserveDeviceStateUseCase,
     getVisibleCharts: GetVisibleChartsUseCase,
     observeDeviceProfile: ObserveDeviceProfileUseCase,
-    getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
+    observeDeviceBrewingSettings: ObserveDeviceBrewingSettingsUseCase,
 ) : BaseViewModel<ProfileEditorViewState, ProfileEditorViewModelEvent>(
     ProfileEditorViewState(profilingCapabilities = getProfilingCapabilities(args.deviceId)),
 ) {
@@ -106,7 +106,7 @@ internal class ProfileEditorViewModel(
                 loadProfile(profile)
             }
         }
-        launch { getSkipManualBrewHistory().collect { skipManualBrews = it } }
+        launch { observeDeviceBrewingSettings(args.deviceId).collect { skipManualBrews = it.treatManualAsFlush } }
         launch {
             observeBrewData(args.deviceId).collect { session ->
                 if (session.mode == BrewMode.Manual && skipManualBrews) return@collect

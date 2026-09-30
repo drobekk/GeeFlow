@@ -25,12 +25,14 @@
     <string name="device_settings_connectivity_rescan">Scan nu</string>
     <string name="device_settings_connectivity_scale_help">Stadig problemer? Sluk og tænd maskinen, og prøv igen.</string>
     <string name="device_settings_brewing_boiler">Kedel</string>
-    <string name="device_settings_brewing_paddle">Langt tryk på padle</string>
+    <string name="device_settings_brewing_paddle">Langt tryk på håndtaget</string>
     <string name="device_settings_brewing_pulse_heating">Pulsopvarmning</string>
     <string name="device_settings_brewing_pulse_heating_description">Længere opvarmning med lavere strømforbrug</string>
     <string name="device_settings_brewing_paddle_pressure_description">Måltryk</string>
     <string name="device_settings_brewing_paddle_time_description">Måltid</string>
-    <string name="device_settings_auto_flush">Automatisk skylning</string>
+    <string name="device_settings_auto_flush">Autostart</string>
     <string name="device_settings_auto_flush_delay">Ventetid efter brygning</string>
-    <string name="device_settings_auto_flush_description">Starter manuel brygning med paddlens tryk og varighed. Tryk på nedtællingen for at annullere.</string>
+    <string name="device_settings_auto_flush_description">Start automatisk efter brygning</string>
+    <string name="device_settings_treat_manual_as_flush">Langt padletryk som skyl</string>
+    <string name="device_settings_treat_manual_as_flush_description">Ingen historik eller graf</string>
 </resources>

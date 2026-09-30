@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Preferințe de extracție</string>
     <string name="user_settings_brewing_auto_connect">Conectare automată</string>
     <string name="user_settings_brewing_auto_connect_description">Conectează la revenirea în aplicație</string>
-    <string name="user_settings_brewing_skip_manual_history">Apăsare lungă ca și clătire</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Apăsarea lungă (M) contează ca o clătire – fără istoric sau grafic</string>
     <string name="user_settings_brewing_temperature_unit">Unitate de temperatură</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

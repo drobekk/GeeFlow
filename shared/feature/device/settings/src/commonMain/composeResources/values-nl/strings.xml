@@ -25,12 +25,14 @@
     <string name="device_settings_connectivity_rescan">Nu scannen</string>
     <string name="device_settings_connectivity_scale_help">Nog steeds bezig? Zet de machine uit en aan, en probeer opnieuw.</string>
     <string name="device_settings_brewing_boiler">Boiler</string>
-    <string name="device_settings_brewing_paddle">Lange druk op paddle</string>
+    <string name="device_settings_brewing_paddle">Lang indrukken van de hendel</string>
     <string name="device_settings_brewing_pulse_heating">Pulsverwarming</string>
     <string name="device_settings_brewing_pulse_heating_description">Langere opwarmtijd maar lager stroomverbruik</string>
     <string name="device_settings_brewing_paddle_pressure_description">Doeldruk</string>
     <string name="device_settings_brewing_paddle_time_description">Doelduur</string>
-    <string name="device_settings_auto_flush">Automatisch spoelen</string>
+    <string name="device_settings_auto_flush">Autostart</string>
     <string name="device_settings_auto_flush_delay">Vertraging na het zetten</string>
-    <string name="device_settings_auto_flush_description">Start handmatig zetten met de druk en duur van de hendel. Tik op de aftelling om te annuleren.</string>
+    <string name="device_settings_auto_flush_description">Automatisch starten na het zetten</string>
+    <string name="device_settings_treat_manual_as_flush">Lange drukpaddle als spoelen</string>
+    <string name="device_settings_treat_manual_as_flush_description">Geen geschiedenis of grafiek</string>
 </resources>

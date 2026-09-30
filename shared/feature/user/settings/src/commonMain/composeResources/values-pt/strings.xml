@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Preferências de extração</string>
     <string name="user_settings_brewing_auto_connect">Conexão automática</string>
     <string name="user_settings_brewing_auto_connect_description">Conectar à máquina ao reabrir o app</string>
-    <string name="user_settings_brewing_skip_manual_history">Toque longo como purga</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Toque longo (M) conta como purga – sem histórico ou gráfico</string>
     <string name="user_settings_brewing_temperature_unit">Unidade de temperatura</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

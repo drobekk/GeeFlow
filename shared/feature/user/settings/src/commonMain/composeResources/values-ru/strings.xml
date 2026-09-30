@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Параметры заваривания</string>
     <string name="user_settings_brewing_auto_connect">Автоподключение</string>
     <string name="user_settings_brewing_auto_connect_description">Подключаться к машине при возврате в приложение</string>
-    <string name="user_settings_brewing_skip_manual_history">Долгое нажатие как пролив</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Долгое нажатие рычага (M) считается проливом – без записи в историю</string>
     <string name="user_settings_brewing_temperature_unit">Единица температуры</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Цельсий (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Фаренгейт (°F)</string>

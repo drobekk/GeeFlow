@@ -6,8 +6,8 @@ import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
 import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.ProfileStep
+import app.geeflow.data.device.DeviceBrewingSettingsRepository
 import app.geeflow.data.user.UserRepository
-import app.geeflow.data.user.UserSettingsRepository
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
 
@@ -18,10 +18,11 @@ import org.koin.core.annotation.Factory
 @Factory
 class SaveBrewToHistoryUseCase(
     private val brewHistoryRepository: BrewHistoryRepository,
-    private val userSettingsRepository: UserSettingsRepository,
+    private val deviceBrewingSettingsRepository: DeviceBrewingSettingsRepository,
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(
+        deviceId: Long,
         session: BrewSession,
         profileId: Long?,
         profileName: String?,
@@ -32,7 +33,11 @@ class SaveBrewToHistoryUseCase(
         if (session.executionTrace != null || session.dataPoints.isEmpty()) return
         val startedAt = session.startTime ?: return
         val userId = userRepository.selectedUser.first()?.id ?: return
-        if (session.mode == BrewMode.Manual && userSettingsRepository.skipManualBrewHistory(userId).first()) return
+        if (session.mode == BrewMode.Manual &&
+            deviceBrewingSettingsRepository.observe(deviceId).first().treatManualAsFlush
+        ) {
+            return
+        }
 
         brewHistoryRepository.addBrew(
             entry = BrewHistoryEntry(

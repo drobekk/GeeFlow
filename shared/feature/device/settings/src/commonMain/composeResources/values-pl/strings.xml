@@ -25,12 +25,14 @@
     <string name="device_settings_connectivity_rescan">Skanuj teraz</string>
     <string name="device_settings_connectivity_scale_help">Nadal się łączy? Wyłącz i włącz ekspres, a potem spróbuj ponownie połączyć wagę.</string>
     <string name="device_settings_brewing_boiler">Bojler</string>
-    <string name="device_settings_brewing_paddle">Długie wciśnięcie łopatki</string>
+    <string name="device_settings_brewing_paddle">Długie naciśnięcie łopatki</string>
     <string name="device_settings_brewing_pulse_heating">Ogrzewanie impulsowe</string>
     <string name="device_settings_brewing_pulse_heating_description">Dłuższy czas grzania, mniejszy pobór mocy</string>
     <string name="device_settings_brewing_paddle_pressure_description">Docelowe ciśnienie</string>
     <string name="device_settings_brewing_paddle_time_description">Docelowy czas</string>
-    <string name="device_settings_auto_flush">Automatyczne płukanie</string>
+    <string name="device_settings_auto_flush">Autostart</string>
     <string name="device_settings_auto_flush_delay">Opóźnienie po parzeniu</string>
-    <string name="device_settings_auto_flush_description">Uruchamia ręczne parzenie z ciśnieniem i czasem łopatki. Dotknij odliczania, aby anulować.</string>
+    <string name="device_settings_auto_flush_description">Automatycznie uruchamiaj po parzeniu</string>
+    <string name="device_settings_treat_manual_as_flush">Traktuj jako płukanie</string>
+    <string name="device_settings_treat_manual_as_flush_description">Bez historii i wykresu</string>
 </resources>

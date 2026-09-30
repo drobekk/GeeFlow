@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Preferencie extrakcie</string>
     <string name="user_settings_brewing_auto_connect">Automatické pripojenie</string>
     <string name="user_settings_brewing_auto_connect_description">Pripojiť ku kávovaru pri návrate do aplikácie</string>
-    <string name="user_settings_brewing_skip_manual_history">Dlhý stisk páky ako preplach</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Dlhý stisk (M) sa počíta ako preplach – bez histórie a grafu</string>
     <string name="user_settings_brewing_temperature_unit">Jednotka teploty</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

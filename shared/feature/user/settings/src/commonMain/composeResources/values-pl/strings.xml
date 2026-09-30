@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Preferencje parzenia</string>
     <string name="user_settings_brewing_auto_connect">Autopołączenie</string>
     <string name="user_settings_brewing_auto_connect_description">Połącz z ekspresem po powrocie do aplikacji</string>
-    <string name="user_settings_brewing_skip_manual_history">Długie wciśnięcie jako płukanie</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Długie wciśnięcie łopatki (M) działa jak płukanie – bez historii i wykresu</string>
     <string name="user_settings_brewing_temperature_unit">Jednostka temperatury</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>

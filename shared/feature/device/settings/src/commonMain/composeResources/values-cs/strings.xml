@@ -25,12 +25,14 @@
     <string name="device_settings_connectivity_rescan">Skenovat znovu</string>
     <string name="device_settings_connectivity_scale_help">Stále se nedaří? Kávovar vypněte a zapněte, poté zkuste váhu znovu.</string>
     <string name="device_settings_brewing_boiler">Bojler</string>
-    <string name="device_settings_brewing_paddle">Dlouhé stisknutí pádla</string>
+    <string name="device_settings_brewing_paddle">Dlouhé stisknutí páky</string>
     <string name="device_settings_brewing_pulse_heating">Pulzní ohřev</string>
     <string name="device_settings_brewing_pulse_heating_description">Delší doba ohřevu, nižší spotřeba energie</string>
     <string name="device_settings_brewing_paddle_pressure_description">Cílový tlak</string>
     <string name="device_settings_brewing_paddle_time_description">Cílová doba</string>
-    <string name="device_settings_auto_flush">Automatický proplach</string>
+    <string name="device_settings_auto_flush">Automatický start</string>
     <string name="device_settings_auto_flush_delay">Prodleva po přípravě</string>
-    <string name="device_settings_auto_flush_description">Spustí ruční přípravu s tlakem a dobou páčky. Klepnutím na odpočet ji zrušíte.</string>
+    <string name="device_settings_auto_flush_description">Automaticky spustit po přípravě kávy</string>
+    <string name="device_settings_treat_manual_as_flush">Dlouhý stisk pádla jako proplach</string>
+    <string name="device_settings_treat_manual_as_flush_description">Bez historie a grafu</string>
 </resources>

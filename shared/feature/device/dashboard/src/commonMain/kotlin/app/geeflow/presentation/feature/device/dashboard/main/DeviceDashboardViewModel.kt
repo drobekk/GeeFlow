@@ -21,6 +21,7 @@ import app.geeflow.domain.brew.usecase.ObserveDeviceProfileUseCase
 import app.geeflow.domain.brew.usecase.SaveBrewToHistoryUseCase
 import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceBrewingSettingsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.domain.device.usecase.RequestSmartScaleListUseCase
@@ -30,7 +31,6 @@ import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
 import app.geeflow.domain.exception.DeviceNotConnectedException
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
-import app.geeflow.domain.user.usecase.GetSkipManualBrewHistoryUseCase
 import app.geeflow.domain.user.usecase.GetVisibleChartsUseCase
 import app.geeflow.domain.user.usecase.ToggleChartVisibilityUseCase
 import app.geeflow.navigation.NavEvent.To
@@ -108,7 +108,7 @@ internal class DeviceDashboardViewModel(
     private val getBrewProfileUseCase: GetBrewProfileUseCase,
     private val getSelectedUser: GetSelectedUserUseCase,
     private val saveBrewToHistory: SaveBrewToHistoryUseCase,
-    private val getSkipManualBrewHistory: GetSkipManualBrewHistoryUseCase,
+    private val observeDeviceBrewingSettings: ObserveDeviceBrewingSettingsUseCase,
     private val setBoilerSettings: SetBoilerSettingsUseCase,
 ) : BaseViewModel<DeviceDashboardViewState, DeviceDashboardViewModelEvent>(DeviceDashboardViewState()) {
 
@@ -137,7 +137,7 @@ internal class DeviceDashboardViewModel(
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
         launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
         launch { getSelectedUser().collect { u -> modify { copy(user = user.copy(photoFileName = u?.photoUri)) } } }
-        launch { getSkipManualBrewHistory().collect { skipManualBrews = it } }
+        launch { observeDeviceBrewingSettings(args.deviceId).collect { skipManualBrews = it.treatManualAsFlush } }
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -378,6 +378,7 @@ internal class DeviceDashboardViewModel(
         val profile = activeBrewProfile
         launchCatching(::onError) {
             saveBrewToHistory(
+                deviceId = args.deviceId,
                 session = session,
                 profileId = profile?.id,
                 profileName = profile?.name,

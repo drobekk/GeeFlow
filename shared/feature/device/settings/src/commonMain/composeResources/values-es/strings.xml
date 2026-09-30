@@ -25,12 +25,14 @@
     <string name="device_settings_connectivity_rescan">Escanear ahora</string>
     <string name="device_settings_connectivity_scale_help">¿Sigue conectando? Apaga y enciende la cafetera, y reconecta la báscula.</string>
     <string name="device_settings_brewing_boiler">Caldera</string>
-    <string name="device_settings_brewing_paddle">Pulsación larga palanca</string>
+    <string name="device_settings_brewing_paddle">Pulsación larga de la palanca</string>
     <string name="device_settings_brewing_pulse_heating">Calentamiento a pulsos</string>
     <string name="device_settings_brewing_pulse_heating_description">Calienta más lento con menor consumo eléctrico</string>
     <string name="device_settings_brewing_paddle_pressure_description">Presión objetivo</string>
     <string name="device_settings_brewing_paddle_time_description">Duración objetivo</string>
-    <string name="device_settings_auto_flush">Enjuague automático</string>
+    <string name="device_settings_auto_flush">Inicio automático</string>
     <string name="device_settings_auto_flush_delay">Espera tras la extracción</string>
-    <string name="device_settings_auto_flush_description">Inicia una extracción manual con la presión y duración de la palanca. Toca la cuenta atrás para cancelar.</string>
+    <string name="device_settings_auto_flush_description">Iniciar automáticamente tras preparar café</string>
+    <string name="device_settings_treat_manual_as_flush">Pulsación larga como purga</string>
+    <string name="device_settings_treat_manual_as_flush_description">Sin historial ni gráfica</string>
 </resources>

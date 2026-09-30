@@ -25,12 +25,14 @@
     <string name="device_settings_connectivity_rescan">Escanear agora</string>
     <string name="device_settings_connectivity_scale_help">Ainda conectando? Desligue e ligue a máquina e tente reconectar a balança.</string>
     <string name="device_settings_brewing_boiler">Caldeira</string>
-    <string name="device_settings_brewing_paddle">Toque longo na alavanca</string>
+    <string name="device_settings_brewing_paddle">Pressão longa da alavanca</string>
     <string name="device_settings_brewing_pulse_heating">Aquecimento por pulsos</string>
     <string name="device_settings_brewing_pulse_heating_description">Aquecimento mais lento com menor consumo</string>
     <string name="device_settings_brewing_paddle_pressure_description">Pressão alvo</string>
     <string name="device_settings_brewing_paddle_time_description">Duração alvo</string>
-    <string name="device_settings_auto_flush">Enxaguamento automático</string>
+    <string name="device_settings_auto_flush">Início automático</string>
     <string name="device_settings_auto_flush_delay">Atraso após a extração</string>
-    <string name="device_settings_auto_flush_description">Inicia uma extração manual com a pressão e duração da alavanca. Toque na contagem para cancelar.</string>
+    <string name="device_settings_auto_flush_description">Iniciar automaticamente após a extração</string>
+    <string name="device_settings_treat_manual_as_flush">Toque longo como purga</string>
+    <string name="device_settings_treat_manual_as_flush_description">Sem histórico ou gráfico</string>
 </resources>

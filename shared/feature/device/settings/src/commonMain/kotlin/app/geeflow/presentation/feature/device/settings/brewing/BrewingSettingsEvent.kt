@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.settings.brewing
 
 sealed interface BrewingSettingsEvent {
+    data class TreatManualAsFlushChanged(val enabled: Boolean) : BrewingSettingsEvent
     data class SteamBoilerToggled(val enabled: Boolean) : BrewingSettingsEvent
     data class BrewBoilerToggled(val enabled: Boolean) : BrewingSettingsEvent
     data class PulseHeatingToggled(val enabled: Boolean) : BrewingSettingsEvent

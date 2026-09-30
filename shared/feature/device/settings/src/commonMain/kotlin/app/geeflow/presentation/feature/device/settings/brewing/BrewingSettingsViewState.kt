@@ -1,14 +1,15 @@
 package app.geeflow.presentation.feature.device.settings.brewing
 
-import app.geeflow.data.device.model.AutoFlushSettings
+import app.geeflow.data.device.model.DeviceBrewingSettings
 
 data class BrewingSettingsViewState(
     val brewBoiler: Boiler = Boiler(),
     val steamBoiler: Boiler = Boiler(),
     val pulseHeatingEnabled: Boolean = false,
     val paddle: Paddle = Paddle(),
+    val treatManualAsFlush: Boolean = true,
     val autoFlushEnabled: Boolean = false,
-    val autoFlushDelaySeconds: String = AutoFlushSettings.DefaultDelaySeconds.toString(),
+    val autoFlushDelaySeconds: String = DeviceBrewingSettings.DefaultDelaySeconds.toString(),
     val applyButtonLoading: Boolean = false,
     val applyButtonVisible: Boolean = false,
 ) {

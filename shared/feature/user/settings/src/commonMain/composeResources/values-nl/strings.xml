@@ -56,8 +56,6 @@
     <string name="user_settings_brewing_preferences_title">Zetvoorkeuren</string>
     <string name="user_settings_brewing_auto_connect">Automatisch verbinden</string>
     <string name="user_settings_brewing_auto_connect_description">Verbind met machine bij terugkeer naar app</string>
-    <string name="user_settings_brewing_skip_manual_history">Lange drukpaddle als spoelen</string>
-    <string name="user_settings_brewing_skip_manual_history_description">Lange druk (M) geldt als spoelen – geen geschiedenis of grafiek</string>
     <string name="user_settings_brewing_temperature_unit">Temperatuureenheid</string>
     <string name="user_settings_brewing_temperature_unit_celsius">Celsius (°C)</string>
     <string name="user_settings_brewing_temperature_unit_fahrenheit">Fahrenheit (°F)</string>
