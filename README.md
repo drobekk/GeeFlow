@@ -25,6 +25,10 @@ A Kotlin Multiplatform app for controlling and monitoring espresso machines over
   </a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/drobekk/GeeFlow/releases/latest">Download for Windows and macOS</a>
+</p>
+
 ## Screenshots
 
 ### Tablet
@@ -85,7 +89,7 @@ The error codes reported by the machine have **not** been mapped. The only fault
 
 **Experimental Profiles**
 - GeeFlow runs these profiles by sending live targets and evaluating measurements throughout the brew, rather than uploading the complete profile for the machine to execute
-- Combine pressure, flow, and wait steps, each with a required time limit
+- Use pressure or flow steps with wait steps, each with a required time limit. Combining pressure and flow in an experimental profile requires a machine that supports live control mode switching
 - Choose instant, linear, ease-in, ease-out, or ease-in-out transitions for pressure and flow targets, with a configurable ramp duration
 - Start a ramp from the previous target or the current measurement
 - Add exit conditions for total volume, total weight, pressure, and flow; pressure and flow support upper and lower thresholds
@@ -94,7 +98,7 @@ The error codes reported by the machine have **not** been mapped. The only fault
 - Experimental indicators identify features that the selected machine cannot execute natively. Available features depend on the machine's capabilities
 - Experimental profiles require the app to remain active and connected during brewing and cannot be assigned to the machine's paddle/button
 
-On the Wendougee Data-S, experimental flow targets are implemented by adjusting pump pressure in response to measured pump flow. This lets a profile combine pressure and flow steps without switching the machine's active control mode. Flow regulation is performed by GeeFlow and depends on measurement updates and the pump's response. Reported pressure is pump pressure, not puck backpressure.
+On the Wendougee Data-S, experimental profiles use the machine's native freehand pressure or flow control. GeeFlow sends target updates for ramps and evaluates exit conditions, while the machine regulates pressure or flow internally. Since switching the active control mode during freehand brewing is not supported, an experimental profile must use one control mode throughout, with optional wait steps. Native profiles can still combine pressure and flow steps. Reported pressure is pump pressure, not puck backpressure.
 
 **Live Monitoring**
 - Real-time dashboard: brew and steam boiler temperatures, pressure, flow rate, volume, weight, weight rate, and elapsed time
@@ -107,9 +111,17 @@ On the Wendougee Data-S, experimental flow targets are implemented by adjusting 
 - Brew and steam boiler targets, with independent on/off per boiler
 - Full-speed and pulse heating modes
 - Manual brew time and pressure defaults
-- Cleaning/backflush cycles with configurable duration, standby, and repeat count, plus start/stop and live cleaning status
+- Separate Daily Cleaning and Deep Cleaning programs with configurable flush duration, rest duration, and cycle count, plus start/stop and live cleaning status. Deep Cleaning is intended for use with cleaning detergent
 - Water alarm toggle
 - Quick settings and quick maintenance dialogs on the dashboard; long-press the quick settings button to toggle the steam boiler without opening anything
+
+**Maintenance Reminders**
+- Optional reminders for Daily Cleaning and Deep Cleaning, with independent intervals of 1-365 days, saved per machine
+- Due or overdue reminders appear on the machine's dashboard when the app is active and the machine is connected and idle, including after reconnecting or resuming the app
+- Reminders use local calendar dates, with no scheduled time or system notifications
+- Open Quick Maintenance from a reminder to select and start the suggested cleaning program, or choose Skip to move its next reminder forward by the configured interval
+- Pressing Start counts as cleaning for reminder purposes, even if the program later fails or is stopped. Daily Cleaning reschedules its own reminder; Deep Cleaning reschedules both
+- When both reminders are due, a single reminder suggests Deep Cleaning, which also covers Daily Cleaning. Skipping it reschedules both reminders
 
 **Smart Scale**
 - Scan for, connect, and disconnect a supported Bluetooth scale
@@ -132,21 +144,6 @@ On the Wendougee Data-S, experimental flow targets are implemented by adjusting 
 - Keep-screen-on, full-screen mode
 - Open-source license listing
 
-## Project Layout
-
-* [/shared](./shared) contains all shared Kotlin Multiplatform code, split into layered modules:
-  - `core/` - domain primitives, navigation contracts, presentation base classes, shared Compose UI, DataStore factory
-  - `data/` - SQLDelight database plus user, device, and brew repositories
-  - `domain/` - use cases for user, device, and brew flows
-  - `feature/` - screen-level modules (intro, user list/settings, device list/add/dashboard/settings)
-  - `permissions/` - platform permission handling
-  - `app/` - Koin wiring and the shared `App` entry point consumed by each platform launcher
-* [/androidApp](./androidApp) contains the Android application entry point.
-* [/desktopApp](./desktopApp) contains the Desktop (JVM) application entry point and packaging config.
-* [/iosApp](./iosApp) contains the iOS application entry point and any SwiftUI code.
-* [/build-logic](./build-logic) contains the Gradle convention plugins (`kmp.library`, `kmp.feature`, `kmp.compose`, `kmp.koin`, `kmp.sqldelight`, `kmp.android`) that all modules apply.
-
-Within each shared module, `commonMain` holds code common to all targets and the remaining source sets hold platform-specific code (`androidMain`, `iosMain`, `jvmMain`).
 
 ---
 
