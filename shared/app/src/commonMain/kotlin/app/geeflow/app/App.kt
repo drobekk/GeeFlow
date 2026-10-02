@@ -14,6 +14,7 @@ import app.geeflow.app.theme.toUiThemeMode
 import app.geeflow.platform.FullScreenEffect
 import app.geeflow.platform.ThemeModeEffect
 import app.geeflow.platform.isKeepScreenOnSupported
+import app.geeflow.platform.rememberIsConnectedToPower
 import app.geeflow.ui.theme.GeeFlowTheme
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -51,7 +52,10 @@ fun App(closeApp: () -> Unit) {
             ) {
                 RootNavigation(closeApp)
             }
-            ProfileExecutionEffect(appearance.keepScreenOn)
+            val connectedToPower = rememberIsConnectedToPower()
+            ProfileExecutionEffect(
+                appearance.keepScreenOn && (!appearance.keepScreenOnOnlyWhileCharging || connectedToPower),
+            )
             AutoFlushHost()
         }
     }

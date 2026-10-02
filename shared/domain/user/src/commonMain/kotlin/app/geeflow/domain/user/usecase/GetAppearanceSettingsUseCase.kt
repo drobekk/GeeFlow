@@ -36,12 +36,14 @@ class GetAppearanceSettingsUseCase(
                 combine(
                     repository.fullScreenMode(userId),
                     repository.keepScreenOn(userId),
+                    repository.keepScreenOnOnlyWhileCharging(userId),
                     repository.screensaverEnabled(userId),
                     repository.screensaverTimeoutMinutes(userId),
-                ) { fullScreenMode, keepScreenOn, screensaverEnabled, screensaverTimeoutMinutes ->
+                ) { fullScreenMode, keepScreenOn, onlyWhileCharging, screensaverEnabled, screensaverTimeoutMinutes ->
                     ScreenSettings(
                         fullScreenMode = fullScreenMode,
                         keepScreenOn = keepScreenOn,
+                        keepScreenOnOnlyWhileCharging = onlyWhileCharging,
                         screensaverEnabled = screensaverEnabled,
                         screensaverTimeoutMinutes = screensaverTimeoutMinutes,
                     )
@@ -50,6 +52,7 @@ class GetAppearanceSettingsUseCase(
                 settings.copy(
                     fullScreenMode = screenSettings.fullScreenMode,
                     keepScreenOn = screenSettings.keepScreenOn,
+                    keepScreenOnOnlyWhileCharging = screenSettings.keepScreenOnOnlyWhileCharging,
                     screensaverEnabled = screenSettings.screensaverEnabled,
                     screensaverTimeoutMinutes = screenSettings.screensaverTimeoutMinutes,
                 )
@@ -60,6 +63,7 @@ class GetAppearanceSettingsUseCase(
 private data class ScreenSettings(
     val fullScreenMode: Boolean,
     val keepScreenOn: Boolean,
+    val keepScreenOnOnlyWhileCharging: Boolean,
     val screensaverEnabled: Boolean,
     val screensaverTimeoutMinutes: Int,
 )

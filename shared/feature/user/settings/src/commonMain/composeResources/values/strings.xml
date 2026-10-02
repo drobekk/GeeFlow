@@ -83,4 +83,6 @@
     <string name="user_settings_about_licenses">Open Source Licenses</string>
     <string name="user_settings_about_licenses_description">License information for third-party software</string>
     <string name="user_settings_about_version">Version</string>
+    <string name="user_settings_appearance_keep_screen_on_only_while_charging">Only While Charging</string>
+    <string name="user_settings_appearance_keep_screen_on_only_while_charging_description">Keep the screen on only when the device is connected to power</string>
 </resources>

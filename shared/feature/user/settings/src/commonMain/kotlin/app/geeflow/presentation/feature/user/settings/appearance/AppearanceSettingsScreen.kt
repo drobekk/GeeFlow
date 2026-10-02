@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.user.settings.appearance
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.FullScreenChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnChanged
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnOnlyWhileChargingChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverTimeoutClicked
@@ -55,6 +57,8 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ap
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_full_screen_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_keep_screen_on
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_keep_screen_on_description
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_keep_screen_on_only_while_charging
+import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_keep_screen_on_only_while_charging_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_language
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_language_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_appearance_palette_style
@@ -193,6 +197,19 @@ private fun AppearanceContent(
                 onCheckedChanged = { onEvent(KeepScreenOnChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
+            AnimatedVisibility(
+                visible = viewState.keepScreenOn,
+            ) {
+                GeeFlowToggleListItem(
+                    title = stringResource(Res.string.user_settings_appearance_keep_screen_on_only_while_charging),
+                    subtitle = stringResource(Res.string.user_settings_appearance_keep_screen_on_only_while_charging_description),
+                    checked = viewState.keepScreenOnOnlyWhileCharging,
+                    onCheckedChanged = { onEvent(KeepScreenOnOnlyWhileChargingChanged(it)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                )
+            }
             GeeFlowToggleListItem(
                 title = stringResource(Res.string.user_settings_appearance_screensaver),
                 subtitle = stringResource(Res.string.user_settings_appearance_screensaver_description),
@@ -200,7 +217,9 @@ private fun AppearanceContent(
                 onCheckedChanged = { onEvent(ScreensaverChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
-            if (viewState.screensaverEnabled) {
+            AnimatedVisibility(
+                visible = viewState.screensaverEnabled,
+            ) {
                 val unit = stringResource(Res.string.user_settings_appearance_screensaver_unit_minutes)
                 GeeFlowListItem(
                     title = stringResource(Res.string.user_settings_appearance_screensaver_timeout),

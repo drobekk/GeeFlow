@@ -10,6 +10,7 @@ import app.geeflow.domain.user.usecase.SetAppThemeUseCase
 import app.geeflow.domain.user.usecase.SetCustomSeedColorUseCase
 import app.geeflow.domain.user.usecase.SetDarkModeUseCase
 import app.geeflow.domain.user.usecase.SetFullScreenModeUseCase
+import app.geeflow.domain.user.usecase.SetKeepScreenOnOnlyWhileChargingUseCase
 import app.geeflow.domain.user.usecase.SetKeepScreenOnUseCase
 import app.geeflow.domain.user.usecase.SetPaletteStyleUseCase
 import app.geeflow.domain.user.usecase.SetScreensaverEnabledUseCase
@@ -25,6 +26,7 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DialogDismissed
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.FullScreenChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnChanged
+import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.KeepScreenOnOnlyWhileChargingChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverChanged
@@ -42,6 +44,7 @@ internal class AppearanceSettingsViewModel(
     private val setCustomSeedColor: SetCustomSeedColorUseCase,
     private val setFullScreenMode: SetFullScreenModeUseCase,
     private val setKeepScreenOn: SetKeepScreenOnUseCase,
+    private val setKeepScreenOnOnlyWhileCharging: SetKeepScreenOnOnlyWhileChargingUseCase,
     private val setScreensaverEnabled: SetScreensaverEnabledUseCase,
     private val setScreensaverTimeoutMinutes: SetScreensaverTimeoutMinutesUseCase,
 ) : BaseViewModel<AppearanceSettingsViewState, Unit>(AppearanceSettingsViewState()) {
@@ -59,6 +62,7 @@ internal class AppearanceSettingsViewModel(
                         customSeedColor = settings.customSeedColor,
                         fullScreenMode = settings.fullScreenMode,
                         keepScreenOn = settings.keepScreenOn,
+                        keepScreenOnOnlyWhileCharging = settings.keepScreenOnOnlyWhileCharging,
                         screensaverEnabled = settings.screensaverEnabled,
                         screensaverTimeoutMinutes = settings.screensaverTimeoutMinutes,
                     )
@@ -105,6 +109,7 @@ internal class AppearanceSettingsViewModel(
         }
         is FullScreenChanged -> launch { setFullScreenMode(event.enabled) }
         is KeepScreenOnChanged -> launch { setKeepScreenOn(event.enabled) }
+        is KeepScreenOnOnlyWhileChargingChanged -> launch { setKeepScreenOnOnlyWhileCharging(event.enabled) }
         is ScreensaverChanged -> launch { setScreensaverEnabled(event.enabled) }
         is ScreensaverTimeoutClicked -> modify { copy(dialog = AppearanceSettingsViewState.Dialog.ScreensaverTimeout) }
         is ScreensaverTimeoutConfirmed -> launch {

@@ -72,4 +72,6 @@
     <string name="user_settings_about_licenses">Licencje open source</string>
     <string name="user_settings_about_licenses_description">Informacje o licencjach zewnętrznych bibliotek</string>
     <string name="user_settings_about_version">Wersja</string>
+    <string name="user_settings_appearance_keep_screen_on_only_while_charging">Tylko podczas ładowania</string>
+    <string name="user_settings_appearance_keep_screen_on_only_while_charging_description">Nie wygaszaj ekranu tylko wtedy, gdy urządzenie jest podłączone do zasilania</string>
 </resources>

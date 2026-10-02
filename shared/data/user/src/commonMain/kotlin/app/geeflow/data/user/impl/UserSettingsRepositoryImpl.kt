@@ -61,6 +61,10 @@ class UserSettingsRepositoryImpl(
         preferences[keepScreenOnKey(userId)] ?: false
     }
 
+    override fun keepScreenOnOnlyWhileCharging(userId: Long): Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[keepScreenOnOnlyWhileChargingKey(userId)] ?: false
+    }
+
     override fun screensaverEnabled(userId: Long): Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[screensaverEnabledKey(userId)] ?: false
     }
@@ -121,6 +125,12 @@ class UserSettingsRepositoryImpl(
         }
     }
 
+    override suspend fun setKeepScreenOnOnlyWhileCharging(userId: Long, enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[keepScreenOnOnlyWhileChargingKey(userId)] = enabled
+        }
+    }
+
     override suspend fun setScreensaverEnabled(userId: Long, enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[screensaverEnabledKey(userId)] = enabled
@@ -152,6 +162,7 @@ class UserSettingsRepositoryImpl(
             preferences.remove(appThemeKey(userId))
             preferences.remove(fullScreenModeKey(userId))
             preferences.remove(keepScreenOnKey(userId))
+            preferences.remove(keepScreenOnOnlyWhileChargingKey(userId))
             preferences.remove(screensaverEnabledKey(userId))
             preferences.remove(screensaverTimeoutMinutesKey(userId))
             preferences.remove(autoConnectKey(userId))
@@ -170,6 +181,8 @@ class UserSettingsRepositoryImpl(
     private fun customSeedColorKey(userId: Long) = intPreferencesKey(key("custom_seed_color", userId))
     private fun fullScreenModeKey(userId: Long) = booleanPreferencesKey(key("full_screen_mode", userId))
     private fun keepScreenOnKey(userId: Long) = booleanPreferencesKey(key("keep_screen_on", userId))
+    private fun keepScreenOnOnlyWhileChargingKey(userId: Long) =
+        booleanPreferencesKey(key("keep_screen_on_only_while_charging", userId))
     private fun screensaverEnabledKey(userId: Long) = booleanPreferencesKey(key("screensaver_enabled", userId))
     private fun screensaverTimeoutMinutesKey(userId: Long) = intPreferencesKey(key("screensaver_timeout_minutes", userId))
     private fun autoConnectKey(userId: Long) = booleanPreferencesKey(key("auto_connect", userId))

@@ -17,6 +17,7 @@ interface UserSettingsRepository {
     fun customSeedColor(userId: Long): Flow<Int>
     fun fullScreenMode(userId: Long): Flow<Boolean>
     fun keepScreenOn(userId: Long): Flow<Boolean>
+    fun keepScreenOnOnlyWhileCharging(userId: Long): Flow<Boolean>
     fun screensaverEnabled(userId: Long): Flow<Boolean>
     fun screensaverTimeoutMinutes(userId: Long): Flow<Int>
     fun autoConnect(userId: Long): Flow<Boolean>
@@ -28,6 +29,7 @@ interface UserSettingsRepository {
     suspend fun setCustomSeedColor(userId: Long, colorArgb: Int)
     suspend fun setFullScreenMode(userId: Long, enabled: Boolean)
     suspend fun setKeepScreenOn(userId: Long, enabled: Boolean)
+    suspend fun setKeepScreenOnOnlyWhileCharging(userId: Long, enabled: Boolean)
     suspend fun setScreensaverEnabled(userId: Long, enabled: Boolean)
     suspend fun setScreensaverTimeoutMinutes(userId: Long, minutes: Int)
     suspend fun setAutoConnect(userId: Long, enabled: Boolean)

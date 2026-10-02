@@ -11,6 +11,7 @@ data class AppearanceSettings(
     val customSeedColor: Int = 0xFF1E88E5.toInt(),
     val fullScreenMode: Boolean = false,
     val keepScreenOn: Boolean = false,
+    val keepScreenOnOnlyWhileCharging: Boolean = false,
     val screensaverEnabled: Boolean = false,
     val screensaverTimeoutMinutes: Int = 5,
 )
