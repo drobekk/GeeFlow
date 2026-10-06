@@ -49,7 +49,7 @@ A Kotlin Multiplatform app for controlling and monitoring espresso machines over
 
 ## Supported Hardware
 
-Right now the only real machine supported and tested is the **Wendougee Data-S**. Other machines are not supported yet; the protocol is machine-specific and nothing else has been tried.
+Right now the only real machine supported and tested is the **Wendougee Data-S**. Other machines are not tested yet, the protocol is machine-specific and nothing else has been tried. It might be working on LITA machines.
 
 The **Wendougee smart grinder** is not supported yet, simply because I do not own one to reverse engineer and test against. Only the smart scale is wired up on the accessory side.
 
