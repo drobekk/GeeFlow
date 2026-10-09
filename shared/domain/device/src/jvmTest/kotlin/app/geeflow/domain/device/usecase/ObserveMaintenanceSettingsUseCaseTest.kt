@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 
 class ObserveMaintenanceSettingsUseCaseTest {
     @Test
-    fun `initial deep cycles respect machine limits and reconnect does not overwrite programs`() = runBlocking {
+    fun `when settings initialize then respects limits and preserves programs on reconnect`() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val controller = DemoDeviceController(scope)
         val repository = MemoryRepository()
@@ -37,12 +37,17 @@ class ObserveMaintenanceSettingsUseCaseTest {
             }
             controller.setCleaningSettings(5f, 6f, 8)
             val observe = ObserveMaintenanceSettingsUseCase(repository, provider)
+
             val first = observe(1).first()
+
             assertEquals(8, first.daily.cycles)
             assertEquals(10, first.deep.cycles)
             assertEquals(6, first.deep.restSeconds)
+
             controller.setCleaningSettings(1f, 1f, 1)
-            assertEquals(first, observe(1).first())
+            val reconnected = observe(1).first()
+
+            assertEquals(first, reconnected)
         } finally {
             scope.cancel()
         }

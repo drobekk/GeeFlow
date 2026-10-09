@@ -18,7 +18,7 @@ import kotlin.time.Instant
 
 class SaveBrewToHistoryUseCaseTest {
     @Test
-    fun `manual history follows device settings for every selected user`() = runTest {
+    fun `when selected user changes then manual history follows device settings`() = runTest {
         val users = TestUsers()
         val history = TestHistory()
         val settings = object : DeviceBrewingSettingsRepository {
@@ -27,17 +27,20 @@ class SaveBrewToHistoryUseCaseTest {
             override suspend fun remove(deviceId: Long) = Unit
         }
         val save = SaveBrewToHistoryUseCase(history, settings, users)
+
         for (userId in listOf(1L, 2L)) {
             users.setSelectedUser(userId)
             save(1L, session(), null, null)
-            assertEquals((userId - 1).toInt(), history.entries.size)
             save(2L, session(), null, null)
-            assertEquals(userId, history.entries.last().userId)
         }
-        assertEquals(listOf(1L, 2L), history.entries.map { it.userId })
         save(1L, session().copy(mode = BrewMode.Profile), null, null)
         save(1L, session().copy(mode = BrewMode.Freehand), null, null)
-        assertEquals(4, history.entries.size)
+
+        assertEquals(listOf(1L, 2L, 2L, 2L), history.entries.map { it.userId })
+        assertEquals(
+            listOf(BrewMode.Manual, BrewMode.Manual, BrewMode.Profile, BrewMode.Freehand),
+            history.entries.map { it.mode },
+        )
     }
 
     private fun session() = BrewSession(

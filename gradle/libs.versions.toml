@@ -19,6 +19,7 @@ coil = "3.6.3"
 filekit = "0.16.0"
 imagepickerkmp = "1.1.7"
 junit = "4.13.2"
+mockk = "1.14.6"
 kermit = "2.2.0"
 koin = "4.2.2"
 koin-plugin = "1.2.1"
@@ -47,6 +48,7 @@ buildKonfig = "0.23.0"
 inAppPurchase = "1.0.43"
 
 [libraries]
+mockk = { module = "io.mockk:mockk-jvm", version.ref = "mockk" }
 inapppurchase = { module = "io.github.aditya-gupta99:inAppPurchase-kmp", version.ref = "inAppPurchase" }
 aboutLibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }

@@ -10,6 +10,9 @@ koinCompiler {
 
 kotlin {
     sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.mockk)
+        }
         commonTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)
         }

@@ -41,6 +41,9 @@ kotlin {
 
 
     sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.mockk)
+        }
         commonMain.dependencies {
             api(projects.shared.core.commerce)
             api(projects.shared.core.navigation)

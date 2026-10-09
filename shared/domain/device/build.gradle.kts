@@ -11,6 +11,9 @@ koinCompiler {
 
 kotlin {
     sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.mockk)
+        }
         commonMain.dependencies {
             api(projects.shared.data.device)
             api(projects.shared.core.domain)
