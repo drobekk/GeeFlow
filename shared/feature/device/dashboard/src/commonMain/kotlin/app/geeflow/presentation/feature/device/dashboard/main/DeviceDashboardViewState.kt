@@ -2,6 +2,7 @@ package app.geeflow.presentation.feature.device.dashboard.main
 
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.PhaseTransition
+import app.geeflow.data.device.model.DeviceError
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 
@@ -56,6 +57,7 @@ data class DeviceDashboardViewState(
         val brewStatus: BrewStatus = BrewStatus.Idle,
         val smartScaleConnected: Boolean = false,
         val alarm: Boolean = false,
+        val error: DeviceError? = null,
     ) {
         val isBrewing = brewStatus != BrewStatus.Idle
 
@@ -74,6 +76,7 @@ data class DeviceDashboardViewState(
     }
 
     sealed interface Dialog {
+        data object Errors : Dialog
         object BluetoothPermissionMissing : Dialog
 
         /** Full text of the brewed profile's description, which the brew bar can only show truncated. */

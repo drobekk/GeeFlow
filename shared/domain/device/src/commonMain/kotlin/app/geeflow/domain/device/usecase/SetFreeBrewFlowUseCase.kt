@@ -11,7 +11,7 @@ class SetFreeBrewFlowUseCase(
 ) {
     suspend operator fun invoke(deviceId: Long, flow: Float) = coordinator.withUnownedControl(deviceId) {
         with(provider.getController(deviceId)) {
-            requireConnected(deviceId)
+            requireReady(deviceId)
             setFreeBrewFlowTarget(flow)
         }
     }

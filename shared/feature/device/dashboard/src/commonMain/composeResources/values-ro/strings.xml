@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Eroare a aparatului</string>
+    <string name="device_error_none">Nu există erori active ale aparatului.</string>
+    <string name="device_error_code">Cod de eroare: %1$d</string>
+    <string name="device_error_unknown">Aparatul a raportat o eroare necunoscută (%1$d).</string>
+    <string name="device_error_heating_timeout">Timpul de încălzire a fost depășit.</string>
+    <string name="device_error_water_replenishment_timeout">Timpul de completare cu apă a fost depășit.</string>
+    <string name="device_error_extraction_timeout">Timpul de extracție a fost depășit.</string>
+    <string name="device_error_pressure_sensor">Senzorul de presiune lipsește.</string>
+    <string name="device_error_steam_sensor">Defecțiune a senzorului de temperatură al boilerului de abur (NTC2).</string>
+    <string name="device_error_brew_sensor">Defecțiune a senzorului de temperatură al boilerului de cafea (NTC1).</string>
+    <string name="device_error_water_level">Nivel anormal al apei în aparat. Eroarea poate privi nivelul apei din boiler sau senzorul acestuia.</string>
     <string name="free_control_recording_too_long">Înregistrare prea lungă. Profilurile libere suportă aprox. 63 s.</string>
     <string name="device_dashboard_clean">Curățare</string>
     <string name="device_dashboard_alarm">Alarmă</string>

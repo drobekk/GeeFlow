@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Machinefout</string>
+    <string name="device_error_none">Geen actieve machinefouten.</string>
+    <string name="device_error_code">Foutcode: %1$d</string>
+    <string name="device_error_unknown">De machine heeft een onbekende fout gemeld (%1$d).</string>
+    <string name="device_error_heating_timeout">Het opwarmen duurde te lang.</string>
+    <string name="device_error_water_replenishment_timeout">Het bijvullen van water duurde te lang.</string>
+    <string name="device_error_extraction_timeout">De extractie duurde te lang.</string>
+    <string name="device_error_pressure_sensor">De druksensor ontbreekt.</string>
+    <string name="device_error_steam_sensor">Storing van de temperatuursensor van de stoomboiler (NTC2).</string>
+    <string name="device_error_brew_sensor">Storing van de temperatuursensor van de zetboiler (NTC1).</string>
+    <string name="device_error_water_level">Abnormaal waterniveau in de machine. De fout kan betrekking hebben op het waterniveau in de boiler of de bijbehorende sensor.</string>
     <string name="free_control_recording_too_long">Opname te lang voor replay. Vrije profielen ondersteunen ca. 63 s.</string>
     <string name="device_dashboard_clean">Reinigen</string>
     <string name="device_dashboard_alarm">Alarm</string>

@@ -80,4 +80,5 @@
     <string name="maintenance_reminder_both">Głębokie czyszczenie zalicza się także do codziennego przypomnienia.</string>
     <string name="auto_flush_countdown_title">Płukanie za</string>
     <string name="auto_flush_tap_to_cancel">Dotknij, aby anulować</string>
+    <string name="error_device_fault">Ekspres zgłasza błąd. Usuń jego przyczynę przed rozpoczęciem parzenia lub czyszczenia. Szczegóły znajdziesz pod przyciskiem błędu.</string>
 </resources>

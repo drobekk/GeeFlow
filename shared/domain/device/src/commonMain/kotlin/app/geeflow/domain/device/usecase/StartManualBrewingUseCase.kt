@@ -11,7 +11,7 @@ class StartManualBrewingUseCase(
 ) {
     suspend operator fun invoke(deviceId: Long) = coordinator.withUnownedControl(deviceId) {
         with(provider.getController(deviceId)) {
-            requireConnected(deviceId)
+            requireReady(deviceId)
             startManualBrewing()
         }
     }

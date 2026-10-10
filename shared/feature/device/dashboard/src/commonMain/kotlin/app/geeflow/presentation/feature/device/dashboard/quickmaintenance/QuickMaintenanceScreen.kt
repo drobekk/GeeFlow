@@ -50,7 +50,6 @@ import app.geeflow.ui.modifier.WaveOrientation
 import app.geeflow.ui.modifier.waveBackground
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
-import geeflow.shared.core.ui.generated.resources.common_close
 import geeflow.shared.core.ui.generated.resources.common_cycle
 import geeflow.shared.core.ui.generated.resources.common_flush
 import geeflow.shared.core.ui.generated.resources.common_rest
@@ -62,7 +61,6 @@ import geeflow.shared.core.ui.generated.resources.maintenance_daily_description
 import geeflow.shared.core.ui.generated.resources.maintenance_deep
 import geeflow.shared.core.ui.generated.resources.maintenance_deep_description
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
-import geeflow.shared.feature.device.dashboard.generated.resources.device_water_alarm_error
 import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_start
 import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_title
@@ -147,11 +145,7 @@ private fun QuickMaintenanceContent(
             }
         }
         VerticalSpacer(16.dp)
-        if (viewState.waterLevelAlarm) {
-            WaterAlarmContent()
-        } else {
-            CleaningProgressContent(viewState)
-        }
+        CleaningProgressContent(viewState)
         VerticalSpacer(16.dp)
         AnimatedContent(
             targetState = viewState.selectedType,
@@ -177,19 +171,6 @@ private fun QuickMaintenanceContent(
         Buttons(viewState, isExpanded, onEvent)
         SnackbarHost(snackbar)
     }
-}
-
-@Composable
-private fun WaterAlarmContent() {
-    Text(
-        text = stringResource(Res.string.device_water_alarm_error),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onErrorContainer,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.medium)
-            .padding(16.dp),
-    )
 }
 
 @Composable
@@ -284,31 +265,25 @@ private fun Buttons(
         onClick = { onEvent(QuickMaintenanceEvent.MoreSettingsClicked(isExpanded)) },
         content = { Text(stringResource(CoreRes.string.common_settings)) },
     )
-    if (viewState.waterLevelAlarm) {
-        Button(onClick = { onEvent(QuickMaintenanceEvent.CloseClicked) }) {
-            Text(stringResource(CoreRes.string.common_close))
-        }
-    } else {
-        val buttonColor by animateColorAsState(
-            if (viewState.isCleaning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary,
-        )
-        val textColor by animateColorAsState(
-            if (viewState.isCleaning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimary,
-        )
-        Button(
-            onClick = { onEvent(QuickMaintenanceEvent.ToggleCleaningClicked) },
-            enabled = !viewState.isStarting && (viewState.isCleaning || viewState.canStart),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = buttonColor,
-                contentColor = textColor,
+    val buttonColor by animateColorAsState(
+        if (viewState.isCleaning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary,
+    )
+    val textColor by animateColorAsState(
+        if (viewState.isCleaning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimary,
+    )
+    Button(
+        onClick = { onEvent(QuickMaintenanceEvent.ToggleCleaningClicked) },
+        enabled = !viewState.isStarting && (viewState.isCleaning || viewState.canStart),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = buttonColor,
+            contentColor = textColor,
+        ),
+    ) {
+        Text(
+            stringResource(
+                if (viewState.isCleaning) Res.string.quick_maintenance_stop else Res.string.quick_maintenance_start,
             ),
-        ) {
-            Text(
-                stringResource(
-                    if (viewState.isCleaning) Res.string.quick_maintenance_stop else Res.string.quick_maintenance_start,
-                ),
-            )
-        }
+        )
     }
 }
 

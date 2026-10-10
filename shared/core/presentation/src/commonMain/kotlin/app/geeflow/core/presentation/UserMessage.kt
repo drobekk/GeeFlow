@@ -1,6 +1,7 @@
 package app.geeflow.core.presentation
 
 import app.geeflow.domain.exception.AppBackgroundedException
+import app.geeflow.domain.exception.DeviceErrorException
 import app.geeflow.domain.exception.DeviceNotConnectedException
 import app.geeflow.domain.exception.MachineBusyException
 import app.geeflow.domain.exception.MachineControlChangedException
@@ -14,6 +15,7 @@ import app.geeflow.domain.exception.TelemetryTimeoutException
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.error_app_backgrounded_brew
 import geeflow.shared.core.ui.generated.resources.error_connect_device
+import geeflow.shared.core.ui.generated.resources.error_device_fault
 import geeflow.shared.core.ui.generated.resources.error_generic
 import geeflow.shared.core.ui.generated.resources.error_machine_busy
 import geeflow.shared.core.ui.generated.resources.error_machine_control_changed
@@ -28,6 +30,7 @@ import org.jetbrains.compose.resources.getString
 
 suspend fun Throwable.toUserMessage(): String = when (this) {
     is DeviceNotConnectedException -> getString(Res.string.error_connect_device)
+    is DeviceErrorException -> getString(Res.string.error_device_fault)
     is ScaleNotConnectedException -> getString(Res.string.error_scale_not_connected)
     is ProfileBindingNotAllowedException -> getString(Res.string.error_profile_binding_not_allowed)
     is MachineBusyException -> getString(Res.string.error_machine_busy)

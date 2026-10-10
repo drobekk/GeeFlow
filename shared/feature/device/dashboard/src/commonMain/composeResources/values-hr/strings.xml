@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Pogreška aparata</string>
+    <string name="device_error_none">Nema aktivnih pogrešaka aparata.</string>
+    <string name="device_error_code">Kod pogreške: %1$d</string>
+    <string name="device_error_unknown">Aparat je prijavio nepoznatu pogrešku (%1$d).</string>
+    <string name="device_error_heating_timeout">Prekoračeno je vrijeme zagrijavanja.</string>
+    <string name="device_error_water_replenishment_timeout">Prekoračeno je vrijeme dopunjavanja vode.</string>
+    <string name="device_error_extraction_timeout">Prekoračeno je vrijeme ekstrakcije.</string>
+    <string name="device_error_pressure_sensor">Nedostaje senzor tlaka.</string>
+    <string name="device_error_steam_sensor">Kvar senzora temperature parnog bojlera (NTC2).</string>
+    <string name="device_error_brew_sensor">Kvar senzora temperature bojlera za kavu (NTC1).</string>
+    <string name="device_error_water_level">Nepravilna razina vode u aparatu. Pogreška se može odnositi na razinu vode u bojleru ili njezin senzor.</string>
     <string name="free_control_recording_too_long">Snimka je preduga. Slobodni profili podržavaju do cca 63 s.</string>
     <string name="device_dashboard_clean">Čišćenje</string>
     <string name="device_dashboard_alarm">Alarm</string>

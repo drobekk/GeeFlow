@@ -2,6 +2,7 @@ package app.geeflow.domain.device.usecase
 
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.HeatingMode
 import app.geeflow.domain.exception.DeviceNotConnectedException
@@ -22,6 +23,20 @@ class SetPulseHeatingModeUseCaseTest {
     init {
         every { provider.getController(9) } returns controller
         every { controller.deviceState } returns state
+    }
+
+    @Test
+    fun `when a fault is active then allows changing both heating modes`() = runTest {
+        state.value = state.value.copy(error = DeviceError(7))
+        val useCase = SetPulseHeatingModeUseCase(provider)
+
+        useCase(9, true)
+        useCase(9, false)
+
+        coVerifyOrder {
+            controller.setHeatingMode(HeatingMode.Pulse)
+            controller.setHeatingMode(HeatingMode.FullSpeed)
+        }
     }
 
     @Test

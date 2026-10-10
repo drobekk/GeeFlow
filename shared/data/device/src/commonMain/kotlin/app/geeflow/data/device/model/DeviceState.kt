@@ -23,7 +23,10 @@ data class DeviceState(
     val smartScaleEnabled: Boolean = false,
     val smartScaleSearchActive: Boolean = false,
     val waterLevelAlarm: Boolean = false,
+    val error: DeviceError? = null,
 ) {
+    val hasError: Boolean get() = error != null || waterLevelAlarm
+
     data class Config(
         val targetSteamTemp: Float,
         val targetBrewTemp: Float,

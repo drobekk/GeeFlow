@@ -11,7 +11,7 @@ class StartFreeVariableBrewingUseCase(
 ) {
     suspend operator fun invoke(deviceId: Long, isFlow: Boolean) = coordinator.withUnownedControl(deviceId) {
         with(provider.getController(deviceId)) {
-            requireConnected(deviceId)
+            requireReady(deviceId)
             startFreeVariableBrewing(isFlow)
         }
     }

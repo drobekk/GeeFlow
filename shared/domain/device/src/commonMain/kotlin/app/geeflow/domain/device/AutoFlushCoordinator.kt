@@ -7,6 +7,7 @@ import app.geeflow.data.device.model.DeviceBrewingSettings
 import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
+import app.geeflow.domain.device.usecase.requireReady
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -136,6 +137,7 @@ class AutoFlushCoordinator(
         try {
             execution.withUnownedControl(id) {
                 if (canStart(id, controller, settings)) {
+                    controller.requireReady(id)
                     trigger.automaticStartRequested()
                     controller.startManualBrewing()
                 }
@@ -154,7 +156,7 @@ class AutoFlushCoordinator(
         val state = controller.deviceState.value
         return provider.currentDeviceId.value == id && foreground.value && settings.autoFlushEnabled &&
             state.connectionStatus == ConnectionStatus.Connected && state.brewStatus == BrewStatus.Idle &&
-            !state.waterLevelAlarm && !execution.owns(id) && DeviceCapability.ManualBrewing in controller.capabilities
+            !state.hasError && !execution.owns(id) && DeviceCapability.ManualBrewing in controller.capabilities
     }
 
     private fun cancelCountdown() {

@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Erreur de la machine</string>
+    <string name="device_error_none">Aucune erreur active sur la machine.</string>
+    <string name="device_error_code">Code d’erreur : %1$d</string>
+    <string name="device_error_unknown">La machine a signalé une erreur inconnue (%1$d).</string>
+    <string name="device_error_heating_timeout">Le délai de chauffe a été dépassé.</string>
+    <string name="device_error_water_replenishment_timeout">Le délai de remplissage en eau a été dépassé.</string>
+    <string name="device_error_extraction_timeout">Le délai d’extraction a été dépassé.</string>
+    <string name="device_error_pressure_sensor">Le capteur de pression est absent.</string>
+    <string name="device_error_steam_sensor">Défaillance du capteur de température de la chaudière vapeur (NTC2).</string>
+    <string name="device_error_brew_sensor">Défaillance du capteur de température de la chaudière café (NTC1).</string>
+    <string name="device_error_water_level">Niveau d’eau anormal dans la machine. L’erreur peut concerner le niveau d’eau dans la chaudière ou son capteur.</string>
     <string name="free_control_recording_too_long">Enregistrement trop long. Les profils libres supportent environ 63 s.</string>
     <string name="device_dashboard_clean">Nettoyer</string>
     <string name="device_dashboard_alarm">Alarme</string>

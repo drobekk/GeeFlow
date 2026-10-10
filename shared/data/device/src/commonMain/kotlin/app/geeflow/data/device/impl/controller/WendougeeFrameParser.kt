@@ -1,5 +1,6 @@
 package app.geeflow.data.device.impl.controller
 
+import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.HeatingMode
@@ -231,7 +232,7 @@ class WendougeeFrameParser(
                         cleaningTimeSec = cleaningTimeSec,
                         cleaningStandbySec = cleaningStandbySec,
                         cleaningCount = cleaningCount,
-                        waterAlarmEnabled = false, // set by readWaterAlarmRegister after config frame
+                        waterAlarmEnabled = config?.waterAlarmEnabled ?: false, // Read separately from register 396
                     ),
                 )
             }
@@ -273,13 +274,14 @@ class WendougeeFrameParser(
             val volume = dataU16be(TelemetryFrame.VOLUME).toFloat()
             val flowRate = dataU16be(TelemetryFrame.FLOW_RATE).toFloat()
             val time = dataU16be(TelemetryFrame.TIME)
-            val waterLevelAlarm = dataU16be(TelemetryFrame.WATER_LEVEL_ALARM) != 0
+            val error = DeviceError.fromCode(dataU16be(TelemetryFrame.ERROR_CODE))
+            val waterLevelAlarm = error?.isWaterAlarm == true
 
             if (shouldLogPolling()) {
                 Logger.withTag(TAG).i {
                     "Brew: $brewActual°C | Steam: $steamActual°C | Pressure: ${pressure}bar" +
                         " | Weight: ${weight}g (${weightRate}g/s) | Volume: ${volume}ml (${flowRate}ml/s) | " +
-                        "Time: ${time}s | Water alarm: $waterLevelAlarm"
+                        "Time: ${time}s | Error code: ${error?.code ?: 0}"
                 }
             }
 
@@ -295,6 +297,7 @@ class WendougeeFrameParser(
                     weight = weight,
                     weightRate = weightRate,
                     waterLevelAlarm = waterLevelAlarm,
+                    error = error,
                 )
             }
         } catch (e: IndexOutOfBoundsException) {
@@ -332,7 +335,7 @@ class WendougeeFrameParser(
     private object TelemetryFrame {
         const val DATA_START = 3
         const val TIME = 2
-        const val WATER_LEVEL_ALARM = 4
+        const val ERROR_CODE = 4 // Register 1406, index 2 of telemetry starting at 1404
         const val STEAM_TEMP = 8
         const val BREW_TEMP = 10
         const val PRESSURE = 12

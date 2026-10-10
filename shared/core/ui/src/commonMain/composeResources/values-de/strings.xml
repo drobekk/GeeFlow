@@ -78,4 +78,5 @@
     <string name="maintenance_reminder_both">Intensivreinigung zählt auch für die tägliche Erinnerung.</string>
     <string name="auto_flush_countdown_title">Spülung in</string>
     <string name="auto_flush_tap_to_cancel">Zum Abbrechen tippen</string>
+    <string name="error_device_fault">Die Maschine meldet einen Fehler. Beheben Sie die Ursache, bevor Sie einen Bezug oder die Reinigung starten. Details finden Sie über die Fehlertaste.</string>
 </resources>

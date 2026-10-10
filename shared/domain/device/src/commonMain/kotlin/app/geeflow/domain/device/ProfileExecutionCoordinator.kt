@@ -16,6 +16,7 @@ import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.ProfileExecution
 import app.geeflow.data.device.model.requiredMetrics
 import app.geeflow.data.device.model.withValue
+import app.geeflow.domain.device.usecase.requireReady
 import app.geeflow.domain.exception.AppBackgroundedException
 import app.geeflow.domain.exception.DeviceNotConnectedException
 import app.geeflow.domain.exception.MachineBusyException
@@ -73,9 +74,7 @@ class ProfileExecutionCoordinator(
     suspend fun start(deviceId: Long, profile: BrewProfile) = mutex.withLock {
         if (job?.isActive == true || state.value.stopPending) throw MachineBusyException(deviceId)
         val controller = provider.getController(deviceId)
-        if (controller.deviceState.value.connectionStatus != DeviceState.ConnectionStatus.Connected) {
-            throw DeviceNotConnectedException(deviceId)
-        }
+        controller.requireReady(deviceId)
         if (controller.deviceState.value.brewStatus != DeviceState.BrewStatus.Idle) {
             throw MachineBusyException(deviceId)
         }
@@ -129,6 +128,7 @@ class ProfileExecutionCoordinator(
         var session: LiveBrewSession? = null
         var reason = "user_stop"
         try {
+            controller.requireReady(requireNotNull(state.value.deviceId))
             val oldStamp = controller.deviceState.value.telemetryTime
             session = controller.openLiveSession(profile.initialControl())
             val clock = TimeSource.Monotonic.markNow()
@@ -192,6 +192,7 @@ class ProfileExecutionCoordinator(
             if (device.connectionStatus != DeviceState.ConnectionStatus.Connected) {
                 throw DeviceNotConnectedException(currentDeviceId)
             }
+            controller.requireReady(currentDeviceId)
 
             if (device.brewStatus == DeviceState.BrewStatus.Idle) return "machine_stop"
             if (!controller.isLiveSessionActive(device)) {

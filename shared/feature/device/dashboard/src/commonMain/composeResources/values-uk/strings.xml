@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Помилка кавомашини</string>
+    <string name="device_error_none">Немає активних помилок кавомашини.</string>
+    <string name="device_error_code">Код помилки: %1$d</string>
+    <string name="device_error_unknown">Кавомашина повідомила про невідому помилку (%1$d).</string>
+    <string name="device_error_heating_timeout">Перевищено час нагрівання.</string>
+    <string name="device_error_water_replenishment_timeout">Перевищено час наповнення водою.</string>
+    <string name="device_error_extraction_timeout">Перевищено час екстракції.</string>
+    <string name="device_error_pressure_sensor">Відсутній датчик тиску.</string>
+    <string name="device_error_steam_sensor">Несправність датчика температури парового бойлера (NTC2).</string>
+    <string name="device_error_brew_sensor">Несправність датчика температури кавового бойлера (NTC1).</string>
+    <string name="device_error_water_level">Ненормальний рівень води в кавомашині. Помилка може стосуватися рівня води в бойлері або його датчика.</string>
     <string name="free_control_recording_too_long">Запис задовгий. Вільні профілі підтримують до ~63 с.</string>
     <string name="device_dashboard_clean">Очищення</string>
     <string name="device_dashboard_alarm">Тривога</string>

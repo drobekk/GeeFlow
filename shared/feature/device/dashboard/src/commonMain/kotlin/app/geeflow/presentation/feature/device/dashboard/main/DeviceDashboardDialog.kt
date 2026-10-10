@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import app.geeflow.data.device.model.DeviceError
+import app.geeflow.presentation.feature.device.dashboard.errors.DeviceErrorContent
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Dialog
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
@@ -33,11 +35,13 @@ import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 internal fun DeviceDashboardDialog(
     model: Dialog,
     onEvent: (DeviceDashboardEvent) -> Unit,
+    error: DeviceError? = null,
 ) {
     GeeFlowDialog(
         onDismissRequest = { onEvent(DeviceDashboardEvent.DialogDismissed) },
     ) {
         when (model) {
+            is Dialog.Errors -> DeviceErrorContent(error, onClose = { onEvent(DeviceDashboardEvent.DialogDismissed) })
             is Dialog.BluetoothPermissionMissing -> BluetoothPermissionMissingDialog(onEvent)
             is Dialog.BrewDescription -> BrewDescriptionDialog(model, onEvent)
         }

@@ -6,6 +6,10 @@ class DeviceNotConnectedException(val deviceId: Long) : BusinessException(
     "Device $deviceId is not connected",
 )
 
+class DeviceErrorException(val deviceId: Long, val errorCode: Int?) : BusinessException(
+    "Device $deviceId reports an active error${errorCode?.let { ": $it" }.orEmpty()}",
+)
+
 class ScaleNotConnectedException(val deviceId: Long) : BusinessException(
     "Smart scale for device $deviceId is not connected",
 )

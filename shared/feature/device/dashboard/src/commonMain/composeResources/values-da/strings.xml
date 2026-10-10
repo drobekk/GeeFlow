@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Fejl på maskinen</string>
+    <string name="device_error_none">Ingen aktive fejl på maskinen.</string>
+    <string name="device_error_code">Fejlkode: %1$d</string>
+    <string name="device_error_unknown">Maskinen rapporterede en ukendt fejl (%1$d).</string>
+    <string name="device_error_heating_timeout">Opvarmningen tog for lang tid.</string>
+    <string name="device_error_water_replenishment_timeout">Vandpåfyldningen tog for lang tid.</string>
+    <string name="device_error_extraction_timeout">Ekstraktionen tog for lang tid.</string>
+    <string name="device_error_pressure_sensor">Tryksensoren mangler.</string>
+    <string name="device_error_steam_sensor">Fejl på dampkedlens temperatursensor (NTC2).</string>
+    <string name="device_error_brew_sensor">Fejl på kaffekedlens temperatursensor (NTC1).</string>
+    <string name="device_error_water_level">Unormal vandstand i maskinen. Fejlen kan vedrøre vandstanden i kedlen eller dens sensor.</string>
     <string name="free_control_recording_too_long">Optagelse for lang. Frihåndsprofiler understøtter ca. 63 s.</string>
     <string name="device_dashboard_clean">Rens</string>
     <string name="device_dashboard_alarm">Alarm</string>

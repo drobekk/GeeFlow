@@ -17,7 +17,7 @@ class StartProfileBrewingUseCase(
     private val coordinator: ProfileExecutionCoordinator
 ) {
     suspend operator fun invoke(deviceId: Long, profile: BrewProfile) = with(provider.getController(deviceId)) {
-        requireConnected(deviceId)
+        requireReady(deviceId)
         if (BrewMetric.CupWeight in profile.requiredMetrics() && deviceState.value.smartScale?.isConnected != true) {
             throw ScaleNotConnectedException(deviceId)
         }

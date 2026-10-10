@@ -41,7 +41,7 @@ internal class MaintenanceReminderViewModel(
                 modify {
                     copy(
                         dueTypes = saved.dueTypes(today),
-                        eligible = nowConnected && state.brewStatus == DeviceState.BrewStatus.Idle && !state.waterLevelAlarm,
+                        eligible = nowConnected && state.brewStatus == DeviceState.BrewStatus.Idle && !state.hasError,
                     )
                 }
             }

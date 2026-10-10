@@ -1,6 +1,5 @@
 package app.geeflow.presentation.feature.device.dashboard.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.RepeatMode
@@ -61,6 +60,7 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.AlarmClicked
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.CleaningClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectedDevicesClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.ConnectionButtonClicked
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardEvent.DeviceClicked
@@ -136,12 +136,15 @@ private fun ActionBar(
             )
         }
         HorizontalSpacer(16.dp)
+        if (device.alarm) {
+            ErrorButton(onClick = { onEvent(AlarmClicked) })
+            HorizontalSpacer(8.dp)
+        }
         Row(
             modifier = Modifier.width(IntrinsicSize.Max),
         ) {
-            AlarmButton(
-                visible = device.alarm,
-                onClick = { onEvent(AlarmClicked) },
+            CleaningButton(
+                onClick = { onEvent(CleaningClicked) },
                 modifier = Modifier.clip(
                     MaterialTheme.shapes.large.copy(
                         topEnd = CornerSize(0.dp),
@@ -170,8 +173,7 @@ private fun ActionBar(
 }
 
 @Composable
-private fun AlarmButton(
-    visible: Boolean,
+private fun CleaningButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) = Box(
@@ -182,32 +184,40 @@ private fun AlarmButton(
         .padding(horizontal = 16.dp),
     contentAlignment = Alignment.Center,
 ) {
-    AnimatedContent(targetState = visible) {
-        if (it) {
-            val animation = rememberInfiniteTransition("warningSizeAnimation")
-            val scale by animation.animateFloat(
-                initialValue = 1f,
-                targetValue = 1.2f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(WarningAnimationMs),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-                label = "scale",
-            )
-            Icon(
-                painter = rememberVectorPainter(Icons.Filled.Error),
-                contentDescription = stringResource(Res.string.device_dashboard_alarm),
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(20.dp).scale(scale),
-            )
-        } else {
-            Icon(
-                painter = rememberVectorPainter(Icons.Filled.AutoAwesome),
-                contentDescription = stringResource(Res.string.device_dashboard_clean),
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    Icon(
+        painter = rememberVectorPainter(Icons.Filled.AutoAwesome),
+        contentDescription = stringResource(Res.string.device_dashboard_clean),
+        modifier = Modifier.size(20.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun ErrorButton(onClick: () -> Unit) {
+    val animation = rememberInfiniteTransition("warningSizeAnimation")
+    val scale by animation.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(WarningAnimationMs),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "scale",
+    )
+    Box(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.large)
+            .clickable(onClick = onClick)
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .size(48.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = rememberVectorPainter(Icons.Filled.Error),
+            contentDescription = stringResource(Res.string.device_dashboard_alarm),
+            tint = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier.size(20.dp).scale(scale),
+        )
     }
 }
 

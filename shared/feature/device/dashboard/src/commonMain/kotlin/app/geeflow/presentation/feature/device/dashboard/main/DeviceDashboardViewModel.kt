@@ -184,7 +184,7 @@ internal class DeviceDashboardViewModel(
         }
 
         is Resumed -> connect()
-        is AlarmClicked -> withDeviceConnected { navigate(To(QuickMaintenance(args.deviceId))) }
+        is AlarmClicked -> modify { copy(dialog = Dialog.Errors) }
     }
 
     private fun toggleConnection() {
@@ -259,11 +259,6 @@ internal class DeviceDashboardViewModel(
 
     private fun updateMachineStateUi(state: DeviceState) {
         deviceConfig = state.config
-        val wasConnected = viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected
-        val isNowConnected = state.connectionStatus == ConnectionStatus.Connected
-        if (!wasConnected && isNowConnected && state.waterLevelAlarm) {
-            navigate(To(QuickMaintenance(args.deviceId)))
-        }
         modify {
             val newBrewStatus = when (state.brewStatus) {
                 BrewStatus.Manual -> Device.BrewStatus.Manual
@@ -293,7 +288,8 @@ internal class DeviceDashboardViewModel(
                     },
                     brewStatus = newBrewStatus,
                     smartScaleConnected = state.smartScale?.isConnected == true,
-                    alarm = state.waterLevelAlarm,
+                    alarm = state.hasError,
+                    error = state.error,
                 ),
                 brewButtonState = currentButtonState,
             )

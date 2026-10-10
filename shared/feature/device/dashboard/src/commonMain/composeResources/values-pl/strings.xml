@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Błąd ekspresu</string>
+    <string name="device_error_none">Brak aktywnych błędów ekspresu.</string>
+    <string name="device_error_code">Kod błędu: %1$d</string>
+    <string name="device_error_unknown">Ekspres zgłosił nierozpoznany błąd (%1$d).</string>
+    <string name="device_error_heating_timeout">Przekroczono czas nagrzewania.</string>
+    <string name="device_error_water_replenishment_timeout">Przekroczono czas uzupełniania wody.</string>
+    <string name="device_error_extraction_timeout">Przekroczono czas ekstrakcji.</string>
+    <string name="device_error_pressure_sensor">Brak czujnika ciśnienia.</string>
+    <string name="device_error_steam_sensor">Awaria czujnika temperatury bojlera pary (NTC2).</string>
+    <string name="device_error_brew_sensor">Awaria czujnika temperatury bojlera kawy (NTC1).</string>
+    <string name="device_error_water_level">Nieprawidłowy poziom wody w ekspresie. Błąd może dotyczyć poziomu wody w bojlerze lub jego czujnika.</string>
     <string name="free_control_recording_too_long">Nagranie za długie do powtórzenia. Profile swobodne mieszczą ok. 63 s.</string>
     <string name="device_dashboard_clean">Czyszczenie</string>
     <string name="device_dashboard_alarm">Alarm</string>

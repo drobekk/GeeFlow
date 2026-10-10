@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Device error</string>
+    <string name="device_error_none">No active device errors.</string>
+    <string name="device_error_code">Error code: %1$d</string>
+    <string name="device_error_unknown">The device reported an unrecognized error (%1$d).</string>
+    <string name="device_error_heating_timeout">Heating took too long.</string>
+    <string name="device_error_water_replenishment_timeout">Water replenishment took too long.</string>
+    <string name="device_error_extraction_timeout">Extraction took too long.</string>
+    <string name="device_error_pressure_sensor">The pressure sensor is missing.</string>
+    <string name="device_error_steam_sensor">Steam boiler temperature sensor failure (NTC2).</string>
+    <string name="device_error_brew_sensor">Brew boiler temperature sensor failure (NTC1).</string>
+    <string name="device_error_water_level">Abnormal water level in the machine. This error may concern the boiler water level or its sensor.</string>
     <string name="free_control_recording_too_long">This recording is too long to replay. Free hand profiles support about 63 seconds of recorded measurements.</string>
     <!-- Device Dashboard -->
     <string name="device_dashboard_clean">Clean</string>

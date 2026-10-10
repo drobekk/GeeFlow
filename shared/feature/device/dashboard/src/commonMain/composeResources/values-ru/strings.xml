@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Ошибка кофемашины</string>
+    <string name="device_error_none">Нет активных ошибок кофемашины.</string>
+    <string name="device_error_code">Код ошибки: %1$d</string>
+    <string name="device_error_unknown">Кофемашина сообщила о неизвестной ошибке (%1$d).</string>
+    <string name="device_error_heating_timeout">Превышено время нагрева.</string>
+    <string name="device_error_water_replenishment_timeout">Превышено время наполнения водой.</string>
+    <string name="device_error_extraction_timeout">Превышено время экстракции.</string>
+    <string name="device_error_pressure_sensor">Отсутствует датчик давления.</string>
+    <string name="device_error_steam_sensor">Неисправность датчика температуры парового бойлера (NTC2).</string>
+    <string name="device_error_brew_sensor">Неисправность датчика температуры кофейного бойлера (NTC1).</string>
+    <string name="device_error_water_level">Ненормальный уровень воды в кофемашине. Ошибка может быть связана с уровнем воды в бойлере или его датчиком.</string>
     <string name="free_control_recording_too_long">Запись слишком длинная. Свободные профили вмещают до ~63 с.</string>
     <string name="device_dashboard_clean">Очистка</string>
     <string name="device_dashboard_alarm">Тревога</string>

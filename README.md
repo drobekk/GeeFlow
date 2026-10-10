@@ -65,9 +65,9 @@ A built-in **Demo** device is also available for preview purposes. It simulates 
 > - It may cause unintended behavior, damage your machine, or void your warranty.
 > - You must **never** leave the machine unattended while it is under app control.
 
-### Error Handling Limitation
+### Machine Errors
 
-The error codes reported by the machine have **not** been mapped. The only fault the app currently recognizes and surfaces is the **low water level alarm**. Every other error condition the machine can report is unknown to the app and will pass silently. The app will not warn you, and may keep issuing commands as if nothing were wrong. If the machine behaves unexpectedly, check it with the manufacturer's own app, which can read the fault codes this app cannot.
+GeeFlow displays machine errors in a dedicated dialog, with descriptions for known errors and numeric codes for unknown ones. Active errors block brewing and cleaning; stop commands and boiler settings remain available.
 
 ## Features
 
@@ -113,14 +113,15 @@ On the Wendougee Data-S, experimental profiles use the machine's native freehand
 - Manual brew time and pressure defaults
 - Separate Daily Cleaning and Deep Cleaning programs with configurable flush duration, rest duration, and cycle count, plus start/stop and live cleaning status. Deep Cleaning is intended for use with cleaning detergent
 - Water alarm toggle
+- Separate machine error dialog with descriptions for known codes and numeric values for unknown codes
 - Quick settings and quick maintenance dialogs on the dashboard; long-press the quick settings button to toggle the steam boiler without opening anything
 
 **Maintenance Reminders**
 - Optional reminders for Daily Cleaning and Deep Cleaning, with independent intervals of 1-365 days, saved per machine
-- Due or overdue reminders appear on the machine's dashboard when the app is active and the machine is connected and idle, including after reconnecting or resuming the app
+- Due or overdue reminders appear on the machine's dashboard when the app is active and the machine is connected, idle, and reports no error, including after reconnecting or resuming the app
 - Reminders use local calendar dates, with no scheduled time or system notifications
 - Open Quick Maintenance from a reminder to select and start the suggested cleaning program, or choose Skip to move its next reminder forward by the configured interval
-- Pressing Start counts as cleaning for reminder purposes, even if the program later fails or is stopped. Daily Cleaning reschedules its own reminder; Deep Cleaning reschedules both
+- Pressing Start counts as cleaning for reminder purposes, even if the program later fails or is stopped. A start rejected because of an active machine error does not reschedule reminders. Daily Cleaning reschedules its own reminder; Deep Cleaning reschedules both
 - When both reminders are due, a single reminder suggests Deep Cleaning, which also covers Daily Cleaning. Skipping it reschedules both reminders
 
 **Smart Scale**

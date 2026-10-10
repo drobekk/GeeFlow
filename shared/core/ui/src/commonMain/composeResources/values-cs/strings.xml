@@ -80,4 +80,5 @@
     <string name="maintenance_reminder_both">Hloubkové čištění se započítává i do denní připomínky.</string>
     <string name="auto_flush_countdown_title">Proplach za</string>
     <string name="auto_flush_tap_to_cancel">Klepnutím zrušit</string>
+    <string name="error_device_fault">Kávovar hlásí chybu. Před zahájením přípravy kávy nebo čištění odstraňte její příčinu. Podrobnosti zobrazíte tlačítkem chyby.</string>
 </resources>

@@ -16,6 +16,7 @@ import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.LiveBrewSession
 import app.geeflow.data.device.impl.controller.DemoDeviceController
+import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.pumpTelemetry
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +37,24 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 
 class ProfileExecutionCoordinatorTest {
+    @Test
+    fun `when a fault occurs during live profile then stops the session`() = runBlocking {
+        val fixture = Fixture(continuous = true)
+
+        try {
+            fixture.coordinator.start(1, fixture.profile)
+            withTimeout(4000) { fixture.writes.first { it.isNotEmpty() } }
+            fixture.device.update { it.copy(error = DeviceError(8)) }
+            withTimeout(4000) { fixture.coordinator.state.first { !it.active } }
+
+            assertEquals(1, fixture.stops)
+            assertEquals(DeviceState.BrewStatus.Idle, fixture.device.value.brewStatus)
+            assertTrue(fixture.coordinator.state.value.message.orEmpty().contains("reports an active error: 8"))
+        } finally {
+            fixture.scope.cancel()
+        }
+    }
+
     private class Fixture(val continuous: Boolean = false) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val device = MutableStateFlow(

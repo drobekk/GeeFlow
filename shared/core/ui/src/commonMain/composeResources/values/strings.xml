@@ -88,4 +88,5 @@
     <string name="maintenance_reminder_both">Deep Cleaning also counts towards your Daily Cleaning reminder.</string>
     <string name="auto_flush_countdown_title">Auto-flush in</string>
     <string name="auto_flush_tap_to_cancel">Tap to cancel</string>
+    <string name="error_device_fault">The machine reports an error. Resolve it before starting brewing or cleaning. Open the error button for details.</string>
 </resources>

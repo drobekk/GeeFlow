@@ -101,6 +101,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                     smartScaleEnabled = it.smartScaleEnabled,
                     smartScaleSearchActive = it.smartScaleSearchActive,
                     waterLevelAlarm = it.waterLevelAlarm,
+                    error = it.error,
                     config = DeviceState.Config(
                         targetBrewTemp = it.config?.targetBrewTemp ?: 93f,
                         targetSteamTemp = it.config?.targetSteamTemp ?: 125f,
@@ -374,7 +375,6 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
             val config = state.config ?: return
             state.copy(
                 config = config.copy(waterAlarmEnabled = enabled),
-                waterLevelAlarm = enabled,
             )
         }
     }

@@ -16,12 +16,13 @@ class StartCleaningUseCase(
     private val provider: DeviceControllerProvider,
 ) {
     suspend operator fun invoke(deviceId: Long, type: CleaningType = CleaningType.Daily) {
+        provider.getController(deviceId).requireReady(deviceId)
         val settings = requireNotNull(maintenance.observe(deviceId).first())
         val types = if (type == CleaningType.Deep) CleaningType.entries.toSet() else setOf(type)
         maintenance.postpone(deviceId, types, maintenanceDay())
         coordinator.withUnownedControl(deviceId) {
             with(provider.getController(deviceId)) {
-                requireConnected(deviceId)
+                requireReady(deviceId)
                 check(DeviceCapability.CleaningMode in capabilities && DeviceCapability.CleaningSettings in capabilities)
                 check(deviceState.value.brewStatus == DeviceState.BrewStatus.Idle)
                 val program = settings.program(type)
@@ -29,6 +30,7 @@ class StartCleaningUseCase(
                 require(program.restSeconds in constraints.cleaningRestRange)
                 require(program.cycles in constraints.cleaningCountRange)
                 setCleaningSettings(program.flushSeconds.toFloat(), program.restSeconds.toFloat(), program.cycles)
+                requireReady(deviceId)
                 startCleaning()
             }
         }

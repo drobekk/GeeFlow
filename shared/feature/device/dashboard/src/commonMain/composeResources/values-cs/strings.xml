@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Chyba kávovaru</string>
+    <string name="device_error_none">Žádné aktivní chyby kávovaru.</string>
+    <string name="device_error_code">Kód chyby: %1$d</string>
+    <string name="device_error_unknown">Kávovar nahlásil neznámou chybu (%1$d).</string>
+    <string name="device_error_heating_timeout">Byla překročena doba ohřevu.</string>
+    <string name="device_error_water_replenishment_timeout">Byla překročena doba doplňování vody.</string>
+    <string name="device_error_extraction_timeout">Byla překročena doba extrakce.</string>
+    <string name="device_error_pressure_sensor">Chybí snímač tlaku.</string>
+    <string name="device_error_steam_sensor">Porucha snímače teploty parního bojleru (NTC2).</string>
+    <string name="device_error_brew_sensor">Porucha snímače teploty kávového bojleru (NTC1).</string>
+    <string name="device_error_water_level">Abnormální hladina vody v kávovaru. Chyba může souviset s hladinou vody v bojleru nebo s jejím snímačem.</string>
     <string name="free_control_recording_too_long">Záznam je příliš dlouhý. Volné profily podporují max. cca 63 s.</string>
     <string name="device_dashboard_clean">Vyčistit</string>
     <string name="device_dashboard_alarm">Alarm</string>

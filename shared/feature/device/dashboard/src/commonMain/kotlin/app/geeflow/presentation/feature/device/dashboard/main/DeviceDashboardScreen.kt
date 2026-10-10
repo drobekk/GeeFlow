@@ -142,6 +142,7 @@ internal fun DeviceDashboardScreen(
     viewState.dialog?.let {
         DeviceDashboardDialog(
             model = it,
+            error = viewState.device.error,
             onEvent = viewModel::handleEvent,
         )
     }

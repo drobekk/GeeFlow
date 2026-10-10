@@ -123,8 +123,7 @@ internal class QuickMaintenanceViewModel(
         val program = settings?.program(viewState.value.selectedType)
         modify {
             copy(
-                canStart = program != null && state.brewStatus == DeviceState.BrewStatus.Idle && !state.waterLevelAlarm,
-                waterLevelAlarm = state.waterLevelAlarm,
+                canStart = program != null && state.brewStatus == DeviceState.BrewStatus.Idle && !state.hasError,
                 isCleaning = status.inProgress,
                 flushProgress = QuickMaintenanceViewState.Progress(
                     current = status.flush.current,

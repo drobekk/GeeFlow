@@ -7,7 +7,6 @@ data class QuickMaintenanceViewState(
     val isStarting: Boolean = false,
     val canStart: Boolean = false,
     val isCleaning: Boolean = false,
-    val waterLevelAlarm: Boolean = false,
     val flushProgress: Progress = Progress(0, 0),
     val restProgress: Progress = Progress(0, 0),
     val cycleProgress: Progress = Progress(0, 0),

@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Erro da máquina</string>
+    <string name="device_error_none">Não há erros ativos na máquina.</string>
+    <string name="device_error_code">Código de erro: %1$d</string>
+    <string name="device_error_unknown">A máquina comunicou um erro desconhecido (%1$d).</string>
+    <string name="device_error_heating_timeout">O tempo de aquecimento foi excedido.</string>
+    <string name="device_error_water_replenishment_timeout">O tempo de reposição de água foi excedido.</string>
+    <string name="device_error_extraction_timeout">O tempo de extração foi excedido.</string>
+    <string name="device_error_pressure_sensor">O sensor de pressão está ausente.</string>
+    <string name="device_error_steam_sensor">Falha do sensor de temperatura da caldeira de vapor (NTC2).</string>
+    <string name="device_error_brew_sensor">Falha do sensor de temperatura da caldeira de café (NTC1).</string>
+    <string name="device_error_water_level">Nível de água anormal na máquina. O erro pode estar relacionado com o nível de água na caldeira ou com o respetivo sensor.</string>
     <string name="free_control_recording_too_long">Gravação muito longa. Perfis livres suportam até 63 s.</string>
     <string name="device_dashboard_clean">Limpar</string>
     <string name="device_dashboard_alarm">Alarme</string>

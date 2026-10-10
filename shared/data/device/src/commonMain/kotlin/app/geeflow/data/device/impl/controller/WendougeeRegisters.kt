@@ -21,7 +21,7 @@ object WendougeeRegisters {
     const val CLEANING_TIME = 0x0000
     const val CLEANING_STANDBY_TIME = 0x0001
     const val CLEANING_COUNT = 0x0002
-    const val WATER_ALARM = 0x018C
+    const val WATER_ALARM = 0x018C // 396: 1 = enabled, 0 = disabled (FC10, one register)
 
     // Profiles & Binding
     const val BIND_PROFILE = 30

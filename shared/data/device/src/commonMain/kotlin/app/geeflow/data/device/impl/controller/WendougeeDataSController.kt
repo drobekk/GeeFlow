@@ -438,6 +438,7 @@ class WendougeeDataSController(
                 smartScale = null,
                 smartScaleSearchActive = false,
                 waterLevelAlarm = false,
+                error = null,
             )
         }
         _foundScales.value = emptyList()
@@ -668,7 +669,6 @@ class WendougeeDataSController(
     }
 
     override suspend fun setWaterAlarm(enabled: Boolean) {
-        if (_deviceState.value.config?.waterAlarmEnabled == enabled) return
         requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.WATER_ALARM, listOf(if (enabled) 1 else 0))
         Logger.withTag(TAG).d { "Water alarm set to $enabled" }
         _deviceState.update { state ->

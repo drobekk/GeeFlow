@@ -80,4 +80,5 @@
     <string name="maintenance_reminder_both">Глубокая очистка засчитывается в ежедневное напоминание.</string>
     <string name="auto_flush_countdown_title">Промывка через</string>
     <string name="auto_flush_tap_to_cancel">Нажмите для отмены</string>
+    <string name="error_device_fault">Кофемашина сообщает об ошибке. Устраните её причину перед приготовлением кофе или очисткой. Подробности доступны по кнопке ошибки.</string>
 </resources>

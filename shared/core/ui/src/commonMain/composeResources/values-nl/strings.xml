@@ -78,4 +78,5 @@
     <string name="maintenance_reminder_both">Grondige reiniging telt ook voor dagelijkse herinnering.</string>
     <string name="auto_flush_countdown_title">Spoelen over</string>
     <string name="auto_flush_tap_to_cancel">Tik om te annuleren</string>
+    <string name="error_device_fault">De machine meldt een fout. Verhelp de oorzaak voordat u koffie zet of de reiniging start. Druk op de foutknop voor details.</string>
 </resources>

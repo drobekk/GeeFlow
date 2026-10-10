@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Gerätefehler</string>
+    <string name="device_error_none">Keine aktiven Gerätefehler.</string>
+    <string name="device_error_code">Fehlercode: %1$d</string>
+    <string name="device_error_unknown">Das Gerät hat einen unbekannten Fehler gemeldet (%1$d).</string>
+    <string name="device_error_heating_timeout">Die Aufheizzeit wurde überschritten.</string>
+    <string name="device_error_water_replenishment_timeout">Die Zeit zum Nachfüllen von Wasser wurde überschritten.</string>
+    <string name="device_error_extraction_timeout">Die Extraktionszeit wurde überschritten.</string>
+    <string name="device_error_pressure_sensor">Der Drucksensor fehlt.</string>
+    <string name="device_error_steam_sensor">Fehler des Temperatursensors im Dampfkessel (NTC2).</string>
+    <string name="device_error_brew_sensor">Fehler des Temperatursensors im Brühkessel (NTC1).</string>
+    <string name="device_error_water_level">Ungewöhnlicher Wasserstand im Gerät. Der Fehler kann den Wasserstand im Kessel oder dessen Sensor betreffen.</string>
     <string name="free_control_recording_too_long">Aufnahme zu lang für Replay. Freihand-Profile unterstützen ca. 63 s.</string>
     <string name="device_dashboard_clean">Reinigen</string>
     <string name="device_dashboard_alarm">Alarm</string>

@@ -78,4 +78,5 @@
     <string name="maintenance_reminder_both">Le nettoyage approfondi compte aussi pour le rappel quotidien.</string>
     <string name="auto_flush_countdown_title">Rinçage dans</string>
     <string name="auto_flush_tap_to_cancel">Touchez pour annuler</string>
+    <string name="error_device_fault">La machine signale une erreur. Corrigez sa cause avant de lancer une extraction ou un nettoyage. Appuyez sur le bouton d’erreur pour voir les détails.</string>
 </resources>

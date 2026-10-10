@@ -1,4 +1,15 @@
 <resources>
+    <string name="device_error_title">Laitteen virhe</string>
+    <string name="device_error_none">Ei aktiivisia laitevirheitä.</string>
+    <string name="device_error_code">Virhekoodi: %1$d</string>
+    <string name="device_error_unknown">Laite ilmoitti tuntemattomasta virheestä (%1$d).</string>
+    <string name="device_error_heating_timeout">Lämmitysaika ylittyi.</string>
+    <string name="device_error_water_replenishment_timeout">Vedentäyttöaika ylittyi.</string>
+    <string name="device_error_extraction_timeout">Uuttoaika ylittyi.</string>
+    <string name="device_error_pressure_sensor">Paineanturi puuttuu.</string>
+    <string name="device_error_steam_sensor">Höyryboilerin lämpötila-anturin vika (NTC2).</string>
+    <string name="device_error_brew_sensor">Uuttoboilerin lämpötila-anturin vika (NTC1).</string>
+    <string name="device_error_water_level">Laitteen vedenpinta on poikkeava. Virhe voi liittyä boilerin vedenpintaan tai sen anturiin.</string>
     <string name="free_control_recording_too_long">Tallenne on liian pitkä. Vapaat profiilit tukevat n. 63 sekuntia.</string>
     <string name="device_dashboard_clean">Puhdista</string>
     <string name="device_dashboard_alarm">Hälytys</string>

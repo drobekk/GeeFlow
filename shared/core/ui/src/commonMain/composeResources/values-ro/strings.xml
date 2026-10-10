@@ -79,4 +79,5 @@
     <string name="maintenance_reminder_both">Curățarea profundă se contorizează și la memento-ul zilnic.</string>
     <string name="auto_flush_countdown_title">Clătire în</string>
     <string name="auto_flush_tap_to_cancel">Atingeți pentru anulare</string>
+    <string name="error_device_fault">Espressorul raportează o eroare. Remediați cauza înainte de a începe prepararea cafelei sau curățarea. Apăsați butonul de eroare pentru detalii.</string>
 </resources>
