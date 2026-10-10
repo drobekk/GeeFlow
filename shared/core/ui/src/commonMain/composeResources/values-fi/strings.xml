@@ -79,4 +79,5 @@
     <string name="auto_flush_countdown_title">Huuhtelu alkaa</string>
     <string name="auto_flush_tap_to_cancel">Peruuta napauttamalla</string>
     <string name="error_device_fault">Laite ilmoittaa virheestä. Korjaa sen syy ennen kahvin valmistuksen tai puhdistuksen aloittamista. Katso lisätiedot virhepainikkeesta.</string>
+    <string name="error_grinder_not_connected">Yhdistä Single Dose -mylly ensin</string>
 </resources>

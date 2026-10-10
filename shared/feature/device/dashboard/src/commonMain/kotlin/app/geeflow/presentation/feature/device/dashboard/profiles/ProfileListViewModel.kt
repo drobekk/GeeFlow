@@ -22,6 +22,7 @@ import app.geeflow.domain.brew.usecase.ObserveUserProfilesUseCase
 import app.geeflow.domain.brew.usecase.UpdateBrewProfilesPositionsUseCase
 import app.geeflow.domain.device.usecase.GetProfileSupportUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import app.geeflow.domain.device.usecase.RunSingleDoseGrinderUseCase
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.presentation.feature.device.dashboard.ProfileEditor
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
@@ -38,6 +39,7 @@ import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEve
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.RemoveProfileClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.Reordered
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.SearchQueryChanged
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListEvent.SetGrinderClicked
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.SelectProfile
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowHistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModelEvent.ShowSnackbar
@@ -48,6 +50,7 @@ import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_manual
 import geeflow.shared.feature.device.dashboard.generated.resources.brew_history_profile
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_duplicate_name
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_list_grinder_settings_sent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -58,6 +61,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.InjectedParam
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Factory
@@ -70,6 +74,7 @@ internal class ProfileListViewModel(
     private val bindProfileUseCase: BindProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val duplicateProfileUseCase: DuplicateProfileUseCase,
+    private val runSingleDoseGrinder: RunSingleDoseGrinderUseCase,
     private val updateBrewProfilesPositionsUseCase: UpdateBrewProfilesPositionsUseCase,
     private val getBrewHistoryUseCase: GetBrewHistoryUseCase,
     private val getBrewHistoryDataUseCase: GetBrewHistoryDataUseCase,
@@ -80,6 +85,7 @@ internal class ProfileListViewModel(
     private var historyEndReached = false
     private var searchQuery = ""
     private var historyJob: Job? = null
+    private var lastGrinderRequestMillis = 0L
 
     init {
         launch {
@@ -94,13 +100,19 @@ internal class ProfileListViewModel(
         }
         launch {
             observeDeviceStateUseCase(args.deviceId).collect {
-                modify { copy(smartScaleConnected = it.smartScale?.isConnected == true) }
+                modify {
+                    copy(
+                        smartScaleConnected = it.smartScale?.isConnected == true,
+                        singleDoseGrinderConnected = it.singleDoseGrinder?.isConnected == true,
+                    )
+                }
             }
         }
     }
 
     fun handleEvent(event: ProfileListEvent) = when (event) {
         is ProfileSelected -> setSelectedProfileId(event.id)
+        is SetGrinderClicked -> setGrinder(event.id)
         is HistoryClicked -> toggleHistory()
         is HistoryBrewSelected -> showHistoryBrew(event.id)
         is LoadMoreHistory -> loadMoreHistory()
@@ -228,6 +240,19 @@ internal class ProfileListViewModel(
         id.toLongOrNull()?.let { bindProfileUseCase(args.deviceId, it) }
     }
 
+    private fun setGrinder(id: String) {
+        if (viewState.value.profiles.none { it.id == id && it.selected && it.singleDoseEnabled }) return
+        val settings = currentDomainProfiles.find { it.id.toString() == id }?.singleDoseSettings ?: return
+        if (!settings.enabled) return
+        val now = Clock.System.now().toEpochMilliseconds()
+        if (now - lastGrinderRequestMillis < GRINDER_REQUEST_DEBOUNCE_MS) return
+        lastGrinderRequestMillis = now
+        launchCatching(::onError) {
+            runSingleDoseGrinder(args.deviceId, settings.grindingSize, settings.grindingSpeed)
+            emitEvent(ShowSnackbar(getString(Res.string.profile_list_grinder_settings_sent)))
+        }
+    }
+
     private fun setSelectedProfileId(id: String?) {
         modify { copy(profiles = profiles.map { it.copy(selected = it.id == id) }) }
         emitEvent(SelectProfile(id))
@@ -266,6 +291,7 @@ internal class ProfileListViewModel(
         name = profile.name,
         description = profile.displayDescription(),
         brewByWeight = BrewMetric.CupWeight in profile.requiredMetrics(),
+        singleDoseEnabled = profile.singleDoseSettings.enabled,
         experimental = getProfileSupport(args.deviceId, profile).experimental,
         canBind = getProfileSupport(args.deviceId, profile).bindingAllowed,
         bound = bound,
@@ -278,6 +304,7 @@ internal class ProfileListViewModel(
     private companion object {
         private const val HISTORY_PAGE_SIZE = 20
         private const val SEARCH_DEBOUNCE_MS = 300L
+        private const val GRINDER_REQUEST_DEBOUNCE_MS = 1_000L
     }
 }
 

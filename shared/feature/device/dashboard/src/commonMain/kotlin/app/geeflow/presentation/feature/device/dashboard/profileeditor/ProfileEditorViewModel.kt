@@ -11,6 +11,7 @@ import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.SingleDoseSettings
 import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.brew.usecase.BindProfileUseCase
@@ -23,6 +24,7 @@ import app.geeflow.domain.device.usecase.GetProfileSupportUseCase
 import app.geeflow.domain.device.usecase.GetProfilingCapabilitiesUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceBrewingSettingsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
+import app.geeflow.domain.device.usecase.RunSingleDoseGrinderUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
 import app.geeflow.domain.exception.DeviceNotConnectedException
@@ -72,6 +74,7 @@ internal class ProfileEditorViewModel(
     private val getDeviceConstraints: GetDeviceConstraintsUseCase,
     private val startProfileBrewing: StartProfileBrewingUseCase,
     private val stopBrewing: StopBrewingUseCase,
+    private val runSingleDoseGrinder: RunSingleDoseGrinderUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     observeBrewData: ObserveBrewDataUseCase,
     observeDeviceState: ObserveDeviceStateUseCase,
@@ -86,6 +89,7 @@ internal class ProfileEditorViewModel(
     private var nextStepId = 0L
     private var boundProfileId: Long? = null
     private var skipManualBrews = true
+    private var lastGrindRequestMillis = 0L
 
     init {
         launch {
@@ -143,6 +147,9 @@ internal class ProfileEditorViewModel(
                     copy(
                         isBrewing = state.brewStatus == DeviceState.BrewStatus.Profile ||
                             state.brewStatus == DeviceState.BrewStatus.FreeVariable,
+                        singleDoseGrinderReady = state.singleDoseGrinder?.let {
+                            it.isConnected && it.standing != null && (it.operationStatus == null || it.operationStatus == 0)
+                        } == true,
                     )
                 }
             }
@@ -171,6 +178,18 @@ internal class ProfileEditorViewModel(
         is BackClicked -> navigate(NavEvent.Back)
         is SaveClicked -> saveProfile()
         is TestClicked -> testProfile()
+        is ProfileEditorEvent.SingleDoseClicked -> modify {
+            copy(dialog = ProfileEditorDialog.SingleDose(singleDoseSettings))
+        }
+        is ProfileEditorEvent.SingleDoseToggled -> updateSingleDoseDraft { copy(enabled = event.enabled) }
+        is ProfileEditorEvent.GrindingSizeChanged -> updateSingleDoseDraft {
+            copy(grindingSize = event.size.coerceInGrindingSizeRange())
+        }
+        is ProfileEditorEvent.GrindingSpeedChanged -> updateSingleDoseDraft {
+            copy(grindingSpeed = event.speed.coerceInGrindingSpeedRange())
+        }
+        is ProfileEditorEvent.SingleDoseSaved -> saveSingleDoseDraft()
+        is ProfileEditorEvent.SetGrinderClicked -> setGrinder()
         is StopClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
         is ToggleChartVisibility -> launch { toggleChartVisibility(event.type.toDomain()) }
         is EditDetailsClicked -> modify { copy(dialog = ProfileEditorDialog.Details) }
@@ -210,6 +229,7 @@ internal class ProfileEditorViewModel(
                 description = profile.description,
                 displayDescription = displayDescription,
                 finishTarget = profile.finishCondition.toFinishTarget(),
+                singleDoseSettings = profile.singleDoseSettings,
             )
         }
         updateSteps {
@@ -283,6 +303,32 @@ internal class ProfileEditorViewModel(
         startProfileBrewing(args.deviceId, editedProfile())
     }
 
+    private fun setGrinder() {
+        val state = viewState.value
+        val settings = (state.dialog as? ProfileEditorDialog.SingleDose)?.settings ?: return
+        if (!settings.enabled || !state.singleDoseGrinderReady) return
+        val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
+        if (now - lastGrindRequestMillis < GRINDER_REQUEST_DEBOUNCE_MS) return
+        lastGrindRequestMillis = now
+        launchCatching(::onError) {
+            runSingleDoseGrinder(
+                args.deviceId,
+                settings.grindingSize,
+                settings.grindingSpeed,
+            )
+        }
+    }
+
+    private fun updateSingleDoseDraft(update: SingleDoseSettings.() -> SingleDoseSettings) = modify {
+        val current = dialog as? ProfileEditorDialog.SingleDose ?: return@modify this
+        copy(dialog = current.copy(settings = current.settings.update()))
+    }
+
+    private fun saveSingleDoseDraft() = modify {
+        val current = dialog as? ProfileEditorDialog.SingleDose ?: return@modify this
+        copy(singleDoseSettings = current.settings, dialog = null)
+    }
+
     /** The profile as edited. Neither brewing nor binding persists it, so its user is left unset. */
     private fun editedProfile(): BrewProfile {
         val state = viewState.value
@@ -292,6 +338,7 @@ internal class ProfileEditorViewModel(
             name = state.profileName,
             description = state.description,
             autoLinkOpen = sourceProfile?.autoLinkOpen ?: false,
+            singleDoseSettings = state.singleDoseSettings,
             program = sourceProfile?.recording?.let { BrewProgram.Recording(it) }
                 ?: BrewProgram.Phases(state.steps.map { it.toPhase() }),
             finishCondition = state.finishTarget.toCondition(),
@@ -319,6 +366,7 @@ internal class ProfileEditorViewModel(
             description = profile.description,
             finishCondition = profile.finishCondition,
             program = profile.program,
+            singleDoseSettings = profile.singleDoseSettings,
         )
         navigate(NavEvent.Back)
     }
@@ -361,3 +409,15 @@ internal class ProfileEditorViewModel(
         launch { emitEvent(ShowSnackbar(throwable.toUserMessage())) }
     }
 }
+
+private const val GRINDER_REQUEST_DEBOUNCE_MS = 1_000L
+
+private fun Int.coerceInGrindingSizeRange() = coerceIn(
+    SingleDoseSettings.MIN_GRINDING_SIZE,
+    SingleDoseSettings.MAX_GRINDING_SIZE,
+)
+
+private fun Int.coerceInGrindingSpeedRange() = coerceIn(
+    SingleDoseSettings.MIN_GRINDING_SPEED,
+    SingleDoseSettings.MAX_GRINDING_SPEED,
+)

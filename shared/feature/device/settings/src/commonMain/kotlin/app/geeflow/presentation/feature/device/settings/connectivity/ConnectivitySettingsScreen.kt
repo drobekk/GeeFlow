@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material3.ButtonDefaults
@@ -44,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -247,7 +247,11 @@ private fun AccessoryTypeSelector(
                                 } else {
                                     MaterialTheme.colorScheme.tertiary
                                 },
-                                shape = if (type == ConnectivityAccessoryType.SmartScale) CircleShape else RectangleShape,
+                                shape = if (type == ConnectivityAccessoryType.SmartScale) {
+                                    RoundedCornerShape(1.5.dp)
+                                } else {
+                                    CircleShape
+                                },
                             ),
                     )
                 },

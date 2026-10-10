@@ -1,6 +1,12 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,12 +21,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
@@ -58,6 +69,8 @@ import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.animations.BackwardTransition
 import app.geeflow.ui.animations.ForwardTransition
 import app.geeflow.ui.components.HorizontalSpacer
+import app.geeflow.ui.icons.GeeFlowIcon
+import app.geeflow.ui.icons.Grinder
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.modifier.geeFlowInsets
 import app.geeflow.ui.modifier.geeFlowInsetsPadding
@@ -68,6 +81,7 @@ import geeflow.shared.core.ui.generated.resources.common_ok
 import geeflow.shared.core.ui.generated.resources.common_save
 import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_single_dose_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_test
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -303,6 +317,7 @@ private fun ProfileEditorTopBar(
     onEvent: (ProfileEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val grinderValueStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 12.sp)
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = { onEvent(BackClicked) }) {
             Icon(
@@ -315,6 +330,34 @@ private fun ProfileEditorTopBar(
             ExperimentButton(onClick = { onEvent(ProfileEditorEvent.ExperimentClicked) })
             HorizontalSpacer(8.dp)
         }
+        FilledTonalButton(
+            onClick = { onEvent(ProfileEditorEvent.SingleDoseClicked) },
+            modifier = Modifier.height(40.dp).widthIn(min = 40.dp),
+            shape = CircleShape,
+            contentPadding = PaddingValues(horizontal = 10.dp),
+        ) {
+            GrinderButtonIcon()
+            AnimatedVisibility(
+                visible = viewState.singleDoseSettings.enabled,
+                enter = fadeIn(tween(GrinderButtonAnimationMillis)) + expandHorizontally(
+                    expandFrom = Alignment.Start,
+                    animationSpec = tween(GrinderButtonAnimationMillis),
+                ),
+                exit = fadeOut(tween(GrinderButtonAnimationMillis)) + shrinkHorizontally(
+                    shrinkTowards = Alignment.Start,
+                    animationSpec = tween(GrinderButtonAnimationMillis),
+                ),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HorizontalSpacer(8.dp)
+                    Column {
+                        Text("${viewState.singleDoseSettings.grindingSize} µm", style = grinderValueStyle)
+                        Text("${viewState.singleDoseSettings.grindingSpeed} rpm", style = grinderValueStyle)
+                    }
+                }
+            }
+        }
+        HorizontalSpacer(8.dp)
         TestButton(isBrewing = viewState.isBrewing, canTest = viewState.canTest, onEvent = onEvent)
         HorizontalSpacer(8.dp)
         Button(onClick = { onEvent(SaveClicked) }, enabled = viewState.canSave) {
@@ -323,7 +366,17 @@ private fun ProfileEditorTopBar(
     }
 }
 
+@Composable
+private fun GrinderButtonIcon() {
+    Icon(
+        imageVector = GeeFlowIcon.Grinder,
+        contentDescription = stringResource(Res.string.profile_editor_single_dose_title),
+        modifier = Modifier.size(20.dp),
+    )
+}
+
 private val StepsColumnWidth = 320.dp
+private const val GrinderButtonAnimationMillis = 220
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable

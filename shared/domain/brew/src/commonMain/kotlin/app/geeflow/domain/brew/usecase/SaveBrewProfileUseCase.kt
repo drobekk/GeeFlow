@@ -4,6 +4,7 @@ import app.geeflow.data.brew.BrewProfileRepository
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.SingleDoseSettings
 import app.geeflow.data.brew.model.validate
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import kotlinx.coroutines.flow.first
@@ -24,6 +25,7 @@ class SaveBrewProfileUseCase(
         description: String,
         finishCondition: Condition?,
         program: BrewProgram,
+        singleDoseSettings: SingleDoseSettings? = null,
     ) {
         program.validate()
         val userId = getSelectedUserUseCase().first()?.id ?: error("no user selected")
@@ -33,12 +35,14 @@ class SaveBrewProfileUseCase(
             description = description,
             finishCondition = finishCondition,
             program = program,
+            singleDoseSettings = singleDoseSettings ?: existing.singleDoseSettings,
         ) ?: BrewProfile(
             userId = userId,
             name = name,
             description = description,
             finishCondition = finishCondition,
             program = program,
+            singleDoseSettings = singleDoseSettings ?: SingleDoseSettings(),
             position = brewProfileRepository.getBrewProfilesForUser(userId).size,
         )
         brewProfileRepository.addBrewProfile(profile)

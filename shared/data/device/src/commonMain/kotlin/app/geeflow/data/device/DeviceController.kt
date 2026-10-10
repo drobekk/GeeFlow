@@ -63,6 +63,7 @@ interface DeviceController {
     suspend fun requestSingleDoseGrinderList()
     suspend fun connectSingleDoseGrinder(name: String)
     suspend fun disconnectSingleDoseGrinder()
+    suspend fun runSingleDoseGrinder(grindingSize: Int, grindingSpeed: Int)
 
     suspend fun setSmartScaleConnectivity(enabled: Boolean)
     suspend fun requestSmartScaleList()

@@ -484,7 +484,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         val generation = ++grinderConnectionGeneration
         delay(SCALE_CONNECT_DELAY_MS)
         if (generation != grinderConnectionGeneration || !_deviceState.value.singleDoseGrinderEnabled) return
-        val grinder = SingleDoseGrinder(name, isConnected = true)
+        val grinder = SingleDoseGrinder(name, isConnected = true, standing = 0xFFFF, operationStatus = 0)
         _foundSingleDoseGrinders.update { grinders -> grinders.map { it.copy(isConnected = it.name == name) } }
         _deviceState.update { it.copy(singleDoseGrinder = grinder) }
     }
@@ -493,6 +493,24 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         grinderConnectionGeneration++
         _foundSingleDoseGrinders.update { grinders -> grinders.map { it.copy(isConnected = false) } }
         _deviceState.update { it.copy(singleDoseGrinder = null) }
+    }
+
+    override suspend fun runSingleDoseGrinder(grindingSize: Int, grindingSpeed: Int) {
+        require(
+            grindingSize in MIN_GRINDING_SIZE..MAX_GRINDING_SIZE &&
+                grindingSpeed in MIN_GRINDING_SPEED..MAX_GRINDING_SPEED,
+        )
+        val grinder = _deviceState.value.singleDoseGrinder
+        require(grinder?.isConnected == true)
+        _deviceState.update { it.copy(singleDoseGrinder = grinder.copy(operationStatus = 1)) }
+        delay(SCALE_CONNECT_DELAY_MS)
+        _deviceState.update { state ->
+            if (state.singleDoseGrinder?.name == grinder.name) {
+                state.copy(singleDoseGrinder = state.singleDoseGrinder.copy(operationStatus = 0))
+            } else {
+                state
+            }
+        }
     }
 
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {

@@ -4,6 +4,7 @@ import app.geeflow.data.brew.db.AppDatabase
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.SingleDoseSettings
 import org.koin.core.annotation.Singleton
 
 @Singleton
@@ -26,6 +27,9 @@ class BrewsDao(database: AppDatabase) {
             description = brewProfile.description,
             finishCondition = brewProfile.finishCondition,
             autoLinkOpen = if (brewProfile.autoLinkOpen) 1L else 0L,
+            singleDoseEnabled = if (brewProfile.singleDoseSettings.enabled) 1L else 0L,
+            singleDoseGrindingSize = brewProfile.singleDoseSettings.grindingSize.toLong(),
+            singleDoseGrindingSpeed = brewProfile.singleDoseSettings.grindingSpeed.toLong(),
             program = brewProfile.program,
             position = brewProfile.position.toLong(),
         )
@@ -43,6 +47,9 @@ class BrewsDao(database: AppDatabase) {
         description: String,
         finishCondition: Condition?,
         autoLinkOpen: Long,
+        singleDoseEnabled: Long,
+        singleDoseGrindingSize: Long,
+        singleDoseGrindingSpeed: Long,
         program: BrewProgram,
         position: Long,
     ): BrewProfile = BrewProfile(
@@ -52,6 +59,11 @@ class BrewsDao(database: AppDatabase) {
         description = description,
         finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen != 0L,
+        singleDoseSettings = SingleDoseSettings(
+            enabled = singleDoseEnabled != 0L,
+            grindingSize = singleDoseGrindingSize.toInt(),
+            grindingSpeed = singleDoseGrindingSpeed.toInt(),
+        ),
         program = program,
         position = position.toInt(),
     )

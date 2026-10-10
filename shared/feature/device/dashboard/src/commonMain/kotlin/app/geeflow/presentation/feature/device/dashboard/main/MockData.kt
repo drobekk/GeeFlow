@@ -113,6 +113,7 @@ private fun smoothRamp(time: Float, start: Float, end: Float, from: Float, to: F
 @Suppress("LongMethod")
 fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewState(
     smartScaleConnected = true,
+    singleDoseGrinderConnected = true,
     showHistory = showHistory,
     history = List(12) { index ->
         HistoryBrew(
@@ -135,6 +136,7 @@ fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewS
             name = "Preinfusion",
             description = "36g • 3 bar soak, 5s pause, then 6 bar extraction",
             brewByWeight = true,
+            singleDoseEnabled = true,
             selected = true,
             experimental = false,
             program = previewProfileProgram,

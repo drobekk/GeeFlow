@@ -11,6 +11,12 @@ internal sealed interface ProfileEditorEvent {
     data object BackClicked : ProfileEditorEvent
     data object SaveClicked : ProfileEditorEvent
     data object TestClicked : ProfileEditorEvent
+    data object SingleDoseClicked : ProfileEditorEvent
+    data class SingleDoseToggled(val enabled: Boolean) : ProfileEditorEvent
+    data class GrindingSizeChanged(val size: Int) : ProfileEditorEvent
+    data class GrindingSpeedChanged(val speed: Int) : ProfileEditorEvent
+    data object SingleDoseSaved : ProfileEditorEvent
+    data object SetGrinderClicked : ProfileEditorEvent
     data object StopClicked : ProfileEditorEvent
     data class ToggleChartVisibility(val type: DashboardChartType) : ProfileEditorEvent
     data object EditDetailsClicked : ProfileEditorEvent

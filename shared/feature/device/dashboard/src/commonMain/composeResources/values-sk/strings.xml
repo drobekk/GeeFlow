@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Ovládanie čerpadla</string>
     <string name="step_editor_control_locked">Experimentálne kroky používajú jeden režim ovládania čerpadla. Tento profil používa %1$s.</string>
     <string name="step_editor_ramp_style">Štýl</string>
+    <string name="profile_editor_single_dose_title">Mlynček Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Používať v tomto profile</string>
+    <string name="profile_editor_single_dose_toggle_description">Uložiť nastavenia mletia do tohto profilu</string>
+    <string name="profile_editor_grinding_size">Hrúbka mletia</string>
+    <string name="profile_editor_grinding_speed">Rýchlosť mletia</string>
+    <string name="profile_editor_single_dose_set_grinder">Nastaviť mlynček</string>
+    <string name="profile_list_grinder_settings_sent">Nastavenia mlynčeka odoslané</string>
 </resources>

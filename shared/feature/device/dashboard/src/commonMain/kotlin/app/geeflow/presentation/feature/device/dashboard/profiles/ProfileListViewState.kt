@@ -7,6 +7,7 @@ import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 data class ProfileListViewState(
     val profiles: List<Profile> = emptyList(),
     val smartScaleConnected: Boolean = false,
+    val singleDoseGrinderConnected: Boolean = false,
     val showHistory: Boolean = false,
     val history: List<HistoryBrew> = emptyList(),
     val historyLoading: Boolean = false,
@@ -17,6 +18,7 @@ data class ProfileListViewState(
         val name: String,
         val description: String,
         val brewByWeight: Boolean,
+        val singleDoseEnabled: Boolean = false,
         val experimental: Boolean = false,
         val canBind: Boolean = true,
         val bound: Boolean = false,

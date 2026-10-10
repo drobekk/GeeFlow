@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Controle da bomba</string>
     <string name="step_editor_control_locked">As etapas experimentais usam um único modo de controle da bomba. Este perfil usa %1$s.</string>
     <string name="step_editor_ramp_style">Estilo</string>
+    <string name="profile_editor_single_dose_title">Moedor Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Usar neste perfil</string>
+    <string name="profile_editor_single_dose_toggle_description">Salvar configurações de moagem neste perfil</string>
+    <string name="profile_editor_grinding_size">Tamanho da moagem</string>
+    <string name="profile_editor_grinding_speed">Velocidade de moagem</string>
+    <string name="profile_editor_single_dose_set_grinder">Ajustar moedor</string>
+    <string name="profile_list_grinder_settings_sent">Configurações do moedor enviadas</string>
 </resources>

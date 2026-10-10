@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Pumpun ohjaus</string>
     <string name="step_editor_control_locked">Kokeelliset vaiheet käyttävät yhtä pumpun ohjaustilaa. Tässä profiilissa käytetään tilaa %1$s.</string>
     <string name="step_editor_ramp_style">Tyyli</string>
+    <string name="profile_editor_single_dose_title">Single Dose -mylly</string>
+    <string name="profile_editor_single_dose_toggle">Käytä tässä profiilissa</string>
+    <string name="profile_editor_single_dose_toggle_description">Tallenna jauhatusasetukset tähän profiiliin</string>
+    <string name="profile_editor_grinding_size">Jauhatuskoko</string>
+    <string name="profile_editor_grinding_speed">Jauhatusnopeus</string>
+    <string name="profile_editor_single_dose_set_grinder">Säädä mylly</string>
+    <string name="profile_list_grinder_settings_sent">Myllyn asetukset lähetetty</string>
 </resources>

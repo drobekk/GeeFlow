@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Sterowanie pompą</string>
     <string name="step_editor_control_locked">Kroki eksperymentalne używają jednego trybu sterowania pompą. W tym profilu jest to %1$s.</string>
     <string name="step_editor_ramp_style">Styl</string>
+    <string name="profile_editor_single_dose_title">Młynek Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Używaj w tym profilu</string>
+    <string name="profile_editor_single_dose_toggle_description">Zapisuj ustawienia mielenia w tym profilu</string>
+    <string name="profile_editor_grinding_size">Stopień zmielenia</string>
+    <string name="profile_editor_grinding_speed">Prędkość mielenia</string>
+    <string name="profile_editor_single_dose_set_grinder">Ustaw młynek</string>
+    <string name="profile_list_grinder_settings_sent">Wysłano ustawienia do młynka</string>
 </resources>

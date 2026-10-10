@@ -80,4 +80,5 @@
     <string name="auto_flush_countdown_title">Clătire în</string>
     <string name="auto_flush_tap_to_cancel">Atingeți pentru anulare</string>
     <string name="error_device_fault">Espressorul raportează o eroare. Remediați cauza înainte de a începe prepararea cafelei sau curățarea. Apăsați butonul de eroare pentru detalii.</string>
+    <string name="error_grinder_not_connected">Conectează mai întâi râșnița Single Dose</string>
 </resources>

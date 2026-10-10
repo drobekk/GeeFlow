@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -36,7 +37,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -84,7 +84,6 @@ import app.geeflow.ui.components.SwipeToRevealBoxValue
 import app.geeflow.ui.components.rememberSwipeToRevealBoxState
 import app.geeflow.ui.icons.Experiment
 import app.geeflow.ui.icons.GeeFlowIcon
-import app.geeflow.ui.modifier.squareSize
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.disabled
@@ -221,6 +220,7 @@ private fun ProfilesColumn(
                 ProfileItem(
                     profile = profile,
                     smartScaleConnected = viewState.smartScaleConnected,
+                    singleDoseGrinderConnected = viewState.singleDoseGrinderConnected,
                     onEvent = onEvent,
                     isDragging = isDragging,
                     modifier = Modifier
@@ -502,6 +502,7 @@ private fun SearchBar(
 private fun ProfileItem(
     profile: Profile,
     smartScaleConnected: Boolean,
+    singleDoseGrinderConnected: Boolean,
     onEvent: (ProfileListEvent) -> Unit,
     isDragging: Boolean = false,
     modifier: Modifier = Modifier,
@@ -530,7 +531,9 @@ private fun ProfileItem(
         ProfileItemContent(
             profile = profile,
             smartScaleConnected = smartScaleConnected,
+            singleDoseGrinderConnected = singleDoseGrinderConnected,
             onProfileClick = { id -> onEvent(ProfileListEvent.ProfileSelected(id)) },
+            onGrinderClick = { id -> onEvent(ProfileListEvent.SetGrinderClicked(id)) },
         )
     }
 }
@@ -599,20 +602,14 @@ private fun ProfileItemRevealContent(
 private fun ProfileItemContent(
     profile: Profile,
     smartScaleConnected: Boolean,
+    singleDoseGrinderConnected: Boolean,
     onProfileClick: (String) -> Unit,
+    onGrinderClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val backgroundColor = when {
         profile.selected -> MaterialTheme.colorScheme.surfaceContainerHigh
         else -> MaterialTheme.colorScheme.surfaceContainer
-    }
-    val numberColor = when {
-        profile.selected -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surfaceContainerHigh
-    }
-    val numberTextColor = when {
-        profile.selected -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurface
     }
     Row(
         modifier = modifier
@@ -622,33 +619,7 @@ private fun ProfileItemContent(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AnimatedContent(
-            targetState = profile.bound,
-        ) { bound ->
-            if (bound) {
-                Icon(
-                    modifier = Modifier
-                        .size(ProfileBadgeSize)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .padding(4.dp),
-                    painter = rememberVectorPainter(Icons.Filled.InsertLink),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
-            } else {
-                Text(
-                    text = profile.number,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = numberTextColor,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .size(ProfileBadgeSize)
-                        .background(numberColor, CircleShape)
-                        .squareSize()
-                        .padding(vertical = 6.dp),
-                )
-            }
-        }
+        ProfileBadge(profile, onGrinderClick)
         HorizontalSpacer(12.dp)
         Column(Modifier.weight(1f)) {
             Row(
@@ -674,6 +645,14 @@ private fun ProfileItemContent(
                     } else {
                         MaterialTheme.colorScheme.tertiary.disabled()
                     }
+                    Box(modifier = Modifier.background(backgroundColor, RoundedCornerShape(2.dp)).size(8.dp))
+                }
+                if (profile.singleDoseEnabled) {
+                    val backgroundColor = if (singleDoseGrinderConnected) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.tertiary.disabled()
+                    }
                     Box(modifier = Modifier.background(backgroundColor, CircleShape).size(8.dp))
                 }
             }
@@ -688,7 +667,6 @@ private fun ProfileItemContent(
     }
 }
 
-private val ProfileBadgeSize = 32.dp
 private const val FocusDelayMs = 150L
 private const val LoadMoreThreshold = 5
 

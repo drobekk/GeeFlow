@@ -155,6 +155,25 @@ class WendougeeSingleDoseTest {
         assertContentEquals("ff55ffff9a000106f4".decodeHex(), frame)
     }
 
+    @Test
+    fun `when grinder settings are sent then command 20 carries standing size and speed`() {
+        val frame = buildSingleDoseGrindFrame(1, 500, 600)
+
+        assertContentEquals("ff55000120000a00000000000001f40258cf".decodeHex(), frame)
+    }
+
+    @Test
+    fun `when grinder reports status then standing and busy state become available`() {
+        state = state.copy(singleDoseGrinder = SingleDoseGrinder("Milo_123", true))
+        val telemetry = byteArrayOf(0, 100, 0, 1, 0, 0, 2, 88, 2, 0, 1, 244.toByte())
+
+        parser.handleIncomingFrame(buildControlFrame(0x20, telemetry, standing = 0x1234), "CTRL")
+
+        assertEquals(0x1234, state.singleDoseGrinder?.standing)
+        assertEquals(2, state.singleDoseGrinder?.operationStatus)
+        assertEquals("BOOKOO_Test", state.smartScale?.name)
+    }
+
     private fun receive(command: Int, payload: ByteArray) {
         parser.handleIncomingFrame(buildControlFrame(command, payload), "CTRL")
     }

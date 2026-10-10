@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Contrôle de pompe</string>
     <string name="step_editor_control_locked">Les étapes expérimentales utilisent un seul mode de contrôle de la pompe. Ce profil utilise %1$s.</string>
     <string name="step_editor_ramp_style">Style</string>
+    <string name="profile_editor_single_dose_title">Moulin Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Utiliser dans ce profil</string>
+    <string name="profile_editor_single_dose_toggle_description">Enregistrer les réglages de mouture dans ce profil</string>
+    <string name="profile_editor_grinding_size">Taille de mouture</string>
+    <string name="profile_editor_grinding_speed">Vitesse de mouture</string>
+    <string name="profile_editor_single_dose_set_grinder">Régler le moulin</string>
+    <string name="profile_list_grinder_settings_sent">Réglages du moulin envoyés</string>
 </resources>

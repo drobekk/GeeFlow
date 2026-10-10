@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseRamp
+import app.geeflow.data.brew.model.SingleDoseSettings
 import app.geeflow.data.device.model.ProfileIssueCode
 import app.geeflow.data.device.model.ProfilingCapabilities
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
@@ -23,6 +24,8 @@ internal data class ProfileEditorViewState(
     val displayDescription: String = "",
     val steps: List<Step> = emptyList(),
     val finishTarget: FinishTarget = FinishTarget(),
+    val singleDoseSettings: SingleDoseSettings = SingleDoseSettings(),
+    val singleDoseGrinderReady: Boolean = false,
     val targetData: Map<Float, ChartData> = emptyMap(),
     val pressureRange: ClosedFloatingPointRange<Float> = 0f..0f,
     val flowRange: ClosedFloatingPointRange<Float> = 0f..0f,
@@ -84,6 +87,7 @@ internal enum class FinishTargetType {
 
 internal sealed interface ProfileEditorDialog {
     data object Details : ProfileEditorDialog
+    data class SingleDose(val settings: SingleDoseSettings) : ProfileEditorDialog
 
     data class FinishTargetValue(val type: FinishTargetType, val target: Float) : ProfileEditorDialog
 }

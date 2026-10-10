@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Kontrola pumpe</string>
     <string name="step_editor_control_locked">Eksperimentalni koraci koriste jedan način upravljanja pumpom. Ovaj profil koristi %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
+    <string name="profile_editor_single_dose_title">Single Dose mlinac</string>
+    <string name="profile_editor_single_dose_toggle">Koristi u ovom profilu</string>
+    <string name="profile_editor_single_dose_toggle_description">Spremi postavke mljevenja u ovaj profil</string>
+    <string name="profile_editor_grinding_size">Stupanj mljevenja</string>
+    <string name="profile_editor_grinding_speed">Brzina mljevenja</string>
+    <string name="profile_editor_single_dose_set_grinder">Postavi mlinac</string>
+    <string name="profile_list_grinder_settings_sent">Postavke mlinca poslane</string>
 </resources>

@@ -14,6 +14,10 @@ class ScaleNotConnectedException(val deviceId: Long) : BusinessException(
     "Smart scale for device $deviceId is not connected",
 )
 
+class GrinderNotConnectedException(val deviceId: Long) : BusinessException(
+    "Single Dose grinder for device $deviceId is not connected",
+)
+
 class ProfileBindingNotAllowedException : BusinessException(
     "This profile requires app control and cannot be assigned to the paddle",
 )

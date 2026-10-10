@@ -807,6 +807,15 @@ class WendougeeDataSController(
         write(active, active.ctrlChar, buildScaleFrame(SCALE_CMD_DISCONNECT, name))
     }
 
+    override suspend fun runSingleDoseGrinder(grindingSize: Int, grindingSpeed: Int) {
+        val grinder = _deviceState.value.singleDoseGrinder
+        require(grinder?.isConnected == true) { "Single Dose grinder is disconnected" }
+        val standing = requireNotNull(grinder.standing) { "Single Dose grinder status is unavailable" }
+        require(grinder.operationStatus == null || grinder.operationStatus == 0) { "Single Dose grinder is busy" }
+        val active = requireSession()
+        write(active, active.ctrlChar, buildSingleDoseGrindFrame(standing, grindingSize, grindingSpeed))
+    }
+
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
         scaleSettingsMutex.withLock {
             val active = requireSession()

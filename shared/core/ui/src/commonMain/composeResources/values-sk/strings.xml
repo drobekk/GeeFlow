@@ -81,4 +81,5 @@
     <string name="auto_flush_countdown_title">Preplach o</string>
     <string name="auto_flush_tap_to_cancel">Ťuknutím zrušiť</string>
     <string name="error_device_fault">Kávovar hlási chybu. Pred spustením prípravy kávy alebo čistenia odstráňte jej príčinu. Podrobnosti zobrazíte tlačidlom chyby.</string>
+    <string name="error_grinder_not_connected">Najprv pripojte mlynček Single Dose</string>
 </resources>

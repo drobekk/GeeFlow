@@ -11,6 +11,9 @@ CREATE TABLE brew_profiles (
   description TEXT NOT NULL,
   finishCondition TEXT AS Condition,
   autoLinkOpen INTEGER NOT NULL DEFAULT 0,
+  singleDoseEnabled INTEGER NOT NULL DEFAULT 0,
+  singleDoseGrindingSize INTEGER NOT NULL DEFAULT 300,
+  singleDoseGrindingSpeed INTEGER NOT NULL DEFAULT 500,
   program TEXT AS BrewProgram NOT NULL,
   position INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
@@ -26,7 +29,7 @@ selectById:
 SELECT * FROM brew_profiles WHERE id = ?;
 
 insertBrewProfile:
-INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, finishCondition, autoLinkOpen, program, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, finishCondition, autoLinkOpen, singleDoseEnabled, singleDoseGrindingSize, singleDoseGrindingSpeed, program, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM brew_profiles WHERE id = ?;

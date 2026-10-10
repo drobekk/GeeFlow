@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Pompbediening</string>
     <string name="step_editor_control_locked">Experimentele stappen gebruiken één pompbedieningsmodus. Dit profiel gebruikt %1$s.</string>
     <string name="step_editor_ramp_style">Stijl</string>
+    <string name="profile_editor_single_dose_title">Single Dose-molen</string>
+    <string name="profile_editor_single_dose_toggle">Gebruik in dit profiel</string>
+    <string name="profile_editor_single_dose_toggle_description">Bewaar maalinstellingen in dit profiel</string>
+    <string name="profile_editor_grinding_size">Maalgraad</string>
+    <string name="profile_editor_grinding_speed">Maalsnelheid</string>
+    <string name="profile_editor_single_dose_set_grinder">Molen instellen</string>
+    <string name="profile_list_grinder_settings_sent">Moleninstellingen verzonden</string>
 </resources>

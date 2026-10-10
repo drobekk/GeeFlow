@@ -11,6 +11,7 @@ data class BrewProfile(
     val description: String,
     val finishCondition: Condition? = null,
     val autoLinkOpen: Boolean = false,
+    val singleDoseSettings: SingleDoseSettings = SingleDoseSettings(),
     val program: BrewProgram,
     val position: Int = 0,
 ) {
@@ -34,6 +35,7 @@ data class BrewProfile(
         steps: List<ProfileStep>,
         position: Int = 0,
         autoLinkOpen: Boolean = false,
+        singleDoseSettings: SingleDoseSettings = SingleDoseSettings(),
     ) : this(
         id = id,
         userId = userId,
@@ -41,6 +43,7 @@ data class BrewProfile(
         description = description,
         finishCondition = finishCondition,
         autoLinkOpen = autoLinkOpen,
+        singleDoseSettings = singleDoseSettings,
         program = steps.toProgram(),
         position = position
     )

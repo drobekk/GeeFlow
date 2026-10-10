@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Pumpensteuerung</string>
     <string name="step_editor_control_locked">Experimentelle Schritte verwenden nur einen Pumpensteuerungsmodus. Dieses Profil verwendet %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
+    <string name="profile_editor_single_dose_title">Single-Dose-Mühle</string>
+    <string name="profile_editor_single_dose_toggle">In diesem Profil verwenden</string>
+    <string name="profile_editor_single_dose_toggle_description">Mahleinstellungen in diesem Profil speichern</string>
+    <string name="profile_editor_grinding_size">Mahlgrad</string>
+    <string name="profile_editor_grinding_speed">Mahlgeschwindigkeit</string>
+    <string name="profile_editor_single_dose_set_grinder">Mühle einstellen</string>
+    <string name="profile_list_grinder_settings_sent">Mühleneinstellungen gesendet</string>
 </resources>

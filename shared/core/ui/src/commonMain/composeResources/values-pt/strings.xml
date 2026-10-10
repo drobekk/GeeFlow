@@ -79,4 +79,5 @@
     <string name="auto_flush_countdown_title">Enxaguamento em</string>
     <string name="auto_flush_tap_to_cancel">Toque para cancelar</string>
     <string name="error_device_fault">A máquina indica um erro. Resolva a causa antes de iniciar a preparação de café ou a limpeza. Prima o botão de erro para ver os detalhes.</string>
+    <string name="error_grinder_not_connected">Ligue primeiro o moinho Single Dose</string>
 </resources>

@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Управление помпой</string>
     <string name="step_editor_control_locked">Экспериментальные шаги используют один режим управления помпой. В этом профиле используется %1$s.</string>
     <string name="step_editor_ramp_style">Стиль</string>
+    <string name="profile_editor_single_dose_title">Кофемолка Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Использовать в этом профиле</string>
+    <string name="profile_editor_single_dose_toggle_description">Сохранить настройки помола в этом профиле</string>
+    <string name="profile_editor_grinding_size">Степень помола</string>
+    <string name="profile_editor_grinding_speed">Скорость помола</string>
+    <string name="profile_editor_single_dose_set_grinder">Настроить кофемолку</string>
+    <string name="profile_list_grinder_settings_sent">Настройки кофемолки отправлены</string>
 </resources>

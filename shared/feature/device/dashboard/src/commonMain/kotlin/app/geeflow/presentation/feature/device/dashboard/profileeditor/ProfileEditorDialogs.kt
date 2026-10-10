@@ -2,6 +2,8 @@ package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -10,10 +12,12 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.geeflow.data.brew.model.SingleDoseSettings
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DetailsConfirmed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.DialogDismissed
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorEvent.FinishTargetConfirmed
@@ -21,8 +25,13 @@ import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.GeeFlowInputPad
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
+import app.geeflow.ui.components.GeeFlowToggleListItem
+import app.geeflow.ui.components.GeeFlowValueListItem
+import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
+import geeflow.shared.core.ui.generated.resources.common_apply
 import geeflow.shared.core.ui.generated.resources.common_confirm
+import geeflow.shared.core.ui.generated.resources.common_save
 import geeflow.shared.core.ui.generated.resources.unit_grams
 import geeflow.shared.core.ui.generated.resources.unit_milliliters
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
@@ -31,6 +40,11 @@ import geeflow.shared.feature.device.dashboard.generated.resources.profile_edito
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_details_title
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_finish_title_volume
 import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_finish_title_weight
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_grinding_size
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_grinding_speed
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_single_dose_title
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_single_dose_toggle
+import geeflow.shared.feature.device.dashboard.generated.resources.profile_editor_single_dose_toggle_description
 import org.jetbrains.compose.resources.stringResource
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
@@ -54,6 +68,77 @@ internal fun ProfileEditorDialogs(
             onConfirm = { onEvent(FinishTargetConfirmed(it)) },
             onDismiss = onDismiss,
         )
+
+        is ProfileEditorDialog.SingleDose -> SingleDoseDialog(dialog, viewState, onEvent, onDismiss)
+    }
+}
+
+@Composable
+private fun SingleDoseDialog(
+    dialog: ProfileEditorDialog.SingleDose,
+    viewState: ProfileEditorViewState,
+    onEvent: (ProfileEditorEvent) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val settings = dialog.settings
+    EditorDialog(
+        onDismiss = onDismiss,
+        title = { GeeFlowDialogTopBar(stringResource(Res.string.profile_editor_single_dose_title), onDismiss) },
+    ) {
+        GeeFlowToggleListItem(
+            title = stringResource(Res.string.profile_editor_single_dose_toggle),
+            subtitle = stringResource(Res.string.profile_editor_single_dose_toggle_description),
+            checked = settings.enabled,
+            onCheckedChanged = { onEvent(ProfileEditorEvent.SingleDoseToggled(it)) },
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(vertical = 8.dp),
+        )
+        VerticalSpacer(12.dp)
+        GeeFlowValueListItem(
+            title = stringResource(Res.string.profile_editor_grinding_size),
+            subtitle = "0–600 µm",
+            value = "${settings.grindingSize} µm",
+            onValueConfirmed = { value ->
+                value.toIntOrNull()?.let { size ->
+                    onEvent(ProfileEditorEvent.GrindingSizeChanged(size))
+                }
+            },
+            enabled = settings.enabled,
+            valueRange = SingleDoseSettings.MIN_GRINDING_SIZE.toFloat()..SingleDoseSettings.MAX_GRINDING_SIZE.toFloat(),
+            unit = "µm",
+            allowDecimal = false,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(vertical = 8.dp),
+        )
+        GeeFlowValueListItem(
+            title = stringResource(Res.string.profile_editor_grinding_speed),
+            subtitle = "200–1000 rpm",
+            value = "${settings.grindingSpeed} rpm",
+            onValueConfirmed = { value ->
+                value.toIntOrNull()?.let { speed ->
+                    onEvent(ProfileEditorEvent.GrindingSpeedChanged(speed))
+                }
+            },
+            enabled = settings.enabled,
+            valueRange = SingleDoseSettings.MIN_GRINDING_SPEED.toFloat()..SingleDoseSettings.MAX_GRINDING_SPEED.toFloat(),
+            unit = "rpm",
+            allowDecimal = false,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(vertical = 8.dp),
+        )
+        VerticalSpacer(20.dp)
+        Row(modifier = Modifier.align(Alignment.End)) {
+            TextButton(
+                onClick = { onEvent(ProfileEditorEvent.SetGrinderClicked) },
+                enabled = settings.enabled && viewState.singleDoseGrinderReady,
+            ) {
+                Text(stringResource(CoreRes.string.common_apply))
+            }
+            HorizontalSpacer(24.dp)
+            Button(onClick = { onEvent(ProfileEditorEvent.SingleDoseSaved) }) {
+                Text(stringResource(CoreRes.string.common_save))
+            }
+        }
     }
 }
 

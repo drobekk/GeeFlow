@@ -169,4 +169,11 @@
     <string name="step_editor_pump_control">Pump control</string>
     <string name="step_editor_control_locked">Experimental steps use one pump control mode. This profile uses %1$s.</string>
     <string name="step_editor_ramp_style">Style</string>
+    <string name="profile_editor_single_dose_title">Single Dose grinder</string>
+    <string name="profile_editor_single_dose_toggle">Use with this profile</string>
+    <string name="profile_editor_single_dose_toggle_description">Keep grinding settings in this profile</string>
+    <string name="profile_editor_grinding_size">Grinding size</string>
+    <string name="profile_editor_grinding_speed">Grinding speed</string>
+    <string name="profile_editor_single_dose_set_grinder">Set grinder</string>
+    <string name="profile_list_grinder_settings_sent">Grinder settings sent</string>
 </resources>

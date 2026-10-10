@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -267,7 +268,7 @@ private fun ConnectivityButton(
         .padding(horizontal = 16.dp),
     contentAlignment = Alignment.Center,
 ) {
-    if (smartScaleConnected) {
+    if (singleDoseGrinderConnected) {
         Box(
             modifier = Modifier
                 .padding(bottom = 10.dp)
@@ -275,11 +276,11 @@ private fun ConnectivityButton(
                 .size(4.dp),
         )
     }
-    if (singleDoseGrinderConnected) {
+    if (smartScaleConnected) {
         Box(
             modifier = Modifier
                 .padding(top = 10.dp, end = 10.dp)
-                .background(MaterialTheme.colorScheme.tertiary)
+                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(0.5.dp))
                 .size(4.dp),
         )
     }

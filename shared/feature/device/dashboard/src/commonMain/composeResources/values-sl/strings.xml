@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Nadzor črpalke</string>
     <string name="step_editor_control_locked">Eksperimentalni koraki uporabljajo en način upravljanja črpalke. Ta profil uporablja %1$s.</string>
     <string name="step_editor_ramp_style">Slog</string>
+    <string name="profile_editor_single_dose_title">Mlinček Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Uporabi v tem profilu</string>
+    <string name="profile_editor_single_dose_toggle_description">Shrani nastavitve mletja v tem profilu</string>
+    <string name="profile_editor_grinding_size">Stopnja mletja</string>
+    <string name="profile_editor_grinding_speed">Hitrost mletja</string>
+    <string name="profile_editor_single_dose_set_grinder">Nastavi mlinček</string>
+    <string name="profile_list_grinder_settings_sent">Nastavitve mlinčka poslane</string>
 </resources>

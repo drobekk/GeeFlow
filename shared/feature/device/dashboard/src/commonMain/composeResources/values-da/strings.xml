@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Pumpestyring</string>
     <string name="step_editor_control_locked">Eksperimentelle trin bruger én tilstand til pumpestyring. Denne profil bruger %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
+    <string name="profile_editor_single_dose_title">Single Dose-kværn</string>
+    <string name="profile_editor_single_dose_toggle">Brug i denne profil</string>
+    <string name="profile_editor_single_dose_toggle_description">Gem kværnindstillinger i denne profil</string>
+    <string name="profile_editor_grinding_size">Formalingsgrad</string>
+    <string name="profile_editor_grinding_speed">Kværnhastighed</string>
+    <string name="profile_editor_single_dose_set_grinder">Indstil kværn</string>
+    <string name="profile_list_grinder_settings_sent">Kværnindstillinger sendt</string>
 </resources>

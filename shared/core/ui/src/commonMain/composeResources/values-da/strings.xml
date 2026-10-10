@@ -79,4 +79,5 @@
     <string name="auto_flush_countdown_title">Skylning om</string>
     <string name="auto_flush_tap_to_cancel">Tryk for at annullere</string>
     <string name="error_device_fault">Maskinen melder en fejl. Afhjælp årsagen, før du starter brygning eller rengøring. Tryk på fejlknappen for detaljer.</string>
+    <string name="error_grinder_not_connected">Tilslut først Single Dose-kværnen</string>
 </resources>

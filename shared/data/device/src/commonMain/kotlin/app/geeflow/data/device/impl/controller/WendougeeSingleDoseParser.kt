@@ -12,6 +12,7 @@ internal class WendougeeSingleDoseParser(
     fun parse(frame: ByteArray) {
         val data = frame.copyOfRange(DATA_OFFSET, frame.lastIndex)
         when (u8(frame, COMMAND_OFFSET)) {
+            GRIND_STATUS -> parseGrindStatus(frame, data)
             STATUS -> parseStatus(data)
             HISTORY -> parseHistory(data)
             FOUND -> reportName(data, connected = false)
@@ -35,6 +36,16 @@ internal class WendougeeSingleDoseParser(
         }
     }
 
+    private fun parseGrindStatus(frame: ByteArray, data: ByteArray) {
+        if (data.size < MIN_GRIND_STATUS_BYTES) return
+        val standing = (u8(frame, STANDING_HIGH_IDX) shl BYTE_SHIFT) or u8(frame, STANDING_LOW_IDX)
+        val status = u8(data, GRIND_STATUS_OFFSET)
+        onStateUpdate {
+            val connected = singleDoseGrinder ?: return@onStateUpdate this
+            copy(singleDoseGrinder = connected.copy(standing = standing, operationStatus = status))
+        }
+    }
+
     private fun parseHistory(data: ByteArray) {
         if (data.size < 2 || data[0] != SINGLE_DOSE_TYPE) return
         val length = u8(data, 1)
@@ -53,6 +64,7 @@ internal class WendougeeSingleDoseParser(
         var grinder = SingleDoseGrinder(name, connected)
         onStateUpdate {
             if (connected) {
+                grinder = singleDoseGrinder?.takeIf { it.name == name }?.copy(isConnected = true) ?: grinder
                 copy(singleDoseGrinder = grinder)
             } else {
                 grinder = grinder.copy(isConnected = singleDoseGrinder?.name == name)
@@ -97,8 +109,14 @@ internal class WendougeeSingleDoseParser(
     private companion object {
         const val COMMAND_OFFSET = 4
         const val DATA_OFFSET = 7
+        const val STANDING_HIGH_IDX = 2
+        const val STANDING_LOW_IDX = 3
+        const val BYTE_SHIFT = 8
+        const val GRIND_STATUS_OFFSET = 8
+        const val MIN_GRIND_STATUS_BYTES = 12
         const val SINGLE_DOSE_TYPE: Byte = 0
         const val CONNECT = 0x80
+        const val GRIND_STATUS = 0x20
         const val FOUND = 0x81
         const val SCAN_STATUS = 0x83
         const val CONNECTED = 0x86

@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Control pompă</string>
     <string name="step_editor_control_locked">Pașii experimentali folosesc un singur mod de control al pompei. Acest profil folosește %1$s.</string>
     <string name="step_editor_ramp_style">Stil</string>
+    <string name="profile_editor_single_dose_title">Râșniță Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Folosește în acest profil</string>
+    <string name="profile_editor_single_dose_toggle_description">Salvează setările de măcinare în acest profil</string>
+    <string name="profile_editor_grinding_size">Granulație</string>
+    <string name="profile_editor_grinding_speed">Viteză de măcinare</string>
+    <string name="profile_editor_single_dose_set_grinder">Setează râșnița</string>
+    <string name="profile_list_grinder_settings_sent">Setările râșniței au fost trimise</string>
 </resources>

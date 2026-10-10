@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Control de bomba</string>
     <string name="step_editor_control_locked">Los pasos experimentales usan un único modo de control de la bomba. Este perfil usa %1$s.</string>
     <string name="step_editor_ramp_style">Estilo</string>
+    <string name="profile_editor_single_dose_title">Molinillo Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Usar en este perfil</string>
+    <string name="profile_editor_single_dose_toggle_description">Guardar ajustes de molienda en este perfil</string>
+    <string name="profile_editor_grinding_size">Tamaño de molienda</string>
+    <string name="profile_editor_grinding_speed">Velocidad de molienda</string>
+    <string name="profile_editor_single_dose_set_grinder">Ajustar molinillo</string>
+    <string name="profile_list_grinder_settings_sent">Ajustes del molinillo enviados</string>
 </resources>

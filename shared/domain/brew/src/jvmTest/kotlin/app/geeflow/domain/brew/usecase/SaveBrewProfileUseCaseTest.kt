@@ -5,6 +5,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.ProfileStep
+import app.geeflow.data.brew.model.SingleDoseSettings
 import app.geeflow.data.user.UserRepository
 import app.geeflow.data.user.model.User
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
@@ -73,6 +74,19 @@ class SaveBrewProfileUseCaseTest {
                     position = 1,
                 )
             )
+        }
+    }
+
+    @Test
+    fun `when Single Dose settings are saved then they belong to the selected profile`() = runTest {
+        every { profiles.getBrewProfileById(3) } returns profile
+        val settings = SingleDoseSettings(enabled = true, grindingSize = 450, grindingSpeed = 720)
+        val useCase = SaveBrewProfileUseCase(profiles, getSelected)
+
+        useCase(3, profile.name, profile.description, profile.finishCondition, profile.program, settings)
+
+        verify(exactly = 1) {
+            profiles.addBrewProfile(profile.copy(singleDoseSettings = settings))
         }
     }
 

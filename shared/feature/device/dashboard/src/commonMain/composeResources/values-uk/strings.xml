@@ -152,4 +152,11 @@
     <string name="step_editor_pump_control">Керування помпою</string>
     <string name="step_editor_control_locked">Експериментальні кроки використовують один режим керування помпою. У цьому профілі використовується %1$s.</string>
     <string name="step_editor_ramp_style">Стиль</string>
+    <string name="profile_editor_single_dose_title">Кавомолка Single Dose</string>
+    <string name="profile_editor_single_dose_toggle">Використовувати в цьому профілі</string>
+    <string name="profile_editor_single_dose_toggle_description">Зберігати налаштування помелу в цьому профілі</string>
+    <string name="profile_editor_grinding_size">Ступінь помелу</string>
+    <string name="profile_editor_grinding_speed">Швидкість помелу</string>
+    <string name="profile_editor_single_dose_set_grinder">Налаштувати кавомолку</string>
+    <string name="profile_list_grinder_settings_sent">Налаштування кавомолки надіслано</string>
 </resources>
