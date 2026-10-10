@@ -1,5 +1,6 @@
 package app.geeflow.data.device.impl.controller
 
+import app.geeflow.data.device.ble.modbus.ModbusCrc
 import app.geeflow.data.device.impl.controller.WendougeeCommands.decodeHex
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.SmartScale
@@ -21,13 +22,20 @@ class WendougeeSmartScaleTest {
     )
 
     @Test
-    fun `when recorded mass registers differ then cup weight comes from register 1415`() {
-        val telemetry = "0103280000001e0000000004f6038a0009005902cd0000000003f60000001d000000080000003c000002a774a6".decodeHex()
+    fun `when native mass registers differ then cup weight comes from index eleven and flow is limited`() {
+        val words = ByteArray(40)
+        words[16] = 2
+        words[17] = 0xCD.toByte()
+        words[22] = 3
+        words[23] = 0xF6.toByte()
+        words[38] = 2
+        words[39] = 0xA7.toByte()
+        val telemetry = ModbusCrc.append(byteArrayOf(1, 3, 40) + words)
 
         parser.handleIncomingFrame(telemetry, "DATA")
 
         assertEquals(101.4f, state.weight)
-        assertEquals(67.9f, state.weightRate)
+        assertEquals(12f, state.weightRate)
     }
 
     @Test

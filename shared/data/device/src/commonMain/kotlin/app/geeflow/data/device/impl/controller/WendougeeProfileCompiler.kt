@@ -62,12 +62,11 @@ class WendougeeProfileCompiler {
             if (index == FV_TABLE_SIZE - 1) last.volume.toInt() else points.getOrNull(index)?.volume?.toInt() ?: 0
         }
         val weight = List(FV_TABLE_SIZE) { index ->
-            // The endpoint is a whole-gram target. Captures only verify zero measured weights;
-            // nonzero samples use telemetry's decigram scale pending a recording with a scale.
+            // Native bank encoding sends weight as whole grams, unlike live telemetry's decigrams.
             if (index == FV_TABLE_SIZE - 1) {
                 if (isWeight) targetValue.toInt() else last.weight.toInt()
             } else {
-                ((points.getOrNull(index)?.weight ?: 0f) * SENSOR_SCALE_FACTOR).toInt()
+                (points.getOrNull(index) ?: last).weight.toInt()
             }
         }
         val blocks = listOf(pressure, volume, weight, flow).flatMap { it.chunked(FV_HALF_COUNT) }
@@ -75,17 +74,18 @@ class WendougeeProfileCompiler {
             require(values.all { it in 0..MAX_REGISTER_VALUE }) { "Profile measurement is outside the register range" }
             writes.add(ProfileWrite.Multiple(register, values))
         }
-        writes.add(ProfileWrite.Multiple(WendougeeRegisters.FV_FINISH_CONDITION, listOf(if (isWeight) 0 else 1)))
         val modeRegister = if (isBinding) WendougeeRegisters.BOUND_PROFILE_MODE else WendougeeRegisters.FV_PROFILE_MODE
+        val keyOffset = modeRegister - WendougeeRegisters.FV_PROFILE_MODE
+        writes.add(ProfileWrite.Multiple(WendougeeRegisters.FV_FINISH_CONDITION + keyOffset, listOf(if (isWeight) 0 else 1)))
         writes.add(ProfileWrite.Multiple(modeRegister, listOf(realMode)))
         writes.add(
             ProfileWrite.Single(
-                WendougeeRegisters.FV_CONTROL_MODE,
+                WendougeeRegisters.FV_CONTROL_MODE + keyOffset,
                 if (recording.controlMode == FreeHandControlMode.Flow) 1 else 0,
             ),
         )
-        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_TARGET_VALUE, targetValue.toInt()))
-        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_AUTO_LINK, if (profile.autoLinkOpen) 1 else 0))
+        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_TARGET_VALUE + keyOffset, targetValue.toInt()))
+        writes.add(ProfileWrite.Single(WendougeeRegisters.FV_AUTO_LINK + keyOffset, if (profile.autoLinkOpen) 1 else 0))
         writes.add(ProfileWrite.Multiple(WendougeeRegisters.FV_TABLE_ENDS, listOf(FV_TABLE_ENDS_VALUE)))
         return writes
     }
@@ -135,7 +135,7 @@ class WendougeeProfileCompiler {
                 step.time,
                 (step.bar * SENSOR_SCALE_FACTOR).toInt(),
                 (step.flow * SENSOR_SCALE_FACTOR).toInt(),
-                step.awaitTime,
+                if (isLast) 0 else step.awaitTime,
                 if (isLast) 1 else 0,
                 if (step.isFlowPriority) 1 else 0,
             )
@@ -149,6 +149,11 @@ class WendougeeProfileCompiler {
     }
 
     companion object {
+        /** Native free-profile generator commits the uploaded banks to the selected shortcut. */
+        fun profileCommitCoil(isBinding: Boolean): Int = if (isBinding) BOUND_PROFILE_COMMIT_COIL else PROFILE_COMMIT_COIL
+
+        private const val PROFILE_COMMIT_COIL = 158
+        private const val BOUND_PROFILE_COMMIT_COIL = 159
         private const val SENSOR_SCALE_FACTOR = 10f
         private const val FV_FREE_MODE = 4
         private const val FV_HALF_COUNT = 64

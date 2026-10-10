@@ -10,22 +10,11 @@ import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.LiveBrewSession
 import app.geeflow.data.device.ble.modbus.ModbusPlugin
 import app.geeflow.data.device.ble.modbus.ModbusSession
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_OFF
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_CLEANING_ON
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_FREE_VAR_OFF
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_FREE_VAR_ON
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_OFF
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_MANUAL_ON
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_LONG
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_SHORT
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_READ_CONFIG_LONG
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_LIST_REQUEST
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SCAN
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_QUERY
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATUS_REQUEST
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_OFF
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_ON
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_START_STREAMING
+import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SET_LANGUAGE
 import app.geeflow.data.device.impl.discovery.BleAdvertisement
 import app.geeflow.data.device.impl.discovery.WendougeeBleDeviceDiscoverer
 import app.geeflow.data.device.model.Device
@@ -50,7 +39,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
@@ -68,7 +56,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.annotation.Singleton
@@ -113,6 +100,7 @@ class WendougeeDataSController(
 
     private val integrationFlags = MutableStateFlow<Int?>(null)
     private val scaleSettingsMutex = Mutex()
+    private val brewOperationMutex = Mutex()
 
     private val frameParser = WendougeeFrameParser(
         onStateUpdate = { update ->
@@ -354,7 +342,7 @@ class WendougeeDataSController(
         notificationJob?.cancel()
         val dataUuid = active.dataChar.uuid
         val ctrlUuid = active.ctrlChar.uuid
-        notificationJob = scope.launch {
+        notificationJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             // Route by characteristic UUID via the engine's global notification bus rather than
             // the instance-keyed BluetoothCharacteristic.notifications SharedFlow. This survives
             // a late-firing onServicesDiscovered that replaces _servicesFlow with new instances.
@@ -392,12 +380,12 @@ class WendougeeDataSController(
 
     private suspend fun sendInitCommands(active: Session) {
         delay(CCCD_SETTLE_DELAY_MS)
-        write(active, active.dataChar, CMD_READ_CONFIG_LONG)
-        delay(INIT_CONFIG_DELAY_MS)
+        active.modbus.readHoldingRegisters(0, CONFIG_REGISTER_COUNT, INIT_POLL_TIMEOUT_MS.milliseconds)
+        withTimeout(INIT_POLL_TIMEOUT_MS) { deviceState.first { it.config != null } }
         readWaterAlarmRegister(active)
         write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
         delay(INIT_SCALE_DELAY_MS)
-        write(active, active.ctrlChar, CMD_START_STREAMING)
+        write(active, active.ctrlChar, CMD_SET_LANGUAGE)
         if (_deviceState.value.smartScaleEnabled || _deviceState.value.singleDoseGrinderEnabled) {
             delay(SCALE_STATUS_DELAY_MS)
             write(active, active.ctrlChar, CMD_SCALE_STATUS_REQUEST)
@@ -411,9 +399,7 @@ class WendougeeDataSController(
     }
 
     private suspend fun readWaterAlarmRegister(active: Session) {
-        val enabled = runCatching {
-            active.modbus.readHoldingRegisters(WendougeeRegisters.WATER_ALARM, 1).first() != 0
-        }.getOrNull() ?: return
+        val enabled = active.modbus.readHoldingRegisters(WendougeeRegisters.WATER_ALARM, 1).first() != 0
         Logger.withTag(TAG).i { "Water alarm enabled=$enabled" }
         _deviceState.update { state ->
             val config = state.config ?: return@update state
@@ -478,17 +464,17 @@ class WendougeeDataSController(
     }
 
     private suspend fun pollLongOnce(active: Session, timeout: Long = POLL_TIMEOUT_MS) {
-        active.modbus.sendAndAwaitPrefix(
-            payload = CMD_POLLING_LONG,
-            expectedPrefix = POLL_LONG_PREFIX,
+        active.modbus.readHoldingRegisters(
+            address = TELEMETRY_REGISTER_BASE,
+            count = TELEMETRY_REGISTER_COUNT,
             timeout = timeout.milliseconds,
         )
     }
 
     private suspend fun pollShortOnce(active: Session, timeout: Long = POLL_TIMEOUT_MS) {
-        active.modbus.sendAndAwaitPrefix(
-            payload = CMD_POLLING_SHORT,
-            expectedPrefix = POLL_SHORT_PREFIX,
+        active.modbus.readCoils(
+            address = STATUS_COIL_BASE,
+            count = STATUS_COIL_COUNT,
             timeout = timeout.milliseconds,
         )
     }
@@ -553,21 +539,24 @@ class WendougeeDataSController(
         }
     }
 
-    override suspend fun startManualBrewing() {
+    override suspend fun startManualBrewing() = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting manual brew cycle..." }
-            sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew", 0x00, COIL_MANUAL_BREW.toByte())
+            sendModbusPulse(COIL_MANUAL_BREW, "Manual Brew")
         }
     }
 
-    override suspend fun stopManualBrewing() {
+    override suspend fun stopManualBrewing() = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
         if (_deviceState.value.brewStatus == BrewStatus.Manual) {
             Logger.withTag(TAG).i { "Stopping manual brew cycle..." }
-            sendModbusPulse(CMD_MANUAL_ON, CMD_MANUAL_OFF, "Manual Brew Stop", 0x00, COIL_MANUAL_BREW.toByte())
+            sendModbusPulse(COIL_MANUAL_BREW, "Manual Brew Stop")
         }
     }
 
-    override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
+    override suspend fun startFreeVariableBrewing(isFlow: Boolean) = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting free variable brew (isFlow=$isFlow)..." }
             _deviceState.update {
@@ -578,12 +567,12 @@ class WendougeeDataSController(
             }
             requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_PREPARE, FREE_VAR_PREPARE_VALUE)
             requireSession().modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_MODE, if (isFlow) 1 else 0,)
-            sendModbusPulse(CMD_FREE_VAR_ON, CMD_FREE_VAR_OFF, "Free Variable Brew", 0x00, COIL_FREE_VAR_BREW.toByte())
+            sendModbusPulse(COIL_FREE_VAR_BREW, "Free Variable Brew")
             requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, listOf(0, 0))
         }
     }
 
-    override suspend fun stopFreeVariableBrewing() {
+    override suspend fun stopFreeVariableBrewing() = brewOperationMutex.withLock {
         val active = requireSession()
         // The brew command toggles a coil. Refresh status before every attempt to avoid restarting an idle machine.
         refreshBrewStatus(active)
@@ -591,21 +580,15 @@ class WendougeeDataSController(
             _deviceState.update { it.copy(freeHandStopRequested = true) }
             Logger.withTag(TAG).i { "Stopping free variable brew..." }
             active.modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, listOf(0, 0))
-            sendModbusPulse(
-                CMD_FREE_VAR_ON,
-                CMD_FREE_VAR_OFF,
-                "Free Variable Brew Stop",
-                0x00,
-                COIL_FREE_VAR_BREW.toByte()
-            )
+            sendModbusPulse(COIL_FREE_VAR_BREW, "Free Variable Brew Stop")
             refreshBrewStatus(active)
         }
     }
 
     private suspend fun refreshBrewStatus(active: Session) {
         val previousStatusTime = _deviceState.value.statusTime
+        pollShortOnce(active)
         withTimeout(POLL_TIMEOUT_MS.milliseconds) {
-            pollShortOnce(active)
             deviceState.first { it.statusTime != previousStatusTime }
         }
     }
@@ -626,24 +609,27 @@ class WendougeeDataSController(
         Logger.withTag(TAG).d { "Free variable flow target set to $flow ml/s" }
     }
 
-    override suspend fun stopProfileBrewing() {
+    override suspend fun stopProfileBrewing() = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
         if (_deviceState.value.brewStatus == BrewStatus.Profile) {
             Logger.withTag(TAG).i { "Stopping profile brew cycle..." }
-            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
+            sendModbusPulse(COIL_SHORT_PRESS, "Short Press")
         }
     }
 
-    override suspend fun startCleaning() {
+    override suspend fun startCleaning() = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
         if (_deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Sending start signal for cleaning..." }
-            sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Cleaning Procedure", 0x00, COIL_CLEANING.toByte())
+            sendModbusPulse(COIL_CLEANING, "Cleaning Procedure")
         }
     }
 
-    override suspend fun stopCleaning() {
+    override suspend fun stopCleaning() = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
         if (_deviceState.value.brewStatus == BrewStatus.Cleaning) {
             Logger.withTag(TAG).i { "Sending stop signal for cleaning..." }
-            sendModbusPulse(CMD_CLEANING_ON, CMD_CLEANING_OFF, "Stop Cleaning", 0x00, COIL_CLEANING.toByte())
+            sendModbusPulse(COIL_CLEANING, "Stop Cleaning")
         }
     }
 
@@ -710,50 +696,31 @@ class WendougeeDataSController(
         }
     }
 
-    private suspend fun sendModbusPulse(
-        onCommand: ByteArray,
-        offCommand: ByteArray,
-        label: String,
-        regHi: Byte,
-        regLo: Byte,
-    ) {
-        val modbus = requireSession().modbus
-        val matcher = ModbusSession.AddressMatcher(hi = regHi, lo = regLo)
-        try {
-            modbus.sendAndAwaitFc(onCommand, FC_COIL_WRITE, matcher)
-            delay(BREW_PULSE_MS)
-        } finally {
-            // Always release the coil, including cancellation or a missing acknowledgement of the press.
-            withContext(NonCancellable) {
-                withTimeout(PULSE_RELEASE_TIMEOUT_MS.milliseconds) {
-                    modbus.sendAndAwaitFc(offCommand, FC_COIL_WRITE, matcher)
-                }
-            }
-        }
+    private suspend fun sendModbusPulse(address: Int, label: String) {
+        requireSession().modbus.pulseCoil(address)
         Logger.withTag(TAG).d { "$label pulse completed and confirmed" }
     }
 
-    override suspend fun startProfileBrewing(profile: BrewProfile) {
+    override suspend fun startProfileBrewing(profile: BrewProfile) = brewOperationMutex.withLock {
+        refreshBrewStatus(requireSession())
+        if (_deviceState.value.brewStatus != BrewStatus.Idle) return@withLock
         Logger.withTag(TAG).i { "Starting profile brew: ${profile.name}" }
-
         requireSession().modbus.uploadProfile(profile, isBinding = false)
-
-        Logger.withTag(TAG).d { "Profile uploaded, triggering brew pulse" }
+        refreshBrewStatus(requireSession())
+        if (_deviceState.value.brewStatus != BrewStatus.Idle) return@withLock
         if (profile.recording != null) {
-            val modbus = requireSession().modbus
-            modbus.writeSingleCoil(COIL_PROFILE_FREE, true)
-            delay(BREW_PULSE_MS)
-            modbus.writeSingleCoil(COIL_PROFILE_FREE, false)
-            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
-        } else {
-            sendModbusPulse(CMD_SHORT_PRESS_ON, CMD_SHORT_PRESS_OFF, "Short Press", 0x00, COIL_SHORT_PRESS.toByte())
+            sendModbusPulse(WendougeeProfileCompiler.profileCommitCoil(isBinding = false), "Commit recorded profile")
         }
+        sendModbusPulse(COIL_SHORT_PRESS, "Short Press")
     }
 
-    override suspend fun bindProfile(profile: BrewProfile) {
+    override suspend fun bindProfile(profile: BrewProfile) = brewOperationMutex.withLock {
         Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
 
         requireSession().modbus.uploadProfile(profile, isBinding = true)
+        if (profile.recording != null) {
+            sendModbusPulse(WendougeeProfileCompiler.profileCommitCoil(isBinding = true), "Commit bound recorded profile")
+        }
 
         Logger.withTag(
             TAG,
@@ -884,7 +851,9 @@ class WendougeeDataSController(
         session ?: error("WendougeeDataSController: no active BLE session (not connected)")
 
     private fun BluetoothPeripheral.findBySuffix(suffix: String): BluetoothCharacteristic? =
-        characteristics.firstOrNull { it.uuid.toString().lowercase().contains(suffix) }
+        characteristics.firstOrNull {
+            it.uuid.toString().equals("00010203-0405-0607-0809-0a0b0c0d$suffix", ignoreCase = true)
+        }
 
     private suspend fun currentCoroutineIsActive(): Boolean {
         val job = currentCoroutineContext()[Job]
@@ -900,8 +869,6 @@ private const val CTRL_UUID_SUFFIX = "2c10"
 
 private const val POLLING_INTERVAL_MS = 200L
 private const val LIVE_POLLING_INTERVAL_MS = 70L
-private const val BREW_PULSE_MS = 100L
-private const val PULSE_RELEASE_TIMEOUT_MS = 1000L
 private const val HEARTBEAT_TIMEOUT_MS = 10_000L
 
 private const val MTU_SIZE = 512
@@ -914,7 +881,6 @@ private const val POST_CONNECT_SETTLE_MS = 500L
 private const val CHARS_RETRY_DELAY_MS = 200L
 private const val STALE_GATT_SETTLE_MS = 300L
 private const val CCCD_SETTLE_DELAY_MS = 200L
-private const val INIT_CONFIG_DELAY_MS = 300L
 private const val INIT_SCALE_DELAY_MS = 400L
 private const val SCALE_STATUS_DELAY_MS = 100L
 private const val SCALE_LIST_DELAY_MS = 200L
@@ -925,15 +891,19 @@ private const val POLL_TIMEOUT_MS = 800L
 private const val INIT_POLL_TIMEOUT_MS = 3000L
 private const val SCAN_TIMEOUT_MS = 12_000L
 private const val WATCHDOG_INTERVAL_MS = 1_000L
-private const val FC_COIL_WRITE: Byte = 0x05
 private const val MODBUS_UNIT_ID: Byte = 0x01
+private const val CONFIG_REGISTER_COUNT = 37
+private const val TELEMETRY_REGISTER_BASE = 1404
+private const val TELEMETRY_REGISTER_COUNT = 20
+private const val STATUS_COIL_BASE = 182
+private const val STATUS_COIL_COUNT = 24
 private const val SENSOR_SCALE_FACTOR = 10
 private const val BREW_MAX_TEMP = 110
 private const val STEAM_MAX_TEMP = 140
 private const val PADDLE_PRESSURE_MAX_INT = 120
 private const val PADDLE_TIME_MAX = 60
 private const val FREE_BREW_PRESSURE_MAX = 12f
-private const val FREE_BREW_FLOW_MAX = 8f
+private const val FREE_BREW_FLOW_MAX = 12f
 private const val CLEANING_TIME_MAX = 60
 private const val CLEANING_REST_MAX = 60
 private const val CLEANING_COUNT_MAX = 10
@@ -944,16 +914,12 @@ private const val COIL_FREE_VAR_BREW = 0x9D
 private const val FREE_VAR_PREPARE_VALUE = 4
 private const val COIL_SHORT_PRESS = 0x96
 private const val COIL_CLEANING = 0x9B
-private const val COIL_PROFILE_FREE = 0x9E
 private const val BYTE_MASK = 0xFF
 private const val HEX_RADIX = 16
 private const val SCALE_CMD_CONNECT = 0x80
 private const val SCALE_CMD_DISCONNECT = 0x87
 
 private const val WRITE_TYPE_NO_RESPONSE = 1
-
-private val POLL_LONG_PREFIX = byteArrayOf(0x01, 0x03, 0x28)
-private val POLL_SHORT_PREFIX = byteArrayOf(0x01, 0x01)
 
 private fun toHexString(arr: ByteArray): String = arr.joinToString("") {
     (it.toInt() and BYTE_MASK).toString(HEX_RADIX).padStart(2, '0')

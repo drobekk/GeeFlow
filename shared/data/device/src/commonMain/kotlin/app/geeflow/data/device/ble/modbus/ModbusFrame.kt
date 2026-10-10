@@ -22,6 +22,7 @@ internal object ModbusFrame {
         readRequest(unitId, ModbusFunctionCode.READ_INPUT_REGISTERS, address, count)
 
     fun writeSingleCoil(unitId: Byte, address: Int, state: Boolean): ByteArray {
+        validateAddress(unitId, address, 1)
         val value = if (state) COIL_ON else COIL_OFF
         val body = byteArrayOf(
             unitId,
@@ -35,6 +36,8 @@ internal object ModbusFrame {
     }
 
     fun writeSingleRegister(unitId: Byte, address: Int, value: Int): ByteArray {
+        require(value in 0..MAX_WORD) { "Register value out of range" }
+        validateAddress(unitId, address, 1)
         val body = byteArrayOf(
             unitId,
             ModbusFunctionCode.WRITE_SINGLE_REGISTER,
@@ -48,6 +51,8 @@ internal object ModbusFrame {
 
     fun writeMultipleRegisters(unitId: Byte, address: Int, values: List<Int>): ByteArray {
         val count = values.size
+        require(count in 1..MAX_WRITE_REGISTERS && values.all { it in 0..MAX_WORD }) { "Invalid register values/count" }
+        validateAddress(unitId, address, count)
         val byteCount = count * 2
         val header = byteArrayOf(
             unitId,
@@ -68,6 +73,8 @@ internal object ModbusFrame {
 
     fun writeMultipleCoils(unitId: Byte, address: Int, states: List<Boolean>): ByteArray {
         val count = states.size
+        require(count in 1..MAX_WRITE_COILS) { "Invalid coil count" }
+        validateAddress(unitId, address, count)
         val byteCount = (count + BITS_PER_BYTE - 1) / BITS_PER_BYTE
         val packed = ByteArray(byteCount)
         states.forEachIndexed { i, on ->
@@ -105,6 +112,7 @@ internal object ModbusFrame {
         }
         val fc = frame[FC_IDX]
         if (isException(fc, expectedFc)) {
+            require(frame.size == EXCEPTION_RESPONSE_SIZE) { "Invalid exception response length" }
             val exceptionCode = frame[EXCEPTION_CODE_IDX]
             throw ModbusProtocolException(fc, exceptionCode)
         }
@@ -113,6 +121,16 @@ internal object ModbusFrame {
                 "Modbus response fc mismatch: expected=0x${expectedFc.toHex()} actual=0x${fc.toHex()}",
             )
         }
+        val expectedSize = when (fc) {
+            ModbusFunctionCode.READ_COILS, ModbusFunctionCode.READ_DISCRETE_INPUTS,
+            ModbusFunctionCode.READ_HOLDING_REGISTERS, ModbusFunctionCode.READ_INPUT_REGISTERS -> {
+                val count = frame[EXCEPTION_CODE_IDX].toInt() and BYTE_MASK
+                require(count in 1..MAX_READ_PAYLOAD) { "Invalid read byte count" }
+                count + READ_RESPONSE_OVERHEAD
+            }
+            else -> WRITE_RESPONSE_SIZE
+        }
+        require(frame.size == expectedSize) { "Modbus response length mismatch" }
         return frame.copyOfRange(FC_IDX + 1, frame.size - ModbusCrc.CRC_SIZE)
     }
 
@@ -120,7 +138,7 @@ internal object ModbusFrame {
     fun parseByteCountedPayload(payload: ByteArray): ByteArray {
         require(payload.isNotEmpty()) { "Read response payload is empty" }
         val byteCount = payload[0].toInt() and BYTE_MASK
-        require(payload.size >= byteCount + 1) {
+        require(payload.size == byteCount + 1) {
             "Read response payload truncated: byteCount=$byteCount available=${payload.size - 1}"
         }
         return payload.copyOfRange(1, 1 + byteCount)
@@ -144,6 +162,13 @@ internal object ModbusFrame {
     }
 
     private fun readRequest(unitId: Byte, fc: Byte, address: Int, count: Int): ByteArray {
+        val maximum = if (fc == ModbusFunctionCode.READ_COILS || fc == ModbusFunctionCode.READ_DISCRETE_INPUTS) {
+            MAX_READ_COILS
+        } else {
+            MAX_READ_REGISTERS
+        }
+        require(count in 1..maximum) { "Invalid read count" }
+        validateAddress(unitId, address, count)
         val body = byteArrayOf(
             unitId,
             fc,
@@ -160,6 +185,11 @@ internal object ModbusFrame {
         return actualFc == expectedException
     }
 
+    private fun validateAddress(unitId: Byte, address: Int, count: Int) {
+        require((unitId.toInt() and BYTE_MASK) in 1..MAX_UNIT_ID) { "Invalid Modbus unit" }
+        require(address in 0..MAX_WORD && address.toLong() + count <= MAX_WORD + 1L) { "Invalid Modbus address" }
+    }
+
     private fun hi(v: Int): Byte = ((v ushr BITS_PER_BYTE) and BYTE_MASK).toByte()
     private fun lo(v: Int): Byte = (v and BYTE_MASK).toByte()
 
@@ -169,7 +199,17 @@ internal object ModbusFrame {
     private const val BYTE_MASK = 0xFF
     private const val BITS_PER_BYTE = 8
     private const val HEX_RADIX = 16
-    private const val MIN_RESPONSE_SIZE = 4
+    private const val MIN_RESPONSE_SIZE = 5
+    private const val EXCEPTION_RESPONSE_SIZE = 5
+    private const val WRITE_RESPONSE_SIZE = 8
+    private const val READ_RESPONSE_OVERHEAD = 5
+    private const val MAX_READ_PAYLOAD = 250
+    private const val MAX_WORD = 65535
+    private const val MAX_UNIT_ID = 247
+    private const val MAX_READ_REGISTERS = 125
+    private const val MAX_WRITE_REGISTERS = 123
+    private const val MAX_READ_COILS = 2000
+    private const val MAX_WRITE_COILS = 1968
     private const val UNIT_ID_IDX = 0
     private const val FC_IDX = 1
     private const val EXCEPTION_CODE_IDX = 2

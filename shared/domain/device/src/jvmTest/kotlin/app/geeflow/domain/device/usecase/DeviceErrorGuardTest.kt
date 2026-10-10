@@ -110,7 +110,7 @@ class DeviceErrorGuardTest {
 
     @Test
     fun `when a fault is active then stop commands remain available`() = runTest {
-        state.value = state.value.copy(error = DeviceError(6))
+        state.value = state.value.copy(error = DeviceError(6), brewStatus = DeviceState.BrewStatus.Manual)
         coEvery { coordinator.stop(9) } returns false
 
         StopBrewingUseCase(provider, coordinator)(9)

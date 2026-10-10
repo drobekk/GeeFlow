@@ -162,6 +162,8 @@ internal class FreeControlViewModel(
             copy(
                 brewButtonState = if (state.brewStatus == DeviceState.BrewStatus.FreeVariable) {
                     BrewButtonState.Brewing
+                } else if (!isNowIdle) {
+                    BrewButtonState.Busy
                 } else if (brewButtonState == BrewButtonState.Syncing) {
                     BrewButtonState.Syncing
                 } else {

@@ -116,6 +116,7 @@ internal class DeviceDashboardViewModel(
     private var selectedProfileName: String? = null
     private var selectedProfileDescription: String? = null
     private var machine: Machine? = null
+    private var machineBusy = false
     private var deviceConfig: DeviceState.Config? = null
     private var brewInProgress = false
     private var pendingAppProfile: BrewProfile? = null
@@ -231,7 +232,9 @@ internal class DeviceDashboardViewModel(
                     if (!started) pendingAppProfile = null
                     modify {
                         copy(
-                            brewButtonState = if (device.isBrewing) {
+                            brewButtonState = if (machineBusy) {
+                                BrewButtonState.Busy
+                            } else if (device.isBrewing) {
                                 BrewButtonState.Brewing
                             } else {
                                 BrewButtonState.Idle
@@ -259,6 +262,7 @@ internal class DeviceDashboardViewModel(
 
     private fun updateMachineStateUi(state: DeviceState) {
         deviceConfig = state.config
+        machineBusy = state.brewStatus == BrewStatus.Cleaning || state.brewStatus == BrewStatus.WaterFlow
         modify {
             val newBrewStatus = when (state.brewStatus) {
                 BrewStatus.Manual -> Device.BrewStatus.Manual
@@ -267,7 +271,9 @@ internal class DeviceDashboardViewModel(
                 else -> Device.BrewStatus.Idle
             }
 
-            val currentButtonState = if (this.brewButtonState == BrewButtonState.Syncing) {
+            val currentButtonState = if (machineBusy) {
+                BrewButtonState.Busy
+            } else if (this.brewButtonState == BrewButtonState.Syncing) {
                 BrewButtonState.Syncing
             } else if (newBrewStatus != Device.BrewStatus.Idle) {
                 BrewButtonState.Brewing

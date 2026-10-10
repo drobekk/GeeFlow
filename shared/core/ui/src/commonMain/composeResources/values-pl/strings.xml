@@ -82,4 +82,5 @@
     <string name="auto_flush_tap_to_cancel">Dotknij, aby anulować</string>
     <string name="error_device_fault">Ekspres zgłasza błąd. Usuń jego przyczynę przed rozpoczęciem parzenia lub czyszczenia. Szczegóły znajdziesz pod przyciskiem błędu.</string>
     <string name="error_grinder_not_connected">Najpierw połącz młynek Single Dose</string>
+    <string name="common_machine_busy">Ekspres zajęty</string>
 </resources>

@@ -16,7 +16,8 @@ class StopBrewingUseCase(
         when (deviceState.value.brewStatus) {
             DeviceState.BrewStatus.Profile -> stopProfileBrewing()
             DeviceState.BrewStatus.FreeVariable -> stopFreeVariableBrewing()
-            else -> stopManualBrewing()
+            DeviceState.BrewStatus.Manual -> stopManualBrewing()
+            else -> Unit
         }
     }
 }

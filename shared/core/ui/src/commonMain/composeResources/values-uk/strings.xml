@@ -82,4 +82,5 @@
     <string name="auto_flush_tap_to_cancel">Натисніть для скасування</string>
     <string name="error_device_fault">Кавомашина повідомляє про помилку. Усуньте її причину перед приготуванням кави або очищенням. Подробиці доступні за кнопкою помилки.</string>
     <string name="error_grinder_not_connected">Спочатку підключіть кавомолку Single Dose</string>
+    <string name="common_machine_busy">Кавомашина зайнята</string>
 </resources>

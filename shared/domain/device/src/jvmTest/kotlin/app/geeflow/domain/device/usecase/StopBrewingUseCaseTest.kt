@@ -57,6 +57,29 @@ class StopBrewingUseCaseTest {
     }
 
     @Test
+    fun `when machine is dispensing water then does not send a brewing toggle`() = runTest {
+        state.value = state.value.copy(brewStatus = DeviceState.BrewStatus.WaterFlow)
+        val useCase = StopBrewingUseCase(provider, coordinator)
+
+        useCase(9)
+
+        coVerify(exactly = 0) { controller.stopManualBrewing() }
+        coVerify(exactly = 0) { controller.stopProfileBrewing() }
+        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+    }
+
+    @Test
+    fun `when machine is idle then does not send a brewing toggle`() = runTest {
+        val useCase = StopBrewingUseCase(provider, coordinator)
+
+        useCase(9)
+
+        coVerify(exactly = 0) { controller.stopManualBrewing() }
+        coVerify(exactly = 0) { controller.stopProfileBrewing() }
+        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+    }
+
+    @Test
     fun `when coordinator owns brew then delegates stop to coordinator`() = runTest {
         coEvery { coordinator.stop(9) } returns true
         val useCase = StopBrewingUseCase(provider, coordinator)

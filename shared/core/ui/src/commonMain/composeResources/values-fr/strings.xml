@@ -80,4 +80,5 @@
     <string name="auto_flush_tap_to_cancel">Touchez pour annuler</string>
     <string name="error_device_fault">La machine signale une erreur. Corrigez sa cause avant de lancer une extraction ou un nettoyage. Appuyez sur le bouton d’erreur pour voir les détails.</string>
     <string name="error_grinder_not_connected">Connectez d’abord le moulin Single Dose</string>
+    <string name="common_machine_busy">Machine occupée</string>
 </resources>

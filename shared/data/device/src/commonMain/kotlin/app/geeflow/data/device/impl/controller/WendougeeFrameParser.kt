@@ -1,5 +1,6 @@
 package app.geeflow.data.device.impl.controller
 
+import app.geeflow.data.device.ble.modbus.ModbusNotifications
 import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BrewStatus
@@ -19,9 +20,13 @@ class WendougeeFrameParser(
 ) {
     private val grinderParser = WendougeeSingleDoseParser(onStateUpdate, onGrinderFound)
     private val controlFrames = WendougeeControlFrames()
+    private val modbusFrames = ModbusNotifications()
     private val scaleParser = WendougeeScaleParser(onStateUpdate, onScaleFound, onScanStatus, onIntegrationFlags)
 
-    fun reset() = controlFrames.reset()
+    fun reset() {
+        controlFrames.reset()
+        modbusFrames.reset()
+    }
 
     companion object {
         private const val TAG = "WendougeeController"
@@ -32,11 +37,16 @@ class WendougeeFrameParser(
         private const val MODBUS_FC_READ = 0x03
         private const val MODBUS_FC_STATUS = 0x01
         private const val TELEMETRY_BYTE_COUNT = 0x28
+        private const val EXTENDED_TELEMETRY_BYTE_COUNT = 0x2C
         private const val CONFIG_BYTE_COUNT = 0x4A
-        private const val STATUS_MASK_PROFILE_BYTE0 = 0x03
+        private const val STATUS_MASK_PROFILE_BYTE0 = 0x0F
         private const val STATUS_MASK_PROFILE_BYTE1 = 0x08
         private const val STATUS_MASK_MANUAL = 0x10
         private const val STATUS_MASK_CLEANING = 0x20
+        private const val STATUS_MASK_WATER_FLOW = 0x40
+        private const val STATUS_MASK_CLEANING_HIGH = 0x80
+        private const val MAX_WEIGHT_RATE = 12f
+        private const val MAX_STATUS_BYTES = 3
         private const val SENSOR_SCALE_FACTOR = 10f
         private const val SCAN_STATUS_COMMAND = 0x83
         private const val HEX_RADIX = 16
@@ -51,7 +61,8 @@ class WendougeeFrameParser(
             if (data[0] == 0x01.toByte()) {
                 val fc = data[1].toInt() and BYTE_MASK
                 val byteCount = data[2].toInt() and BYTE_MASK
-                return fc == MODBUS_FC_STATUS || (fc == MODBUS_FC_READ && byteCount == TELEMETRY_BYTE_COUNT)
+                val telemetry = byteCount == TELEMETRY_BYTE_COUNT || byteCount == EXTENDED_TELEMETRY_BYTE_COUNT
+                return fc == MODBUS_FC_STATUS || (fc == MODBUS_FC_READ && telemetry)
             }
             if (data.size >= FrameOffsets.POLLING_MIN_SIZE && isProprietaryFrame(data)) {
                 return data[FrameOffsets.PROP_CMD].toInt() and BYTE_MASK == SCAN_STATUS_COMMAND
@@ -70,7 +81,6 @@ class WendougeeFrameParser(
     private object FrameOffsets {
         const val PROP_CMD = 4
         const val POLLING_MIN_SIZE = 5
-        const val STATUS_MIN_SIZE = 5
         const val STATUS_BYTE_OFFSET = 3
         const val STATUS_BYTE2_OFFSET = 4
     }
@@ -80,7 +90,7 @@ class WendougeeFrameParser(
         if (!polling || shouldLogPolling()) {
             Logger.withTag(BLE_TRACE_TAG).v { "<< [$channel] ${toHexString(data)} (${data.size}B)" }
         }
-        if (channel == "CTRL" || isProprietaryFrame(data)) {
+        if (channel == "CTRL") {
             controlFrames.receive(data).forEach { frame ->
                 grinderParser.parse(frame)
                 scaleParser.parse(frame)
@@ -88,13 +98,17 @@ class WendougeeFrameParser(
             return
         }
 
-        if (data.size < MODBUS_MIN_FRAME_SIZE) return
-        val functionCode = data[1].toInt() and BYTE_MASK
+        modbusFrames.receive(data).forEach(::parseModbusFrame)
+    }
+
+    private fun parseModbusFrame(data: ByteArray) {
+        if (u8(data, 0) != 1) return
+        val functionCode = u8(data, 1)
 
         when (functionCode) {
             MODBUS_FC_READ -> {
                 val byteCount = data[2].toInt() and BYTE_MASK
-                if (byteCount == TELEMETRY_BYTE_COUNT) {
+                if (byteCount == TELEMETRY_BYTE_COUNT || byteCount == EXTENDED_TELEMETRY_BYTE_COUNT) {
                     parseTelemetryFrame(data)
                 } else if (byteCount == CONFIG_BYTE_COUNT) {
                     parseConfigFrame(data)
@@ -158,19 +172,25 @@ class WendougeeFrameParser(
     }
 
     private fun parseShortStatusFrame(payload: ByteArray) {
-        if (payload.size < FrameOffsets.STATUS_MIN_SIZE) return
+        val byteCount = u8(payload, 2)
+        if (byteCount !in 1..MAX_STATUS_BYTES) return
         val statusByte0 = payload[FrameOffsets.STATUS_BYTE_OFFSET].toInt() and BYTE_MASK
-        val statusByte1 = payload[FrameOffsets.STATUS_BYTE2_OFFSET].toInt() and BYTE_MASK
+        val statusByte1 = if (byteCount >= 2) u8(payload, FrameOffsets.STATUS_BYTE2_OFFSET) else 0
         val isManual = (statusByte0 and STATUS_MASK_MANUAL) != 0
         val isCleaning = (statusByte0 and STATUS_MASK_CLEANING) != 0
         val isProfile = (statusByte0 and STATUS_MASK_PROFILE_BYTE0) != 0
         val isFreeVariable = (statusByte1 and STATUS_MASK_PROFILE_BYTE1) != 0
+        val isWaterFlow = (statusByte0 and STATUS_MASK_WATER_FLOW) != 0
+        val isCleaningHigh = (statusByte0 and STATUS_MASK_CLEANING_HIGH) != 0
 
         val brewStatus = when {
-            isManual -> BrewStatus.Manual
-            isCleaning -> BrewStatus.Cleaning
+            // The extended status identifies free hand even when a general activity bit is also set.
             isFreeVariable -> BrewStatus.FreeVariable
             isProfile -> BrewStatus.Profile
+            isManual -> BrewStatus.Manual
+            isCleaning -> BrewStatus.Cleaning
+            isWaterFlow -> BrewStatus.WaterFlow
+            isCleaningHigh -> BrewStatus.Cleaning
             else -> BrewStatus.Idle
         }
         onStateUpdate { copy(brewStatus = brewStatus, statusTime = Clock.System.now()) }
@@ -186,7 +206,7 @@ class WendougeeFrameParser(
             val weight = dataU16be(TelemetryFrame.WEIGHT) / SENSOR_SCALE_FACTOR
             val steamActual = dataU16be(TelemetryFrame.STEAM_TEMP) / SENSOR_SCALE_FACTOR
             val brewActual = dataU16be(TelemetryFrame.BREW_TEMP) / SENSOR_SCALE_FACTOR
-            val weightRate = dataU16be(TelemetryFrame.WEIGHT_RATE) / SENSOR_SCALE_FACTOR
+            val weightRate = (dataU16be(TelemetryFrame.WEIGHT_RATE) / SENSOR_SCALE_FACTOR).coerceAtMost(MAX_WEIGHT_RATE)
             val volume = dataU16be(TelemetryFrame.VOLUME).toFloat()
             val flowRate = dataU16be(TelemetryFrame.FLOW_RATE).toFloat()
             val time = dataU16be(TelemetryFrame.TIME)

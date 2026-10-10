@@ -81,4 +81,5 @@
     <string name="auto_flush_tap_to_cancel">Dodirnite za otkazivanje</string>
     <string name="error_device_fault">Aparat prijavljuje grešku. Uklonite njezin uzrok prije početka pripreme kave ili čišćenja. Pojedinosti su dostupne putem gumba za grešku.</string>
     <string name="error_grinder_not_connected">Najprije povežite mlinac Single Dose</string>
+    <string name="common_machine_busy">Aparat je zauzet</string>
 </resources>

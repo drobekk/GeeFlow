@@ -12,7 +12,7 @@ object WendougeeCommands {
     }
 
     val CMD_READ_CONFIG_LONG = "0103000000258411".decodeHex()
-    val CMD_START_STREAMING = "ff55ffff070001015c".decodeHex()
+    val CMD_SET_LANGUAGE = "ff55ffff070001015c".decodeHex()
     val CMD_SCALE_SEARCH_QUERY = "ff55ffff9a0000ed".decodeHex()
 
     val CMD_POLLING_LONG = "0103057C001484D1".decodeHex()

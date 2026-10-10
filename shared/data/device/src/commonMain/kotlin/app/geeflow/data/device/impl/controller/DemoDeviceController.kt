@@ -568,7 +568,7 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         private const val PADDLE_PRESSURE_MAX_INT = 120
         private const val PADDLE_TIME_MAX = 60
         private const val BREW_PRESSURE_MAX = 12f
-        private const val BREW_FLOW_MAX = 8f
+        private const val BREW_FLOW_MAX = 12f
         private const val CLEANING_TIME_MAX = 60
         private const val CLEANING_REST_MAX = 60
         private const val CLEANING_COUNT_MAX = 10

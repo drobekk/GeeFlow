@@ -430,7 +430,7 @@ private fun Preview() {
             pressureTarget = 6.0f,
             flowTarget = 3.5f,
             pressureRange = 0f..12f,
-            flowRange = 0f..8f,
+            flowRange = 0f..12f,
             brewButtonState = BrewButtonState.Idle,
             sessionCompleted = false,
             visibleCharts = setOf(

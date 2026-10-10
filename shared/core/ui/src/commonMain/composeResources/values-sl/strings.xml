@@ -82,4 +82,5 @@
     <string name="auto_flush_tap_to_cancel">Dotaknite se za preklic</string>
     <string name="error_device_fault">Aparat sporoča napako. Odpravite njen vzrok pred začetkom priprave kave ali čiščenja. Podrobnosti so na voljo prek gumba za napako.</string>
     <string name="error_grinder_not_connected">Najprej povežite mlinček Single Dose</string>
+    <string name="common_machine_busy">Aparat je zaseden</string>
 </resources>

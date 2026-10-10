@@ -56,6 +56,7 @@ data class DeviceState(
         Profile,
         FreeVariable,
         Cleaning,
+        WaterFlow,
         Idle,
     }
 

@@ -52,7 +52,7 @@ internal class DemoBrewSimulation {
     private companion object {
         const val MAX_INTERVAL_SECONDS = 1f
         const val MAX_PRESSURE = 12f
-        const val MAX_FLOW = 8f
+        const val MAX_FLOW = 12f
         const val PRESSURE_RESPONSE = .45f
         const val FLOW_RESPONSE = .25f
         const val DRY_RESISTANCE = 1.2f

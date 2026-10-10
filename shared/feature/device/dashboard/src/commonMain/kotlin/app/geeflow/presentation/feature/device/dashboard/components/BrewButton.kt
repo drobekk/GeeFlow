@@ -65,6 +65,7 @@ import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_flush
+import geeflow.shared.core.ui.generated.resources.common_machine_busy
 import geeflow.shared.core.ui.generated.resources.common_start
 import geeflow.shared.core.ui.generated.resources.common_stop
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_syncing
@@ -132,14 +133,14 @@ fun BrewButton(
         when (state) {
             BrewButtonState.Brewing -> MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
             BrewButtonState.Syncing -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.9f)
-            BrewButtonState.Idle -> MaterialTheme.colorScheme.surfaceContainerHigh
+            BrewButtonState.Idle, BrewButtonState.Busy -> MaterialTheme.colorScheme.surfaceContainerHigh
         },
     )
     val secondColor by animateColorAsState(
         when (state) {
             BrewButtonState.Brewing -> MaterialTheme.colorScheme.error
             BrewButtonState.Syncing -> MaterialTheme.colorScheme.tertiary
-            BrewButtonState.Idle -> MaterialTheme.colorScheme.surfaceContainerHighest
+            BrewButtonState.Idle, BrewButtonState.Busy -> MaterialTheme.colorScheme.surfaceContainerHighest
         },
     )
     val transition = updateTransition(targetState = state, label = "BrewingTransition")
@@ -194,6 +195,11 @@ fun BrewButton(
                 text = stringResource(DashboardRes.string.device_dashboard_syncing).uppercase(),
                 textColor = MaterialTheme.colorScheme.onTertiary,
                 modifier = Modifier.visible(buttonState == BrewButtonState.Syncing),
+            )
+            ActiveStateContent(
+                text = stringResource(Res.string.common_machine_busy).uppercase(),
+                textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.visible(buttonState == BrewButtonState.Busy),
             )
             BrewContent(
                 onStartButtonClick = {
@@ -355,6 +361,7 @@ private fun ActiveStateContent(
 enum class BrewButtonState {
     Idle,
     Syncing,
+    Busy,
     Brewing
 }
 

@@ -80,4 +80,5 @@
     <string name="auto_flush_tap_to_cancel">Tik om te annuleren</string>
     <string name="error_device_fault">De machine meldt een fout. Verhelp de oorzaak voordat u koffie zet of de reiniging start. Druk op de foutknop voor details.</string>
     <string name="error_grinder_not_connected">Verbind eerst de Single Dose-molen</string>
+    <string name="common_machine_busy">Machine bezig</string>
 </resources>

@@ -82,4 +82,5 @@
     <string name="auto_flush_tap_to_cancel">Klepnutím zrušit</string>
     <string name="error_device_fault">Kávovar hlásí chybu. Před zahájením přípravy kávy nebo čištění odstraňte její příčinu. Podrobnosti zobrazíte tlačítkem chyby.</string>
     <string name="error_grinder_not_connected">Nejprve připojte mlýnek Single Dose</string>
+    <string name="common_machine_busy">Kávovar je zaneprázdněný</string>
 </resources>

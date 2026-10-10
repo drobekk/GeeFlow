@@ -80,4 +80,5 @@
     <string name="auto_flush_tap_to_cancel">Toca para cancelar</string>
     <string name="error_device_fault">La máquina indica un error. Solucione la causa antes de iniciar la preparación de café o la limpieza. Pulse el botón de error para ver los detalles.</string>
     <string name="error_grinder_not_connected">Conecta primero el molinillo Single Dose</string>
+    <string name="common_machine_busy">Máquina ocupada</string>
 </resources>

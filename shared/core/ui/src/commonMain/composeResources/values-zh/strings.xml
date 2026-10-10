@@ -90,4 +90,5 @@
     <string name="auto_flush_tap_to_cancel">点击取消</string>
     <string name="error_device_fault">咖啡机报告了错误。开始萃取或清洁前，请先解决问题。点击错误按钮查看详情。</string>
     <string name="error_grinder_not_connected">请先连接 Single Dose 磨豆机</string>
+    <string name="common_machine_busy">咖啡机忙碌中</string>
 </resources>
