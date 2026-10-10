@@ -1,11 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="desktopApp" type="JetRunConfigurationType">
-    <option name="MAIN_CLASS_NAME" value="app.geeflow.MainKt" />
-    <module name="GeeFlow.desktopApp.main" />
-    <shortenClasspath name="NONE" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
+  <configuration default="false" name="desktopApp" type="GradleRunConfiguration" factoryName="Gradle">
+    <ExternalSystemSettings>
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      <option name="externalSystemIdString" value="GRADLE" />
+      <option name="taskNames">
+        <list>
+          <option value=":desktopApp:run" />
+        </list>
+      </option>
+    </ExternalSystemSettings>
+    <method v="2" />
   </configuration>
 </component>
