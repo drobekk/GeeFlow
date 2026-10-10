@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Nivo vode je nizek. Napolnite posodo za vodo.</string>
     <string name="device_dashboard_connecting">Povezovanje…</string>
     <string name="device_settings_connectivity_smart_scale">Pametna tehtnica</string>
-    <string name="device_settings_connectivity_smart_scale_description">Samodejno ustavi pripravo pri ciljni teži</string>
-    <string name="device_settings_connectivity_smart_scale_info">Povežite pametno tehtnico za samodejno zaustavitev pri želeni teži.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Poišči pametne tehtnice v bližini</string>
     <string name="device_settings_connectivity_searching">Iskanje naprav…</string>
     <string name="device_settings_connectivity_not_found">Ne najdete svoje naprave?</string>
     <string name="device_settings_connectivity_rescan">Preišči znova</string>
-    <string name="device_settings_connectivity_scale_help">Še vedno povezuje? Izklopite in vklopite aparat ter poskusite znova.</string>
     <string name="device_settings_brewing_boiler">Kotliček</string>
     <string name="device_settings_brewing_paddle">Dolg pritisk ročice</string>
     <string name="device_settings_brewing_pulse_heating">Pulzno gretje</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Samodejno izperi po pripravi kave</string>
     <string name="device_settings_treat_manual_as_flush">Dolg pritisk ročice kot izpiranje</string>
     <string name="device_settings_treat_manual_as_flush_description">Brez zgodovine in grafa</string>
+    <string name="device_settings_connectivity_enable_search">Omogoči iskanje</string>
+    <string name="device_settings_connectivity_single_dose_description">Poišči mlinčke v bližini</string>
+    <string name="device_settings_connectivity_disabled_info">Omogočite iskanje, da najdete in povežete napravo.</string>
+    <string name="device_settings_connectivity_connection_help">Povezava ni uspela. Preverite, ali je dodatek vklopljen in v bližini, ter poskusite znova. Po potrebi znova zaženite kavni aparat.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

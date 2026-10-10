@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Niski poziom wody. Napełnij zbiornik.</string>
     <string name="device_dashboard_connecting">Łączenie</string>
     <string name="device_settings_connectivity_smart_scale">Waga inteligentna</string>
-    <string name="device_settings_connectivity_smart_scale_description">Automatycznie zatrzymaj po osiągnięciu docelowej wagi</string>
-    <string name="device_settings_connectivity_smart_scale_info">Połącz inteligentną wagę, aby automatycznie zatrzymać parzenie po osiągnięciu wagi.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Wyszukuj inteligentne wagi w pobliżu</string>
     <string name="device_settings_connectivity_searching">Szukanie zgodnych urządzeń…</string>
     <string name="device_settings_connectivity_not_found">Nie widzisz swojego urządzenia?</string>
     <string name="device_settings_connectivity_rescan">Skanuj teraz</string>
-    <string name="device_settings_connectivity_scale_help">Nadal się łączy? Wyłącz i włącz ekspres, a potem spróbuj ponownie połączyć wagę.</string>
     <string name="device_settings_brewing_boiler">Bojler</string>
     <string name="device_settings_brewing_paddle">Długie naciśnięcie łopatki</string>
     <string name="device_settings_brewing_pulse_heating">Ogrzewanie impulsowe</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Automatycznie płucz po parzeniu</string>
     <string name="device_settings_treat_manual_as_flush">Traktuj jako płukanie</string>
     <string name="device_settings_treat_manual_as_flush_description">Bez historii i wykresu</string>
+    <string name="device_settings_connectivity_enable_search">Włącz wyszukiwanie</string>
+    <string name="device_settings_connectivity_single_dose_description">Wyszukuj młynki w pobliżu</string>
+    <string name="device_settings_connectivity_disabled_info">Włącz wyszukiwanie, aby znaleźć i połączyć urządzenie.</string>
+    <string name="device_settings_connectivity_connection_help">Nie udało się połączyć. Sprawdź, czy akcesorium jest włączone i znajduje się w pobliżu, a następnie spróbuj ponownie. W razie potrzeby uruchom ponownie ekspres.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

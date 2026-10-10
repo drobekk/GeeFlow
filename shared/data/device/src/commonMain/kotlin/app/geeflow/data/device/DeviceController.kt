@@ -15,6 +15,7 @@ import app.geeflow.data.device.model.DeviceState.HeatingMode
 import app.geeflow.data.device.model.ProfileIssue
 import app.geeflow.data.device.model.ProfileIssueCode
 import app.geeflow.data.device.model.ProfilingCapabilities
+import app.geeflow.data.device.model.SingleDoseGrinder
 import app.geeflow.data.device.model.SmartScale
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ interface DeviceController {
     val deviceState: StateFlow<DeviceState>
     val capabilities: Set<DeviceCapability>
     val constraints: DeviceConstraints
+    val foundSingleDoseGrinders: StateFlow<List<SingleDoseGrinder>>
     val foundScales: StateFlow<List<SmartScale>>
 
     /**
@@ -56,6 +58,11 @@ interface DeviceController {
     suspend fun setWaterAlarm(enabled: Boolean)
     suspend fun startProfileBrewing(profile: BrewProfile)
     suspend fun bindProfile(profile: BrewProfile)
+
+    suspend fun setSingleDoseGrinderConnectivity(enabled: Boolean)
+    suspend fun requestSingleDoseGrinderList()
+    suspend fun connectSingleDoseGrinder(name: String)
+    suspend fun disconnectSingleDoseGrinder()
 
     suspend fun setSmartScaleConnectivity(enabled: Boolean)
     suspend fun requestSmartScaleList()

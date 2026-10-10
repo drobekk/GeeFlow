@@ -24,12 +24,10 @@
 
     <!-- Device Settings Connectivity -->
     <string name="device_settings_connectivity_smart_scale">Smart Scale</string>
-    <string name="device_settings_connectivity_smart_scale_description">Automatically stop brewing when target weight is reached</string>
-    <string name="device_settings_connectivity_smart_scale_info">Connect a smart scale to automatically stop brewing when the desired weight is reached.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Search for nearby smart scales</string>
     <string name="device_settings_connectivity_searching">Searching for compatible devices…</string>
     <string name="device_settings_connectivity_not_found">Not seeing your device?</string>
     <string name="device_settings_connectivity_rescan">Scan now</string>
-    <string name="device_settings_connectivity_scale_help">Still connecting? Turn the machine off and on again, then try connecting the scale once more.</string>
 
     <!-- Device Settings Brewing -->
     <string name="device_settings_brewing_boiler">Boiler</string>
@@ -43,4 +41,9 @@
     <string name="device_settings_auto_flush_description">Automatically flush after brewing</string>
     <string name="device_settings_treat_manual_as_flush">Treat as flush</string>
     <string name="device_settings_treat_manual_as_flush_description">No history or chart</string>
+    <string name="device_settings_connectivity_enable_search">Enable search</string>
+    <string name="device_settings_connectivity_single_dose_description">Search for nearby grinders</string>
+    <string name="device_settings_connectivity_disabled_info">Enable search to find and connect a device.</string>
+    <string name="device_settings_connectivity_connection_help">Could not connect. Check that the accessory is on and nearby, then try again. If needed, restart the coffee machine.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

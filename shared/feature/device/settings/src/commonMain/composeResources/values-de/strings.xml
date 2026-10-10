@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Wasserstand niedrig. Wassertank nachfüllen.</string>
     <string name="device_dashboard_connecting">Verbindet</string>
     <string name="device_settings_connectivity_smart_scale">Smarte Waage</string>
-    <string name="device_settings_connectivity_smart_scale_description">Automatischer Bezugsstopp bei Zielgewicht</string>
-    <string name="device_settings_connectivity_smart_scale_info">Smarte Waage verbinden, um Bezug bei Zielgewicht automatisch zu stoppen.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Nach intelligenten Waagen in der Nähe suchen</string>
     <string name="device_settings_connectivity_searching">Suche nach Geräten…</string>
     <string name="device_settings_connectivity_not_found">Gerät nicht gefunden?</string>
     <string name="device_settings_connectivity_rescan">Jetzt scannen</string>
-    <string name="device_settings_connectivity_scale_help">Verbindet immer noch? Maschine aus- und einschalten, dann erneut versuchen.</string>
     <string name="device_settings_brewing_boiler">Kessel</string>
     <string name="device_settings_brewing_paddle">Langer Paddle-Druck</string>
     <string name="device_settings_brewing_pulse_heating">Pulsheizen</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Nach dem Brühen automatisch spülen</string>
     <string name="device_settings_treat_manual_as_flush">Langer Paddle-Druck als Spülen</string>
     <string name="device_settings_treat_manual_as_flush_description">Ohne Verlauf und Diagramm</string>
+    <string name="device_settings_connectivity_enable_search">Suche aktivieren</string>
+    <string name="device_settings_connectivity_single_dose_description">Nach Mühlen in der Nähe suchen</string>
+    <string name="device_settings_connectivity_disabled_info">Aktiviere die Suche, um ein Gerät zu finden und zu verbinden.</string>
+    <string name="device_settings_connectivity_connection_help">Verbindung fehlgeschlagen. Prüfe, ob das Zubehör eingeschaltet und in der Nähe ist, und versuche es erneut. Starte bei Bedarf die Kaffeemaschine neu.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

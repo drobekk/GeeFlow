@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Nízka hladina vody. Doplňte nádržku.</string>
     <string name="device_dashboard_connecting">Pripájanie…</string>
     <string name="device_settings_connectivity_smart_scale">Inteligentná váha</string>
-    <string name="device_settings_connectivity_smart_scale_description">Automaticky zastaví pri dosiahnutí hmotnosti</string>
-    <string name="device_settings_connectivity_smart_scale_info">Pripojte váhu pre automatické ukončenie pri cieľovej hmotnosti.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Vyhľadávať inteligentné váhy v okolí</string>
     <string name="device_settings_connectivity_searching">Vyhľadávanie zariadení…</string>
     <string name="device_settings_connectivity_not_found">Nevidíte svoje zariadenie?</string>
     <string name="device_settings_connectivity_rescan">Skenovať znova</string>
-    <string name="device_settings_connectivity_scale_help">Stále sa nedarí? Kávovar vypnite a zapnite a skúste znova.</string>
     <string name="device_settings_brewing_boiler">Bojler</string>
     <string name="device_settings_brewing_paddle">Dlhé stlačenie páky</string>
     <string name="device_settings_brewing_pulse_heating">Pulzný ohrev</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Automaticky prepláchnuť po príprave kávy</string>
     <string name="device_settings_treat_manual_as_flush">Dlhý stisk páky ako preplach</string>
     <string name="device_settings_treat_manual_as_flush_description">Bez histórie a grafu</string>
+    <string name="device_settings_connectivity_enable_search">Zapnúť vyhľadávanie</string>
+    <string name="device_settings_connectivity_single_dose_description">Vyhľadávať mlynčeky v okolí</string>
+    <string name="device_settings_connectivity_disabled_info">Zapnite vyhľadávanie, aby ste našli a pripojili zariadenie.</string>
+    <string name="device_settings_connectivity_connection_help">Pripojenie zlyhalo. Skontrolujte, či je príslušenstvo zapnuté a nablízku, a skúste to znova. V prípade potreby reštartujte kávovar.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

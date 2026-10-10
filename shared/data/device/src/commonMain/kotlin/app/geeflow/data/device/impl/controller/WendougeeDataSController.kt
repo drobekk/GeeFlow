@@ -37,6 +37,7 @@ import app.geeflow.data.device.model.DeviceState.BoilerType
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.ConnectionStatus
 import app.geeflow.data.device.model.DeviceState.HeatingMode
+import app.geeflow.data.device.model.SingleDoseGrinder
 import app.geeflow.data.device.model.SmartScale
 import app.geeflow.data.device.model.pumpTelemetry
 import co.touchlab.kermit.Logger
@@ -99,6 +100,9 @@ class WendougeeDataSController(
     private val _deviceState = MutableStateFlow(DeviceState())
     override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()
 
+    private val _foundSingleDoseGrinders = MutableStateFlow<List<SingleDoseGrinder>>(emptyList())
+    override val foundSingleDoseGrinders = _foundSingleDoseGrinders.asStateFlow()
+
     private val _foundScales = MutableStateFlow<List<SmartScale>>(emptyList())
     override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
 
@@ -113,6 +117,16 @@ class WendougeeDataSController(
     private val frameParser = WendougeeFrameParser(
         onStateUpdate = { update ->
             _deviceState.update { currentState -> currentState.update() }
+        },
+        onGrinderFound = { grinder ->
+            _foundSingleDoseGrinders.update { current ->
+                val grinders = if (grinder.isConnected) current.map { it.copy(isConnected = false) } else current
+                if (grinders.any { it.name == grinder.name }) {
+                    grinders.map { if (it.name == grinder.name) grinder else it }
+                } else {
+                    grinders + grinder
+                }
+            }
         },
         onScaleFound = { scale ->
             _foundScales.update { current ->
@@ -145,7 +159,7 @@ class WendougeeDataSController(
 
     private fun onScanStatusReceived(active: Boolean) {
         heartbeatTimeoutJob?.cancel()
-        if (!active || !_deviceState.value.smartScaleEnabled) return
+        if (!active) return
         heartbeatTimeoutJob = scope.launch {
             val currentSession = session
             if (currentSession != null) {
@@ -153,7 +167,7 @@ class WendougeeDataSController(
                     .onFailure { Logger.withTag(TAG).w(it) { "Scale status request failed" } }
             }
             delay(HEARTBEAT_TIMEOUT_MS)
-            _deviceState.update { it.copy(smartScaleSearchActive = false) }
+            _deviceState.update { it.copy(smartScaleSearchActive = false, singleDoseGrinderSearchActive = false) }
         }
     }
 
@@ -384,7 +398,7 @@ class WendougeeDataSController(
         write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
         delay(INIT_SCALE_DELAY_MS)
         write(active, active.ctrlChar, CMD_START_STREAMING)
-        if (_deviceState.value.smartScaleEnabled) {
+        if (_deviceState.value.smartScaleEnabled || _deviceState.value.singleDoseGrinderEnabled) {
             delay(SCALE_STATUS_DELAY_MS)
             write(active, active.ctrlChar, CMD_SCALE_STATUS_REQUEST)
             delay(SCALE_LIST_DELAY_MS)
@@ -447,6 +461,9 @@ class WendougeeDataSController(
                 pressure = null,
                 steamBoilerTemp = null,
                 brewBoilerTemp = null,
+                singleDoseGrinder = null,
+                singleDoseGrinderEnabled = false,
+                singleDoseGrinderSearchActive = false,
                 smartScale = null,
                 smartScaleEnabled = false,
                 smartScaleSearchActive = false,
@@ -457,6 +474,7 @@ class WendougeeDataSController(
             )
         }
         _foundScales.value = emptyList()
+        _foundSingleDoseGrinders.value = emptyList()
     }
 
     private suspend fun pollLongOnce(active: Session, timeout: Long = POLL_TIMEOUT_MS) {
@@ -743,6 +761,52 @@ class WendougeeDataSController(
         requireSession().modbus.writeMultipleRegisters(WendougeeRegisters.BIND_PROFILE, listOf(1))
     }
 
+    override suspend fun setSingleDoseGrinderConnectivity(enabled: Boolean) {
+        scaleSettingsMutex.withLock {
+            val active = requireSession()
+            val flags = integrationFlags.value ?: run {
+                write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
+                withTimeout(SCALE_SETTINGS_TIMEOUT_MS) { integrationFlags.mapNotNull { it }.first() }
+            }
+            write(active, active.ctrlChar, buildIntegrationConnectivityFrame(flags, SINGLE_DOSE_ENABLED_MASK, enabled))
+            integrationFlags.value = if (enabled) flags or SINGLE_DOSE_ENABLED_MASK else flags and SINGLE_DOSE_ENABLED_MASK.inv()
+            _deviceState.update {
+                it.copy(
+                    singleDoseGrinderEnabled = enabled,
+                    singleDoseGrinder = if (enabled) it.singleDoseGrinder else null,
+                    singleDoseGrinderSearchActive = enabled && it.singleDoseGrinderSearchActive,
+                )
+            }
+            if (enabled) {
+                delay(SCALE_SEARCH_AFTER_ENABLE_DELAY_MS)
+                requestSingleDoseGrinderList()
+            } else {
+                _foundSingleDoseGrinders.value = emptyList()
+            }
+        }
+    }
+
+    override suspend fun requestSingleDoseGrinderList() {
+        val active = requireSession()
+        if (!_deviceState.value.singleDoseGrinderEnabled) return
+        _foundSingleDoseGrinders.value = listOfNotNull(_deviceState.value.singleDoseGrinder)
+        write(active, active.ctrlChar, CMD_SCALE_SCAN)
+        write(active, active.ctrlChar, CMD_SCALE_STATUS_REQUEST)
+        delay(SCALE_LIST_DELAY_MS)
+        write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
+    }
+
+    override suspend fun connectSingleDoseGrinder(name: String) {
+        val active = requireSession()
+        write(active, active.ctrlChar, buildScaleFrame(SCALE_CMD_CONNECT, name))
+    }
+
+    override suspend fun disconnectSingleDoseGrinder() {
+        val name = _deviceState.value.singleDoseGrinder?.name ?: return
+        val active = requireSession()
+        write(active, active.ctrlChar, buildScaleFrame(SCALE_CMD_DISCONNECT, name))
+    }
+
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
         scaleSettingsMutex.withLock {
             val active = requireSession()
@@ -765,7 +829,6 @@ class WendougeeDataSController(
                 delay(SCALE_SEARCH_AFTER_ENABLE_DELAY_MS)
                 requestSmartScaleList()
             } else {
-                heartbeatTimeoutJob?.cancel()
                 _foundScales.value = emptyList()
             }
         }

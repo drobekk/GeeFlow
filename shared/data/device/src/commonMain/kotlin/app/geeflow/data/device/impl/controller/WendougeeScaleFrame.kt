@@ -2,8 +2,11 @@ package app.geeflow.data.device.impl.controller
 
 internal fun buildScaleFrame(cmd: Int, name: String): ByteArray = buildControlFrame(cmd, name.encodeToByteArray())
 
-internal fun buildScaleConnectivityFrame(flags: Int, enabled: Boolean): ByteArray {
-    val updated = if (enabled) flags or SCALE_ENABLED_MASK else flags and SCALE_ENABLED_MASK.inv()
+internal fun buildScaleConnectivityFrame(flags: Int, enabled: Boolean): ByteArray =
+    buildIntegrationConnectivityFrame(flags, SCALE_ENABLED_MASK, enabled)
+
+internal fun buildIntegrationConnectivityFrame(flags: Int, mask: Int, enabled: Boolean): ByteArray {
+    val updated = if (enabled) flags or mask else flags and mask.inv()
     return buildControlFrame(INTEGRATION_FLAGS_COMMAND, byteArrayOf(updated.toByte()))
 }
 
@@ -20,6 +23,7 @@ internal fun buildControlFrame(cmd: Int, nameBytes: ByteArray): ByteArray {
     return buffer + ((sum + SCALE_FRAME_CHECKSUM_SALT) and BYTE_MASK).toByte()
 }
 
+internal const val SINGLE_DOSE_ENABLED_MASK = 0x01
 internal const val SCALE_ENABLED_MASK = 0x04
 private const val INTEGRATION_FLAGS_COMMAND = 0x9A
 

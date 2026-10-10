@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Niveau d’eau bas. Remplissez le réservoir.</string>
     <string name="device_dashboard_connecting">Connexion…</string>
     <string name="device_settings_connectivity_smart_scale">Balance connectée</string>
-    <string name="device_settings_connectivity_smart_scale_description">Arrêt automatique au poids cible</string>
-    <string name="device_settings_connectivity_smart_scale_info">Connectez une balance pour couper l’extraction au poids souhaité.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Rechercher des balances connectées à proximité</string>
     <string name="device_settings_connectivity_searching">Recherche d’appareils…</string>
     <string name="device_settings_connectivity_not_found">Appareil introuvable ?</string>
     <string name="device_settings_connectivity_rescan">Scanner à nouveau</string>
-    <string name="device_settings_connectivity_scale_help">Connexion impossible ? Éteignez puis rallumez la machine, puis réessayez.</string>
     <string name="device_settings_brewing_boiler">Chaudière</string>
     <string name="device_settings_brewing_paddle">Appui long sur la palette</string>
     <string name="device_settings_brewing_pulse_heating">Chauffe par impulsions</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Rincer automatiquement après extraction</string>
     <string name="device_settings_treat_manual_as_flush">Appui long palette = rinçage</string>
     <string name="device_settings_treat_manual_as_flush_description">Sans historique ni graphique</string>
+    <string name="device_settings_connectivity_enable_search">Activer la recherche</string>
+    <string name="device_settings_connectivity_single_dose_description">Rechercher des moulins à proximité</string>
+    <string name="device_settings_connectivity_disabled_info">Activez la recherche pour trouver et connecter un appareil.</string>
+    <string name="device_settings_connectivity_connection_help">Connexion impossible. Vérifiez que l’accessoire est allumé et à proximité, puis réessayez. Si nécessaire, redémarrez la machine à café.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

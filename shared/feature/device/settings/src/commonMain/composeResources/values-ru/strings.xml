@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Мало воды. Наполните резервуар.</string>
     <string name="device_dashboard_connecting">Подключение…</string>
     <string name="device_settings_connectivity_smart_scale">Умные весы</string>
-    <string name="device_settings_connectivity_smart_scale_description">Автостоп при достижении целевого веса</string>
-    <string name="device_settings_connectivity_smart_scale_info">Подключите умные весы для остановки пролива на нужном весе.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Поиск умных весов поблизости</string>
     <string name="device_settings_connectivity_searching">Поиск совместимых устройств…</string>
     <string name="device_settings_connectivity_not_found">Не видите своё устройство?</string>
     <string name="device_settings_connectivity_rescan">Искать снова</string>
-    <string name="device_settings_connectivity_scale_help">Всё ещё подключается? Выключите и включите машину, затем повторите.</string>
     <string name="device_settings_brewing_boiler">Бойлер</string>
     <string name="device_settings_brewing_paddle">Долгое нажатие рычага</string>
     <string name="device_settings_brewing_pulse_heating">Импульсный нагрев</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Автоматический пролив после приготовления</string>
     <string name="device_settings_treat_manual_as_flush">Долгое нажатие как пролив</string>
     <string name="device_settings_treat_manual_as_flush_description">Без истории и графика</string>
+    <string name="device_settings_connectivity_enable_search">Включить поиск</string>
+    <string name="device_settings_connectivity_single_dose_description">Поиск кофемолок поблизости</string>
+    <string name="device_settings_connectivity_disabled_info">Включите поиск, чтобы найти и подключить устройство.</string>
+    <string name="device_settings_connectivity_connection_help">Не удалось подключиться. Убедитесь, что аксессуар включён и находится рядом, и повторите попытку. При необходимости перезапустите кофемашину.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

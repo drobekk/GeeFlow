@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Waterniveau is laag. Vul het waterreservoir bij.</string>
     <string name="device_dashboard_connecting">Verbinden…</string>
     <string name="device_settings_connectivity_smart_scale">Slimme weegschaal</string>
-    <string name="device_settings_connectivity_smart_scale_description">Stopt automatisch bij doelgewicht</string>
-    <string name="device_settings_connectivity_smart_scale_info">Verbind een weegschaal om bij het gewenste gewicht te stoppen.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Zoek naar slimme weegschalen in de buurt</string>
     <string name="device_settings_connectivity_searching">Zoeken naar apparaten…</string>
     <string name="device_settings_connectivity_not_found">Zie je apparaat niet?</string>
     <string name="device_settings_connectivity_rescan">Nu scannen</string>
-    <string name="device_settings_connectivity_scale_help">Nog steeds bezig? Zet de machine uit en aan, en probeer opnieuw.</string>
     <string name="device_settings_brewing_boiler">Boiler</string>
     <string name="device_settings_brewing_paddle">Lang indrukken van de hendel</string>
     <string name="device_settings_brewing_pulse_heating">Pulsverwarming</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Spoel automatisch na het zetten</string>
     <string name="device_settings_treat_manual_as_flush">Lange drukpaddle als spoelen</string>
     <string name="device_settings_treat_manual_as_flush_description">Geen geschiedenis of grafiek</string>
+    <string name="device_settings_connectivity_enable_search">Zoeken inschakelen</string>
+    <string name="device_settings_connectivity_single_dose_description">Zoek naar molens in de buurt</string>
+    <string name="device_settings_connectivity_disabled_info">Schakel zoeken in om een apparaat te vinden en te verbinden.</string>
+    <string name="device_settings_connectivity_connection_help">Verbinding mislukt. Controleer of het accessoire aanstaat en in de buurt is en probeer opnieuw. Start indien nodig de koffiemachine opnieuw op.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

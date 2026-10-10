@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Nivel de agua bajo. Rellena el depósito.</string>
     <string name="device_dashboard_connecting">Conectando…</string>
     <string name="device_settings_connectivity_smart_scale">Báscula inteligente</string>
-    <string name="device_settings_connectivity_smart_scale_description">Detiene la extracción al alcanzar el peso</string>
-    <string name="device_settings_connectivity_smart_scale_info">Conecta una báscula inteligente para parar la extracción al peso deseado.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Buscar básculas inteligentes cercanas</string>
     <string name="device_settings_connectivity_searching">Buscando dispositivos compatibles…</string>
     <string name="device_settings_connectivity_not_found">¿No ves tu dispositivo?</string>
     <string name="device_settings_connectivity_rescan">Escanear ahora</string>
-    <string name="device_settings_connectivity_scale_help">¿Sigue conectando? Apaga y enciende la cafetera, y reconecta la báscula.</string>
     <string name="device_settings_brewing_boiler">Caldera</string>
     <string name="device_settings_brewing_paddle">Pulsación larga de la palanca</string>
     <string name="device_settings_brewing_pulse_heating">Calentamiento a pulsos</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Purgar automáticamente tras preparar café</string>
     <string name="device_settings_treat_manual_as_flush">Pulsación larga como purga</string>
     <string name="device_settings_treat_manual_as_flush_description">Sin historial ni gráfica</string>
+    <string name="device_settings_connectivity_enable_search">Activar búsqueda</string>
+    <string name="device_settings_connectivity_single_dose_description">Buscar molinillos cercanos</string>
+    <string name="device_settings_connectivity_disabled_info">Activa la búsqueda para encontrar y conectar un dispositivo.</string>
+    <string name="device_settings_connectivity_connection_help">No se pudo conectar. Comprueba que el accesorio esté encendido y cerca e inténtalo de nuevo. Si es necesario, reinicia la cafetera.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

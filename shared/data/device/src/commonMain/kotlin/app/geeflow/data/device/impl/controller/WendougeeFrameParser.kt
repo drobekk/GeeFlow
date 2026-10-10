@@ -4,17 +4,20 @@ import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import app.geeflow.data.device.model.DeviceState.HeatingMode
+import app.geeflow.data.device.model.SingleDoseGrinder
 import app.geeflow.data.device.model.SmartScale
 import co.touchlab.kermit.Logger
 import kotlin.time.Clock
 
 class WendougeeFrameParser(
     private val onStateUpdate: (DeviceState.() -> DeviceState) -> Unit,
+    onGrinderFound: ((SingleDoseGrinder) -> Unit)? = null,
     onScaleFound: ((SmartScale) -> Unit)? = null,
     onScanStatus: ((Boolean) -> Unit)? = null,
     onIntegrationFlags: ((Int) -> Unit)? = null,
     private val shouldLogPolling: () -> Boolean = { false },
 ) {
+    private val grinderParser = WendougeeSingleDoseParser(onStateUpdate, onGrinderFound)
     private val controlFrames = WendougeeControlFrames()
     private val scaleParser = WendougeeScaleParser(onStateUpdate, onScaleFound, onScanStatus, onIntegrationFlags)
 
@@ -78,7 +81,10 @@ class WendougeeFrameParser(
             Logger.withTag(BLE_TRACE_TAG).v { "<< [$channel] ${toHexString(data)} (${data.size}B)" }
         }
         if (channel == "CTRL" || isProprietaryFrame(data)) {
-            controlFrames.receive(data).forEach(scaleParser::parse)
+            controlFrames.receive(data).forEach { frame ->
+                grinderParser.parse(frame)
+                scaleParser.parse(frame)
+            }
             return
         }
 

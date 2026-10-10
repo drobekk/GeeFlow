@@ -14,6 +14,7 @@ import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceConnection
 import app.geeflow.data.device.model.DeviceConstraints
 import app.geeflow.data.device.model.DeviceState
+import app.geeflow.data.device.model.SingleDoseGrinder
 import app.geeflow.data.device.model.SmartScale
 import app.geeflow.data.device.model.pumpTelemetry
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +53,11 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
     private val _deviceState = MutableStateFlow(defaultDeviceState())
     override val deviceState: StateFlow<DeviceState> = _deviceState.asStateFlow()
+
+    private val _foundSingleDoseGrinders = MutableStateFlow<List<SingleDoseGrinder>>(emptyList())
+    override val foundSingleDoseGrinders = _foundSingleDoseGrinders.asStateFlow()
+    private var grinderSearchJob: Job? = null
+    private var grinderConnectionGeneration = 0
 
     private val _foundScales = MutableStateFlow(listOfNotNull(_deviceState.value.smartScale))
     override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
@@ -122,6 +128,9 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
     override fun disconnect() {
         brewJob?.cancel()
+        grinderSearchJob?.cancel()
+        grinderConnectionGeneration++
+        _foundSingleDoseGrinders.value = emptyList()
         _deviceState.update { defaultDeviceState() }
         _foundScales.value = listOfNotNull(_deviceState.value.smartScale)
     }
@@ -439,6 +448,52 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
     }
 
     override suspend fun bindProfile(profile: BrewProfile) = Unit
+
+    override suspend fun setSingleDoseGrinderConnectivity(enabled: Boolean) {
+        grinderSearchJob?.cancel()
+        grinderConnectionGeneration++
+        _deviceState.update {
+            it.copy(
+                singleDoseGrinderEnabled = enabled,
+                singleDoseGrinderSearchActive = false,
+                singleDoseGrinder = if (enabled) it.singleDoseGrinder else null,
+            )
+        }
+        _foundSingleDoseGrinders.value = listOfNotNull(_deviceState.value.singleDoseGrinder)
+        if (enabled) requestSingleDoseGrinderList()
+    }
+
+    override suspend fun requestSingleDoseGrinderList() {
+        if (!_deviceState.value.singleDoseGrinderEnabled) return
+        grinderSearchJob?.cancel()
+        _foundSingleDoseGrinders.value = listOfNotNull(_deviceState.value.singleDoseGrinder)
+        _deviceState.update { it.copy(singleDoseGrinderSearchActive = true) }
+        grinderSearchJob = scope.launch {
+            delay(SCALE_SEARCH_DELAY_MS)
+            val connectedName = _deviceState.value.singleDoseGrinder?.name
+            _foundSingleDoseGrinders.value = listOf("Milo Demo", "BGM_Demo").map {
+                SingleDoseGrinder(it, isConnected = it == connectedName)
+            }
+            delay(SCALE_SEARCH_DURATION_MS)
+            _deviceState.update { it.copy(singleDoseGrinderSearchActive = false) }
+        }
+    }
+
+    override suspend fun connectSingleDoseGrinder(name: String) {
+        if (!_deviceState.value.singleDoseGrinderEnabled) return
+        val generation = ++grinderConnectionGeneration
+        delay(SCALE_CONNECT_DELAY_MS)
+        if (generation != grinderConnectionGeneration || !_deviceState.value.singleDoseGrinderEnabled) return
+        val grinder = SingleDoseGrinder(name, isConnected = true)
+        _foundSingleDoseGrinders.update { grinders -> grinders.map { it.copy(isConnected = it.name == name) } }
+        _deviceState.update { it.copy(singleDoseGrinder = grinder) }
+    }
+
+    override suspend fun disconnectSingleDoseGrinder() {
+        grinderConnectionGeneration++
+        _foundSingleDoseGrinders.update { grinders -> grinders.map { it.copy(isConnected = false) } }
+        _deviceState.update { it.copy(singleDoseGrinder = null) }
+    }
 
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
         _deviceState.update { it.copy(smartScaleEnabled = enabled) }

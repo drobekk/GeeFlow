@@ -288,6 +288,7 @@ internal class DeviceDashboardViewModel(
                     },
                     brewStatus = newBrewStatus,
                     smartScaleConnected = state.smartScale?.isConnected == true,
+                    singleDoseGrinderConnected = state.singleDoseGrinder?.isConnected == true,
                     alarm = state.hasError,
                     error = state.error,
                 ),

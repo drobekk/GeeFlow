@@ -56,6 +56,7 @@ data class DeviceDashboardViewState(
         val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
         val brewStatus: BrewStatus = BrewStatus.Idle,
         val smartScaleConnected: Boolean = false,
+        val singleDoseGrinderConnected: Boolean = false,
         val alarm: Boolean = false,
         val error: DeviceError? = null,
     ) {

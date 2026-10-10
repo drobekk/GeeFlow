@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Niska razina vode. Dopunite spremnik.</string>
     <string name="device_dashboard_connecting">Povezivanje…</string>
     <string name="device_settings_connectivity_smart_scale">Pametna vaga</string>
-    <string name="device_settings_connectivity_smart_scale_description">Automatski zaustavlja pripremu na ciljnoj težini</string>
-    <string name="device_settings_connectivity_smart_scale_info">Povežite pametnu vagu za zaustavljanje na željenoj težini.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Traži pametne vage u blizini</string>
     <string name="device_settings_connectivity_searching">Traženje uređaja…</string>
     <string name="device_settings_connectivity_not_found">Ne vidite svoj uređaj?</string>
     <string name="device_settings_connectivity_rescan">Traži ponovno</string>
-    <string name="device_settings_connectivity_scale_help">Još se povezuje? Isključite i uključite aparat i ponovno pokušajte.</string>
     <string name="device_settings_brewing_boiler">Bojler</string>
     <string name="device_settings_brewing_paddle">Dugi pritisak ručice</string>
     <string name="device_settings_brewing_pulse_heating">Pulsno grijanje</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Automatski isperi nakon pripreme kave</string>
     <string name="device_settings_treat_manual_as_flush">Dugi pritisak kao ispiranje</string>
     <string name="device_settings_treat_manual_as_flush_description">Bez povijesti i grafa</string>
+    <string name="device_settings_connectivity_enable_search">Omogući pretraživanje</string>
+    <string name="device_settings_connectivity_single_dose_description">Traži mlince u blizini</string>
+    <string name="device_settings_connectivity_disabled_info">Omogućite pretraživanje kako biste pronašli i povezali uređaj.</string>
+    <string name="device_settings_connectivity_connection_help">Povezivanje nije uspjelo. Provjerite je li dodatak uključen i u blizini pa pokušajte ponovno. Po potrebi ponovno pokrenite aparat za kavu.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

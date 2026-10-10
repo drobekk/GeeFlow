@@ -18,12 +18,10 @@
     <string name="device_water_alarm_error">Vesi vähissä. Täytä vesisäiliö.</string>
     <string name="device_dashboard_connecting">Yhdistetään…</string>
     <string name="device_settings_connectivity_smart_scale">Älyvaaka</string>
-    <string name="device_settings_connectivity_smart_scale_description">Pysäyttää uuton automaattisesti tavoitepainossa</string>
-    <string name="device_settings_connectivity_smart_scale_info">Yhdistä älyvaaka katkaistaksesi uuton halutussa painossa.</string>
+    <string name="device_settings_connectivity_smart_scale_description">Etsi lähellä olevia älyvaakoja</string>
     <string name="device_settings_connectivity_searching">Etsitään yhteensopivia laitteita…</string>
     <string name="device_settings_connectivity_not_found">Etkö löydä laitettasi?</string>
     <string name="device_settings_connectivity_rescan">Skannaa uudelleen</string>
-    <string name="device_settings_connectivity_scale_help">Yhdistääkö edelleen? Sammuta keitin ja käynnistä uudelleen, yritä sitten yhdistää vaaka.</string>
     <string name="device_settings_brewing_boiler">Boileri</string>
     <string name="device_settings_brewing_paddle">Vivun pitkä painallus</string>
     <string name="device_settings_brewing_pulse_heating">Pulssilämmitys</string>
@@ -35,4 +33,9 @@
     <string name="device_settings_auto_flush_description">Huuhtele automaattisesti uuton jälkeen</string>
     <string name="device_settings_treat_manual_as_flush">Vivun pitkä painallus huuhteluna</string>
     <string name="device_settings_treat_manual_as_flush_description">Ei historiaa tai käyrää</string>
+    <string name="device_settings_connectivity_enable_search">Ota haku käyttöön</string>
+    <string name="device_settings_connectivity_single_dose_description">Etsi lähellä olevia myllyjä</string>
+    <string name="device_settings_connectivity_disabled_info">Ota haku käyttöön löytääksesi ja yhdistääksesi laitteen.</string>
+    <string name="device_settings_connectivity_connection_help">Yhdistäminen epäonnistui. Varmista, että lisälaite on päällä ja lähellä, ja yritä uudelleen. Käynnistä kahvikone tarvittaessa uudelleen.</string>
+    <string name="device_settings_connectivity_single_dose">Single dose</string>
 </resources>

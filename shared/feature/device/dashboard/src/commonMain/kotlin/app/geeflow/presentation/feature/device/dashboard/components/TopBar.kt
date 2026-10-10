@@ -155,6 +155,7 @@ private fun ActionBar(
             VerticalDivider(color = MaterialTheme.colorScheme.background)
             ConnectivityButton(
                 smartScaleConnected = device.smartScaleConnected,
+                singleDoseGrinderConnected = device.singleDoseGrinderConnected,
                 onClick = { onEvent(ConnectedDevicesClicked) },
             )
             VerticalDivider(color = MaterialTheme.colorScheme.background)
@@ -255,6 +256,7 @@ private fun SettingsButton(
 @Composable
 private fun ConnectivityButton(
     smartScaleConnected: Boolean,
+    singleDoseGrinderConnected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) = Box(
@@ -270,6 +272,14 @@ private fun ConnectivityButton(
             modifier = Modifier
                 .padding(bottom = 10.dp)
                 .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                .size(4.dp),
+        )
+    }
+    if (singleDoseGrinderConnected) {
+        Box(
+            modifier = Modifier
+                .padding(top = 10.dp, end = 10.dp)
+                .background(MaterialTheme.colorScheme.tertiary)
                 .size(4.dp),
         )
     }
@@ -439,6 +449,7 @@ private fun Preview() {
             pressure = "9.0",
             connectionStatus = Device.ConnectionStatus.Connected,
             smartScaleConnected = true,
+            singleDoseGrinderConnected = true,
             alarm = alarmOn,
         ),
         modifier = Modifier.padding(16.dp),

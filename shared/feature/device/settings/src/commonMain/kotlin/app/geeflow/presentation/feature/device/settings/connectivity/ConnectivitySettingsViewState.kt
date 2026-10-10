@@ -1,20 +1,32 @@
 package app.geeflow.presentation.feature.device.settings.connectivity
 
 data class ConnectivitySettingsViewState(
-    val smartScaleEnabled: Boolean = false,
-    val isSearching: Boolean = false,
-    val scales: List<ScaleViewItem> = emptyList(),
+    val selectedType: ConnectivityAccessoryType = ConnectivityAccessoryType.SmartScale,
+    val scale: AccessoryState = AccessoryState(),
+    val grinder: AccessoryState = AccessoryState(),
 ) {
-    data class ScaleViewItem(
-        val name: String,
-        val connectionStatus: ScaleConnectionStatus,
+    val selectedAccessory: AccessoryState
+        get() = if (selectedType == ConnectivityAccessoryType.SmartScale) scale else grinder
+
+    data class AccessoryState(
+        val enabled: Boolean = false,
+        val isSearching: Boolean = false,
+        val devices: List<AccessoryViewItem> = emptyList(),
     )
 
-    enum class ScaleConnectionStatus {
+    data class AccessoryViewItem(
+        val name: String,
+        val connectionStatus: AccessoryConnectionStatus,
+    )
+
+    enum class AccessoryConnectionStatus {
         Connected,
         Connecting,
         Disconnected,
     }
+}
 
-    val nothingConnected = scales.none { it.connectionStatus == ScaleConnectionStatus.Connected }
+enum class ConnectivityAccessoryType {
+    SmartScale,
+    SingleDose,
 }
