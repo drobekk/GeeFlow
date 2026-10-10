@@ -10,10 +10,16 @@ import kotlin.time.Clock
 
 class WendougeeFrameParser(
     private val onStateUpdate: (DeviceState.() -> DeviceState) -> Unit,
-    private val onScaleFound: ((SmartScale) -> Unit)? = null,
-    private val onHeartbeat: (() -> Unit)? = null,
+    onScaleFound: ((SmartScale) -> Unit)? = null,
+    onScanStatus: ((Boolean) -> Unit)? = null,
+    onIntegrationFlags: ((Int) -> Unit)? = null,
     private val shouldLogPolling: () -> Boolean = { false },
 ) {
+    private val controlFrames = WendougeeControlFrames()
+    private val scaleParser = WendougeeScaleParser(onStateUpdate, onScaleFound, onScanStatus, onIntegrationFlags)
+
+    fun reset() = controlFrames.reset()
+
     companion object {
         private const val TAG = "WendougeeController"
         private const val BLE_TRACE_TAG = "WendougeeBle"
@@ -29,8 +35,9 @@ class WendougeeFrameParser(
         private const val STATUS_MASK_MANUAL = 0x10
         private const val STATUS_MASK_CLEANING = 0x20
         private const val SENSOR_SCALE_FACTOR = 10f
+        private const val SCAN_STATUS_COMMAND = 0x83
         private const val HEX_RADIX = 16
-        private val PROPRIETARY_PREFIX = byteArrayOf(0xFF.toByte(), 0x55.toByte(), 0xFF.toByte(), 0xFF.toByte())
+        private val PROPRIETARY_PREFIX = byteArrayOf(0xFF.toByte(), 0x55.toByte())
 
         fun isProprietaryFrame(data: ByteArray): Boolean =
             data.size >= PROPRIETARY_PREFIX.size &&
@@ -44,7 +51,7 @@ class WendougeeFrameParser(
                 return fc == MODBUS_FC_STATUS || (fc == MODBUS_FC_READ && byteCount == TELEMETRY_BYTE_COUNT)
             }
             if (data.size >= FrameOffsets.POLLING_MIN_SIZE && isProprietaryFrame(data)) {
-                return data[FrameOffsets.PROP_CMD].toInt() and BYTE_MASK == ProprietaryFrame.HEARTBEAT
+                return data[FrameOffsets.PROP_CMD].toInt() and BYTE_MASK == SCAN_STATUS_COMMAND
             }
             return false
         }
@@ -59,15 +66,10 @@ class WendougeeFrameParser(
 
     private object FrameOffsets {
         const val PROP_CMD = 4
-        const val PROP_LEN_HI = 5
-        const val PROP_LEN_LO = 6
-        const val PROP_DATA_START = 7
-        const val PROP_MIN_PARSE_SIZE = 8
         const val POLLING_MIN_SIZE = 5
         const val STATUS_MIN_SIZE = 5
         const val STATUS_BYTE_OFFSET = 3
         const val STATUS_BYTE2_OFFSET = 4
-        const val SCALE_ACTIVE_FLAG = 0x04
     }
 
     fun handleIncomingFrame(data: ByteArray, channel: String) {
@@ -75,8 +77,8 @@ class WendougeeFrameParser(
         if (!polling || shouldLogPolling()) {
             Logger.withTag(BLE_TRACE_TAG).v { "<< [$channel] ${toHexString(data)} (${data.size}B)" }
         }
-        if (isProprietaryFrame(data)) {
-            parseProprietaryFrame(data)
+        if (channel == "CTRL" || isProprietaryFrame(data)) {
+            controlFrames.receive(data).forEach(scaleParser::parse)
             return
         }
 
@@ -95,98 +97,6 @@ class WendougeeFrameParser(
 
             MODBUS_FC_STATUS -> parseShortStatusFrame(data)
         }
-    }
-
-    private fun parseProprietaryFrame(payload: ByteArray) {
-        try {
-            if (payload.size < FrameOffsets.PROP_MIN_PARSE_SIZE) return
-            val command = payload[FrameOffsets.PROP_CMD].toInt() and BYTE_MASK
-            val length = (payload[FrameOffsets.PROP_LEN_HI].toInt() and BYTE_MASK shl BYTE_SHIFT) or
-                (payload[FrameOffsets.PROP_LEN_LO].toInt() and BYTE_MASK)
-            if (payload.size < FrameOffsets.PROP_DATA_START + length) return
-            val safeEndIndex = minOf(FrameOffsets.PROP_DATA_START + length, payload.size)
-            val asciiString = payload.decodeToString(
-                startIndex = FrameOffsets.PROP_DATA_START,
-                endIndex = safeEndIndex,
-            )
-            when (command) {
-                ProprietaryFrame.HEARTBEAT -> onHeartbeat?.invoke()
-                ProprietaryFrame.STATUS_RESPONSE -> parseStatusResponse(payload, length)
-                ProprietaryFrame.SCALE_SEARCH_ECHO -> if (length >= 1) {
-                    val active = payload[FrameOffsets.PROP_DATA_START].toInt() and BYTE_MASK == FrameOffsets.SCALE_ACTIVE_FLAG
-                    Logger.withTag(TAG).i { "Scale search state (echo): ${if (active) "ON" else "OFF"}" }
-                    onStateUpdate { copy(smartScaleEnabled = active) }
-                }
-
-                ProprietaryFrame.SERIAL_NUMBER -> Logger.withTag(TAG).d { "Serial number: $asciiString" }
-                ProprietaryFrame.SCALE_FOUND -> parseScaleFound(asciiString)
-                ProprietaryFrame.SCALE_LIST_RESPONSE -> parseScaleListResponse(payload, length)
-                ProprietaryFrame.SCALE_ACTIVE -> parseScaleActive(asciiString)
-                ProprietaryFrame.SCALE_CONNECTED -> parseScaleConnected(asciiString)
-                ProprietaryFrame.SCALE_DISCONNECTED -> parseScaleDisconnected(asciiString)
-            }
-        } catch (e: IndexOutOfBoundsException) {
-            Logger.withTag(TAG).e(e) { "Error parsing proprietary frame" }
-        }
-    }
-
-    private fun parseStatusResponse(payload: ByteArray, length: Int) {
-        if (length < 2 || payload.size < FrameOffsets.PROP_DATA_START + 2) return
-        val slotIndex = payload[FrameOffsets.PROP_DATA_START].toInt() and BYTE_MASK
-        val connectionStatus = payload[FrameOffsets.PROP_DATA_START + 1].toInt() and BYTE_MASK
-        val nameLen = length - 2
-        if (connectionStatus != 1 || nameLen <= 0 || payload.size < FrameOffsets.PROP_DATA_START + 2 + nameLen) return
-        val nameStart = FrameOffsets.PROP_DATA_START + 2
-        val name = payload.decodeToString(startIndex = nameStart, endIndex = nameStart + nameLen).trim()
-        if (name.length <= 2) return
-        Logger.withTag(TAG).i { "Scale status [slot $slotIndex]: $name (connected)" }
-        val scale = SmartScale(name, isConnected = true)
-        onScaleFound?.invoke(scale)
-        onStateUpdate { copy(smartScale = scale) }
-    }
-
-    private fun parseScaleFound(asciiString: String) {
-        val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
-        if (name.isEmpty() || name.length <= 2) return
-        Logger.withTag(TAG).i { "Smart scale found: $name" }
-        onScaleFound?.invoke(SmartScale(name, isConnected = false))
-    }
-
-    private fun parseScaleListResponse(payload: ByteArray, length: Int) {
-        if (length < 2 || payload.size < FrameOffsets.PROP_DATA_START + 2) return
-        val slotIndex = payload[FrameOffsets.PROP_DATA_START].toInt() and BYTE_MASK
-        val nameLen = payload[FrameOffsets.PROP_DATA_START + 1].toInt() and BYTE_MASK
-        if (nameLen <= 0 || payload.size < FrameOffsets.PROP_DATA_START + 2 + nameLen) return
-        val nameStart = FrameOffsets.PROP_DATA_START + 2
-        val name = payload.decodeToString(startIndex = nameStart, endIndex = nameStart + nameLen).trim()
-        if (name.length <= 2) return
-        Logger.withTag(TAG).i { "Scale list [slot $slotIndex]: $name" }
-        onScaleFound?.invoke(SmartScale(name, isConnected = false))
-    }
-
-    private fun parseScaleActive(asciiString: String) {
-        val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
-        if (name.isEmpty() || name.length <= 2) return
-        Logger.withTag(TAG).i { "Smart scale connected: $name" }
-        val scale = SmartScale(name, isConnected = true)
-        onScaleFound?.invoke(scale)
-        onStateUpdate { copy(smartScale = scale) }
-    }
-
-    private fun parseScaleConnected(asciiString: String) {
-        val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
-        if (name.isEmpty() || name.length <= 2) return
-        Logger.withTag(TAG).i { "Smart scale in active slot: $name" }
-        onScaleFound?.invoke(SmartScale(name, isConnected = false))
-    }
-
-    private fun parseScaleDisconnected(asciiString: String) {
-        val name = asciiString.trim().replace(Regex("[^\\x20-\\x7E]"), "")
-        Logger.withTag(TAG).i { "Smart scale disconnected: $name" }
-        if (name.isNotEmpty() && name.length > 2) {
-            onScaleFound?.invoke(SmartScale(name, isConnected = false))
-        }
-        onStateUpdate { copy(smartScale = null) }
     }
 
     private fun parseConfigFrame(payload: ByteArray) {
@@ -305,18 +215,6 @@ class WendougeeFrameParser(
         }
     }
 
-    private object ProprietaryFrame {
-        const val HEARTBEAT = 0x83
-        const val STATUS_RESPONSE = 0x8B
-        const val SCALE_SEARCH_ECHO = 0x9A
-        const val SERIAL_NUMBER = 0x04
-        const val SCALE_FOUND = 0x81
-        const val SCALE_LIST_RESPONSE = 0x8C
-        const val SCALE_ACTIVE = 0x80
-        const val SCALE_CONNECTED = 0x86
-        const val SCALE_DISCONNECTED = 0x88
-    }
-
     private object ConfigFrame {
         const val DATA_START = 3
         const val CLEANING_TIME = 0
@@ -340,7 +238,7 @@ class WendougeeFrameParser(
         const val BREW_TEMP = 10
         const val PRESSURE = 12
         const val VOLUME = 14
-        const val WEIGHT = 16
+        const val WEIGHT = 22 // Register 1415, index 11 of telemetry starting at 1404
         const val FLOW_RATE = 36
         const val WEIGHT_RATE = 38
         const val MIN_HEADER_SIZE = 3 + 40 + 2

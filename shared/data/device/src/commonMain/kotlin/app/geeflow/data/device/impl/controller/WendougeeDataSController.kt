@@ -20,8 +20,7 @@ import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_LON
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_POLLING_SHORT
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_READ_CONFIG_LONG
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_LIST_REQUEST
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_OFF
-import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_ON
+import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SCAN
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_QUERY
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATUS_REQUEST
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SHORT_PRESS_OFF
@@ -66,6 +65,8 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
@@ -106,20 +107,25 @@ class WendougeeDataSController(
 
     var logPolling: Boolean = false
 
+    private val integrationFlags = MutableStateFlow<Int?>(null)
+    private val scaleSettingsMutex = Mutex()
+
     private val frameParser = WendougeeFrameParser(
         onStateUpdate = { update ->
             _deviceState.update { currentState -> currentState.update() }
         },
         onScaleFound = { scale ->
             _foundScales.update { current ->
-                if (current.any { it.name == scale.name }) {
-                    current.map { if (it.name == scale.name) scale else it }
+                val scales = if (scale.isConnected) current.map { it.copy(isConnected = false) } else current
+                if (scales.any { it.name == scale.name }) {
+                    scales.map { if (it.name == scale.name) scale else it }
                 } else {
-                    current + scale
+                    scales + scale
                 }
             }
         },
-        onHeartbeat = { onHeartbeatReceived() },
+        onScanStatus = { active -> onScanStatusReceived(active) },
+        onIntegrationFlags = { flags -> integrationFlags.value = flags },
         shouldLogPolling = { logPolling },
     )
 
@@ -137,11 +143,15 @@ class WendougeeDataSController(
         val modbus: ModbusSession,
     )
 
-    private fun onHeartbeatReceived() {
-        if (!_deviceState.value.smartScaleEnabled) return
-        _deviceState.update { it.copy(smartScaleSearchActive = true) }
+    private fun onScanStatusReceived(active: Boolean) {
         heartbeatTimeoutJob?.cancel()
+        if (!active || !_deviceState.value.smartScaleEnabled) return
         heartbeatTimeoutJob = scope.launch {
+            val currentSession = session
+            if (currentSession != null) {
+                runCatching { write(currentSession, currentSession.ctrlChar, CMD_SCALE_STATUS_REQUEST) }
+                    .onFailure { Logger.withTag(TAG).w(it) { "Scale status request failed" } }
+            }
             delay(HEARTBEAT_TIMEOUT_MS)
             _deviceState.update { it.copy(smartScaleSearchActive = false) }
         }
@@ -424,6 +434,8 @@ class WendougeeDataSController(
     }
 
     private fun resetToDisconnected() {
+        frameParser.reset()
+        integrationFlags.value = null
         heartbeatTimeoutJob?.cancel()
         watchdogJob?.cancel()
         notificationJob?.cancel()
@@ -436,7 +448,10 @@ class WendougeeDataSController(
                 steamBoilerTemp = null,
                 brewBoilerTemp = null,
                 smartScale = null,
+                smartScaleEnabled = false,
                 smartScaleSearchActive = false,
+                weight = null,
+                weightRate = null,
                 waterLevelAlarm = false,
                 error = null,
             )
@@ -729,22 +744,39 @@ class WendougeeDataSController(
     }
 
     override suspend fun setSmartScaleConnectivity(enabled: Boolean) {
-        Logger.withTag(TAG).i { "Smart scale connectivity: $enabled" }
-        _deviceState.update { it.copy(smartScaleEnabled = enabled) }
-        val active = requireSession()
-        if (enabled) {
-            _foundScales.value = emptyList()
-            write(active, active.ctrlChar, CMD_SCALE_SEARCH_ON)
-            delay(SCALE_SEARCH_AFTER_ENABLE_DELAY_MS)
-            write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
-        } else {
-            write(active, active.ctrlChar, CMD_SCALE_SEARCH_OFF)
+        scaleSettingsMutex.withLock {
+            val active = requireSession()
+            val flags = integrationFlags.value ?: run {
+                write(active, active.ctrlChar, CMD_SCALE_SEARCH_QUERY)
+                withTimeout(SCALE_SETTINGS_TIMEOUT_MS) { integrationFlags.mapNotNull { it }.first() }
+            }
+            write(active, active.ctrlChar, buildScaleConnectivityFrame(flags, enabled))
+            integrationFlags.value = if (enabled) flags or SCALE_ENABLED_MASK else flags and SCALE_ENABLED_MASK.inv()
+            _deviceState.update {
+                it.copy(
+                    smartScaleEnabled = enabled,
+                    smartScale = if (enabled) it.smartScale else null,
+                    smartScaleSearchActive = enabled && it.smartScaleSearchActive,
+                    weight = if (enabled) it.weight else null,
+                    weightRate = if (enabled) it.weightRate else null,
+                )
+            }
+            if (enabled) {
+                delay(SCALE_SEARCH_AFTER_ENABLE_DELAY_MS)
+                requestSmartScaleList()
+            } else {
+                heartbeatTimeoutJob?.cancel()
+                _foundScales.value = emptyList()
+            }
         }
     }
 
     override suspend fun requestSmartScaleList() {
         Logger.withTag(TAG).d { "Refreshing smart scale status and list..." }
         val active = requireSession()
+        if (!_deviceState.value.smartScaleEnabled) return
+        _foundScales.value = listOfNotNull(_deviceState.value.smartScale)
+        write(active, active.ctrlChar, CMD_SCALE_SCAN)
         write(active, active.ctrlChar, CMD_SCALE_STATUS_REQUEST)
         delay(SCALE_LIST_DELAY_MS)
         write(active, active.ctrlChar, CMD_SCALE_LIST_REQUEST)
@@ -834,6 +866,7 @@ private const val CLEANING_TIME_MAX = 60
 private const val CLEANING_REST_MAX = 60
 private const val CLEANING_COUNT_MAX = 10
 private const val SCALE_SEARCH_AFTER_ENABLE_DELAY_MS = 200L
+private const val SCALE_SETTINGS_TIMEOUT_MS = 2000L
 private const val COIL_MANUAL_BREW = 0x9A
 private const val COIL_FREE_VAR_BREW = 0x9D
 private const val FREE_VAR_PREPARE_VALUE = 4

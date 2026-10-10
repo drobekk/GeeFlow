@@ -30,8 +30,7 @@ object WendougeeCommands {
     val CMD_CLEANING_ON = "0105009bff00fdd5".decodeHex()
     val CMD_CLEANING_OFF = "0105009b0000bc25".decodeHex()
 
-    val CMD_SCALE_SEARCH_ON = "ff55ffff9a000104f2".decodeHex()
-    val CMD_SCALE_SEARCH_OFF = "ff55ffff9a000100ee".decodeHex()
+    val CMD_SCALE_SCAN = "ff55ffff82000101d7".decodeHex()
     val CMD_SCALE_LIST_REQUEST = "ff55ffff8c000100e0".decodeHex()
     val CMD_SCALE_STATUS_REQUEST = "ff55ffff8b000100df".decodeHex()
 }
