@@ -1,0 +1,13 @@
+<resources>
+    <!-- User list screen -->
+    <string name="user_list_screen_title">用户</string>
+    <string name="user_list_screen_subtitle">选择用户资料</string>
+    <string name="user_list_screen_empty">未找到用户。</string>
+    <string name="user_list_screen_add_profile">添加用户资料</string>
+
+    <!-- Add user screen -->
+    <string name="user_list_add_profile_title">添加用户资料</string>
+    <string name="user_list_add_profile_subtitle">创建新的用户资料</string>
+    <string name="user_list_add_profile_name_hint">名称</string>
+    <string name="user_list_add_profile_save">保存</string>
+</resources>

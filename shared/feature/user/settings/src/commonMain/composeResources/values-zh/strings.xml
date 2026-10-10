@@ -1,0 +1,88 @@
+<resources>
+    <!-- User Settings -->
+    <string name="user_settings_subtitle">管理你的用户资料和偏好设置</string>
+    <string name="user_settings_placeholder">选择一项以查看详情</string>
+    <string name="user_settings_change">更改</string>
+
+    <!-- Items -->
+    <string name="user_settings_profile">用户资料</string>
+    <string name="user_settings_profile_description">名称、照片和账户</string>
+
+    <!-- Profile Settings -->
+    <string name="user_settings_profile_title">用户资料</string>
+    <string name="user_settings_profile_change_name">更改名称</string>
+    <string name="user_settings_profile_change_name_description">更新用户资料名称</string>
+    <string name="user_settings_profile_change_picture">更换照片</string>
+    <string name="user_settings_profile_change_picture_description">更新用户头像</string>
+    <string name="user_settings_profile_remove_picture">移除照片</string>
+    <string name="user_settings_profile_remove_picture_description">移除当前用户头像</string>
+    <string name="user_settings_profile_remove_picture_confirmation">确定要移除用户头像吗？</string>
+    <string name="user_settings_profile_delete">删除用户资料</string>
+    <string name="user_settings_profile_delete_description">永久删除此用户资料</string>
+    <string name="user_settings_profile_delete_confirmation">确定要删除此用户资料吗？此操作无法撤销。</string>
+    <string name="user_settings_profile_rename_title">更改名称</string>
+    <string name="user_settings_profile_rename_name_hint">名称</string>
+    <string name="user_settings_brewing_preferences">萃取偏好</string>
+    <string name="user_settings_brewing_preferences_description">单位、自动连接和萃取方案</string>
+    <string name="user_settings_appearance">外观与显示</string>
+    <string name="user_settings_appearance_description">主题、语言和屏幕</string>
+    <string name="user_settings_about">关于</string>
+    <string name="user_settings_about_description">条款、隐私政策、许可证和版本</string>
+
+    <!-- Appearance Settings -->
+    <string name="user_settings_appearance_title">外观与显示</string>
+    <string name="user_settings_appearance_dark_mode">外观</string>
+    <string name="user_settings_appearance_dark_mode_system">跟随系统</string>
+    <string name="user_settings_appearance_dark_mode_light">浅色</string>
+    <string name="user_settings_appearance_dark_mode_dark">深色</string>
+    <string name="user_settings_appearance_app_theme">应用主题</string>
+    <string name="user_settings_appearance_app_theme_espresso">浓缩咖啡</string>
+    <string name="user_settings_appearance_app_theme_sapphire">蓝宝石</string>
+    <string name="user_settings_appearance_app_theme_emerald">翡翠</string>
+    <string name="user_settings_appearance_app_theme_rose">玫瑰</string>
+    <string name="user_settings_appearance_app_theme_system">系统主题</string>
+    <string name="user_settings_appearance_language">语言</string>
+    <string name="user_settings_appearance_language_description">在系统设置中更改应用语言</string>
+    <string name="user_settings_appearance_full_screen">全屏模式</string>
+    <string name="user_settings_appearance_full_screen_description">使用应用时隐藏系统栏</string>
+    <string name="user_settings_appearance_keep_screen_on">保持屏幕常亮</string>
+    <string name="user_settings_appearance_keep_screen_on_description">应用打开时防止屏幕熄灭</string>
+    <string name="user_settings_appearance_screensaver">屏幕保护程序</string>
+    <string name="user_settings_appearance_screensaver_description">闲置时显示时钟</string>
+    <string name="user_settings_appearance_screensaver_timeout">屏幕保护程序等待时间</string>
+    <string name="user_settings_appearance_screensaver_timeout_description">启动屏幕保护程序前的等待时间</string>
+    <string name="user_settings_appearance_screensaver_unit_minutes">分钟</string>
+    <string name="user_settings_appearance_app_theme_custom">自定义</string>
+    <string name="user_settings_appearance_custom_color">自定义颜色</string>
+    <string name="user_settings_appearance_custom_color_description">点击选择基础颜色</string>
+    <string name="user_settings_appearance_palette_style">风格</string>
+    <string name="user_settings_appearance_palette_style_tonal_spot">柔和色调</string>
+    <string name="user_settings_appearance_palette_style_neutral">中性</string>
+    <string name="user_settings_appearance_palette_style_vibrant">鲜艳</string>
+    <string name="user_settings_appearance_palette_style_expressive">富有表现力</string>
+
+    <!-- Brewing Preferences Settings -->
+    <string name="user_settings_brewing_preferences_title">萃取偏好</string>
+    <string name="user_settings_brewing_auto_connect">自动连接</string>
+    <string name="user_settings_brewing_auto_connect_description">返回应用时连接咖啡机</string>
+    <string name="user_settings_brewing_temperature_unit">温度单位</string>
+    <string name="user_settings_brewing_temperature_unit_celsius">摄氏度（°C）</string>
+    <string name="user_settings_brewing_temperature_unit_fahrenheit">华氏度（°F）</string>
+    <string name="user_settings_brewing_restore_default_profiles">恢复默认萃取方案</string>
+    <string name="user_settings_brewing_restore_default_profiles_description">将萃取方案重置为出厂设置</string>
+    <string name="user_settings_brewing_restore_default_profiles_confirmation">这将把所有萃取方案重置为出厂默认设置。此操作无法撤销。</string>
+
+    <!-- About Settings -->
+    <string name="user_settings_about_title">关于</string>
+    <string name="user_settings_about_terms">使用条款</string>
+    <string name="user_settings_about_terms_description">阅读服务条款和硬件安全免责声明</string>
+    <string name="user_settings_about_privacy_policy">隐私政策</string>
+    <string name="user_settings_about_privacy_policy_description">了解收集了哪些信息及其原因</string>
+    <string name="user_settings_about_source_code">源代码</string>
+    <string name="user_settings_about_source_code_description">在 GitHub 上查看代码、报告问题或参与贡献</string>
+    <string name="user_settings_about_licenses">开源许可证</string>
+    <string name="user_settings_about_licenses_description">第三方软件的许可证信息</string>
+    <string name="user_settings_about_version">版本</string>
+    <string name="user_settings_appearance_keep_screen_on_only_while_charging">仅在充电时</string>
+    <string name="user_settings_appearance_keep_screen_on_only_while_charging_description">仅在设备连接电源时保持屏幕常亮</string>
+</resources>

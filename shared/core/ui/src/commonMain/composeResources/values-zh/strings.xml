@@ -1,0 +1,93 @@
+<resources>
+    <string name="app_name">GeeFlow</string>
+
+    <!-- COMMON -->
+    <string name="common_go_back">返回</string>
+    <string name="common_close">关闭</string>
+    <string name="common_confirm">确认</string>
+    <string name="common_ok">确定</string>
+    <string name="common_apply">应用</string>
+    <string name="common_save">保存</string>
+    <string name="common_more">更多</string>
+    <string name="common_remove">移除</string>
+    <string name="common_delete">删除</string>
+    <string name="common_favourite">收藏</string>
+    <string name="common_settings">设置</string>
+    <string name="common_start">开始</string>
+    <string name="common_stop">停止</string>
+    <string name="common_flush">冲洗</string>
+    <string name="common_rest">暂停</string>
+    <string name="common_cycle">循环</string>
+    <string name="common_seconds">秒</string>
+    <string name="common_sec">秒</string>
+    <string name="common_times">次</string>
+    <string name="common_brew_boiler">萃取锅炉</string>
+    <string name="common_steam_boiler">蒸汽锅炉</string>
+    <string name="common_current_temperature">当前：%1$s</string>
+    <string name="common_avg">（平均）</string>
+    <string name="common_on">开启</string>
+    <string name="common_off">关闭</string>
+    <string name="common_open_settings">打开设置</string>
+    <string name="common_pressure">压力</string>
+    <string name="common_time">时间</string>
+    <string name="common_settings_applied">设置已应用</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_connect">连接</string>
+    <string name="common_disconnect">断开连接</string>
+    <string name="common_user_name">用户名</string>
+
+    <!-- UNITS -->
+    <string name="unit_bar">bar</string>
+    <string name="unit_grams">g</string>
+    <string name="unit_grams_per_second">g/s</string>
+    <string name="unit_milliliters">ml</string>
+    <string name="unit_milliliters_per_second">ml/s</string>
+
+    <!-- PERMISSIONS -->
+    <string name="permission_bluetooth_title">蓝牙权限</string>
+    <string name="permission_bluetooth_missing">未授予蓝牙权限，请在应用设置中授权</string>
+
+    <!-- ERRORS -->
+    <string name="error_generic">出错了，请重试。</string>
+    <string name="error_connect_device">设备未连接</string>
+    <string name="error_scale_not_connected">带有目标重量的萃取方案需要智能秤</string>
+    <string name="error_profile_binding_not_allowed">此萃取方案需要由应用控制，无法分配给拨杆</string>
+    <string name="profile_manual_stop_required">无法确认咖啡机是否已停止。请在咖啡机上手动停止萃取，并重新连接以确认状态。</string>
+    <string name="error_machine_busy">咖啡机正在进行其他萃取或操作。</string>
+    <string name="error_app_backgrounded_brew">运行此萃取方案时，请保持应用在前台打开。</string>
+    <string name="error_recording_no_volume">未测得出液量，无法保存录制。</string>
+    <string name="error_recording_too_complex">此次录制的萃取过程过长或过于复杂，无法保存为回放方案。</string>
+    <string name="error_machine_control_changed">手动操作中断了咖啡机控制。</string>
+    <string name="error_telemetry_timeout">萃取过程中与咖啡机的通信中断。</string>
+    <string name="error_required_measurement_lost">此萃取方案所需的传感器已断开连接。</string>
+    <string name="error_profile_unavailable">此萃取方案不兼容咖啡机的当前状态。</string>
+
+    <!-- AGREEMENT -->
+    <string name="agreement_prefix">我接受</string>
+    <string name="agreement_terms">使用条款</string>
+    <string name="agreement_and">和</string>
+    <string name="agreement_privacy">隐私政策</string>
+    <string name="maintenance_daily">日常清洁</string>
+    <string name="maintenance_deep">深度清洁</string>
+    <string name="maintenance_daily_description">定期冲洗，帮助清除冲煮头中的咖啡残渣。</string>
+    <string name="maintenance_deep_description">使用意式咖啡机清洁剂进行彻底清洁，去除咖啡油脂和积垢。请遵循咖啡机及清洁剂的使用说明。</string>
+    <string name="maintenance_reminder">提醒</string>
+    <string name="maintenance_reminder_description">到期时提醒清洁</string>
+    <string name="maintenance_reminder_never">从不</string>
+    <string name="maintenance_reminder_daily">每天</string>
+    <plurals name="maintenance_reminder_interval">
+        <item quantity="one">%1$d 天</item>
+        <item quantity="other">%1$d 天</item>
+    </plurals>
+    <string name="maintenance_reminder_enabled">启用提醒</string>
+    <string name="maintenance_reminder_days">重复间隔</string>
+    <string name="maintenance_days">天</string>
+    <string name="maintenance_reminder_open">维护</string>
+    <string name="maintenance_reminder_skip">跳过</string>
+    <string name="maintenance_reminder_due">该进行%1$s了</string>
+    <string name="maintenance_reminder_both">深度清洁也会计入日常清洁提醒。</string>
+    <string name="auto_flush_countdown_title">自动冲洗倒计时</string>
+    <string name="auto_flush_tap_to_cancel">点击取消</string>
+    <string name="error_device_fault">咖啡机报告了错误。开始萃取或清洁前，请先解决问题。点击错误按钮查看详情。</string>
+    <string name="error_grinder_not_connected">请先连接 Single Dose 磨豆机</string>
+</resources>

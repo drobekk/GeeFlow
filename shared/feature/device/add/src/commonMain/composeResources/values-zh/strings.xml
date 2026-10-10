@@ -1,0 +1,15 @@
+<resources>
+    <!-- Add device screen -->
+    <string name="add_device_screen_title">添加设备</string>
+    <string name="add_device_screen_description">连接你的意式咖啡机，开始萃取</string>
+    <string name="add_device_screen_show_nearby">显示附近的设备</string>
+    <string name="add_device_screen_scan_qr">扫描二维码</string>
+    <string name="add_device_screen_no_camera_permission">未授予相机权限，请在应用设置中授权</string>
+    <string name="add_device_screen_qr_parsing_error">无法解析设备数据</string>
+    <string name="add_device_screen_empty">未找到设备。该唤醒你的意式咖啡机了。</string>
+    <string name="add_device_demo">添加演示设备</string>
+    <string name="add_device_warning_title">免责声明与警告</string>
+    <string name="add_device_warning_message">本应用是非官方的第三方应用。虽然使用了制造商原生的通信协议，但其集成是通过独立逆向工程实现的，未经制造商认可或认证，也不受制造商支持。\n\n本应用会直接向硬件发送指令，意外的软件错误或固件不兼容可能导致意式咖啡机运行异常。\n\n继续操作即表示你知悉并同意：\n• 使用本软件的全部风险由你自行承担。\n• 本软件可能导致意外行为、损坏咖啡机或使保修失效。\n• 咖啡机由应用控制时，切勿让其处于无人看管的状态。</string>
+    <string name="add_device_warning_accept">我接受这些风险</string>
+    <string name="add_device_warning_cancel">取消</string>
+</resources>

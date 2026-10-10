@@ -1,0 +1,11 @@
+<resources>
+    <!-- Devices list screen -->
+    <string name="device_list_screen_title">设备</string>
+    <string name="device_list_screen_subtitle">查看和管理你的设备</string>
+    <string name="device_list_screen_add_device">添加设备</string>
+    <string name="device_list_screen_set_as_default">设为默认</string>
+    <string name="device_list_screen_rename">重命名</string>
+    <string name="device_list_screen_rename_title">更改名称</string>
+    <string name="device_list_screen_rename_name_hint">名称</string>
+    <string name="device_list_screen_empty">还没有设备。\n难怪还没萃取出惊艳的一杯。</string>
+</resources>

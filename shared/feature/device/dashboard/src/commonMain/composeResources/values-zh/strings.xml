@@ -1,0 +1,179 @@
+<resources>
+    <string name="device_error_title">设备错误</string>
+    <string name="device_error_none">设备当前无错误。</string>
+    <string name="device_error_code">错误代码：%1$d</string>
+    <string name="device_error_unknown">设备报告了无法识别的错误（%1$d）。</string>
+    <string name="device_error_heating_timeout">加热超时。</string>
+    <string name="device_error_water_replenishment_timeout">补水超时。</string>
+    <string name="device_error_extraction_timeout">萃取超时。</string>
+    <string name="device_error_pressure_sensor">未检测到压力传感器。</string>
+    <string name="device_error_steam_sensor">蒸汽锅炉温度传感器故障（NTC2）。</string>
+    <string name="device_error_brew_sensor">萃取锅炉温度传感器故障（NTC1）。</string>
+    <string name="device_error_water_level">咖啡机水位异常。此错误可能与锅炉水位或水位传感器有关。</string>
+    <string name="free_control_recording_too_long">此次录制过长，无法回放。自由控制方案最多支持约 63 秒的测量录制。</string>
+    <!-- Device Dashboard -->
+    <string name="device_dashboard_clean">清洁</string>
+    <string name="device_dashboard_alarm">警报</string>
+    <string name="device_dashboard_connected_devices">已连接的设备</string>
+    <string name="device_dashboard_connected">已连接</string>
+    <string name="device_dashboard_disconnected">未连接</string>
+    <string name="device_dashboard_connecting">正在连接</string>
+    <string name="device_dashboard_syncing">正在同步</string>
+
+    <string name="device_dashboard_select_charts">选择下方的数据类型，查看萃取图表</string>
+
+    <string name="device_water_alarm_error">水位过低，请给水箱加水。</string>
+
+    <string name="device_dashboard_edit_profile">编辑萃取方案</string>
+
+    <string name="device_dashboard_toggle_steam_boiler">切换蒸汽锅炉开关</string>
+    <string name="device_dashboard_steam_boiler_on">蒸汽锅炉已开启</string>
+    <string name="device_dashboard_steam_boiler_off">蒸汽锅炉已关闭</string>
+
+    <!-- Profile List -->
+    <string name="profile_list_search">搜索</string>
+    <string name="profile_list_delete">删除萃取方案</string>
+    <string name="profile_list_duplicate">复制萃取方案</string>
+    <string name="profile_list_duplicate_name">%1$s（副本）</string>
+    <string name="profile_list_bind">绑定萃取方案</string>
+    <string name="profile_list_show_history">显示萃取历史</string>
+    <string name="profile_list_show_profiles">显示萃取方案</string>
+    <string name="profile_list_add_profile">添加萃取方案</string>
+
+    <!-- Brew History -->
+    <string name="brew_history_empty">尚无萃取记录</string>
+    <string name="brew_history_manual">手动萃取</string>
+    <string name="brew_history_freehand">自由控制萃取</string>
+    <string name="brew_history_profile">方案萃取</string>
+    <string name="brew_history_description">%1$s • %2$d 秒</string>
+
+    <!-- Device Settings Quick -->
+    <string name="settings_quick_title">快捷设置</string>
+    <string name="settings_quick_more">更多设置</string>
+
+    <!-- Free Control Screen -->
+    <string name="free_control_screen_title">自由控制方案</string>
+    <string name="free_control_default_profile_name">新的自由控制方案</string>
+    <string name="free_control_mode_flow">流量</string>
+    <string name="free_control_rename_dialog_title">重命名萃取方案</string>
+    <string name="free_control_rename_dialog_name">萃取方案名称</string>
+    <string name="free_control_profile_saved">萃取方案已保存</string>
+
+    <!-- Profile Editor -->
+    <string name="profile_editor_default_name">新萃取方案</string>
+    <string name="profile_editor_description">%1$d 个步骤 • %2$d 秒</string>
+    <string name="profile_editor_details_title">萃取方案详情</string>
+    <string name="profile_editor_details_name">萃取方案名称</string>
+    <string name="profile_editor_details_description">描述</string>
+    <string name="profile_editor_test">测试</string>
+    <string name="profile_editor_bound_requires_connection">此萃取方案已绑定到咖啡机。请连接咖啡机以保存更改。</string>
+    <string name="profile_editor_add_step">添加步骤</string>
+    <string name="profile_editor_remove_step">移除步骤</string>
+    <string name="profile_editor_end_step">结束条件</string>
+    <string name="profile_editor_finish_target_disabled">萃取方案将在最后一个步骤结束时完成</string>
+    <string name="profile_editor_step_type_title">添加步骤</string>
+    <string name="profile_editor_step_flow">流量</string>
+    <string name="profile_editor_step_pressure">压力</string>
+    <string name="profile_editor_step_wait">等待</string>
+    <string name="profile_editor_step_time">时间（最多 %1$d 秒）</string>
+    <string name="profile_editor_step_value_flow">流量（ml/s）</string>
+    <string name="profile_editor_step_value_pressure">压力（bar）</string>
+    <string name="profile_editor_finish_volume">出液量</string>
+    <string name="profile_editor_finish_weight">重量</string>
+    <string name="profile_editor_finish_title_volume">目标出液量</string>
+    <string name="profile_editor_finish_title_weight">目标重量</string>
+    <string name="profile_editor_finish_value_volume">出液量（ml）</string>
+    <string name="profile_editor_finish_value_weight">重量（g）</string>
+
+    <!-- Quick Maintenance Dialog -->
+    <string name="quick_maintenance_title">维护</string>
+    <string name="quick_maintenance_start">开始清洁</string>
+    <string name="quick_maintenance_stop">停止清洁</string>
+    <string name="profile_experimental_info">此步骤需要 GeeFlow 运行。萃取时请保持应用打开。包含此步骤的萃取方案无法分配给咖啡机的按键或拨杆。</string>
+    <string name="experimental_phase_transition">阶段过渡</string>
+    <string name="experimental_phase_name">阶段名称</string>
+    <string name="experimental_phase_limit">最长时长：%1$d 秒。满足任一条件或时间耗尽时，该阶段结束。</string>
+    <string name="experimental_ramp">渐变</string>
+    <string name="experimental_start_from">起始值</string>
+    <string name="experimental_ramp_duration">渐变时长（秒）</string>
+    <string name="experimental_minimum_time">开始判断条件前的等待时间（秒）</string>
+    <string name="experimental_add_condition">添加退出条件</string>
+    <string name="experimental_save_transition">保存过渡</string>
+    <string name="experimental_measurement">测量值</string>
+    <string name="experimental_comparison">比较方式</string>
+    <string name="experimental_remove_condition">移除条件</string>
+    <string name="experimental_water">此阶段的泵入水量（ml）</string>
+    <string name="experimental_weight">杯中总重量（g）</string>
+    <string name="experimental_flow">水泵流量（ml/s）</string>
+    <string name="experimental_pump_pressure">水泵压力（bar）</string>
+    <string name="experimental_group_pressure">冲煮头压力（bar）</string>
+    <string name="experimental_boiler_pressure">锅炉压力（bar）</string>
+    <string name="experimental_transition">过渡</string>
+    <string name="experimental_copy">复制</string>
+    <string name="experimental_title">实验性功能</string>
+    <string name="experimental_app_control">实验性功能 · 应用控制</string>
+    <string name="experimental_preview">预览使用各阶段的最长时长。以测量值为起点的渐变，其起始值在萃取时确定。</string>
+    <string name="experimental_global_on">全局目标：开启</string>
+    <string name="experimental_global_off">最后一个阶段结束后停止</string>
+    <string name="experimental_instant">瞬时</string>
+    <string name="experimental_linear">线性</string>
+    <string name="experimental_ease_in">缓入</string>
+    <string name="experimental_ease_out">缓出</string>
+    <string name="experimental_ease_in_out">缓入缓出</string>
+    <string name="experimental_previous_target">上一目标值</string>
+    <string name="experimental_current_measurement">当前测量值</string>
+    <string name="experimental_above">大于或等于</string>
+    <string name="experimental_below">小于或等于</string>
+    <string name="experimental_selection">%1$s：%2$s</string>
+    <string name="experimental_ramp_summary">%1$s · %2$s 秒</string>
+    <string name="experimental_condition_summary">%1$s · %2$s %3$s</string>
+    <string name="experimental_unsupported">此萃取方案无法在所选咖啡机上运行。</string>
+    <string name="experimental_invalid">请检查阶段时长、目标值和条件。</string>
+    <string name="experimental_mode_switch">此咖啡机不支持在应用控制的萃取过程中切换压力与流量模式。</string>
+    <string name="experimental_sensor">此咖啡机不支持所需的测量值，或该测量值当前不可用。</string>
+    <string name="experimental_control">此咖啡机不支持所请求的实时控制。</string>
+    <string name="step_editor_add_title">添加步骤</string>
+    <string name="step_editor_edit_title">编辑步骤</string>
+    <string name="step_editor_and">且</string>
+    <string name="step_editor_or">或</string>
+    <string name="step_editor_maximum_time">步骤最长时长（秒）</string>
+    <string name="step_editor_pause_hint">水泵将保持暂停。请设置退出条件，以决定何时继续。</string>
+    <string name="step_editor_target_flow">目标流量（ml/s）</string>
+    <string name="step_editor_target_pressure">目标压力（bar）</string>
+    <string name="step_editor_time">步骤时间（秒）</string>
+    <string name="step_editor_threshold_time">时间（秒）</string>
+    <string name="step_editor_threshold_volume">出液量（ml）</string>
+    <string name="step_editor_threshold_weight">重量（g）</string>
+    <string name="step_editor_threshold_flow">流量（ml/s）</string>
+    <string name="step_editor_threshold_pressure">压力（bar）</string>
+    <string name="step_editor_default_name">步骤 %1$d</string>
+    <string name="step_editor_rename">重命名步骤</string>
+    <string name="step_editor_name">步骤名称</string>
+    <string name="step_editor_metric_time">时间</string>
+    <string name="step_editor_metric_water">总出液量</string>
+    <string name="step_editor_metric_weight">总重量</string>
+    <string name="step_editor_metric_step_volume">此步骤的出液量</string>
+    <string name="step_editor_metric_step_weight">此步骤的重量</string>
+    <string name="step_editor_metric_flow">水泵流量</string>
+    <string name="step_editor_metric_pump">水泵压力</string>
+    <string name="step_editor_metric_group">冲煮头压力</string>
+    <string name="step_editor_metric_boiler">锅炉压力</string>
+    <string name="step_editor_condition_and">且</string>
+    <string name="step_editor_condition_or">或</string>
+    <string name="step_editor_required_time">时间（必填）</string>
+    <string name="step_unit_pressure">bar</string>
+    <string name="step_unit_flow">ml/s</string>
+    <string name="step_unit_time">秒</string>
+    <string name="step_editor_conditions">退出条件</string>
+    <string name="step_editor_time_limit">时间限制</string>
+    <string name="step_editor_pump_control">水泵控制</string>
+    <string name="step_editor_control_locked">实验性步骤使用同一种水泵控制模式。此萃取方案使用%1$s。</string>
+    <string name="step_editor_ramp_style">风格</string>
+    <string name="profile_editor_single_dose_title">Single Dose 磨豆机</string>
+    <string name="profile_editor_single_dose_toggle">用于此萃取方案</string>
+    <string name="profile_editor_single_dose_toggle_description">在此萃取方案中保存研磨设置</string>
+    <string name="profile_editor_grinding_size">研磨粒径</string>
+    <string name="profile_editor_grinding_speed">研磨转速</string>
+    <string name="profile_editor_single_dose_set_grinder">设置磨豆机</string>
+    <string name="profile_list_grinder_settings_sent">磨豆机设置已发送</string>
+</resources>

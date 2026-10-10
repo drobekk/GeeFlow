@@ -1,0 +1,4 @@
+"NSCameraUsageDescription" = "GeeFlow 使用相机扫描二维码，以配对意式咖啡机和导入萃取方案。";
+"NSPhotoLibraryUsageDescription" = "GeeFlow 需要访问你的照片图库，以选择用户头像。";
+"NSBluetoothAlwaysUsageDescription" = "GeeFlow 使用蓝牙发现、连接你的意式咖啡机和咖啡秤，并与其通信。";
+"NSBluetoothPeripheralUsageDescription" = "GeeFlow 使用蓝牙发现、连接你的意式咖啡机和咖啡秤，并与其通信。";

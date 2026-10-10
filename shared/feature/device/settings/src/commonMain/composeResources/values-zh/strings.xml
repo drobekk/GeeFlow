@@ -1,0 +1,49 @@
+<resources>
+    <!-- Device Settings Main -->
+    <string name="device_settings_title">咖啡机设置</string>
+    <string name="device_settings_placeholder">选择一项以查看详情</string>
+    <string name="device_settings_subtitle">管理萃取偏好和设备设置</string>
+    <string name="device_settings_brewing">萃取</string>
+    <string name="device_settings_brewing_description">锅炉参数和按键绑定</string>
+    <string name="device_settings_maintenance">维护</string>
+    <string name="device_settings_maintenance_description">清洁和缺水警报</string>
+    <string name="device_settings_connectivity">连接</string>
+    <string name="device_settings_connectivity_description">外部智能配件</string>
+
+    <!-- Device Settings Maintenance -->
+    <string name="device_settings_maintenance_cleaning">清洁</string>
+    <string name="device_settings_maintenance_cleaning_flush_description">每个循环的冲洗时长</string>
+    <string name="device_settings_maintenance_cleaning_rest_description">循环之间的暂停时长</string>
+    <string name="device_settings_maintenance_cleaning_cycle_description">清洁重复次数</string>
+    <string name="device_settings_maintenance_alarms">警报</string>
+    <string name="device_settings_maintenance_water_alarm">缺水警报</string>
+    <string name="device_settings_maintenance_water_alarm_description">水位过低警告</string>
+    <string name="device_water_alarm_error">水位过低，请给水箱加水。</string>
+
+    <string name="device_dashboard_connecting">正在连接</string>
+
+    <!-- Device Settings Connectivity -->
+    <string name="device_settings_connectivity_smart_scale">智能秤</string>
+    <string name="device_settings_connectivity_smart_scale_description">搜索附近的智能秤</string>
+    <string name="device_settings_connectivity_searching">正在搜索兼容设备…</string>
+    <string name="device_settings_connectivity_not_found">找不到你的设备？</string>
+    <string name="device_settings_connectivity_rescan">立即扫描</string>
+
+    <!-- Device Settings Brewing -->
+    <string name="device_settings_brewing_boiler">锅炉</string>
+    <string name="device_settings_brewing_paddle">长按拨杆</string>
+    <string name="device_settings_brewing_pulse_heating">脉冲加热</string>
+    <string name="device_settings_brewing_pulse_heating_description">加热时间更长，但耗电量更低</string>
+    <string name="device_settings_brewing_paddle_pressure_description">目标压力</string>
+    <string name="device_settings_brewing_paddle_time_description">目标时长</string>
+    <string name="device_settings_auto_flush">自动冲洗</string>
+    <string name="device_settings_auto_flush_delay">萃取后的延迟时间</string>
+    <string name="device_settings_auto_flush_description">萃取后自动冲洗</string>
+    <string name="device_settings_treat_manual_as_flush">视为冲洗</string>
+    <string name="device_settings_treat_manual_as_flush_description">不保存历史记录或图表</string>
+    <string name="device_settings_connectivity_enable_search">启用搜索</string>
+    <string name="device_settings_connectivity_single_dose_description">搜索附近的磨豆机</string>
+    <string name="device_settings_connectivity_disabled_info">启用搜索以查找并连接设备。</string>
+    <string name="device_settings_connectivity_connection_help">无法连接。请确认配件已开启且在附近，然后重试。如有必要，请重启咖啡机。</string>
+    <string name="device_settings_connectivity_single_dose">单次定量</string>
+</resources>
