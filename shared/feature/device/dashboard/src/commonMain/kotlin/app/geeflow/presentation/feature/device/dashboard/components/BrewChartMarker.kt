@@ -151,7 +151,7 @@ internal class BrewChartMarker(
         drawAt(context, time)
     }
 
-    fun drawAt(context: CartesianDrawingContext, time: Double) = with(context) {
+    fun drawAt(context: CartesianDrawingContext, time: Double): Unit = with(context) {
         val direction = layoutDirectionMultiplier
         val start = (if (isLtr) layerBounds.left else layerBounds.right) +
             direction * layerDimensions.startPadding - scroll

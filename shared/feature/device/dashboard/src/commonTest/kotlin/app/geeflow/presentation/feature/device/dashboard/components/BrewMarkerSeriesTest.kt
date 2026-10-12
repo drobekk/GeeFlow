@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.device.dashboard.components
 import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class BrewMarkerSeriesTest {
@@ -17,7 +18,8 @@ class BrewMarkerSeriesTest {
         val actual = measured.valueAt(1.05)
         val planned = target.valueAt(1.05)
 
-        assertEquals(4.0 + (1.05 - 0.73) / (1.47 - 0.73) * 5.0, actual!!, 0.000001)
+        assertNotNull(actual)
+        assertEquals(4.0 + (1.05 - 0.73) / (1.47 - 0.73) * 5.0, actual, 0.000001)
         assertEquals(7.0, planned)
         assertEquals(listOf(0.0, 0.73, 1.47, 2.11), x)
         assertEquals(listOf(0.0, 4.0, 9.0, 9.0), y)
