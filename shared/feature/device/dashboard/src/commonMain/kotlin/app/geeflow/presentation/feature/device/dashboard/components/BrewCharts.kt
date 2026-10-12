@@ -32,7 +32,6 @@ import app.geeflow.presentation.feature.device.dashboard.model.ChartPhaseBoundar
 import app.geeflow.ui.isHeightCompact
 import app.geeflow.ui.theme.GeeFlowTheme
 import app.geeflow.ui.theme.disabled
-import com.patrykandpatrick.vico.compose.cartesian.CartesianChart.PersistentMarkerScope
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
@@ -48,7 +47,6 @@ import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer.Line
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer.LineProvider
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
@@ -56,7 +54,6 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.DashedShape
 import com.patrykandpatrick.vico.compose.common.Fill
-import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.core.ui.generated.resources.unit_grams
 import geeflow.shared.core.ui.generated.resources.unit_grams_per_second
@@ -339,8 +336,14 @@ private fun BrewDataChart(
     val maxY = maxOf(yFloor, maxDataY, maxTargetY)
 
     val colors = chartSeries.map { it.color }
-    val units = chartSeries.map { it.unit } + targets.map { it.unit }
-    val marker = rememberBrewChartMarker(units)
+    val markerSeries = remember(xValues, chartSeries, targets) {
+        chartSeries.map { series ->
+            BrewMarkerSeries(xValues, series.yValues.map { it.toDouble() }, series.color, series.unit)
+        } + targets.map { target ->
+            BrewMarkerSeries(target.tX, target.tY, target.color, target.unit)
+        }
+    }
+    val marker = rememberBrewChartMarker(markerSeries)
     val listener = rememberBrewMarkerVisibilityListener(syncState, chartId)
     val syncMarkerX = if (syncState.activeChartId != chartId) syncState.markerX else null
 
@@ -365,7 +368,7 @@ private fun BrewChart(
     targetColors: List<Color> = emptyList(),
     maxX: Double,
     maxY: Double,
-    marker: CartesianMarker,
+    marker: BrewChartMarker,
     markerVisibilityListener: CartesianMarkerVisibilityListener,
     syncMarkerX: Double?,
     phaseBoundaries: List<ChartPhaseBoundary>,
@@ -381,9 +384,7 @@ private fun BrewChart(
         maxZoom = Zoom.Content,
     )
     val phaseDecoration = brewPhaseDecoration(boundaries = phaseBoundaries)
-    val persistentMarkers: PersistentMarkerScope.(ExtraStore) -> Unit = { _ ->
-        syncMarkerX?.let { marker at it }
-    }
+    val syncDecoration = rememberBrewSyncDecoration(marker, syncMarkerX)
 
     CartesianChartHost(
         zoomState = zoomState,
@@ -393,6 +394,7 @@ private fun BrewChart(
                     *colors.map { color ->
                         LineCartesianLayer.rememberLine(
                             fill = LineFill.single(Fill(color)),
+                            interpolator = LineCartesianLayer.Interpolator.cubic(),
                             areaFill = AreaFill.single(
                                 Fill(Brush.verticalGradient(listOf(color.disabled(), Color.Transparent))),
                             ),
@@ -411,8 +413,7 @@ private fun BrewChart(
             marker = marker,
             markerVisibilityListener = markerVisibilityListener,
             markerController = CartesianMarkerController.rememberShowOnPress(consumeMoveEvents = true),
-            persistentMarkers = persistentMarkers,
-            decorations = listOf(phaseDecoration),
+            decorations = listOf(phaseDecoration, syncDecoration),
             startAxis = VerticalAxis.rememberStart(
                 tick = null,
                 label = rememberAxisLabelComponent(

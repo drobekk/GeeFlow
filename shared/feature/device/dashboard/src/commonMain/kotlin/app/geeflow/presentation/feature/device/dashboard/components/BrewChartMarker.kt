@@ -17,12 +17,12 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianDrawingContext
 import com.patrykandpatrick.vico.compose.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModel
+import com.patrykandpatrick.vico.compose.cartesian.data.LineCartesianLayerModel
+import com.patrykandpatrick.vico.compose.cartesian.decoration.Decoration
 import com.patrykandpatrick.vico.compose.cartesian.layer.CartesianLayerDimensions
 import com.patrykandpatrick.vico.compose.cartesian.layer.CartesianLayerMargins
-import com.patrykandpatrick.vico.compose.cartesian.marker.CandlestickCartesianLayerMarkerTarget
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
-import com.patrykandpatrick.vico.compose.cartesian.marker.ColumnCartesianLayerMarkerTarget
 import com.patrykandpatrick.vico.compose.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.LineCartesianLayerMarkerTarget
 import com.patrykandpatrick.vico.compose.common.Fill
@@ -39,14 +39,14 @@ import kotlin.math.abs
 import kotlin.math.roundToLong
 
 @Composable
-internal fun rememberBrewChartMarker(units: List<String>): CartesianMarker {
+internal fun rememberBrewChartMarker(series: List<BrewMarkerSeries>): BrewChartMarker {
     val labelBackground = rememberShapeComponent(
         fill = Fill(MaterialTheme.colorScheme.surfaceContainerHigh),
         shape = MaterialTheme.shapes.small,
     )
     val label = rememberTextComponent(
         style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurface),
-        lineCount = units.size + 1,
+        lineCount = series.size + 1,
         padding = Insets(8.dp, 4.dp),
         background = labelBackground,
     )
@@ -58,22 +58,25 @@ internal fun rememberBrewChartMarker(units: List<String>): CartesianMarker {
         Fill(MaterialTheme.colorScheme.surface),
         MaterialTheme.shapes.small,
     )
-    val valueFormatter = remember(units) { BrewMarkerValueFormatter(units) }
+    val valueFormatter = remember { BrewMarkerValueFormatter() }
 
-    val indicator: (Color) -> Component = { color ->
-        LayeredComponent(
-            back = ShapeComponent(Fill(color.copy(alpha = 0.15f)), CircleShape),
-            front = LayeredComponent(
-                back = ShapeComponent(fill = Fill(color), shape = CircleShape),
-                front = indicatorFrontComponent,
-                padding = Insets(5.dp),
-            ),
-            padding = Insets(10.dp),
-        )
+    val indicator: (Color) -> Component = remember(indicatorFrontComponent) {
+        { color ->
+            LayeredComponent(
+                back = ShapeComponent(Fill(color.copy(alpha = 0.15f)), CircleShape),
+                front = LayeredComponent(
+                    back = ShapeComponent(fill = Fill(color), shape = CircleShape),
+                    front = indicatorFrontComponent,
+                    padding = Insets(5.dp),
+                ),
+                padding = Insets(10.dp),
+            )
+        }
     }
 
-    return remember(label, valueFormatter, indicator, guideline) {
-        SideCenteredCartesianMarker(
+    return remember(label, valueFormatter, indicator, guideline, series) {
+        BrewChartMarker(
+            series = series,
             label = label,
             valueFormatter = valueFormatter,
             indicator = indicator,
@@ -116,7 +119,8 @@ internal class BrewSyncState {
 @Composable
 internal fun rememberBrewSyncState(): BrewSyncState = remember { BrewSyncState() }
 
-private class SideCenteredCartesianMarker(
+internal class BrewChartMarker(
+    private val series: List<BrewMarkerSeries>,
     label: TextComponent,
     valueFormatter: ValueFormatter,
     indicator: ((Color) -> Component)?,
@@ -143,31 +147,38 @@ private class SideCenteredCartesianMarker(
         context: CartesianDrawingContext,
         targets: List<CartesianMarker.Target>,
     ) {
-        with(context) {
-            drawGuideline(targets)
-            val halfIndicatorSize = indicatorSize.pixels / 2
-            targets.forEach { target ->
-                when (target) {
-                    is LineCartesianLayerMarkerTarget ->
-                        target.points.forEach { point ->
-                            drawIndicator(target.canvasX, point.canvasY, point.color, halfIndicatorSize)
-                        }
+        val time = targets.firstOrNull()?.x ?: return
+        drawAt(context, time)
+    }
 
-                    is ColumnCartesianLayerMarkerTarget ->
-                        target.columns.forEach { col ->
-                            drawIndicator(target.canvasX, col.canvasY, col.color, halfIndicatorSize)
-                        }
-
-                    is CandlestickCartesianLayerMarkerTarget -> {
-                        drawIndicator(target.canvasX, target.openingCanvasY, target.openingColor, halfIndicatorSize)
-                        drawIndicator(target.canvasX, target.closingCanvasY, target.closingColor, halfIndicatorSize)
-                        drawIndicator(target.canvasX, target.lowCanvasY, target.lowColor, halfIndicatorSize)
-                        drawIndicator(target.canvasX, target.highCanvasY, target.highColor, halfIndicatorSize)
-                    }
-                }
-            }
-            drawSideLabel(targets)
+    fun drawAt(context: CartesianDrawingContext, time: Double) = with(context) {
+        val direction = layoutDirectionMultiplier
+        val start = (if (isLtr) layerBounds.left else layerBounds.right) +
+            direction * layerDimensions.startPadding - scroll
+        val canvasX = start + direction * layerDimensions.xSpacing * ((time - ranges.minX) / ranges.xStep).toFloat()
+        if (canvasX < layerBounds.left || canvasX > layerBounds.right) return
+        val yRange = ranges.getYRange(null)
+        val values = series.mapNotNull { item -> item.valueAt(time)?.let { item to it } }
+        if (values.isEmpty()) return
+        val target = BrewMarkerTarget(
+            x = time,
+            canvasX = canvasX,
+            points = values.map { (item, value) ->
+                LineCartesianLayerMarkerTarget.Point(
+                    entry = LineCartesianLayerModel.Entry(time, value),
+                    canvasY = layerBounds.bottom - ((value - yRange.minY) / yRange.length * layerBounds.height).toFloat(),
+                    color = item.color,
+                )
+            },
+            units = values.map { it.first.unit },
+        )
+        val targets = listOf(target)
+        drawGuideline(targets)
+        val halfIndicatorSize = indicatorSize.pixels / 2
+        target.points.forEach { point ->
+            drawIndicator(canvasX, point.canvasY, point.color, halfIndicatorSize)
         }
+        drawSideLabel(targets)
     }
 
     private fun CartesianDrawingContext.drawSideLabel(targets: List<CartesianMarker.Target>) {
@@ -195,7 +206,24 @@ private class SideCenteredCartesianMarker(
     }
 }
 
-private class BrewMarkerValueFormatter(private val units: List<String>) : DefaultCartesianMarker.ValueFormatter {
+/** Popup-only values; these targets never enter the chart model or recorded data. */
+private data class BrewMarkerTarget(
+    override val x: Double,
+    override val canvasX: Float,
+    override val points: List<LineCartesianLayerMarkerTarget.Point>,
+    val units: List<String>,
+) : LineCartesianLayerMarkerTarget
+
+@Composable
+internal fun rememberBrewSyncDecoration(marker: BrewChartMarker, time: Double?): Decoration = remember(marker, time) {
+    object : Decoration {
+        override fun drawOverLayers(context: CartesianDrawingContext) {
+            time?.let { marker.drawAt(context, it) }
+        }
+    }
+}
+
+private class BrewMarkerValueFormatter : DefaultCartesianMarker.ValueFormatter {
     override fun format(
         context: CartesianDrawingContext,
         targets: List<CartesianMarker.Target>,
@@ -203,9 +231,9 @@ private class BrewMarkerValueFormatter(private val units: List<String>) : Defaul
         val x = targets.firstOrNull()?.x ?: 0.0
         append("${x.format1dp()}s")
 
-        val allPoints = targets
-            .filterIsInstance<LineCartesianLayerMarkerTarget>()
-            .flatMap { it.points }
+        val target = targets.filterIsInstance<BrewMarkerTarget>().firstOrNull()
+        val allPoints = target?.points.orEmpty()
+        val units = target?.units.orEmpty()
 
         if (allPoints.isNotEmpty()) append("\n")
 

@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import org.koin.core.annotation.Factory
-import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -89,7 +88,7 @@ class ObserveBrewDataUseCase(
         if (currentlyBrewing) {
             val now = Clock.System.now()
             if (!acc.isBrewing) {
-                acc.reset(trace?.startedAt ?: now, state)
+                acc.reset(trace?.startedAt ?: state.telemetryTime ?: now, state)
             }
 
             acc.recorder?.capture(state)
@@ -98,32 +97,21 @@ class ObserveBrewDataUseCase(
 
             acc.timeInSeconds = elapsedSeconds.toInt()
             val currentPoint = state.toDataPoint(acc.lastPoint)
-            val currentTick = (elapsedSeconds * TICKS_PER_SECOND).roundToInt()
-            val prevTick = acc.lastTick
-            val prevPoint = acc.lastPoint
-
-            if (prevPoint != null && currentTick > prevTick) {
-                for (tick in (prevTick + 1)..currentTick) {
-                    val t = (tick - prevTick).toFloat() / (currentTick - prevTick)
-                    acc.data[tick / TICKS_PER_SECOND_FLOAT] = BrewDataPoint(
-                        pressure = lerp(prevPoint.pressure, currentPoint.pressure, t),
-                        weight = lerp(prevPoint.weight, currentPoint.weight, t),
-                        volume = lerp(prevPoint.volume, currentPoint.volume, t),
-                        flowRate = lerp(prevPoint.flowRate, currentPoint.flowRate, t),
-                        weightRate = lerp(prevPoint.weightRate, currentPoint.weightRate, t),
-                    )
-                }
-            } else {
-                acc.data[currentTick / TICKS_PER_SECOND_FLOAT] = currentPoint
+            val freshTelemetry = state.telemetryTime != acc.lastTelemetryTime
+            if (acc.lastPoint == null || freshTelemetry || currentPoint != acc.lastPoint) {
+                val sampleTime = state.telemetryTime.takeIf { freshTelemetry } ?: now
+                val sampleSeconds = acc.startTime?.let { sampleTime - it }
+                    ?.toDouble(DurationUnit.SECONDS)?.toFloat()?.coerceAtLeast(0f) ?: 0f
+                acc.data[sampleSeconds] = currentPoint
+                acc.lastSampleSeconds = sampleSeconds
+                acc.lastPoint = currentPoint
+                acc.lastTelemetryTime = state.telemetryTime
             }
-            acc.lastTick = currentTick
-            acc.lastPoint = currentPoint
-            acc.lastTelemetryTime = state.telemetryTime
         } else {
             if (acc.isBrewing && status == DeviceState.BrewStatus.Idle) {
                 acc.lastPoint?.let { previous ->
                     val finalPoint = previous.withFinalTotals(state)
-                    acc.data[acc.lastTick / TICKS_PER_SECOND_FLOAT] = finalPoint
+                    acc.data[acc.lastSampleSeconds] = finalPoint
                     acc.lastPoint = finalPoint
                 }
             }
@@ -148,7 +136,7 @@ class ObserveBrewDataUseCase(
         var startTime: Instant? = null
         var status: DeviceState.BrewStatus = DeviceState.BrewStatus.Idle
         var timeInSeconds: Int = 0
-        var lastTick: Int = -1
+        var lastSampleSeconds: Float = 0f
         var lastPoint: BrewDataPoint? = null
         var lastTelemetryTime: Instant? = null
 
@@ -164,14 +152,9 @@ class ObserveBrewDataUseCase(
             isBrewing = true
             startTime = now
             this.status = status
-            lastTick = -1
+            lastSampleSeconds = 0f
             lastPoint = null
             lastTelemetryTime = null
         }
     }
 }
-
-private const val TICKS_PER_SECOND = 10
-private const val TICKS_PER_SECOND_FLOAT = 10f
-
-private fun lerp(a: Float, b: Float, t: Float): Float = a + (b - a) * t

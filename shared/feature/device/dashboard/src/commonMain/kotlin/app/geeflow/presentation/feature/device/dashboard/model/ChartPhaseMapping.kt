@@ -56,10 +56,7 @@ internal fun BrewProgram?.nativeChartBoundaries(
 ): List<ChartPhaseBoundary> {
     val goal = finishCondition.toExitCondition()
     val reachedAt = goal?.let { condition ->
-        data.entries.sortedBy { it.key }.firstOrNull { (_, point) ->
-            val value = if (condition.metric == BrewMetric.CupWeight) point.weight else point.volume
-            value >= condition.threshold
-        }?.key?.toDouble()
+        data.goalReachedAt(condition)
     }
     val elapsed = data.keys.maxOrNull()?.toDouble() ?: 0.0
     val original = nativePlannedBoundaries()
@@ -89,6 +86,22 @@ internal fun BrewProgram?.nativeChartBoundaries(
         )
     }
     return boundaries
+}
+
+private fun Map<Float, ChartData>.goalReachedAt(condition: ExitCondition): Double? {
+    val entries = entries.sortedBy { it.key }
+    // A zero-time reading can still contain totals from the previous brew. Wait for a reset
+    // before accepting a crossing; recordings that begin later can already contain the goal.
+    var belowTarget = entries.firstOrNull()?.key?.let { it > 0f } == true
+    entries.forEach { (seconds, point) ->
+        val value = if (condition.metric == BrewMetric.CupWeight) point.weight else point.volume
+        if (value < condition.threshold) {
+            belowTarget = true
+        } else if (belowTarget && seconds > 0f) {
+            return seconds.toDouble()
+        }
+    }
+    return null
 }
 
 private fun Condition?.toExitCondition(): ExitCondition? = when (this) {
