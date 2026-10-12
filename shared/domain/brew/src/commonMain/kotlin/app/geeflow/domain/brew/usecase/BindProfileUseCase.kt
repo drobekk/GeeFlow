@@ -30,7 +30,7 @@ class BindProfileUseCase(
             throw ProfileBindingNotAllowedException()
         }
         requireConnected(deviceId)
-        bindProfile(profile)
+        profiles.bindProfile(profile)
         deviceRepository.bindProfile(deviceId, profile.id)
     }
 }

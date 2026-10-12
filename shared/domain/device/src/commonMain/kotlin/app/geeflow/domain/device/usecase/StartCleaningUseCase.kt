@@ -29,9 +29,9 @@ class StartCleaningUseCase(
                 require(program.flushSeconds in constraints.cleaningTimeRange)
                 require(program.restSeconds in constraints.cleaningRestRange)
                 require(program.cycles in constraints.cleaningCountRange)
-                setCleaningSettings(program.flushSeconds.toFloat(), program.restSeconds.toFloat(), program.cycles)
+                maintenance.setCleaningSettings(program.flushSeconds.toFloat(), program.restSeconds.toFloat(), program.cycles)
                 requireReady(deviceId)
-                startCleaning()
+                maintenance.startCleaning()
             }
         }
     }

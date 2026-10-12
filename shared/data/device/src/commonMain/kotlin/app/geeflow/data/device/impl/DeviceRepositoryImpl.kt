@@ -3,6 +3,7 @@ package app.geeflow.data.device.impl
 import app.geeflow.data.device.DeviceRepository
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
+import app.geeflow.data.device.model.SupportedDevice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +30,11 @@ class DeviceRepositoryImpl(
     override fun getDeviceById(id: Long): Device? = devicesDao.getDeviceById(id)
 
     override fun getDeviceByBleMacAddress(macAddress: String): Device? = devicesDao.getDeviceByBleMac(macAddress)
+
+    override fun updateModel(id: Long, model: SupportedDevice) {
+        devicesDao.updateModel(id, model)
+        refresh()
+    }
 
     override fun renameDevice(id: Long, name: String) {
         devicesDao.updateName(id, name)

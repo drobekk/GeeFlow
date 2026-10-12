@@ -7,6 +7,6 @@ import org.koin.core.annotation.Factory
 class SetWaterAlarmUseCase(private val provider: DeviceControllerProvider) {
     suspend operator fun invoke(deviceId: Long, enabled: Boolean) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
-        setWaterAlarm(enabled)
+        settings.setWaterAlarm(enabled)
     }
 }

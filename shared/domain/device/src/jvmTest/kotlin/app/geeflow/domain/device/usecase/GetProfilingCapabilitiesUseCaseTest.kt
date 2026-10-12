@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 
 class GetProfilingCapabilitiesUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
 
     init {
         every { provider.getController(9) } returns controller

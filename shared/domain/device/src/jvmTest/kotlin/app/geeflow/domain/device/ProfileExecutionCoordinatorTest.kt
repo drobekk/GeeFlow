@@ -14,6 +14,7 @@ import app.geeflow.data.brew.model.RampStyle
 import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.DeviceProfileControl
 import app.geeflow.data.device.LiveBrewSession
 import app.geeflow.data.device.impl.controller.DemoDeviceController
 import app.geeflow.data.device.model.DeviceError
@@ -26,6 +27,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -82,49 +84,52 @@ class ProfileExecutionCoordinatorTest {
         })
         val controller = object : DeviceController by DemoDeviceController(scope) {
             override val deviceState = device
-            override fun telemetry() = device.value.pumpTelemetry()
-            override suspend fun stopLiveSession() {
-                stops++
-                if (stopFailures-- > 0) error("stop_failed")
-                device.update {
-                    it.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.Idle)
-                }
-            }
-            override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession {
-                device.update {
-                    it.copy(
-                        statusTime = Clock.System.now(),
-                        brewStatus = DeviceState.BrewStatus.FreeVariable,
-                        telemetryTime = if (telemetryDelayMillis == 0L) Clock.System.now() else null
-                    )
-                }
-                if (failStart) error("start_acknowledgement_lost")
-                scope.launch {
-                    delay(telemetryDelayMillis)
-                    while (device.value.brewStatus != DeviceState.BrewStatus.Idle) {
-                        delay(50)
-                        device.update { it.copy(telemetryTime = Clock.System.now()) }
+            override val profiles = object : DeviceProfileControl by DemoDeviceController(scope).profiles {
+                override fun telemetry() = device.value.pumpTelemetry()
+                override suspend fun stopLiveSession() {
+                    stops++
+                    if (stopFailures-- > 0) error("stop_failed")
+                    device.update {
+                        it.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.Idle)
                     }
                 }
-                return object : LiveBrewSession {
-                    override val requiresContinuousUpdates = continuous
-                    override suspend fun applyTarget(target: PhaseControl): PhaseControl {
-                        if (failWrite) error("write_failed")
-                        delay(10)
-                        writes.update { it + target }
-                        return if (continuous) PhaseControl.Pressure(bar = writes.value.size.toFloat()) else target
+                override suspend fun openLiveSession(initial: PhaseControl): LiveBrewSession {
+                    device.update {
+                        it.copy(
+                            statusTime = Clock.System.now(),
+                            brewStatus = DeviceState.BrewStatus.FreeVariable,
+                            telemetryTime = if (telemetryDelayMillis == 0L) Clock.System.now() else null
+                        )
                     }
-                    override suspend fun stop() {
-                        stopLiveSession()
+                    if (failStart) error("start_acknowledgement_lost")
+                    scope.launch {
+                        delay(telemetryDelayMillis)
+                        while (device.value.brewStatus != DeviceState.BrewStatus.Idle) {
+                            delay(50)
+                            device.update { it.copy(telemetryTime = Clock.System.now()) }
+                        }
+                    }
+                    return object : LiveBrewSession {
+                        override val requiresContinuousUpdates = continuous
+                        override suspend fun applyTarget(target: PhaseControl): PhaseControl {
+                            if (failWrite) error("write_failed")
+                            delay(10)
+                            writes.update { it + target }
+                            return if (continuous) PhaseControl.Pressure(bar = writes.value.size.toFloat()) else target
+                        }
+                        override suspend fun stop() {
+                            stopLiveSession()
+                        }
                     }
                 }
             }
         }
         val coordinator = ProfileExecutionCoordinator(
             object : DeviceControllerProvider {
+                override fun observeController(deviceId: Long) = flowOf(getController(deviceId))
                 override val currentDeviceId = MutableStateFlow<Long?>(1L)
                 override fun getController(deviceId: Long) = controller
-                override fun disconnectCurrent() = Unit
+                override suspend fun disconnectCurrent() = Unit
             },
             scope,
             recorder,

@@ -83,4 +83,6 @@
     <string name="error_device_fault">Кофемашина сообщает об ошибке. Устраните её причину перед приготовлением кофе или очисткой. Подробности доступны по кнопке ошибки.</string>
     <string name="error_grinder_not_connected">Сначала подключите кофемолку Single Dose</string>
     <string name="common_machine_busy">Кофемашина занята</string>
+    <string name="device_model_title">Модель кофемашины</string>
+    <string name="device_model_select">Выберите модель своей кофемашины. Она определяет способ связи GeeFlow с устройством. Неправильный выбор может привести к ошибкам связи.</string>
 </resources>

@@ -12,4 +12,6 @@ data class Device(
     val model: String = "",
     val version: String = "",
     val boundProfileId: Long? = null,
+    val modelId: String? = null,
+    val modelSource: String? = null,
 )

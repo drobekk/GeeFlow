@@ -46,4 +46,7 @@
     <string name="device_settings_connectivity_disabled_info">Enable search to find and connect a device.</string>
     <string name="device_settings_connectivity_connection_help">Could not connect. Check that the accessory is on and nearby, then try again. If needed, restart the coffee machine.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Enable the control ring. Occasional interference may occur in some environments.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>

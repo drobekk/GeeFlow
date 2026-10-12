@@ -4,6 +4,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.ProfileStep
+import app.geeflow.data.device.TimedPumpProfileSupport
 import app.geeflow.domain.exception.RecordingCapacityExceededException
 
 /**
@@ -27,10 +28,15 @@ class WendougeeProfileCompiler {
             is Condition.Volume -> cond.target
             null -> error("Native profiles require a finish target")
         }
-        if (profile.recording?.playbackPoints()?.size?.let { it > WendougeeProfiling.MAX_RECORDING_POINTS } == true) {
+        if (profile.recording?.playbackPoints()?.size?.let {
+                it > TimedPumpProfileSupport.MAX_RECORDING_POINTS
+            } == true
+        ) {
             throw RecordingCapacityExceededException()
         }
-        require(WendougeeProfiling.assessNative(profile).isEmpty()) { "Profile cannot run natively on this device" }
+        require(TimedPumpProfileSupport.assessNative(profile).isEmpty()) {
+            "Profile cannot run natively on this device"
+        }
         val realMode = if (profile.recording != null) FV_FREE_MODE else 2
         return if (profile.recording != null) {
             buildFreeVariableWrites(profile, realMode, isBinding, isWeight, targetValue)
@@ -49,9 +55,9 @@ class WendougeeProfileCompiler {
         val writes = mutableListOf<ProfileWrite>()
         val recording = requireNotNull(profile.recording) { "Free variable profile has no recording" }
         val points = recording.playbackPoints().map {
-            it.copy(pressure = it.pressure.coerceAtMost(WendougeeProfiling.MAX_PRESSURE))
+            it.copy(pressure = it.pressure.coerceAtMost(TimedPumpProfileSupport.MAX_PRESSURE))
         }
-        if (points.size > WendougeeProfiling.MAX_RECORDING_POINTS) throw RecordingCapacityExceededException()
+        if (points.size > TimedPumpProfileSupport.MAX_RECORDING_POINTS) throw RecordingCapacityExceededException()
         require(targetValue.isFinite() && targetValue > 0 && targetValue <= MAX_REGISTER_VALUE) {
             "Invalid finish target"
         }

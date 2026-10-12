@@ -92,8 +92,7 @@ class WendougeeFrameParser(
         }
         if (channel == "CTRL") {
             controlFrames.receive(data).forEach { frame ->
-                grinderParser.parse(frame)
-                scaleParser.parse(frame)
+                parseControlFrame(frame)
             }
             return
         }
@@ -101,7 +100,12 @@ class WendougeeFrameParser(
         modbusFrames.receive(data).forEach(::parseModbusFrame)
     }
 
-    private fun parseModbusFrame(data: ByteArray) {
+    internal fun parseControlFrame(frame: ByteArray) {
+        grinderParser.parse(frame)
+        scaleParser.parse(frame)
+    }
+
+    internal fun parseModbusFrame(data: ByteArray) {
         if (u8(data, 0) != 1) return
         val functionCode = u8(data, 1)
 
@@ -152,6 +156,11 @@ class WendougeeFrameParser(
             onStateUpdate {
                 copy(
                     config = DeviceState.Config(
+                        agileRingEnabled = when (dataU16be(WendougeeRegisters.AGILE_RING * 2)) {
+                            0 -> false
+                            1 -> true
+                            else -> null
+                        },
                         targetSteamTemp = targetSteam,
                         targetBrewTemp = targetBrew,
                         steamBoilerEnabled = isSteamBoilerEnabled,

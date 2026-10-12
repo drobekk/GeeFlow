@@ -83,4 +83,6 @@
     <string name="error_device_fault">Ekspres zgłasza błąd. Usuń jego przyczynę przed rozpoczęciem parzenia lub czyszczenia. Szczegóły znajdziesz pod przyciskiem błędu.</string>
     <string name="error_grinder_not_connected">Najpierw połącz młynek Single Dose</string>
     <string name="common_machine_busy">Ekspres zajęty</string>
+    <string name="device_model_title">Model ekspresu</string>
+    <string name="device_model_select">Wybierz model swojego ekspresu. Określa on sposób komunikacji GeeFlow z urządzeniem. Nieprawidłowy wybór może powodować błędy komunikacji.</string>
 </resources>

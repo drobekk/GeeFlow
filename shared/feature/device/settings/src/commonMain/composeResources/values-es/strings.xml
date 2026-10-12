@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Activa la búsqueda para encontrar y conectar un dispositivo.</string>
     <string name="device_settings_connectivity_connection_help">No se pudo conectar. Comprueba que el accesorio esté encendido y cerca e inténtalo de nuevo. Si es necesario, reinicia la cafetera.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Activa el anillo de control. En algunos entornos pueden producirse interferencias ocasionales.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>

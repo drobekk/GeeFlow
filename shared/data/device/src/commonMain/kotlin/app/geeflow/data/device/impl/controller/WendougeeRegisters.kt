@@ -1,6 +1,9 @@
 package app.geeflow.data.device.impl.controller
 
 object WendougeeRegisters {
+    const val FIRMWARE_VERSION = 0x05A1
+    const val AGILE_RING = 28
+
     // Boiler & Heating States
     const val STEAM_BOILER_STATE = 0x0006
     const val BREW_BOILER_STATE = 0x0007

@@ -19,6 +19,9 @@ data class DeviceState(
     val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
     val brewStatus: BrewStatus = BrewStatus.Idle,
     val config: Config? = null,
+    val firmwareVersion: Int? = null,
+    val agileRingSupported: Boolean = false,
+    val accessorySyncStatus: AccessorySyncStatus = AccessorySyncStatus.Unknown,
     val singleDoseGrinder: SingleDoseGrinder? = null,
     val singleDoseGrinderEnabled: Boolean = false,
     val singleDoseGrinderSearchActive: Boolean = false,
@@ -42,7 +45,10 @@ data class DeviceState(
         val cleaningCount: Int,
         val heatingMode: HeatingMode,
         val waterAlarmEnabled: Boolean,
+        val agileRingEnabled: Boolean? = null,
     )
+
+    enum class AccessorySyncStatus { Unknown, Syncing, Ready, Failed }
 
     enum class ConnectionStatus {
         Disconnected,

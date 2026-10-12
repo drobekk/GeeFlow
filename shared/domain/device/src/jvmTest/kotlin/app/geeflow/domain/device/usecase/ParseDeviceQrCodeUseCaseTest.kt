@@ -1,6 +1,7 @@
 package app.geeflow.domain.device.usecase
 
 import app.geeflow.data.device.model.DeviceConnection
+import app.geeflow.data.device.model.SupportedDevice
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,5 +37,38 @@ class ParseDeviceQrCodeUseCaseTest {
         val result = useCase(url)
 
         assertNull(result)
+    }
+
+    @Test
+    fun `when QR type is not a model category then leaves model for manual selection`() {
+        val useCase = ParseDeviceQrCodeUseCase()
+        val url = "https://machine/?data={\"blemac\":\"aabbccddeeff\",\"name\":\"Wendougee\",\"type\":\"10011\"}"
+
+        val device = useCase(url)
+
+        assertNull(device?.modelId)
+        assertEquals("", device?.model)
+    }
+
+    @Test
+    fun `when category is unknown but name identifies LITA then records the name as source`() {
+        val useCase = ParseDeviceQrCodeUseCase()
+        val url = "https://machine/?data={\"blemac\":\"aabbccddeeff\",\"name\":\"LITA BA\",\"category_code\":\"99999\"}"
+
+        val device = useCase(url)
+
+        assertEquals(SupportedDevice.Lita.id, device?.modelId)
+        assertEquals("qr-name", device?.modelSource)
+    }
+
+    @Test
+    fun `when QR contains a known category then resolves LITA family without guessing commercial variant`() {
+        val useCase = ParseDeviceQrCodeUseCase()
+        val url = "https://machine/?data={\"blemac\":\"aabbccddeeff\",\"name\":\"Machine\",\"category_code\":\"10024\"}"
+
+        val device = useCase(url)
+
+        assertEquals(SupportedDevice.Lita.id, device?.modelId)
+        assertEquals("qr-category", device?.modelSource)
     }
 }

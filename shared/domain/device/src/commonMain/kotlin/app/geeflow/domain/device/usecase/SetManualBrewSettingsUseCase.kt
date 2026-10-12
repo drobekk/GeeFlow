@@ -11,7 +11,7 @@ class SetManualBrewSettingsUseCase(private val provider: DeviceControllerProvide
         timeSec: Float,
     ) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
-        setManualBrewPressure(pressure)
-        setManualBrewTime(timeSec)
+        settings.setManualBrewPressure(pressure)
+        settings.setManualBrewTime(timeSec)
     }
 }

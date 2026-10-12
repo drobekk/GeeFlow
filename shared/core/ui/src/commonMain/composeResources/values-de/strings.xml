@@ -81,4 +81,6 @@
     <string name="error_device_fault">Die Maschine meldet einen Fehler. Beheben Sie die Ursache, bevor Sie einen Bezug oder die Reinigung starten. Details finden Sie über die Fehlertaste.</string>
     <string name="error_grinder_not_connected">Verbinde zuerst die Single-Dose-Mühle</string>
     <string name="common_machine_busy">Maschine beschäftigt</string>
+    <string name="device_model_title">Maschinenmodell</string>
+    <string name="device_model_select">Wähle das Modell deiner Maschine. Es bestimmt, wie GeeFlow mit dem Gerät kommuniziert. Eine falsche Auswahl kann Kommunikationsfehler verursachen.</string>
 </resources>

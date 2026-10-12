@@ -12,6 +12,6 @@ class RunSingleDoseGrinderUseCase(private val provider: DeviceControllerProvider
             if (deviceState.value.singleDoseGrinder?.isConnected != true) {
                 throw GrinderNotConnectedException(deviceId)
             }
-            runSingleDoseGrinder(grindingSize, grindingSpeed)
+            accessories.runSingleDoseGrinder(grindingSize, grindingSpeed)
         }
 }

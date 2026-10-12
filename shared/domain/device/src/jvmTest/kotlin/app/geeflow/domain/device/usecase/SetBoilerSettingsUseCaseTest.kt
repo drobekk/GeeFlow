@@ -23,7 +23,7 @@ import kotlin.test.assertIs
 
 class SetBoilerSettingsUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val users = mockk<UserRepository>(relaxUnitFun = true)
     private val settings = mockk<UserSettingsRepository>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
@@ -48,17 +48,17 @@ class SetBoilerSettingsUseCaseTest {
             useCase(9, boiler, false, temperature - 1)
 
             coVerifyOrder {
-                controller.setBoilerState(boiler, true)
+                controller.settings.setBoilerState(boiler, true)
                 if (boiler == BoilerType.Brew) {
-                    controller.setBrewTemperature(temperature)
+                    controller.settings.setBrewTemperature(temperature)
                 } else {
-                    controller.setSteamTemperature(temperature)
+                    controller.settings.setSteamTemperature(temperature)
                 }
-                controller.setBoilerState(boiler, false)
+                controller.settings.setBoilerState(boiler, false)
                 if (boiler == BoilerType.Brew) {
-                    controller.setBrewTemperature(temperature - 1)
+                    controller.settings.setBrewTemperature(temperature - 1)
                 } else {
-                    controller.setSteamTemperature(temperature - 1)
+                    controller.settings.setSteamTemperature(temperature - 1)
                 }
             }
         }
@@ -73,9 +73,9 @@ class SetBoilerSettingsUseCaseTest {
 
         assertIs<DeviceNotConnectedException>(result.exceptionOrNull())
         coVerify(exactly = 0) {
-            controller.setBoilerState(any(), any())
-            controller.setBrewTemperature(any())
-            controller.setSteamTemperature(any())
+            controller.settings.setBoilerState(any(), any())
+            controller.settings.setBrewTemperature(any())
+            controller.settings.setSteamTemperature(any())
         }
     }
 
@@ -87,8 +87,8 @@ class SetBoilerSettingsUseCaseTest {
         useCase(9, BoilerType.Brew, true, 93)
 
         coVerifyOrder {
-            controller.setBoilerState(BoilerType.Brew, true)
-            controller.setBrewTemperature(93)
+            controller.settings.setBoilerState(BoilerType.Brew, true)
+            controller.settings.setBrewTemperature(93)
         }
     }
 
@@ -100,8 +100,8 @@ class SetBoilerSettingsUseCaseTest {
         useCase(9, BoilerType.Brew, true, 212)
 
         coVerifyOrder {
-            controller.setBoilerState(BoilerType.Brew, true)
-            controller.setBrewTemperature(100)
+            controller.settings.setBoilerState(BoilerType.Brew, true)
+            controller.settings.setBrewTemperature(100)
         }
     }
 
@@ -113,8 +113,8 @@ class SetBoilerSettingsUseCaseTest {
         useCase(9, BoilerType.Steam, true, 266)
 
         coVerifyOrder {
-            controller.setBoilerState(BoilerType.Steam, true)
-            controller.setSteamTemperature(130)
+            controller.settings.setBoilerState(BoilerType.Steam, true)
+            controller.settings.setSteamTemperature(130)
         }
     }
 

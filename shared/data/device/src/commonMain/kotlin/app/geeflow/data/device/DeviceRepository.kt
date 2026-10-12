@@ -2,6 +2,7 @@ package app.geeflow.data.device
 
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
+import app.geeflow.data.device.model.SupportedDevice
 import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceRepository {
@@ -10,6 +11,7 @@ interface DeviceRepository {
     fun addDevice(device: Device): Long
     fun getDeviceById(id: Long): Device?
     fun getDeviceByBleMacAddress(macAddress: String): Device?
+    fun updateModel(id: Long, model: SupportedDevice)
     fun renameDevice(id: Long, name: String)
     fun removeDeviceById(id: Long)
     fun setLastUsedDevice(id: Long)

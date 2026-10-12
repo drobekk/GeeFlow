@@ -26,7 +26,7 @@ class ObserveDeviceStateUseCase(
     operator fun invoke(deviceId: Long): Flow<DeviceState> = userRepository.selectedUser
         .mapNotNull { it?.id }
         .flatMapLatest { userId ->
-            provider.getController(deviceId).deviceState
+            provider.observeController(deviceId).flatMapLatest { it.deviceState }
                 .combine(coordinator.state) { state, run ->
                     if (run.active && run.deviceId == deviceId) state.copy(brewStatus = BrewStatus.Profile) else state
                 }

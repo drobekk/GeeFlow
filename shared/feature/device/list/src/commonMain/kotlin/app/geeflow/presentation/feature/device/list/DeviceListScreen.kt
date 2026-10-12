@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -63,6 +64,7 @@ import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_favourite
 import geeflow.shared.core.ui.generated.resources.common_more
 import geeflow.shared.core.ui.generated.resources.common_remove
+import geeflow.shared.core.ui.generated.resources.device_model_title
 import geeflow.shared.feature.device.list.generated.resources.Res
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_add_device
 import geeflow.shared.feature.device.list.generated.resources.device_list_screen_empty
@@ -243,6 +245,16 @@ private fun DeviceItemMenu(device: DeviceListViewState.Device, onEvent: (DeviceL
                     isMenuVisible = false
                 },
             )
+            if (device.canChangeModel) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(CoreRes.string.device_model_title)) },
+                    leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                    onClick = {
+                        onEvent(DeviceListEvent.DeviceModelClicked(device))
+                        isMenuVisible = false
+                    },
+                )
+            }
             DropdownMenuItem(
                 text = { Text(text = stringResource(CoreRes.string.common_remove)) },
                 leadingIcon = {

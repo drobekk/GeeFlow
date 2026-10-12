@@ -31,10 +31,10 @@ class SetBoilerSettingsUseCase(
         }
         with(provider.getController(deviceId)) {
             requireConnected(deviceId)
-            setBoilerState(boilerType, enabled)
+            settings.setBoilerState(boilerType, enabled)
             when (boilerType) {
-                BoilerType.Brew -> setBrewTemperature(tempCelsius)
-                BoilerType.Steam -> setSteamTemperature(tempCelsius)
+                BoilerType.Brew -> settings.setBrewTemperature(tempCelsius)
+                BoilerType.Steam -> settings.setSteamTemperature(tempCelsius)
             }
         }
     }

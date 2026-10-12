@@ -5,6 +5,8 @@ import app.geeflow.data.device.model.DeviceBrewingSettings
 data class BrewingSettingsViewState(
     val brewBoiler: Boiler = Boiler(),
     val steamBoiler: Boiler = Boiler(),
+    val firmwareVersion: Int? = null,
+    val agileRingEnabled: Boolean? = null,
     val pulseHeatingEnabled: Boolean = false,
     val paddle: Paddle = Paddle(),
     val treatManualAsFlush: Boolean = true,

@@ -5,8 +5,6 @@ import androidx.datastore.preferences.core.Preferences
 import app.geeflow.app.db.DatabaseDriverFactory
 import app.geeflow.app.db.NativeDatabaseDriverFactory
 import app.geeflow.core.datastore.createIosDataStore
-import app.geeflow.data.device.ble.modbus.ModbusPlugin
-import app.geeflow.data.device.ble.modbus.installModbus
 import dev.bluefalcon.core.BlueFalcon
 import dev.bluefalcon.engine.ios.IosEngine
 import org.koin.core.annotation.Module
@@ -21,11 +19,7 @@ actual class PlatformModule {
     fun dataStore(): DataStore<Preferences> = createIosDataStore()
 
     @Single
-    fun modbusPlugin(): ModbusPlugin = installModbus()
-
-    @Single
-    fun blueFalcon(modbusPlugin: ModbusPlugin): BlueFalcon = BlueFalcon {
+    fun blueFalcon(): BlueFalcon = BlueFalcon {
         engine = IosEngine()
-        install(modbusPlugin)
     }
 }

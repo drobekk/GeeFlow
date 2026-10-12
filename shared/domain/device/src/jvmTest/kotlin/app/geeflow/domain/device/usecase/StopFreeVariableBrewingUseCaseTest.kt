@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 
 class StopFreeVariableBrewingUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
@@ -36,7 +36,7 @@ class StopFreeVariableBrewingUseCaseTest {
         useCase(9)
 
         coVerifyOrder {
-            controller.stopFreeVariableBrewing()
+            controller.brewing.stopFreeVariableBrewing()
         }
     }
 
@@ -48,7 +48,7 @@ class StopFreeVariableBrewingUseCaseTest {
         val result = runCatching { useCase(9) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopFreeVariableBrewing() }
     }
 
     @Test
@@ -58,6 +58,6 @@ class StopFreeVariableBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopFreeVariableBrewing() }
     }
 }

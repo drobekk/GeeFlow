@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Activează căutarea pentru a găsi și conecta un dispozitiv.</string>
     <string name="device_settings_connectivity_connection_help">Conectarea a eșuat. Verifică dacă accesoriul este pornit și în apropiere, apoi încearcă din nou. Dacă este necesar, repornește espressorul.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Activați inelul de control. În unele medii pot apărea interferențe ocazionale.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>

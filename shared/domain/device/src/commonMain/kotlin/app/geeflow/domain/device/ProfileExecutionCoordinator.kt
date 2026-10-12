@@ -85,7 +85,7 @@ class ProfileExecutionCoordinator(
         }
 
         if (support.execution == ProfileExecution.Native) {
-            controller.startProfileBrewing(profile)
+            controller.profiles.startProfileBrewing(profile)
         } else {
             if (!foreground.value) throw AppBackgroundedException()
             // Copy collections into an immutable execution snapshot.
@@ -130,10 +130,10 @@ class ProfileExecutionCoordinator(
         try {
             controller.requireReady(requireNotNull(state.value.deviceId))
             val oldStamp = controller.deviceState.value.telemetryTime
-            session = controller.openLiveSession(profile.initialControl())
+            session = controller.profiles.openLiveSession(profile.initialControl())
             val clock = TimeSource.Monotonic.markNow()
             val engine = ProfileProgramEngine(profile)
-            val initial = engine.tick(0, controller.telemetry())
+            val initial = engine.tick(0, controller.profiles.telemetry())
             val target = initial.target?.let(controller::quantize)
             val sent = target?.let {
                 withTimeout(TELEMETRY_TIMEOUT_MS.milliseconds) { session.applyTarget(it) }
@@ -144,7 +144,9 @@ class ProfileExecutionCoordinator(
                 }
             }
             withTimeout(TELEMETRY_TIMEOUT_MS.milliseconds) {
-                controller.deviceState.first { it.telemetryTime != oldStamp && controller.isLiveSessionActive(it) }
+                controller.deviceState.first {
+                    it.telemetryTime != oldStamp && controller.profiles.isLiveSessionActive(it)
+                }
             }
             reason = initial.finish ?: controlLoop(controller, session, profile, clock, engine, target, sent)
         } catch (error: CancellationException) {
@@ -195,7 +197,7 @@ class ProfileExecutionCoordinator(
             controller.requireReady(currentDeviceId)
 
             if (device.brewStatus == DeviceState.BrewStatus.Idle) return "machine_stop"
-            if (!controller.isLiveSessionActive(device)) {
+            if (!controller.profiles.isLiveSessionActive(device)) {
                 throw MachineControlChangedException()
             }
 
@@ -206,7 +208,7 @@ class ProfileExecutionCoordinator(
                 recordTelemetrySample(device, elapsed)
             }
             if (freshAt.elapsedNow().inWholeMilliseconds >= TELEMETRY_TIMEOUT_MS) throw TelemetryTimeoutException()
-            val telemetry = controller.telemetry()
+            val telemetry = controller.profiles.telemetry()
             if (!profile.requiredMetrics().all { telemetry[it] != null }) throw RequiredMeasurementLostException()
             val elapsed = clock.elapsedNow().inWholeMilliseconds
             val output = engine.tick(elapsed, telemetry)
@@ -248,7 +250,7 @@ class ProfileExecutionCoordinator(
                     val confirmedIdle = device.brewStatus == DeviceState.BrewStatus.Idle &&
                         device.statusTime?.let { startedAt != null && it >= startedAt } == true
                     if (!confirmedIdle) {
-                        if (session != null) session.stop() else controller.stopLiveSession()
+                        if (session != null) session.stop() else controller.profiles.stopLiveSession()
                     }
                     controller.deviceState.first {
                         it.brewStatus == DeviceState.BrewStatus.Idle &&

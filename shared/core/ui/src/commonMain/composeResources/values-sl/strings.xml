@@ -83,4 +83,6 @@
     <string name="error_device_fault">Aparat sporoča napako. Odpravite njen vzrok pred začetkom priprave kave ali čiščenja. Podrobnosti so na voljo prek gumba za napako.</string>
     <string name="error_grinder_not_connected">Najprej povežite mlinček Single Dose</string>
     <string name="common_machine_busy">Aparat je zaseden</string>
+    <string name="device_model_title">Model aparata</string>
+    <string name="device_model_select">Izberite model svojega aparata. Določa način komunikacije GeeFlow z napravo. Napačna izbira lahko povzroči napake v komunikaciji.</string>
 </resources>

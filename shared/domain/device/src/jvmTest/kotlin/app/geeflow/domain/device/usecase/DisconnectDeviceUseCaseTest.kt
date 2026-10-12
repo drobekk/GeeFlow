@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 class DisconnectDeviceUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
     init {
@@ -30,7 +30,7 @@ class DisconnectDeviceUseCaseTest {
         useCase(9)
 
         coVerifyOrder {
-            controller.disconnect()
+            controller.connection.disconnect()
         }
     }
 
@@ -42,6 +42,6 @@ class DisconnectDeviceUseCaseTest {
         val result = runCatching { useCase(9) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.disconnect() }
+        coVerify(exactly = 0) { controller.connection.disconnect() }
     }
 }

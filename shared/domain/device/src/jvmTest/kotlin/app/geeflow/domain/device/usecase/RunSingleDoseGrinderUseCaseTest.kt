@@ -16,7 +16,7 @@ import kotlin.test.assertIs
 
 class RunSingleDoseGrinderUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
     init {
@@ -31,7 +31,7 @@ class RunSingleDoseGrinderUseCaseTest {
 
         useCase(9, grindingSize = 300, grindingSpeed = 600)
 
-        coVerify(exactly = 1) { controller.runSingleDoseGrinder(300, 600) }
+        coVerify(exactly = 1) { controller.accessories.runSingleDoseGrinder(300, 600) }
     }
 
     @Test
@@ -41,7 +41,7 @@ class RunSingleDoseGrinderUseCaseTest {
         val result = runCatching { useCase(9, grindingSize = 300, grindingSpeed = 600) }
 
         assertIs<GrinderNotConnectedException>(result.exceptionOrNull())
-        coVerify(exactly = 0) { controller.runSingleDoseGrinder(any(), any()) }
+        coVerify(exactly = 0) { controller.accessories.runSingleDoseGrinder(any(), any()) }
     }
 
     @Test
@@ -52,7 +52,7 @@ class RunSingleDoseGrinderUseCaseTest {
         val result = runCatching { useCase(9, grindingSize = 300, grindingSpeed = 600) }
 
         assertIs<GrinderNotConnectedException>(result.exceptionOrNull())
-        coVerify(exactly = 0) { controller.runSingleDoseGrinder(any(), any()) }
+        coVerify(exactly = 0) { controller.accessories.runSingleDoseGrinder(any(), any()) }
     }
 
     @Test
@@ -63,6 +63,6 @@ class RunSingleDoseGrinderUseCaseTest {
         val result = runCatching { useCase(9, grindingSize = 300, grindingSpeed = 600) }
 
         assertIs<DeviceNotConnectedException>(result.exceptionOrNull())
-        coVerify(exactly = 0) { controller.runSingleDoseGrinder(any(), any()) }
+        coVerify(exactly = 0) { controller.accessories.runSingleDoseGrinder(any(), any()) }
     }
 }

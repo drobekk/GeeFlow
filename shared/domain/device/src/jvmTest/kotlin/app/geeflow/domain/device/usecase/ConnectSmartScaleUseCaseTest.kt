@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 class ConnectSmartScaleUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
     init {
@@ -30,7 +30,7 @@ class ConnectSmartScaleUseCaseTest {
         useCase(9, "Scale")
 
         coVerifyOrder {
-            controller.connectSmartScale("Scale")
+            controller.accessories.connectSmartScale("Scale")
         }
     }
 
@@ -42,6 +42,6 @@ class ConnectSmartScaleUseCaseTest {
         val result = runCatching { useCase(9, "Scale") }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.connectSmartScale("Scale") }
+        coVerify(exactly = 0) { controller.accessories.connectSmartScale("Scale") }
     }
 }

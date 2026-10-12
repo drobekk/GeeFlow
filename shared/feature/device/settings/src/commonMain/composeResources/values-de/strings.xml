@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Aktiviere die Suche, um ein Gerät zu finden und zu verbinden.</string>
     <string name="device_settings_connectivity_connection_help">Verbindung fehlgeschlagen. Prüfe, ob das Zubehör eingeschaltet und in der Nähe ist, und versuche es erneut. Starte bei Bedarf die Kaffeemaschine neu.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Aktiviere den Steuerring. In manchen Umgebungen können gelegentliche Störungen auftreten.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>

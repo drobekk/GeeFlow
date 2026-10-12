@@ -91,4 +91,6 @@
     <string name="error_device_fault">The machine reports an error. Resolve it before starting brewing or cleaning. Open the error button for details.</string>
     <string name="error_grinder_not_connected">Connect the Single Dose grinder first</string>
     <string name="common_machine_busy">Machine busy</string>
+    <string name="device_model_title">Device model</string>
+    <string name="device_model_select">Choose your machine model. This determines how GeeFlow communicates with it. Selecting the wrong model may cause communication errors.</string>
 </resources>

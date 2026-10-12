@@ -12,7 +12,7 @@ class StartManualBrewingUseCase(
     suspend operator fun invoke(deviceId: Long) = coordinator.withUnownedControl(deviceId) {
         with(provider.getController(deviceId)) {
             requireReady(deviceId)
-            startManualBrewing()
+            brewing.startManualBrewing()
         }
     }
 }

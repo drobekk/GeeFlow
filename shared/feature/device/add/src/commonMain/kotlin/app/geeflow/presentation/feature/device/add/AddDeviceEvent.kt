@@ -1,6 +1,7 @@
 package app.geeflow.presentation.feature.device.add
 
 internal sealed interface AddDeviceEvent {
+    data class ModelSelected(val modelId: String) : AddDeviceEvent
     data object BackClicked : AddDeviceEvent
     data object ShowNearbyDevicesClicked : AddDeviceEvent
     data object ShowQrCodeScannerClicked : AddDeviceEvent

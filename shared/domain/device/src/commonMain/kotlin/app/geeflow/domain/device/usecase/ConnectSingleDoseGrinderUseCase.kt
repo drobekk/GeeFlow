@@ -7,6 +7,6 @@ import org.koin.core.annotation.Factory
 class ConnectSingleDoseGrinderUseCase(private val provider: DeviceControllerProvider) {
     suspend operator fun invoke(deviceId: Long, name: String) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
-        connectSingleDoseGrinder(name)
+        accessories.connectSingleDoseGrinder(name)
     }
 }

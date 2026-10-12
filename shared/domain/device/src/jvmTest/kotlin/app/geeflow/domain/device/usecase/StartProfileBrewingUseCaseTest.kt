@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 
 class StartProfileBrewingUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val users = mockk<UserRepository>(relaxUnitFun = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))

@@ -18,7 +18,7 @@ class DemoSingleDoseTest {
         val controller = DemoDeviceController(backgroundScope)
         val scale = controller.deviceState.value.smartScale
 
-        controller.setSingleDoseGrinderConnectivity(true)
+        controller.accessories.setSingleDoseGrinderConnectivity(true)
         advanceTimeBy(10_001)
         runCurrent()
 
@@ -30,12 +30,12 @@ class DemoSingleDoseTest {
     @Test
     fun `when selecting another demo grinder then only the new grinder is connected`() = runTest {
         val controller = DemoDeviceController(backgroundScope)
-        controller.setSingleDoseGrinderConnectivity(true)
+        controller.accessories.setSingleDoseGrinderConnectivity(true)
         advanceTimeBy(2_001)
         runCurrent()
-        controller.connectSingleDoseGrinder("Milo Demo")
+        controller.accessories.connectSingleDoseGrinder("Milo Demo")
 
-        controller.connectSingleDoseGrinder("BGM_Demo")
+        controller.accessories.connectSingleDoseGrinder("BGM_Demo")
 
         assertEquals("BGM_Demo", controller.deviceState.value.singleDoseGrinder?.name)
         assertEquals(
@@ -47,11 +47,11 @@ class DemoSingleDoseTest {
     @Test
     fun `when disabling during demo connection then delayed connection cannot restore grinder`() = runTest {
         val controller = DemoDeviceController(backgroundScope)
-        controller.setSingleDoseGrinderConnectivity(true)
-        val connection = async { controller.connectSingleDoseGrinder("Milo Demo") }
+        controller.accessories.setSingleDoseGrinderConnectivity(true)
+        val connection = async { controller.accessories.connectSingleDoseGrinder("Milo Demo") }
         runCurrent()
 
-        controller.setSingleDoseGrinderConnectivity(false)
+        controller.accessories.setSingleDoseGrinderConnectivity(false)
         connection.await()
         advanceTimeBy(12_000)
         runCurrent()
@@ -65,10 +65,10 @@ class DemoSingleDoseTest {
     @Test
     fun `when machine disconnects during search then delayed results cannot restore grinder list`() = runTest {
         val controller = DemoDeviceController(backgroundScope)
-        controller.setSingleDoseGrinderConnectivity(true)
+        controller.accessories.setSingleDoseGrinderConnectivity(true)
         runCurrent()
 
-        controller.disconnect()
+        controller.connection.disconnect()
         advanceTimeBy(12_000)
         runCurrent()
 
@@ -79,12 +79,12 @@ class DemoSingleDoseTest {
     @Test
     fun `when disconnecting demo grinder then it stays available for reconnecting`() = runTest {
         val controller = DemoDeviceController(backgroundScope)
-        controller.setSingleDoseGrinderConnectivity(true)
+        controller.accessories.setSingleDoseGrinderConnectivity(true)
         advanceTimeBy(2_001)
         runCurrent()
-        controller.connectSingleDoseGrinder("Milo Demo")
+        controller.accessories.connectSingleDoseGrinder("Milo Demo")
 
-        controller.disconnectSingleDoseGrinder()
+        controller.accessories.disconnectSingleDoseGrinder()
 
         assertNull(controller.deviceState.value.singleDoseGrinder)
         assertEquals(2, controller.foundSingleDoseGrinders.value.size)

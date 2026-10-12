@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 
 class SetPulseHeatingModeUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
     init {
@@ -34,8 +34,8 @@ class SetPulseHeatingModeUseCaseTest {
         useCase(9, false)
 
         coVerifyOrder {
-            controller.setHeatingMode(HeatingMode.Pulse)
-            controller.setHeatingMode(HeatingMode.FullSpeed)
+            controller.settings.setHeatingMode(HeatingMode.Pulse)
+            controller.settings.setHeatingMode(HeatingMode.FullSpeed)
         }
     }
 
@@ -46,7 +46,7 @@ class SetPulseHeatingModeUseCaseTest {
         useCase(9, true)
 
         coVerifyOrder {
-            controller.setHeatingMode(HeatingMode.Pulse)
+            controller.settings.setHeatingMode(HeatingMode.Pulse)
         }
     }
 
@@ -58,7 +58,7 @@ class SetPulseHeatingModeUseCaseTest {
         val result = runCatching { useCase(9, true) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.setHeatingMode(HeatingMode.Pulse) }
+        coVerify(exactly = 0) { controller.settings.setHeatingMode(HeatingMode.Pulse) }
     }
 
     @Test
@@ -67,6 +67,6 @@ class SetPulseHeatingModeUseCaseTest {
 
         useCase(9, false)
 
-        coVerify(exactly = 1) { controller.setHeatingMode(HeatingMode.FullSpeed) }
+        coVerify(exactly = 1) { controller.settings.setHeatingMode(HeatingMode.FullSpeed) }
     }
 }

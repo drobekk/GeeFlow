@@ -83,4 +83,6 @@
     <string name="error_device_fault">Kávovar hlási chybu. Pred spustením prípravy kávy alebo čistenia odstráňte jej príčinu. Podrobnosti zobrazíte tlačidlom chyby.</string>
     <string name="error_grinder_not_connected">Najprv pripojte mlynček Single Dose</string>
     <string name="common_machine_busy">Kávovar je zaneprázdnený</string>
+    <string name="device_model_title">Model kávovaru</string>
+    <string name="device_model_select">Vyberte model svojho kávovaru. Určuje spôsob komunikácie GeeFlow so zariadením. Nesprávny výber môže spôsobiť chyby komunikácie.</string>
 </resources>

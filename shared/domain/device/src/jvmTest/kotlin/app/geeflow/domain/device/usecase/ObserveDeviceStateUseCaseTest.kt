@@ -13,16 +13,19 @@ import app.geeflow.domain.device.ProfileExecutionCoordinator
 import app.geeflow.domain.device.ProfileRunState
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ObserveDeviceStateUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val users = mockk<UserRepository>(relaxUnitFun = true)
     private val settings = mockk<UserSettingsRepository>(relaxUnitFun = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
@@ -32,10 +35,43 @@ class ObserveDeviceStateUseCaseTest {
 
     init {
         every { provider.getController(9) } returns controller
+        every { provider.observeController(9) } returns flowOf(controller)
         every { controller.deviceState } returns state
         every { users.selectedUser } returns selected
         every { settings.temperatureUnit(7) } returns flowOf(TemperatureUnit.CELSIUS)
         every { coordinator.state } returns MutableStateFlow(ProfileRunState())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `when controller is replaced then connection status follows the replacement and ignores old controller`() = runTest {
+        val controllers = MutableStateFlow(controller)
+        val replacement = mockk<DeviceController>(relaxed = true)
+        val replacementState = MutableStateFlow(DeviceState())
+        every { provider.observeController(9) } returns controllers
+        every { replacement.deviceState } returns replacementState
+        val useCase = ObserveDeviceStateUseCase(coordinator, provider, settings, users)
+        val statuses = mutableListOf<DeviceState.ConnectionStatus>()
+        backgroundScope.launch { useCase(9).collect { statuses += it.connectionStatus } }
+        runCurrent()
+
+        controllers.value = replacement
+        runCurrent()
+        state.value = state.value.copy(connectionStatus = DeviceState.ConnectionStatus.Synchronizing)
+        replacementState.value = replacementState.value.copy(connectionStatus = DeviceState.ConnectionStatus.Connecting)
+        runCurrent()
+        replacementState.value = replacementState.value.copy(connectionStatus = DeviceState.ConnectionStatus.Connected)
+        runCurrent()
+
+        assertEquals(
+            listOf(
+                DeviceState.ConnectionStatus.Connected,
+                DeviceState.ConnectionStatus.Disconnected,
+                DeviceState.ConnectionStatus.Connecting,
+                DeviceState.ConnectionStatus.Connected
+            ),
+            statuses
+        )
     }
 
     @Test

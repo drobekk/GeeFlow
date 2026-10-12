@@ -14,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +24,7 @@ import kotlin.test.assertTrue
 
 class ObserveBrewDataUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val users = mockk<UserRepository>(relaxUnitFun = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val selected = MutableStateFlow<User?>(User(id = 7, name = "Ada"))
@@ -33,6 +34,7 @@ class ObserveBrewDataUseCaseTest {
     init {
         every { users.selectedUser } returns selected
         every { provider.getController(9) } returns controller
+        every { provider.observeController(9) } returns flowOf(controller)
         every { controller.deviceState } returns MutableStateFlow(
             DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected)
         )

@@ -5,6 +5,7 @@ package app.geeflow.data.device.impl
 import app.geeflow.data.device.db.AppDatabase
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
+import app.geeflow.data.device.model.SupportedDevice
 import org.koin.core.annotation.Singleton
 
 @Singleton
@@ -37,6 +38,8 @@ class DevicesDao(database: AppDatabase) {
                 manufacturer = device.manufacturer,
                 model = device.model,
                 version = device.version,
+                modelId = device.modelId,
+                modelSource = device.modelSource,
             )
             id = dbQuery.lastInsertRowId().executeAsOne()
         }
@@ -72,6 +75,10 @@ class DevicesDao(database: AppDatabase) {
         dbQuery.deleteById(id)
     }
 
+    fun updateModel(id: Long, model: SupportedDevice) {
+        dbQuery.updateModel(model.id, "user", model.manufacturer, model.model, id)
+    }
+
     fun clearAll() {
         dbQuery.clearAll()
     }
@@ -91,6 +98,8 @@ class DevicesDao(database: AppDatabase) {
         model: String,
         version: String,
         boundProfileId: Long?,
+        modelId: String?,
+        modelSource: String?,
     ): Device = Device(
         id = id,
         name = name,
@@ -100,6 +109,8 @@ class DevicesDao(database: AppDatabase) {
         model = model,
         version = version,
         boundProfileId = boundProfileId,
+        modelId = modelId,
+        modelSource = modelSource,
     )
 
     private fun connectionFromColumns(

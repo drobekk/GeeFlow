@@ -16,7 +16,7 @@ class DemoNativeCompletionTest {
     @Test
     fun `volume target continues past the planned duration until 100 ml is reached`() = runTest {
         val controller = DemoDeviceController(scope = backgroundScope)
-        controller.startProfileBrewing(profile(Condition.Volume(100f)))
+        controller.profiles.startProfileBrewing(profile(Condition.Volume(100f)))
         delay(30000)
         assertEquals(BrewStatus.Profile, controller.deviceState.value.brewStatus)
         assertTrue(requireNotNull(controller.deviceState.value.volume) < 100f)
@@ -30,7 +30,7 @@ class DemoNativeCompletionTest {
     @Test
     fun `weight target continues past the planned duration until 100 g is reached`() = runTest {
         val controller = DemoDeviceController(scope = backgroundScope)
-        controller.startProfileBrewing(profile(Condition.Weight(100f)))
+        controller.profiles.startProfileBrewing(profile(Condition.Weight(100f)))
         delay(30000)
         assertEquals(BrewStatus.Profile, controller.deviceState.value.brewStatus)
         assertTrue(requireNotNull(controller.deviceState.value.weight) < 100f)
@@ -43,7 +43,7 @@ class DemoNativeCompletionTest {
     @Test
     fun `a profile without a finish target stops at the planned duration`() = runTest {
         val controller = DemoDeviceController(scope = backgroundScope)
-        controller.startProfileBrewing(profile(null))
+        controller.profiles.startProfileBrewing(profile(null))
         withTimeout(31000) {
             controller.deviceState.first { it.brewStatus == BrewStatus.Idle }
         }
@@ -53,9 +53,9 @@ class DemoNativeCompletionTest {
     @Test
     fun `manual stop still interrupts a profile waiting for its target`() = runTest {
         val controller = DemoDeviceController(scope = backgroundScope)
-        controller.startProfileBrewing(profile(Condition.Volume(100f)))
+        controller.profiles.startProfileBrewing(profile(Condition.Volume(100f)))
         delay(30000)
-        controller.stopProfileBrewing()
+        controller.profiles.stopProfileBrewing()
         delay(5000)
         assertEquals(BrewStatus.Idle, controller.deviceState.value.brewStatus)
     }

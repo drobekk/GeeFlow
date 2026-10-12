@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.dp
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
 import app.geeflow.data.device.model.DeviceManufacturer
+import app.geeflow.data.device.model.SupportedDevice
 import app.geeflow.presentation.feature.device.add.AddDeviceViewState.Dialog.ExperimentalWarning
+import app.geeflow.ui.components.DeviceModelPicker
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.VerticalSpacer
@@ -38,6 +40,15 @@ internal fun AddDeviceDialogs(
     onEvent: (AddDeviceEvent) -> Unit,
 ) {
     when (dialog) {
+        is AddDeviceViewState.Dialog.ModelSelection -> GeeFlowDialog(
+            onDismissRequest = { onEvent(AddDeviceEvent.CancelWarningClicked) },
+        ) {
+            DeviceModelPicker(
+                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }.map { it.id to it.model },
+                onSelect = { onEvent(AddDeviceEvent.ModelSelected(it)) },
+                onClose = { onEvent(AddDeviceEvent.CancelWarningClicked) },
+            )
+        }
         is ExperimentalWarning -> ExperimentalWarningDialog(onEvent = onEvent)
         null -> {}
     }

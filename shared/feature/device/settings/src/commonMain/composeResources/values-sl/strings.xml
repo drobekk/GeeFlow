@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Omogočite iskanje, da najdete in povežete napravo.</string>
     <string name="device_settings_connectivity_connection_help">Povezava ni uspela. Preverite, ali je dodatek vklopljen in v bližini, ter poskusite znova. Po potrebi znova zaženite kavni aparat.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Vklopite upravljalni obroč. V nekaterih okoljih lahko pride do občasnih motenj.</string>
+    <string name="device_settings_firmware_version">Vdelana programska oprema: %1$d</string>
 </resources>

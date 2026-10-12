@@ -12,6 +12,6 @@ class StopFreeVariableBrewingUseCase(
     suspend operator fun invoke(deviceId: Long) = with(provider.getController(deviceId)) {
         if (coordinator.stop(deviceId)) return@with
         requireConnected(deviceId)
-        stopFreeVariableBrewing()
+        brewing.stopFreeVariableBrewing()
     }
 }

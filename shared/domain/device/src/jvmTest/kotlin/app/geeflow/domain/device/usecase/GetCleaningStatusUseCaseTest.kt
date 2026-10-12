@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 
 class GetCleaningStatusUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
     private val config = Config(130f, 93f, true, true, 30f, 9f, 5f, 3f, 3, HeatingMode.FullSpeed, true)
 

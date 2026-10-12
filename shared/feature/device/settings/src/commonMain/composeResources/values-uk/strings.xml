@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Увімкніть пошук, щоб знайти та під’єднати пристрій.</string>
     <string name="device_settings_connectivity_connection_help">Не вдалося під’єднатися. Переконайтеся, що аксесуар увімкнений і знаходиться поруч, та повторіть спробу. За потреби перезапустіть кавомашину.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Увімкніть кільце керування. У деяких умовах можливі періодичні перешкоди.</string>
+    <string name="device_settings_firmware_version">Прошивка: %1$d</string>
 </resources>

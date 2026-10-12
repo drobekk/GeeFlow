@@ -9,6 +9,7 @@ import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceConnection
 import app.geeflow.data.device.model.DeviceManufacturer
 import app.geeflow.data.device.model.SupportedDevice
+import app.geeflow.data.device.model.supportedDevice
 import app.geeflow.domain.device.usecase.AddDeviceUseCase
 import app.geeflow.domain.device.usecase.ParseDeviceQrCodeUseCase
 import app.geeflow.navigation.NavEvent
@@ -50,6 +51,21 @@ internal class AddDeviceViewModel(
     }
 
     fun handleEvent(event: AddDeviceEvent) = when (event) {
+        is AddDeviceEvent.ModelSelected -> {
+            val pending = (viewState.value.dialog as? AddDeviceViewState.Dialog.ModelSelection)?.device
+            val model = SupportedDevice.byId(event.modelId)
+            if (pending != null && model != null) {
+                handleDeviceSelected(
+                    pending.copy(
+                        manufacturer = model.manufacturer,
+                        model = model.model,
+                        modelId = model.id,
+                        modelSource = "user",
+                    )
+                )
+            }
+            Unit
+        }
         is BackClicked -> navigate(NavEvent.Back)
         is ShowNearbyDevicesClicked -> {
             startScanning()
@@ -98,7 +114,9 @@ internal class AddDeviceViewModel(
     }
 
     private fun handleDeviceSelected(device: Device) {
-        if (device.manufacturer == DeviceManufacturer.WENDOUGEE) {
+        if (device.supportedDevice == null) {
+            modify { copy(dialog = AddDeviceViewState.Dialog.ModelSelection(device)) }
+        } else if (device.manufacturer == DeviceManufacturer.WENDOUGEE) {
             modify { copy(dialog = AddDeviceViewState.Dialog.ExperimentalWarning(device)) }
         } else {
             addDeviceAndNavigate(device)

@@ -31,7 +31,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -124,8 +125,8 @@ class MaintenanceReminderViewModelTest {
         try {
             fixture.block()
         } finally {
-            fixture.viewModel.viewModelScope.cancel()
-            fixture.secondViewModel.viewModelScope.cancel()
+            fixture.viewModel.viewModelScope.coroutineContext[Job]?.cancelAndJoin()
+            fixture.secondViewModel.viewModelScope.coroutineContext[Job]?.cancelAndJoin()
             Dispatchers.resetMain()
         }
     }
@@ -147,9 +148,10 @@ class MaintenanceReminderViewModelTest {
             override val deviceState = secondState
         }
         private val provider = object : DeviceControllerProvider {
+            override fun observeController(deviceId: Long) = flowOf(getController(deviceId))
             override val currentDeviceId = MutableStateFlow<Long?>(1L)
             override fun getController(deviceId: Long) = if (deviceId == 1L) firstController else secondController
-            override fun disconnectCurrent() = Unit
+            override suspend fun disconnectCurrent() = Unit
         }
         private val maintenance = object : MaintenanceSettingsRepository {
             override fun observe(deviceId: Long) = if (deviceId == 1L) firstSettings else secondSettings

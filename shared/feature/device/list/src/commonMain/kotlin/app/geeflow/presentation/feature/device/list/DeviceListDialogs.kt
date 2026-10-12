@@ -11,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.geeflow.data.device.model.SupportedDevice
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DeviceRenameConfirmed
 import app.geeflow.presentation.feature.device.list.DeviceListEvent.DialogDismissed
 import app.geeflow.presentation.feature.device.list.DeviceListViewState.Dialog
+import app.geeflow.ui.components.DeviceModelPicker
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
@@ -31,6 +33,14 @@ internal fun DeviceListDialogs(
     onEvent: (DeviceListEvent) -> Unit,
 ) {
     when (dialog) {
+        is Dialog.Model -> GeeFlowDialog(onDismissRequest = { onEvent(DialogDismissed) }) {
+            DeviceModelPicker(
+                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }.map { it.id to it.model },
+                initialModelId = dialog.device.modelId,
+                onSelect = { onEvent(DeviceListEvent.DeviceModelSelected(dialog.device, it)) },
+                onClose = { onEvent(DialogDismissed) },
+            )
+        }
         is Dialog.Rename -> RenameDialog(
             device = dialog.device,
             onConfirm = { onEvent(DeviceRenameConfirmed(dialog.device, it)) },

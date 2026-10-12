@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Zapnite vyhľadávanie, aby ste našli a pripojili zariadenie.</string>
     <string name="device_settings_connectivity_connection_help">Pripojenie zlyhalo. Skontrolujte, či je príslušenstvo zapnuté a nablízku, a skúste to znova. V prípade potreby reštartujte kávovar.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Zapnite ovládací krúžok. V niektorých prostrediach sa môže vyskytnúť občasné rušenie.</string>
+    <string name="device_settings_firmware_version">Firmvér: %1$d</string>
 </resources>

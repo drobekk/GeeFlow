@@ -28,7 +28,8 @@ class BindProfileUseCaseTest {
     private val profiles = mockk<BrewProfileRepository>(relaxUnitFun = true)
     private val devices = mockk<DeviceRepository>(relaxUnitFun = true)
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
+    private val profileControl = controller.profiles
     private val profile = BrewProfile(
         id = 3,
         userId = 7,
@@ -45,29 +46,31 @@ class BindProfileUseCaseTest {
         every { controller.deviceState } returns MutableStateFlow(
             DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected)
         )
-        every { controller.assessNativeProfile(any()) } returns listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
+        every {
+            profileControl.assessNativeProfile(any())
+        } returns listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
     }
 
     @Test
     fun `when binding succeeds then persists binding after hardware write`() = runTest {
-        every { controller.assessNativeProfile(profile) } returns emptyList()
+        every { profileControl.assessNativeProfile(profile) } returns emptyList()
         every { controller.profilingCapabilities } returns ProfilingCapabilities(binding = true)
         val useCase = BindProfileUseCase(profiles, devices, provider)
 
         useCase(9, profile)
 
         coVerifyOrder {
-            controller.bindProfile(profile)
+            profileControl.bindProfile(profile)
             devices.bindProfile(9, 3)
         }
     }
 
     @Test
     fun `when hardware binding fails then does not persist binding`() = runTest {
-        every { controller.assessNativeProfile(profile) } returns emptyList()
+        every { profileControl.assessNativeProfile(profile) } returns emptyList()
         every { controller.profilingCapabilities } returns ProfilingCapabilities(binding = true)
         val failure = IllegalStateException("Hardware write failed")
-        coEvery { controller.bindProfile(profile) } throws failure
+        coEvery { profileControl.bindProfile(profile) } throws failure
         val useCase = BindProfileUseCase(profiles, devices, provider)
 
         val result = runCatching { useCase(9, profile) }
@@ -95,7 +98,7 @@ class BindProfileUseCaseTest {
         val result = runCatching { useCase(9, profile) }
 
         assertTrue(result.exceptionOrNull() is ProfileBindingNotAllowedException)
-        coVerify(exactly = 0) { controller.bindProfile(any()) }
+        coVerify(exactly = 0) { profileControl.bindProfile(any()) }
         verify(exactly = 0) { devices.bindProfile(any(), any()) }
     }
 }

@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 
 class SetFreeBrewPressureUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
@@ -38,7 +38,7 @@ class SetFreeBrewPressureUseCaseTest {
         useCase(9, 9f)
 
         coVerifyOrder {
-            controller.setFreeBrewPressureTarget(9f)
+            controller.brewing.setFreeBrewPressureTarget(9f)
         }
     }
 
@@ -50,6 +50,6 @@ class SetFreeBrewPressureUseCaseTest {
         val result = runCatching { useCase(9, 9f) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.setFreeBrewPressureTarget(9f) }
+        coVerify(exactly = 0) { controller.brewing.setFreeBrewPressureTarget(9f) }
     }
 }

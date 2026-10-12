@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Schakel zoeken in om een apparaat te vinden en te verbinden.</string>
     <string name="device_settings_connectivity_connection_help">Verbinding mislukt. Controleer of het accessoire aanstaat en in de buurt is en probeer opnieuw. Start indien nodig de koffiemachine opnieuw op.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Schakel de bedieningsring in. In sommige omgevingen kan af en toe storing optreden.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>

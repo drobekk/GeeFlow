@@ -31,9 +31,9 @@ fun DeviceController.assessProfile(profile: BrewProfile, checkAvailability: Bool
             listOf(ProfileIssue(ProfileIssueCode.InvalidProgram)),
         )
     }
-    val native = assessNativeProfile(profile)
+    val native = profiles.assessNativeProfile(profile)
     val unavailable = if (checkAvailability) {
-        profile.requiredMetrics().filter { telemetry()[it] == null }
+        profile.requiredMetrics().filter { profiles.telemetry()[it] == null }
             .map { ProfileIssue(ProfileIssueCode.NotAvailable, metric = it) }
     } else {
         emptyList()
@@ -89,13 +89,4 @@ private fun ProfilingCapabilities.isControlSupported(control: PhaseControl): Boo
     is PhaseControl.Pressure -> livePressure.containsKey(control.location)
     is PhaseControl.Flow -> liveFlow != null
     is PhaseControl.PumpPause -> livePause
-}
-
-interface LiveBrewSession {
-    /** Feedback controllers must run even when the profile's requested target stays constant. */
-    val requiresContinuousUpdates: Boolean get() = false
-
-    /** Returns the actual quantized target sent to the device. Calls must be serialized. */
-    suspend fun applyTarget(target: PhaseControl): PhaseControl
-    suspend fun stop()
 }

@@ -17,6 +17,10 @@ internal class WendougeeControlFrames {
             } else {
                 if (pending.size < MIN_FRAME_SIZE) return frames
                 val length = WendougeeFrameParser.u16be(pending, LENGTH_OFFSET) + MIN_FRAME_SIZE
+                if (length > MAX_FRAME_SIZE) {
+                    pending = pending.copyOfRange(1, pending.size)
+                    continue
+                }
                 if (pending.size < length) return frames
                 val checksum = pending.sliceArray(1 until length - 1).sumOf { it.toInt() and BYTE_MASK } and BYTE_MASK
                 if (checksum != WendougeeFrameParser.u8(pending, length - 1)) {
@@ -31,6 +35,7 @@ internal class WendougeeControlFrames {
     }
 
     private companion object {
+        const val MAX_FRAME_SIZE = 4096
         const val HEADER_SIZE = 2
         const val MIN_FRAME_SIZE = 8
         const val LENGTH_OFFSET = 5

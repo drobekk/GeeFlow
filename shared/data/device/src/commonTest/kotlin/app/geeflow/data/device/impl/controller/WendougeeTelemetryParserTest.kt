@@ -187,6 +187,22 @@ class WendougeeTelemetryParserTest {
         assertEquals(93.5f, state.brewBoilerTemp)
     }
 
+    @Test
+    fun `when config reports ring state then reads register 28 and rejects unknown values`() {
+        val values = listOf(0, 1, 2)
+        val frames = values.map { value ->
+            val payload = ByteArray(74).also { it[57] = value.toByte() }
+            ModbusCrc.append(byteArrayOf(1, 3, 74) + payload)
+        }
+
+        val states = frames.map { frame ->
+            parser.handleIncomingFrame(frame, "DATA")
+            state.config?.agileRingEnabled
+        }
+
+        assertEquals(listOf(false, true, null), states)
+    }
+
     private fun status(vararg values: Int): ByteArray = ModbusCrc.append(
         byteArrayOf(1, 1, values.size.toByte()) + values.map { it.toByte() }.toByteArray(),
     )

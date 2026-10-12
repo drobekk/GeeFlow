@@ -10,6 +10,8 @@ data class DeviceListViewState(
         val name: String,
         val macAddress: String,
         val favourite: Boolean,
+        val modelId: String? = null,
+        val canChangeModel: Boolean = true,
     )
 
     data class User(
@@ -18,6 +20,7 @@ data class DeviceListViewState(
     )
 
     sealed interface Dialog {
+        data class Model(val device: Device) : Dialog
         data class Rename(val device: Device) : Dialog
     }
 }

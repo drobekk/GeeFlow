@@ -5,6 +5,7 @@ import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewHistoryEntry
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.DeviceMaintenanceControl
 import app.geeflow.data.device.MaintenanceSettingsRepository
 import app.geeflow.data.device.impl.controller.DemoDeviceController
 import app.geeflow.data.device.model.CleaningProgram
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -53,22 +55,25 @@ class StartCleaningUseCaseTest {
         override val deviceState = MutableStateFlow(
             DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected),
         )
-        override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
-            assertEquals(5f, timeSec)
-            assertEquals(5f, standbySec)
-            calls += "settings:$count"
-            check(!failUpload)
+        override val maintenance = object : DeviceMaintenanceControl by DemoDeviceController(scope).maintenance {
+            override suspend fun setCleaningSettings(timeSec: Float, standbySec: Float, count: Int) {
+                assertEquals(5f, timeSec)
+                assertEquals(5f, standbySec)
+                calls += "settings:$count"
+                check(!failUpload)
+            }
+            override suspend fun startCleaning() {
+                calls += "start"
+                deviceState.value = deviceState.value.copy(brewStatus = DeviceState.BrewStatus.Cleaning)
+            }
+            override suspend fun stopCleaning() = Unit
         }
-        override suspend fun startCleaning() {
-            calls += "start"
-            deviceState.value = deviceState.value.copy(brewStatus = DeviceState.BrewStatus.Cleaning)
-        }
-        override suspend fun stopCleaning() = Unit
     }
     private val provider = object : DeviceControllerProvider {
+        override fun observeController(deviceId: Long) = flowOf(getController(deviceId))
         override val currentDeviceId = MutableStateFlow<Long?>(1L)
         override fun getController(deviceId: Long) = controller
-        override fun disconnectCurrent() = Unit
+        override suspend fun disconnectCurrent() = Unit
     }
     private val history = object : BrewHistoryRepository {
         override fun addBrew(entry: BrewHistoryEntry, dataPoints: Map<Float, BrewDataPoint>) = Unit
@@ -102,7 +107,7 @@ class StartCleaningUseCaseTest {
     @Test
     fun `when daily cleaning stops then keeps postponed reminder`() = runBlocking {
         start(1, CleaningType.Daily)
-        controller.stopCleaning()
+        controller.maintenance.stopCleaning()
 
         assertEquals(listOf("postpone", "settings:3", "start"), calls)
         assertEquals(maintenanceDay() + 1, saved.value.dailyReminder.nextDueDay)

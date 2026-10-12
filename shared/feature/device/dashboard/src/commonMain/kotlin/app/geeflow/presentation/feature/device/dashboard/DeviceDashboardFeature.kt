@@ -5,9 +5,11 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.DialogSceneStrategy
 import app.geeflow.data.device.model.CleaningType
+import app.geeflow.navigation.NavEvent
 import app.geeflow.navigation.NavFeature
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.destination.DeviceDashboard
+import app.geeflow.navigation.destination.DeviceList
 import app.geeflow.navigation.destination.FreeControl
 import app.geeflow.platform.permissions.BindEffect
 import app.geeflow.platform.permissions.PermissionsControllerFactory
@@ -16,6 +18,7 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlViewModel
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardScreen
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewModel
+import app.geeflow.presentation.feature.device.dashboard.main.DeviceModelGate
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorScreen
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
@@ -45,12 +48,18 @@ internal data class ProfileEditor(val deviceId: Long, val profileId: Long? = nul
 internal class DeviceDashboardNavFeature : NavFeature {
     override fun EntryProviderScope<NavKey>.provideEntries(navigator: Navigator) {
         entry<Main> {
-            val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
-            val viewModel =
-                koinViewModel<DeviceDashboardViewModel> { parametersOf(it, factory.createPermissionsController()) }
-            val profileListViewModel = koinViewModel<ProfileListViewModel> { parametersOf(it) }
-            BindEffect(viewModel.permissionsController)
-            DeviceDashboardScreen(viewModel, profileListViewModel, navigator)
+            DeviceModelGate(it.deviceId, onClose = { navigator.navigate(NavEvent.To(DeviceList)) }) { modelId ->
+                val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
+                val viewModel =
+                    koinViewModel<DeviceDashboardViewModel>(
+                        key = "dashboard-$modelId"
+                    ) { parametersOf(it, factory.createPermissionsController()) }
+                val profileListViewModel = koinViewModel<ProfileListViewModel>(key = "profiles-$modelId") {
+                    parametersOf(it)
+                }
+                BindEffect(viewModel.permissionsController)
+                DeviceDashboardScreen(viewModel, profileListViewModel, navigator)
+            }
         }
         entry<QuickSettings>(metadata = DialogSceneStrategy.dialog(DialogProperties())) {
             val viewModel = koinViewModel<QuickSettingsViewModel> { parametersOf(it) }

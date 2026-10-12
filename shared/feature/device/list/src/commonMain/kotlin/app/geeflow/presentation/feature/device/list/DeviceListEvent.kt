@@ -5,6 +5,8 @@ import app.geeflow.presentation.feature.device.list.DeviceListViewState.Device
 sealed interface DeviceListEvent {
     data class DeviceClicked(val device: Device) : DeviceListEvent
     data class DeviceRemoveClicked(val device: Device) : DeviceListEvent
+    data class DeviceModelClicked(val device: Device) : DeviceListEvent
+    data class DeviceModelSelected(val device: Device, val modelId: String) : DeviceListEvent
     data class DeviceRenameClicked(val device: Device) : DeviceListEvent
     data class DeviceRenameConfirmed(val device: Device, val name: String) : DeviceListEvent
     data class DeviceSetAsDefaultClicked(val device: Device) : DeviceListEvent

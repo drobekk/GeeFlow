@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Włącz wyszukiwanie, aby znaleźć i połączyć urządzenie.</string>
     <string name="device_settings_connectivity_connection_help">Nie udało się połączyć. Sprawdź, czy akcesorium jest włączone i znajduje się w pobliżu, a następnie spróbuj ponownie. W razie potrzeby uruchom ponownie ekspres.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Włącz pierścień sterujący. W niektórych warunkach mogą występować sporadyczne zakłócenia.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>

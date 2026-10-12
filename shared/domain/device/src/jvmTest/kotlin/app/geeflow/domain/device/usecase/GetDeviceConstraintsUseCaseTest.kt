@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 
 class GetDeviceConstraintsUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val users = mockk<UserRepository>(relaxUnitFun = true)
     private val settings = mockk<UserSettingsRepository>(relaxUnitFun = true)
     private val selected = MutableStateFlow<User?>(User(id = 7, name = "Ada"))

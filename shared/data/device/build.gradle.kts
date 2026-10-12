@@ -22,6 +22,7 @@ sqldelight {
 kotlin {
     sourceSets {
         jvmTest.dependencies {
+            implementation(libs.mockk)
             implementation(libs.kotlinx.coroutines.test)
         }
         commonMain.dependencies {

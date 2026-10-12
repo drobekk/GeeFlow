@@ -18,6 +18,9 @@ class WendougeeBleDeviceDiscoverer : BleDeviceDiscoverer {
     override fun tryRecognise(advertisement: BleAdvertisement): Device? {
         val name = advertisement.name ?: return null
         val match = HEX_PATTERN.find(name) ?: return null
+        val brand = name.substring(0, match.range.first).lowercase()
+        val knownBrand = listOf("wendougee", "wdg", "lita").any(brand::contains)
+        if (!knownBrand && SupportedDevice.fromDeviceName(name) == null) return null
 
         val rawMac = match.value.uppercase()
         val formattedMac = rawMac.chunked(2).joinToString(":")
@@ -27,6 +30,7 @@ class WendougeeBleDeviceDiscoverer : BleDeviceDiscoverer {
             .trim()
         val displayName = prefix.ifEmpty { supportedDevice.manufacturer }
 
+        val model = SupportedDevice.fromDeviceName(name)
         return Device(
             id = 0L,
             name = displayName,
@@ -35,14 +39,15 @@ class WendougeeBleDeviceDiscoverer : BleDeviceDiscoverer {
                 macAddress = formattedMac,
             ),
             manufacturer = supportedDevice.manufacturer,
-            model = supportedDevice.model,
-            version = supportedDevice.version,
+            model = model?.model.orEmpty(),
+            modelId = model?.id,
+            modelSource = model?.let { "bluetooth-name" },
         )
     }
 
     /** Convenience for the controller's reconnect-by-MAC fallback. */
     fun macAddressOf(advertisement: BleAdvertisement): String? =
-        tryRecognise(advertisement)?.let { (it.connection as? DeviceConnection.Ble)?.macAddress }
+        advertisement.name?.let { HEX_PATTERN.find(it)?.value?.uppercase()?.chunked(2)?.joinToString(":") }
 
     private companion object {
         private val HEX_PATTERN = Regex("([a-fA-F0-9]{12})$")

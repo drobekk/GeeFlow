@@ -24,7 +24,7 @@ import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceBrewingSettingsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
-import app.geeflow.domain.device.usecase.RequestSmartScaleListUseCase
+import app.geeflow.domain.device.usecase.RefreshAccessoriesUseCase
 import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import app.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
@@ -97,7 +97,7 @@ internal class DeviceDashboardViewModel(
     private val observeDeviceState: ObserveDeviceStateUseCase,
     private val connectDevice: ConnectDeviceUseCase,
     private val disconnectDevice: DisconnectDeviceUseCase,
-    private val requestSmartScaleList: RequestSmartScaleListUseCase,
+    private val refreshAccessories: RefreshAccessoriesUseCase,
     private val startManualBrewing: StartManualBrewingUseCase,
     private val startProfileBrewing: StartProfileBrewingUseCase,
     private val stopBrewing: StopBrewingUseCase,
@@ -190,10 +190,10 @@ internal class DeviceDashboardViewModel(
 
     private fun toggleConnection() {
         if (viewState.value.device.connectionStatus == Device.ConnectionStatus.Connected) {
-            disconnectDevice(args.deviceId)
+            launchCatching { disconnectDevice(args.deviceId) }
         } else {
             withBluetoothPermissions {
-                connectDevice(args.deviceId)
+                launchCatching { connectDevice(args.deviceId) }
             }
         }
     }
@@ -201,10 +201,10 @@ internal class DeviceDashboardViewModel(
     private fun connect() {
         withBluetoothPermissions {
             when (viewState.value.device.connectionStatus) {
-                Device.ConnectionStatus.Disconnected -> connectDevice(args.deviceId)
+                Device.ConnectionStatus.Disconnected -> launchCatching { connectDevice(args.deviceId) }
                 Device.ConnectionStatus.Connected -> launchCatching(
-                    onError = { Logger.w(it) { "Could not refresh smart scale status" } },
-                ) { requestSmartScaleList(args.deviceId) }
+                    onError = { Logger.w(it) { "Could not refresh accessories" } },
+                ) { refreshAccessories(args.deviceId) }
 
                 else -> Unit
             }

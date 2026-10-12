@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
 
 class StartCleaningContractTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val maintenance = mockk<MaintenanceSettingsRepository>(relaxUnitFun = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
@@ -53,12 +53,12 @@ class StartCleaningContractTest {
 
         coVerifyOrder {
             maintenance.postpone(9, setOf(CleaningType.Daily), any())
-            controller.setCleaningSettings(
+            controller.maintenance.setCleaningSettings(
                 settings.daily.flushSeconds.toFloat(),
                 settings.daily.restSeconds.toFloat(),
                 settings.daily.cycles
             )
-            controller.startCleaning()
+            controller.maintenance.startCleaning()
         }
     }
 
@@ -75,12 +75,12 @@ class StartCleaningContractTest {
 
         coVerifyOrder {
             maintenance.postpone(9, CleaningType.entries.toSet(), any())
-            controller.setCleaningSettings(
+            controller.maintenance.setCleaningSettings(
                 settings.deep.flushSeconds.toFloat(),
                 settings.deep.restSeconds.toFloat(),
                 settings.deep.cycles
             )
-            controller.startCleaning()
+            controller.maintenance.startCleaning()
         }
     }
 
@@ -97,6 +97,6 @@ class StartCleaningContractTest {
         val result = runCatching { useCase(9) }
 
         assertTrue(result.exceptionOrNull() is IllegalStateException)
-        coVerify(exactly = 0) { controller.startCleaning() }
+        coVerify(exactly = 0) { controller.maintenance.startCleaning() }
     }
 }

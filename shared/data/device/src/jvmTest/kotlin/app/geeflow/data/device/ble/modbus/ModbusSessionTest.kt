@@ -3,6 +3,7 @@
 package app.geeflow.data.device.ble.modbus
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,6 +18,20 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 class ModbusSessionTest {
+    @Test
+    fun `when connection session ends then cancels pending request`() = runTest {
+        val notifications = MutableSharedFlow<ByteArray>()
+        val connection = Job()
+        val session = ModbusSession(notifications, {}, 1, 1.seconds, sessionJob = connection)
+
+        val pending = async { session.readHoldingRegisters(396, 1) }
+        runCurrent()
+        connection.cancel()
+        runCurrent()
+
+        assertTrue(pending.isCancelled)
+    }
+
     @Test
     fun `when read receives wrong unit count and CRC then waits for the complete correct response`() = runTest {
         val notifications = MutableSharedFlow<ByteArray>()
@@ -72,23 +87,21 @@ class ModbusSessionTest {
     }
 
     @Test
-    fun `when raw coil request receives protocol exception then propagates the exception`() = runTest {
+    fun `when coil write receives protocol exception then propagates the exception`() = runTest {
         val notifications = MutableSharedFlow<ByteArray>()
         val session = ModbusSession(notifications, { notifications.emit(frame(1, 133, 2)) }, 1, 1.seconds)
-        val request = ModbusFrame.writeSingleCoil(1, 154, true)
 
-        val result = runCatching { session.sendAndAwaitFc(request, 5) }
+        val result = runCatching { session.writeSingleCoil(154, true) }
 
         assertIs<ModbusProtocolException>(result.exceptionOrNull())
     }
 
     @Test
-    fun `when prefix read receives protocol exception then propagates it instead of waiting for timeout`() = runTest {
+    fun `when register read receives protocol exception then propagates it instead of waiting for timeout`() = runTest {
         val notifications = MutableSharedFlow<ByteArray>()
         val session = ModbusSession(notifications, { notifications.emit(frame(1, 131, 2)) }, 1, 1.seconds)
-        val request = ModbusFrame.readHoldingRegisters(1, 1404, 20)
 
-        val result = runCatching { session.sendAndAwaitPrefix(request, byteArrayOf(1, 3, 40)) }
+        val result = runCatching { session.readHoldingRegisters(1404, 20) }
 
         assertIs<ModbusProtocolException>(result.exceptionOrNull())
     }

@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 class SetCleaningSettingsUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
     init {
@@ -30,7 +30,7 @@ class SetCleaningSettingsUseCaseTest {
         useCase(9, 5f, 3f, 4)
 
         coVerifyOrder {
-            controller.setCleaningSettings(5f, 3f, 4)
+            controller.maintenance.setCleaningSettings(5f, 3f, 4)
         }
     }
 
@@ -42,6 +42,6 @@ class SetCleaningSettingsUseCaseTest {
         val result = runCatching { useCase(9, 5f, 3f, 4) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.setCleaningSettings(5f, 3f, 4) }
+        coVerify(exactly = 0) { controller.maintenance.setCleaningSettings(5f, 3f, 4) }
     }
 }

@@ -4,11 +4,13 @@ import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.MaintenanceSettingsRepository
 import app.geeflow.data.device.model.CleaningProgram
 import app.geeflow.data.device.model.MaintenanceSettings
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -16,11 +18,12 @@ class ObserveMaintenanceSettingsUseCase(
     private val repository: MaintenanceSettingsRepository,
     private val provider: DeviceControllerProvider,
 ) {
+    @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(deviceId: Long) = flow {
         if (repository.observe(deviceId).first() == null) {
-            val controller = provider.getController(deviceId)
-            val config = controller.deviceState.map { it.config }.filterNotNull().first()
-            val limits = controller.constraints
+            val (config, limits) = provider.observeController(deviceId).flatMapLatest { controller ->
+                controller.deviceState.mapNotNull { state -> state.config?.let { it to controller.constraints } }
+            }.first()
             val daily = CleaningProgram(
                 flushSeconds = config.cleaningTimeSec.toInt().coerceIn(limits.cleaningTimeRange),
                 restSeconds = config.cleaningStandbySec.toInt().coerceIn(limits.cleaningRestRange),

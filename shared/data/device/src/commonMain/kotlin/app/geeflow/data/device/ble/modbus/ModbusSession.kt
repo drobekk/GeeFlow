@@ -2,17 +2,14 @@
 
 package app.geeflow.data.device.ble.modbus
 
-import dev.bluefalcon.core.BlueFalcon
-import dev.bluefalcon.core.BluetoothCharacteristic
-import dev.bluefalcon.core.BluetoothPeripheral
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
@@ -27,32 +24,18 @@ import kotlin.time.Duration
  * and, for address-bearing operations, the register/address bytes of the request so a
  * stale notification from a previous call does not satisfy the current one.
  *
- * Construct via [ModbusPlugin.session].
+ * Transport-independent request/response client; accepts bytes from a connection-owned receiver.
  */
 class ModbusSession internal constructor(
     private val notifications: Flow<ByteArray>,
     private val write: suspend (ByteArray) -> Unit,
     val unitId: Byte,
     private val defaultTimeout: Duration,
+    private val completeFrames: Boolean = false,
+    private val sessionJob: Job? = null,
 ) {
     private val mutex = Mutex()
     private var needsDrain = false
-
-    internal constructor(
-        client: BlueFalcon,
-        peripheral: BluetoothPeripheral,
-        requestCharacteristic: BluetoothCharacteristic,
-        responseCharacteristic: BluetoothCharacteristic,
-        unitId: Byte,
-        defaultTimeout: Duration,
-    ) : this(
-        notifications = client.engine.characteristicNotifications.filter {
-            it.peripheral.uuid == peripheral.uuid && it.characteristic.uuid == responseCharacteristic.uuid
-        }.map { it.value },
-        write = { client.writeCharacteristic(peripheral, requestCharacteristic, it, DEFAULT_WRITE_TYPE) },
-        unitId = unitId,
-        defaultTimeout = defaultTimeout,
-    )
 
     suspend fun readCoils(address: Int, count: Int, timeout: Duration = defaultTimeout): List<Boolean> {
         val request = ModbusFrame.readCoils(unitId, address, count)
@@ -138,61 +121,48 @@ class ModbusSession internal constructor(
         ModbusFrame.parseResponse(response, unitId, ModbusFunctionCode.WRITE_MULTIPLE_COILS)
     }
 
-    /**
-     * Write an assembled Modbus request and await a validated, correlated reply.
-     * [expectedPrefix] is an additional constraint; protocol exceptions still propagate.
-     */
-    suspend fun sendAndAwaitPrefix(
-        payload: ByteArray,
-        expectedPrefix: ByteArray,
-        timeout: Duration = defaultTimeout,
-    ): ByteArray = exchange(payload, payload[FC_IDX], addressMatcher = null, timeout, expectedPrefix)
-
-    /**
-     * Write an arbitrary Modbus frame (CRC included) and wait for a response with the
-     * given function code, optionally matching on address bytes. For callers that build
-     * non-standard frames but want the protocol framing + address matching benefits.
-     */
-    suspend fun sendAndAwaitFc(
-        payload: ByteArray,
-        expectedFc: Byte,
-        addressMatcher: AddressMatcher? = null,
-        timeout: Duration = defaultTimeout,
-    ): ByteArray = exchange(payload, expectedFc, addressMatcher, timeout)
-
     private suspend fun exchange(
         payload: ByteArray,
         expectedFc: Byte,
         addressMatcher: AddressMatcher?,
         timeout: Duration,
-        expectedPrefix: ByteArray? = null,
     ): ByteArray = mutex.withLock {
-        require(payload.size >= REQUEST_MIN_SIZE && ModbusCrc.verify(payload)) { "Invalid Modbus request" }
-        require(payload[UNIT_ID_IDX] == unitId && payload[FC_IDX] == expectedFc) { "Request unit/function mismatch" }
-        if (needsDrain) drainAfterTimeout()
-        try {
-            withTimeout(timeout) {
-                coroutineScope {
-                    val frames = ModbusNotifications()
-                    var matched: ByteArray? = null
-                    val ack = async(start = CoroutineStart.UNDISPATCHED) {
-                        notifications.first { bytes ->
-                            matched = frames.receive(bytes).firstOrNull {
-                                matchResponse(it, payload, expectedFc, addressMatcher, expectedPrefix)
-                            }
-                            matched != null
-                        }
-                        requireNotNull(matched)
-                    }
-                    write(payload)
-                    val response = ack.await()
-                    ModbusFrame.parseResponse(response, unitId, expectedFc)
-                    response
+        coroutineScope {
+            val requestJob = currentCoroutineContext()[Job]
+            val completion = sessionJob?.invokeOnCompletion { requestJob?.cancel() }
+            try {
+                require(payload.size >= REQUEST_MIN_SIZE && ModbusCrc.verify(payload)) { "Invalid Modbus request" }
+                require(payload[UNIT_ID_IDX] == unitId && payload[FC_IDX] == expectedFc) {
+                    "Request unit/function mismatch"
                 }
+                if (needsDrain) drainAfterTimeout()
+                try {
+                    withTimeout(timeout) {
+                        coroutineScope {
+                            val frames = ModbusNotifications()
+                            var matched: ByteArray? = null
+                            val ack = async(start = CoroutineStart.UNDISPATCHED) {
+                                notifications.first { bytes ->
+                                    matched = (if (completeFrames) listOf(bytes) else frames.receive(bytes)).firstOrNull {
+                                        matchResponse(it, payload, expectedFc, addressMatcher)
+                                    }
+                                    matched != null
+                                }
+                                requireNotNull(matched)
+                            }
+                            write(payload)
+                            val response = ack.await()
+                            ModbusFrame.parseResponse(response, unitId, expectedFc)
+                            response
+                        }
+                    }
+                } catch (exception: CancellationException) {
+                    needsDrain = true
+                    throw exception
+                }
+            } finally {
+                completion?.dispose()
             }
-        } catch (exception: CancellationException) {
-            needsDrain = true
-            throw exception
         }
     }
 
@@ -216,7 +186,6 @@ class ModbusSession internal constructor(
         request: ByteArray,
         expectedFc: Byte,
         addressMatcher: AddressMatcher?,
-        expectedPrefix: ByteArray?,
     ): Boolean {
         if (value.size < MIN_RESPONSE_SIZE) return false
         if (value[UNIT_ID_IDX] != unitId) return false
@@ -224,9 +193,7 @@ class ModbusSession internal constructor(
         val exceptionFc = (expectedFc.toInt() or ModbusFunctionCode.EXCEPTION_MASK.toInt()).toByte()
         if (fc == exceptionFc) return true
         if (fc != expectedFc) return false
-        if (expectedPrefix != null && !value.take(expectedPrefix.size).toByteArray().contentEquals(expectedPrefix)) {
-            return false
-        }
+
         if (addressMatcher != null &&
             (value[ADDRESS_HI_IDX] != addressMatcher.hi || value[ADDRESS_LO_IDX] != addressMatcher.lo)
         ) {
@@ -273,7 +240,5 @@ class ModbusSession internal constructor(
         private const val FC_IDX = 1
         private const val ADDRESS_HI_IDX = 2
         private const val ADDRESS_LO_IDX = 3
-
-        private const val DEFAULT_WRITE_TYPE = 1
     }
 }

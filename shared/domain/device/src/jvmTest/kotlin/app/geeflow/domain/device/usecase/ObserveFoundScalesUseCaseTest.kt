@@ -6,16 +6,19 @@ import app.geeflow.data.device.model.SmartScale
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ObserveFoundScalesUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
 
     init {
         every { provider.getController(9) } returns controller
+        every { provider.observeController(9) } returns flowOf(controller)
     }
 
     @Test
@@ -24,8 +27,8 @@ class ObserveFoundScalesUseCaseTest {
         every { controller.foundScales } returns expected
         val useCase = ObserveFoundScalesUseCase(provider)
 
-        val result = useCase(9)
+        val result = useCase(9).first()
 
-        assertEquals(expected, result)
+        assertEquals(expected.value, result)
     }
 }

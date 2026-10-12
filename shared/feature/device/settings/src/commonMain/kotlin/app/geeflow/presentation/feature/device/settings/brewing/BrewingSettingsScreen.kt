@@ -80,6 +80,7 @@ import geeflow.shared.feature.device.settings.generated.resources.device_setting
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_paddle_time_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_pulse_heating
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_pulse_heating_description
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_firmware_version
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_treat_manual_as_flush
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_treat_manual_as_flush_description
 import kotlinx.coroutines.launch
@@ -286,6 +287,12 @@ private fun PaddleSection(
         onValueConfirmed = { onEvent(PaddleTimeChanged(it)) },
         modifier = Modifier.fillMaxWidth(),
     )
+    state.firmwareVersion?.let { version ->
+        Text(
+            text = stringResource(Res.string.device_settings_firmware_version, version),
+            modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 16.dp),
+        )
+    }
     GeeFlowToggleListItem(
         title = stringResource(Res.string.device_settings_treat_manual_as_flush),
         subtitle = stringResource(Res.string.device_settings_treat_manual_as_flush_description),

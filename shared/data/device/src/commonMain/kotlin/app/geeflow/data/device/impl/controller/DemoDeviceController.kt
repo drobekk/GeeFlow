@@ -8,7 +8,14 @@ import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.ProfileStep
+import app.geeflow.data.device.DeviceAccessoryControl
+import app.geeflow.data.device.DeviceBrewingControl
+import app.geeflow.data.device.DeviceConnectionControl
 import app.geeflow.data.device.DeviceController
+import app.geeflow.data.device.DeviceMaintenanceControl
+import app.geeflow.data.device.DeviceProfileControl
+import app.geeflow.data.device.DeviceSettingsControl
+import app.geeflow.data.device.TimedPumpProfileSupport
 import app.geeflow.data.device.model.Device
 import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceConnection
@@ -17,14 +24,12 @@ import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.SingleDoseGrinder
 import app.geeflow.data.device.model.SmartScale
 import app.geeflow.data.device.model.pumpTelemetry
+import app.geeflow.data.device.openFreeHandSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,11 +38,28 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
-class DemoDeviceController(private val scope: CoroutineScope) : DeviceController {
+class DemoDeviceController(
+    private val scope: CoroutineScope
+) : DeviceController,
+    DeviceConnectionControl,
+    DeviceSettingsControl,
+    DeviceBrewingControl,
+    DeviceMaintenanceControl,
+    DeviceProfileControl,
+    DeviceAccessoryControl {
+    override var connectionGeneration: Long = 0
+        private set
+    override val connection: DeviceConnectionControl get() = this
+    override val settings: DeviceSettingsControl get() = this
+    override val brewing: DeviceBrewingControl get() = this
+    override val maintenance: DeviceMaintenanceControl get() = this
+    override val profiles: DeviceProfileControl get() = this
+    override val accessories: DeviceAccessoryControl get() = this
+
     override suspend fun stopLiveSession() = stopFreeVariableBrewing()
     override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == DeviceState.BrewStatus.FreeVariable
-    override val profilingCapabilities = WendougeeProfiling.capabilities
-    override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
+    override val profilingCapabilities = TimedPumpProfileSupport.capabilities
+    override fun assessNativeProfile(profile: BrewProfile) = TimedPumpProfileSupport.assessNative(profile)
     override fun telemetry() = deviceState.value.let { state ->
         // A connected simulator has working pump sensors even before the first brew.
         // Idle counters are zero; nullable display values must not imply missing hardware.
@@ -61,9 +83,6 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
     private val _foundScales = MutableStateFlow(listOfNotNull(_deviceState.value.smartScale))
     override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
-
-    private val _resolvedConnection = MutableSharedFlow<DeviceConnection>(extraBufferCapacity = 1)
-    override val resolvedConnection: SharedFlow<DeviceConnection> = _resolvedConnection.asSharedFlow()
 
     override val constraints: DeviceConstraints = DeviceConstraints(
         brewTempRange = 0..BREW_MAX_TEMP,
@@ -93,8 +112,9 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         DeviceCapability.FlowProfiling,
     )
 
-    override fun connect(device: Device) {
-        scope.launch {
+    override suspend fun connect(device: Device): DeviceConnection {
+        connectionGeneration++
+        run {
             _deviceState.update { it.copy(connectionStatus = DeviceState.ConnectionStatus.Connecting) }
             delay(CONNECT_DELAY_MS.milliseconds)
             _deviceState.update {
@@ -124,15 +144,22 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
                 )
             }
         }
+        return device.connection
     }
 
-    override fun disconnect() {
+    override suspend fun disconnect() {
+        connectionGeneration++
         brewJob?.cancel()
         grinderSearchJob?.cancel()
         grinderConnectionGeneration++
         _foundSingleDoseGrinders.value = emptyList()
         _deviceState.update { defaultDeviceState() }
         _foundScales.value = listOfNotNull(_deviceState.value.smartScale)
+    }
+
+    override suspend fun refreshAccessories() {
+        requestSmartScaleList()
+        requestSingleDoseGrinderList()
     }
 
     private var brewJob: Job? = null
@@ -378,6 +405,10 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
         }
     }
 
+    override suspend fun setAgileRing(enabled: Boolean) {
+        error("Agile Ring is not available on this device")
+    }
+
     override suspend fun setWaterAlarm(enabled: Boolean) {
         delay(DEMO_SETTER_DELAY_MS.milliseconds)
         _deviceState.update { state ->
@@ -390,7 +421,8 @@ class DemoDeviceController(private val scope: CoroutineScope) : DeviceController
 
     private var freeVarFlowTarget = DEFAULT_FREE_VAR_FLOW
 
-    override suspend fun startFreeVariableBrewing(isFlow: Boolean) {
+    override suspend fun startFreeVariableBrewing(mode: FreeHandControlMode) {
+        val isFlow = mode == FreeHandControlMode.Flow
         brewJob?.cancel()
         _deviceState.update {
             it.copy(

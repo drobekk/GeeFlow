@@ -1,5 +1,6 @@
 package app.geeflow.domain.device.usecase
 
+import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
@@ -18,7 +19,7 @@ import kotlin.test.assertTrue
 
 class StartFreeVariableBrewingUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
@@ -38,7 +39,7 @@ class StartFreeVariableBrewingUseCaseTest {
         useCase(9, true)
 
         coVerifyOrder {
-            controller.startFreeVariableBrewing(true)
+            controller.brewing.startFreeVariableBrewing(FreeHandControlMode.Flow)
         }
     }
 
@@ -50,7 +51,7 @@ class StartFreeVariableBrewingUseCaseTest {
         val result = runCatching { useCase(9, true) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.startFreeVariableBrewing(true) }
+        coVerify(exactly = 0) { controller.brewing.startFreeVariableBrewing(FreeHandControlMode.Flow) }
     }
 
     @Test
@@ -59,6 +60,6 @@ class StartFreeVariableBrewingUseCaseTest {
 
         useCase(9, false)
 
-        coVerify(exactly = 1) { controller.startFreeVariableBrewing(false) }
+        coVerify(exactly = 1) { controller.brewing.startFreeVariableBrewing(FreeHandControlMode.Pressure) }
     }
 }

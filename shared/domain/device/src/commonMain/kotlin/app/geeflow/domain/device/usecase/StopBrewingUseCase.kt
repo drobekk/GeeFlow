@@ -14,9 +14,9 @@ class StopBrewingUseCase(
         if (coordinator.stop(deviceId)) return@with
         requireConnected(deviceId)
         when (deviceState.value.brewStatus) {
-            DeviceState.BrewStatus.Profile -> stopProfileBrewing()
-            DeviceState.BrewStatus.FreeVariable -> stopFreeVariableBrewing()
-            DeviceState.BrewStatus.Manual -> stopManualBrewing()
+            DeviceState.BrewStatus.Profile -> profiles.stopProfileBrewing()
+            DeviceState.BrewStatus.FreeVariable -> brewing.stopFreeVariableBrewing()
+            DeviceState.BrewStatus.Manual -> brewing.stopManualBrewing()
             else -> Unit
         }
     }

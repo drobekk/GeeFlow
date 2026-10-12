@@ -7,8 +7,6 @@ import androidx.datastore.preferences.core.Preferences
 import app.geeflow.app.db.AndroidDatabaseDriverFactory
 import app.geeflow.app.db.DatabaseDriverFactory
 import app.geeflow.core.datastore.createAndroidDataStore
-import app.geeflow.data.device.ble.modbus.ModbusPlugin
-import app.geeflow.data.device.ble.modbus.installModbus
 import dev.bluefalcon.core.BlueFalcon
 import dev.bluefalcon.core.Logger
 import dev.bluefalcon.engine.android.AndroidEngine
@@ -28,15 +26,11 @@ actual class PlatformModule {
     fun dataStore(context: Context): DataStore<Preferences> = createAndroidDataStore(context)
 
     @Single
-    fun modbusPlugin(): ModbusPlugin = installModbus()
-
-    @Single
-    fun blueFalcon(context: Context, modbusPlugin: ModbusPlugin): BlueFalcon = BlueFalcon {
+    fun blueFalcon(context: Context): BlueFalcon = BlueFalcon {
         engine = AndroidEngine(
             context = context.applicationContext as Application,
             logger = KermitBlueFalconLogger,
         )
-        install(modbusPlugin)
     }
 }
 

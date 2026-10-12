@@ -15,7 +15,7 @@ import kotlin.test.Test
 
 class StopBrewingUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val coordinator = mockk<ProfileExecutionCoordinator>(relaxUnitFun = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
@@ -33,7 +33,7 @@ class StopBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 1) { controller.stopManualBrewing() }
+        coVerify(exactly = 1) { controller.brewing.stopManualBrewing() }
     }
 
     @Test
@@ -43,7 +43,7 @@ class StopBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 1) { controller.stopProfileBrewing() }
+        coVerify(exactly = 1) { controller.profiles.stopProfileBrewing() }
     }
 
     @Test
@@ -53,7 +53,7 @@ class StopBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 1) { controller.stopFreeVariableBrewing() }
+        coVerify(exactly = 1) { controller.brewing.stopFreeVariableBrewing() }
     }
 
     @Test
@@ -63,9 +63,9 @@ class StopBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 0) { controller.stopManualBrewing() }
-        coVerify(exactly = 0) { controller.stopProfileBrewing() }
-        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopManualBrewing() }
+        coVerify(exactly = 0) { controller.profiles.stopProfileBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopFreeVariableBrewing() }
     }
 
     @Test
@@ -74,9 +74,9 @@ class StopBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 0) { controller.stopManualBrewing() }
-        coVerify(exactly = 0) { controller.stopProfileBrewing() }
-        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopManualBrewing() }
+        coVerify(exactly = 0) { controller.profiles.stopProfileBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopFreeVariableBrewing() }
     }
 
     @Test
@@ -86,8 +86,8 @@ class StopBrewingUseCaseTest {
 
         useCase(9)
 
-        coVerify(exactly = 0) { controller.stopManualBrewing() }
-        coVerify(exactly = 0) { controller.stopProfileBrewing() }
-        coVerify(exactly = 0) { controller.stopFreeVariableBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopManualBrewing() }
+        coVerify(exactly = 0) { controller.profiles.stopProfileBrewing() }
+        coVerify(exactly = 0) { controller.brewing.stopFreeVariableBrewing() }
     }
 }

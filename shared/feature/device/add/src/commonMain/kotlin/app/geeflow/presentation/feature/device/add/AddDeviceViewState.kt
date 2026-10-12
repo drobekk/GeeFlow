@@ -27,6 +27,7 @@ internal data class AddDeviceViewState(
     )
 
     sealed interface Dialog {
+        data class ModelSelection(val device: Device) : Dialog
         data class ExperimentalWarning(val device: Device) : Dialog
     }
 }

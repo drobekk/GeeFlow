@@ -81,4 +81,6 @@
     <string name="error_device_fault">Laite ilmoittaa virheestä. Korjaa sen syy ennen kahvin valmistuksen tai puhdistuksen aloittamista. Katso lisätiedot virhepainikkeesta.</string>
     <string name="error_grinder_not_connected">Yhdistä Single Dose -mylly ensin</string>
     <string name="common_machine_busy">Kone on varattu</string>
+    <string name="device_model_title">Laitteen malli</string>
+    <string name="device_model_select">Valitse kahvikoneesi malli. Se määrittää, miten GeeFlow viestii laitteen kanssa. Väärä valinta voi aiheuttaa viestintävirheitä.</string>
 </resources>

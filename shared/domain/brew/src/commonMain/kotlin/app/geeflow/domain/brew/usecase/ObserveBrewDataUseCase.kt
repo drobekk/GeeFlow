@@ -4,13 +4,16 @@ import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewSession
 import app.geeflow.data.brew.model.ProfileExecutionTrace
+import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.device.ProfileExecutionCoordinator
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import org.koin.core.annotation.Factory
 import kotlin.math.roundToInt
@@ -25,9 +28,13 @@ class ObserveBrewDataUseCase(
     private val provider: DeviceControllerProvider,
     private val getSelectedUserUseCase: GetSelectedUserUseCase,
 ) {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    operator fun invoke(deviceId: Long): Flow<BrewSession> =
+        provider.observeController(deviceId).flatMapLatest { controller -> observeSession(deviceId, controller) }
+
     @Suppress("CyclomaticComplexMethod")
-    operator fun invoke(deviceId: Long): Flow<BrewSession> {
-        val telemetry = provider.getController(deviceId).deviceState
+    private fun observeSession(deviceId: Long, controller: DeviceController): Flow<BrewSession> {
+        val telemetry = controller.deviceState
         val deviceState = telemetry.combine(coordinator.state) { state, run ->
             if (run.active && run.deviceId == deviceId) state.copy(brewStatus = DeviceState.BrewStatus.Profile) else state
         }

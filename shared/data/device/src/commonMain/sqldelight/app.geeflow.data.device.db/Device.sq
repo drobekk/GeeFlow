@@ -8,7 +8,9 @@ CREATE TABLE devices (
   manufacturer TEXT NOT NULL DEFAULT '',
   model TEXT NOT NULL DEFAULT '',
   version TEXT NOT NULL DEFAULT '',
-  boundProfileId INTEGER DEFAULT NULL
+  boundProfileId INTEGER DEFAULT NULL,
+  modelId TEXT,
+  modelSource TEXT
 );
 
 CREATE INDEX devices_ble_mac_idx ON devices(bleMacAddress);
@@ -23,8 +25,8 @@ selectByBleMac:
 SELECT * FROM devices WHERE bleMacAddress = ?;
 
 insertDevice:
-INSERT INTO devices(name, connectionType, blePeripheralId, bleMacAddress, isLastUsed, manufacturer, model, version)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO devices(name, connectionType, blePeripheralId, bleMacAddress, isLastUsed, manufacturer, model, version, modelId, modelSource)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertRowId:
 SELECT last_insert_rowid();
@@ -55,3 +57,6 @@ DELETE FROM devices WHERE id = ?;
 
 clearAll:
 DELETE FROM devices;
+
+updateModel:
+UPDATE devices SET modelId = ?, modelSource = ?, manufacturer = ?, model = ? WHERE id = ?;

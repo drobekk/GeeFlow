@@ -81,4 +81,6 @@
     <string name="error_device_fault">Maskinen melder en fejl. Afhjælp årsagen, før du starter brygning eller rengøring. Tryk på fejlknappen for detaljer.</string>
     <string name="error_grinder_not_connected">Tilslut først Single Dose-kværnen</string>
     <string name="common_machine_busy">Maskinen er optaget</string>
+    <string name="device_model_title">Maskinmodel</string>
+    <string name="device_model_select">Vælg din maskines model. Den bestemmer, hvordan GeeFlow kommunikerer med enheden. Et forkert valg kan medføre kommunikationsfejl.</string>
 </resources>

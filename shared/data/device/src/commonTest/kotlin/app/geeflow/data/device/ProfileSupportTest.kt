@@ -40,7 +40,9 @@ class ProfileSupportTest {
 
     @Test fun samePortableRecipeCanBeNativeAppControlledOrUnsupported() {
         val native = object : DeviceController by demo {
-            override fun assessNativeProfile(profile: BrewProfile): List<ProfileIssue> = emptyList()
+            override val profiles = object : DeviceProfileControl by demo.profiles {
+                override fun assessNativeProfile(profile: BrewProfile): List<ProfileIssue> = emptyList()
+            }
         }
         val unsupported = object : DeviceController by demo {
             override val profilingCapabilities = ProfilingCapabilities()

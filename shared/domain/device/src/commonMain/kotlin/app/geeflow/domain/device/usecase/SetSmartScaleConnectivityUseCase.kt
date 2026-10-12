@@ -7,6 +7,6 @@ import org.koin.core.annotation.Factory
 class SetSmartScaleConnectivityUseCase(private val provider: DeviceControllerProvider) {
     suspend operator fun invoke(deviceId: Long, enabled: Boolean) = with(provider.getController(deviceId)) {
         requireConnected(deviceId)
-        setSmartScaleConnectivity(enabled)
+        accessories.setSmartScaleConnectivity(enabled)
     }
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
@@ -26,16 +27,17 @@ class ObserveMaintenanceSettingsUseCaseTest {
         val controller = DemoDeviceController(scope)
         val repository = MemoryRepository()
         val provider = object : DeviceControllerProvider {
+            override fun observeController(deviceId: Long) = flowOf(getController(deviceId))
             override val currentDeviceId = MutableStateFlow<Long?>(1L)
             override fun getController(deviceId: Long) = controller
-            override fun disconnectCurrent() = Unit
+            override suspend fun disconnectCurrent() = Unit
         }
         try {
-            controller.connect(Device(name = "Demo", connection = DeviceConnection.Ble("demo", "demo")))
+            controller.connection.connect(Device(name = "Demo", connection = DeviceConnection.Ble("demo", "demo")))
             withTimeout(3000) {
                 controller.deviceState.first { it.connectionStatus == DeviceState.ConnectionStatus.Connected }
             }
-            controller.setCleaningSettings(5f, 6f, 8)
+            controller.maintenance.setCleaningSettings(5f, 6f, 8)
             val observe = ObserveMaintenanceSettingsUseCase(repository, provider)
 
             val first = observe(1).first()
@@ -44,7 +46,7 @@ class ObserveMaintenanceSettingsUseCaseTest {
             assertEquals(10, first.deep.cycles)
             assertEquals(6, first.deep.restSeconds)
 
-            controller.setCleaningSettings(1f, 1f, 1)
+            controller.maintenance.setCleaningSettings(1f, 1f, 1)
             val reconnected = observe(1).first()
 
             assertEquals(first, reconnected)

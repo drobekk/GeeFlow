@@ -81,4 +81,6 @@
     <string name="error_device_fault">A máquina indica um erro. Resolva a causa antes de iniciar a preparação de café ou a limpeza. Prima o botão de erro para ver os detalhes.</string>
     <string name="error_grinder_not_connected">Ligue primeiro o moinho Single Dose</string>
     <string name="common_machine_busy">Máquina ocupada</string>
+    <string name="device_model_title">Modelo da máquina</string>
+    <string name="device_model_select">Selecione o modelo da sua máquina. Este determina como o GeeFlow comunica com o dispositivo. Uma escolha incorreta pode causar erros de comunicação.</string>
 </resources>

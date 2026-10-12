@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Ota haku käyttöön löytääksesi ja yhdistääksesi laitteen.</string>
     <string name="device_settings_connectivity_connection_help">Yhdistäminen epäonnistui. Varmista, että lisälaite on päällä ja lähellä, ja yritä uudelleen. Käynnistä kahvikone tarvittaessa uudelleen.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Ota ohjausrengas käyttöön. Joissakin ympäristöissä voi esiintyä satunnaisia häiriöitä.</string>
+    <string name="device_settings_firmware_version">Laiteohjelmisto: %1$d</string>
 </resources>

@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Включите поиск, чтобы найти и подключить устройство.</string>
     <string name="device_settings_connectivity_connection_help">Не удалось подключиться. Убедитесь, что аксессуар включён и находится рядом, и повторите попытку. При необходимости перезапустите кофемашину.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Включите кольцо управления. В некоторых условиях возможны периодические помехи.</string>
+    <string name="device_settings_firmware_version">Прошивка: %1$d</string>
 </resources>

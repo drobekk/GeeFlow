@@ -9,6 +9,8 @@ import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.FreeHandSample
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.DeviceController
+import app.geeflow.data.device.DeviceProfileControl
+import app.geeflow.data.device.TimedPumpProfileSupport
 import app.geeflow.data.device.assessProfile
 import app.geeflow.data.device.ble.modbus.ModbusCrcException
 import app.geeflow.data.device.ble.modbus.ModbusProtocolException
@@ -86,7 +88,7 @@ class WendougeeNativeProfileTest {
     fun `when a profile ends with a pause then native execution is rejected without discarding the pause`() {
         val profile = phaseProfile(listOf(ProfileStep.Pressure(5, 6f), ProfileStep.Wait(3)))
 
-        val issues = WendougeeProfiling.assessNative(profile)
+        val issues = TimedPumpProfileSupport.assessNative(profile)
         val result = runCatching { compiler.buildProfileWrites(profile) }
 
         assertEquals(listOf("1"), issues.map { it.phaseId })
@@ -108,8 +110,10 @@ class WendougeeNativeProfileTest {
     fun `when a profile ends with a pause then application control preserves the requested program`() = runTest {
         val profile = phaseProfile(listOf(ProfileStep.Pressure(5, 6f), ProfileStep.Wait(3)))
         val controller = object : DeviceController by DemoDeviceController(backgroundScope) {
-            override val profilingCapabilities = WendougeeProfiling.capabilities
-            override fun assessNativeProfile(profile: BrewProfile) = WendougeeProfiling.assessNative(profile)
+            override val profilingCapabilities = TimedPumpProfileSupport.capabilities
+            override val profiles = object : DeviceProfileControl by DemoDeviceController(backgroundScope).profiles {
+                override fun assessNativeProfile(profile: BrewProfile) = TimedPumpProfileSupport.assessNative(profile)
+            }
         }
 
         val support = controller.assessProfile(profile)

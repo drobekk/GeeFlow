@@ -139,7 +139,7 @@ class AutoFlushCoordinator(
                 if (canStart(id, controller, settings)) {
                     controller.requireReady(id)
                     trigger.automaticStartRequested()
-                    controller.startManualBrewing()
+                    controller.brewing.startManualBrewing()
                 }
             }
         } catch (error: CancellationException) {

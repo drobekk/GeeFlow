@@ -5,5 +5,5 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class DisconnectCurrentDeviceUseCase(private val provider: DeviceControllerProvider) {
-    operator fun invoke() = provider.disconnectCurrent()
+    suspend operator fun invoke() = provider.disconnectCurrent()
 }

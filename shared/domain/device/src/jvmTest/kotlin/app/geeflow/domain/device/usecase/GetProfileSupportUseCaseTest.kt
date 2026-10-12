@@ -18,13 +18,15 @@ import kotlin.test.assertFalse
 
 class GetProfileSupportUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val constraints = DeviceConstraints(80..100, 120..140, 1..10, 1..60, 1..30, 1..30, 1..10, 0f..12f, 0f..10f)
 
     init {
         every { provider.getController(9) } returns controller
         every { controller.constraints } returns constraints
-        every { controller.assessNativeProfile(any()) } returns listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
+        every {
+            controller.profiles.assessNativeProfile(any())
+        } returns listOf(ProfileIssue(ProfileIssueCode.NativeFeature))
     }
 
     @Test

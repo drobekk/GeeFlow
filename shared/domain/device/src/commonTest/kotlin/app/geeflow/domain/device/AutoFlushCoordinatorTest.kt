@@ -3,6 +3,7 @@ package app.geeflow.domain.device
 import app.geeflow.data.brew.BrewHistoryRepository
 import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewHistoryEntry
+import app.geeflow.data.device.DeviceBrewingControl
 import app.geeflow.data.device.DeviceBrewingSettingsRepository
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
@@ -16,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -291,16 +293,19 @@ class AutoFlushCoordinatorTest {
 
         private val controller = object : DeviceController by DemoDeviceController(scope) {
             override val deviceState = state
-            override suspend fun startManualBrewing() {
-                check(!failStart) { "start failed" }
-                starts++
-                state.value = state.value.copy(brewStatus = BrewStatus.Manual)
+            override val brewing = object : DeviceBrewingControl by DemoDeviceController(scope).brewing {
+                override suspend fun startManualBrewing() {
+                    check(!failStart) { "start failed" }
+                    starts++
+                    state.value = state.value.copy(brewStatus = BrewStatus.Manual)
+                }
             }
         }
         private val provider = object : DeviceControllerProvider {
+            override fun observeController(deviceId: Long) = flowOf(getController(deviceId))
             override val currentDeviceId = this@Fixture.currentDeviceId
             override fun getController(deviceId: Long) = controller
-            override fun disconnectCurrent() = Unit
+            override suspend fun disconnectCurrent() = Unit
         }
         private val repository = object : DeviceBrewingSettingsRepository {
             override fun observe(deviceId: Long) = if (deviceId == 1L) settings else otherSettings

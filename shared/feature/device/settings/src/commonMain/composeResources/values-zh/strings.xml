@@ -46,4 +46,7 @@
     <string name="device_settings_connectivity_disabled_info">启用搜索以查找并连接设备。</string>
     <string name="device_settings_connectivity_connection_help">无法连接。请确认配件已开启且在附近，然后重试。如有必要，请重启咖啡机。</string>
     <string name="device_settings_connectivity_single_dose">单次定量</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">启用控制环。在某些环境中可能偶尔出现干扰。</string>
+    <string name="device_settings_firmware_version">固件：%1$d</string>
 </resources>

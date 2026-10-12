@@ -23,7 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class DeviceErrorGuardTest {
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val provider = mockk<DeviceControllerProvider>()
     private val maintenance = mockk<MaintenanceSettingsRepository>(relaxUnitFun = true)
     private val users = mockk<UserRepository>()
@@ -70,13 +70,13 @@ class DeviceErrorGuardTest {
         }
 
         coVerify(exactly = 0) {
-            controller.startManualBrewing()
-            controller.startFreeVariableBrewing(any())
+            controller.brewing.startManualBrewing()
+            controller.brewing.startFreeVariableBrewing(any())
             coordinator.start(any(), any())
-            controller.setCleaningSettings(any(), any(), any())
-            controller.startCleaning()
-            controller.setFreeBrewFlowTarget(any())
-            controller.setFreeBrewPressureTarget(any())
+            controller.maintenance.setCleaningSettings(any(), any(), any())
+            controller.maintenance.startCleaning()
+            controller.brewing.setFreeBrewFlowTarget(any())
+            controller.brewing.setFreeBrewPressureTarget(any())
             maintenance.postpone(any(), any(), any())
         }
     }
@@ -93,7 +93,7 @@ class DeviceErrorGuardTest {
 
         StartManualBrewingUseCase(coordinator, provider)(9)
 
-        coVerify(exactly = 1) { controller.startManualBrewing() }
+        coVerify(exactly = 1) { controller.brewing.startManualBrewing() }
     }
 
     @Test
@@ -112,15 +112,17 @@ class DeviceErrorGuardTest {
     fun `when a fault is active then stop commands remain available`() = runTest {
         state.value = state.value.copy(error = DeviceError(6), brewStatus = DeviceState.BrewStatus.Manual)
         coEvery { coordinator.stop(9) } returns false
+        val brewing = controller.brewing
+        val cleaning = controller.maintenance
 
         StopBrewingUseCase(provider, coordinator)(9)
         StopCleaningUseCase(provider)(9)
         StopFreeVariableBrewingUseCase(coordinator, provider)(9)
 
         coVerify(exactly = 1) {
-            controller.stopManualBrewing()
-            controller.stopCleaning()
-            controller.stopFreeVariableBrewing()
+            brewing.stopManualBrewing()
+            cleaning.stopCleaning()
+            brewing.stopFreeVariableBrewing()
         }
     }
 
@@ -133,8 +135,8 @@ class DeviceErrorGuardTest {
 
         assertIs<DeviceErrorException>(result.exceptionOrNull())
         coVerify(exactly = 0) {
-            controller.startProfileBrewing(any())
-            controller.openLiveSession(any())
+            controller.profiles.startProfileBrewing(any())
+            controller.profiles.openLiveSession(any())
         }
     }
 }

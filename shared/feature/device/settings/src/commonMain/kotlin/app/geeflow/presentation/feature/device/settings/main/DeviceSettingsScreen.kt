@@ -64,7 +64,6 @@ internal fun DeviceSettingsScreen(
     }.takeIf { it != null && it >= 0 }
 
     NavigatorEffect(navigator, viewModel.navEvent)
-
     Content(
         viewState = viewState,
         selectedIndex = selectedIndex,

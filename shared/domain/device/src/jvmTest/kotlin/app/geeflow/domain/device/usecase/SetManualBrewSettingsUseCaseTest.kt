@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 class SetManualBrewSettingsUseCaseTest {
     private val provider = mockk<DeviceControllerProvider>(relaxUnitFun = true)
-    private val controller = mockk<DeviceController>(relaxUnitFun = true)
+    private val controller = mockk<DeviceController>(relaxed = true)
     private val state = MutableStateFlow(DeviceState(connectionStatus = DeviceState.ConnectionStatus.Connected))
 
     init {
@@ -30,8 +30,8 @@ class SetManualBrewSettingsUseCaseTest {
         useCase(9, 9f, 30f)
 
         coVerifyOrder {
-            controller.setManualBrewPressure(9f)
-            controller.setManualBrewTime(30f)
+            controller.settings.setManualBrewPressure(9f)
+            controller.settings.setManualBrewTime(30f)
         }
     }
 
@@ -43,7 +43,7 @@ class SetManualBrewSettingsUseCaseTest {
         val result = runCatching { useCase(9, 9f, 30f) }
 
         assertTrue(result.exceptionOrNull() is DeviceNotConnectedException)
-        coVerify(exactly = 0) { controller.setManualBrewPressure(9f) }
-        coVerify(exactly = 0) { controller.setManualBrewTime(30f) }
+        coVerify(exactly = 0) { controller.settings.setManualBrewPressure(9f) }
+        coVerify(exactly = 0) { controller.settings.setManualBrewTime(30f) }
     }
 }

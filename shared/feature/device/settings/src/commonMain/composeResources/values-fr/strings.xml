@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Activez la recherche pour trouver et connecter un appareil.</string>
     <string name="device_settings_connectivity_connection_help">Connexion impossible. Vérifiez que l’accessoire est allumé et à proximité, puis réessayez. Si nécessaire, redémarrez la machine à café.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Activez la bague de contrôle. Des interférences occasionnelles peuvent survenir dans certains environnements.</string>
+    <string name="device_settings_firmware_version">Firmware : %1$d</string>
 </resources>

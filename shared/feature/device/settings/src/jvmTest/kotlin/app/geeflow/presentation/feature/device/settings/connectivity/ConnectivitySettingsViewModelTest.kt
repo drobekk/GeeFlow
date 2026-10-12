@@ -30,8 +30,10 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
@@ -54,8 +56,8 @@ class ConnectivitySettingsViewModelTest {
             viewModel.handleEvent(SearchToggled(true))
             runCurrent()
 
-            coVerify(exactly = 1) { controller.setSmartScaleConnectivity(true) }
-            coVerify(exactly = 1) { controller.setSingleDoseGrinderConnectivity(true) }
+            coVerify(exactly = 1) { accessories.setSmartScaleConnectivity(true) }
+            coVerify(exactly = 1) { accessories.setSingleDoseGrinderConnectivity(true) }
         }
     }
 
@@ -78,8 +80,8 @@ class ConnectivitySettingsViewModelTest {
                 AccessoryConnectionStatus.Connecting,
                 viewModel.viewState.value.grinder.devices.single().connectionStatus,
             )
-            coVerify(exactly = 1) { controller.connectSingleDoseGrinder("Milo Demo") }
-            coVerify(exactly = 0) { controller.connectSmartScale(any()) }
+            coVerify(exactly = 1) { accessories.connectSingleDoseGrinder("Milo Demo") }
+            coVerify(exactly = 0) { accessories.connectSmartScale(any()) }
         }
     }
 
@@ -112,10 +114,10 @@ class ConnectivitySettingsViewModelTest {
             viewModel.handleEvent(ConnectionClicked("Milo Demo"))
             runCurrent()
 
-            coVerify(exactly = 1) { controller.requestSingleDoseGrinderList() }
-            coVerify(exactly = 1) { controller.disconnectSingleDoseGrinder() }
-            coVerify(exactly = 0) { controller.requestSmartScaleList() }
-            coVerify(exactly = 0) { controller.disconnectSmartScale() }
+            coVerify(exactly = 1) { accessories.requestSingleDoseGrinderList() }
+            coVerify(exactly = 1) { accessories.disconnectSingleDoseGrinder() }
+            coVerify(exactly = 0) { accessories.requestSmartScaleList() }
+            coVerify(exactly = 0) { accessories.disconnectSmartScale() }
         }
     }
 
@@ -125,13 +127,14 @@ class ConnectivitySettingsViewModelTest {
         try {
             fixture.block()
         } finally {
-            fixture.viewModel.viewModelScope.cancel()
+            fixture.viewModel.viewModelScope.coroutineContext[Job]?.cancelAndJoin()
             Dispatchers.resetMain()
         }
     }
 
     private class Fixture {
-        val controller = mockk<DeviceController>(relaxUnitFun = true)
+        val controller = mockk<DeviceController>(relaxed = true)
+        val accessories = controller.accessories
         val state = MutableStateFlow(
             DeviceState(
                 connectionStatus = DeviceState.ConnectionStatus.Connected,
@@ -144,6 +147,7 @@ class ConnectivitySettingsViewModelTest {
 
         init {
             every { provider.getController(9) } returns controller
+            every { provider.observeController(9) } returns flowOf(controller)
             every { controller.deviceState } returns state
             every { controller.foundScales } returns MutableStateFlow(listOf(SmartScale("BOOKOO_Test", false)))
             every { controller.foundSingleDoseGrinders } returns

@@ -6,6 +6,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.ExitCondition
+import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.ThresholdComparison
 import app.geeflow.data.device.assessProfile
@@ -45,7 +46,7 @@ class DemoProfileAvailabilityTest {
             ),
         )
         try {
-            controller.startProfileBrewing(profile)
+            controller.profiles.startProfileBrewing(profile)
             val terminal = withTimeout(3000) {
                 controller.deviceState.first { it.brewStatus == DeviceState.BrewStatus.Idle }
             }
@@ -77,7 +78,7 @@ class DemoProfileAvailabilityTest {
             ),
         )
         try {
-            controller.connect(
+            controller.connection.connect(
                 Device(
                     name = "Demo",
                     connection = DeviceConnection.Ble(peripheralId = "demo", macAddress = "demo"),
@@ -89,28 +90,28 @@ class DemoProfileAvailabilityTest {
             assertDefaultScaleConnected(controller)
             if (metric == BrewMetric.CupWeight) {
                 assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isEmpty())
-                controller.disconnectSmartScale()
+                controller.accessories.disconnectSmartScale()
                 assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isNotEmpty())
-                controller.connectSmartScale(name = "Bookoo Themis")
+                controller.accessories.connectSmartScale(name = "Bookoo Themis")
             }
             assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isEmpty())
-            assertEquals(0f, controller.telemetry()[BrewMetric.PumpedVolume])
-            assertEquals(0f, controller.telemetry()[BrewMetric.PumpFlow])
-            if (metric == BrewMetric.CupWeight) assertEquals(0f, controller.telemetry()[BrewMetric.CupWeight])
-            controller.startFreeVariableBrewing(isFlow = false)
+            assertEquals(0f, controller.profiles.telemetry()[BrewMetric.PumpedVolume])
+            assertEquals(0f, controller.profiles.telemetry()[BrewMetric.PumpFlow])
+            if (metric == BrewMetric.CupWeight) assertEquals(0f, controller.profiles.telemetry()[BrewMetric.CupWeight])
+            controller.brewing.startFreeVariableBrewing(FreeHandControlMode.Pressure)
             if (metric == BrewMetric.CupWeight) {
                 withTimeout(8000) {
                     controller.deviceState.first { (it.weight ?: 0f) > 0f }
                 }
-                assertTrue(requireNotNull(controller.telemetry()[BrewMetric.CupWeight]) > 0f)
+                assertTrue(requireNotNull(controller.profiles.telemetry()[BrewMetric.CupWeight]) > 0f)
                 assertTrue(controller.deviceState.value.smartScale?.isConnected == true)
                 assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isEmpty())
             }
-            controller.stopFreeVariableBrewing()
+            controller.brewing.stopFreeVariableBrewing()
             assertTrue(controller.assessProfile(profile = profile, checkAvailability = true).issues.isEmpty())
-            controller.disconnect()
-            assertNull(controller.telemetry()[BrewMetric.PumpedVolume])
-            assertNull(controller.telemetry()[BrewMetric.CupWeight])
+            controller.connection.disconnect()
+            assertNull(controller.profiles.telemetry()[BrewMetric.PumpedVolume])
+            assertNull(controller.profiles.telemetry()[BrewMetric.CupWeight])
         } finally {
             scope.cancel()
         }
@@ -119,7 +120,7 @@ class DemoProfileAvailabilityTest {
         assertEquals("Bookoo Themis", controller.deviceState.value.smartScale?.name)
         assertTrue(controller.deviceState.value.smartScaleEnabled)
         assertTrue(controller.deviceState.value.smartScale?.isConnected == true)
-        assertEquals(0f, controller.telemetry()[BrewMetric.CupWeight])
+        assertEquals(0f, controller.profiles.telemetry()[BrewMetric.CupWeight])
         assertEquals(controller.deviceState.value.smartScale, controller.foundScales.value.single())
     }
 }

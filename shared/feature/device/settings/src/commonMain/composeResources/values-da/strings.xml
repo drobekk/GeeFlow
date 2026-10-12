@@ -38,4 +38,7 @@
     <string name="device_settings_connectivity_disabled_info">Aktivér søgning for at finde og forbinde en enhed.</string>
     <string name="device_settings_connectivity_connection_help">Kunne ikke oprette forbindelse. Kontrollér, at tilbehøret er tændt og i nærheden, og prøv igen. Genstart om nødvendigt kaffemaskinen.</string>
     <string name="device_settings_connectivity_single_dose">Single dose</string>
+    <string name="device_settings_agile_ring">Agile Ring</string>
+    <string name="device_settings_agile_ring_description">Aktivér kontrolringen. Lejlighedsvis interferens kan forekomme i visse omgivelser.</string>
+    <string name="device_settings_firmware_version">Firmware: %1$d</string>
 </resources>
