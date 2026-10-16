@@ -44,6 +44,8 @@ import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonAction
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
+import app.geeflow.presentation.feature.device.dashboard.components.BrewHeader
+import app.geeflow.presentation.feature.device.dashboard.components.BrewStatistics
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.BackClicked
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ModeChanged
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.RenameClicked
@@ -188,17 +190,21 @@ private fun ExpandedLayout(
                 modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.height(16.dp))
+            BrewHeader(
+                brew = viewState.brew.copy(name = viewState.profileName),
+                onHeaderClick = { onEvent(RenameClicked) },
+                showEditIcon = true,
+            )
+            Spacer(Modifier.height(12.dp))
             Row(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             ) {
-                BrewBar(
+                BrewStatistics(
                     brew = viewState.brew.copy(name = viewState.profileName),
                     isBrewing = viewState.brewButtonState == BrewButtonState.Brewing,
                     visibleCharts = viewState.visibleCharts,
                     onToggle = { onEvent(ToggleChartVisibility(it)) },
-                    onHeaderClick = { onEvent(RenameClicked) },
-                    showEditIcon = true,
                     modifier = Modifier.weight(1f),
                 )
                 HorizontalSpacer(16.dp)

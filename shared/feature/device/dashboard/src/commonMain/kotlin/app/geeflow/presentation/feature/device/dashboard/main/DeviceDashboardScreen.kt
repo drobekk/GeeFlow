@@ -38,6 +38,8 @@ import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.platform.ForegroundEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
+import app.geeflow.presentation.feature.device.dashboard.components.BrewHeader
+import app.geeflow.presentation.feature.device.dashboard.components.BrewStatistics
 import app.geeflow.presentation.feature.device.dashboard.components.DashboardBrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.TopBar
 import app.geeflow.presentation.feature.device.dashboard.maintenance.MaintenanceReminderHost
@@ -205,16 +207,20 @@ private fun ExpandedDashboard(
                     modifier = Modifier.weight(MainColumnWeight),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                BrewHeader(
+                    brew = viewState.brew,
+                    onHeaderClick = { onEvent(DeviceDashboardEvent.BrewDescriptionClicked) },
+                )
+                Spacer(Modifier.height(12.dp))
                 Row(
                     verticalAlignment = Alignment.Bottom,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 ) {
-                    BrewBar(
+                    BrewStatistics(
                         brew = viewState.brew,
                         isBrewing = viewState.device.isBrewing,
                         visibleCharts = viewState.visibleCharts,
                         onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
-                        onHeaderClick = { onEvent(DeviceDashboardEvent.BrewDescriptionClicked) },
                         modifier = Modifier.weight(1f),
                     )
                     HorizontalSpacer(16.dp)
