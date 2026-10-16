@@ -84,4 +84,5 @@
     <string name="common_machine_busy">Aparat je zauzet</string>
     <string name="device_model_title">Model aparata</string>
     <string name="device_model_select">Odaberite model svog aparata. On određuje način komunikacije GeeFlowa s uređajem. Pogrešan odabir može uzrokovati pogreške u komunikaciji.</string>
+    <string name="common_hot_water">Vruća voda</string>
 </resources>

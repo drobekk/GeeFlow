@@ -17,6 +17,7 @@ class StopBrewingUseCase(
             DeviceState.BrewStatus.Profile -> profiles.stopProfileBrewing()
             DeviceState.BrewStatus.FreeVariable -> brewing.stopFreeVariableBrewing()
             DeviceState.BrewStatus.Manual -> brewing.stopManualBrewing()
+            DeviceState.BrewStatus.WaterFlow -> hotWater.stop()
             else -> Unit
         }
     }

@@ -2,6 +2,7 @@ package app.geeflow.domain.device.usecase
 
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.domain.device.ProfileExecutionCoordinator
 import app.geeflow.domain.device.ProfileRunState
@@ -24,6 +25,16 @@ class StopBrewingUseCaseTest {
         every { controller.deviceState } returns state
         every { coordinator.state } returns MutableStateFlow(ProfileRunState())
         coEvery { coordinator.stop(9) } returns false
+    }
+
+    @Test
+    fun `when dispensing hot water with an alarm then stopping remains available`() = runTest {
+        state.value = state.value.copy(brewStatus = DeviceState.BrewStatus.WaterFlow, error = DeviceError(1))
+        val useCase = StopBrewingUseCase(provider, coordinator)
+
+        useCase(9)
+
+        coVerify(exactly = 1) { controller.hotWater.stop() }
     }
 
     @Test

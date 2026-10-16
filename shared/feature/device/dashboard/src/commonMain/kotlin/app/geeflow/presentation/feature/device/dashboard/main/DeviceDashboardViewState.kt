@@ -16,6 +16,7 @@ data class DeviceDashboardViewState(
         DashboardChartType.FlowRate,
         DashboardChartType.WeightRate,
     ),
+    val hotWaterSupported: Boolean = false,
     val brewButtonState: BrewButtonState = BrewButtonState.Idle,
 ) {
     enum class DashboardChartType {
@@ -55,6 +56,7 @@ data class DeviceDashboardViewState(
         val pressure: String? = null,
         val connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected,
         val brewStatus: BrewStatus = BrewStatus.Idle,
+        val dispensingHotWater: Boolean = false,
         val smartScaleConnected: Boolean = false,
         val singleDoseGrinderConnected: Boolean = false,
         val alarm: Boolean = false,

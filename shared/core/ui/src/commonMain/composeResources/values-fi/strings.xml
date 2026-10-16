@@ -83,4 +83,5 @@
     <string name="common_machine_busy">Kone on varattu</string>
     <string name="device_model_title">Laitteen malli</string>
     <string name="device_model_select">Valitse kahvikoneesi malli. Se määrittää, miten GeeFlow viestii laitteen kanssa. Väärä valinta voi aiheuttaa viestintävirheitä.</string>
+    <string name="common_hot_water">Kuuma vesi</string>
 </resources>

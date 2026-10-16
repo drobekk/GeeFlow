@@ -83,4 +83,5 @@
     <string name="common_machine_busy">Maskinen er optaget</string>
     <string name="device_model_title">Maskinmodel</string>
     <string name="device_model_select">Vælg din maskines model. Den bestemmer, hvordan GeeFlow kommunikerer med enheden. Et forkert valg kan medføre kommunikationsfejl.</string>
+    <string name="common_hot_water">Varmt vand</string>
 </resources>

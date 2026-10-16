@@ -6,24 +6,17 @@ import kotlin.test.assertNull
 
 class SupportedDeviceTest {
     @Test
-    fun `when resolving saved internal LITA variants then preserves compatibility without showing enum names`() {
-        val ids = listOf(
-            "wendougee.lita.ba",
-            "wendougee.lita.la",
-            "wendougee.lita.br",
-            "wendougee.lita.lr",
-            "wendougee.lita.low",
-            "wendougee.lita.high",
-            "wendougee.lita.water-low",
-            "wendougee.lita.water-high",
-            "wendougee.lita.super"
-        )
+    fun `when LITA LA is named explicitly then recognizes the hot water model`() {
+        val model = SupportedDevice.fromDeviceName("Wendougee_LITA_LA_001122334455")
 
-        val resolved = ids.map(SupportedDevice::byId)
-        val offeredNames = SupportedDevice.all().map { it.model }
+        assertEquals(SupportedDevice.LitaLA, model)
+    }
 
-        assertEquals(List(ids.size) { SupportedDevice.Lita }, resolved)
-        assertEquals(listOf("Data-S", "LITA", "Demo"), offeredNames)
+    @Test
+    fun `when listing models then offers only supported concrete variants`() {
+        val models = SupportedDevice.all().map { it.model }
+
+        assertEquals(listOf("Data-S", "LITA BA", "LITA LA", "Demo"), models)
     }
 
     @Test
@@ -41,7 +34,7 @@ class SupportedDeviceTest {
 
         val models = names.map(SupportedDevice::fromDeviceName)
 
-        assertEquals(listOf(SupportedDevice.WendougeeDataS, SupportedDevice.Lita, SupportedDevice.Lita), models)
+        assertEquals(listOf(SupportedDevice.WendougeeDataS, SupportedDevice.LitaBA, null), models)
     }
 
     @Test
@@ -77,7 +70,7 @@ class SupportedDeviceTest {
     @Test
     fun `when commercial LITA is selected then does not infer native category`() {
         val models =
-            listOf("LITA BA", "LITA LA", "LITA BR", "LITA LR").map {
+            listOf("LITA BA", "LITA LA").map {
                 SupportedDevice.find("Wendougee", it, "")
             }
 

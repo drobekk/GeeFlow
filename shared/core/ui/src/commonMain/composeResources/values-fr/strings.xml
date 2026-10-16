@@ -83,4 +83,5 @@
     <string name="common_machine_busy">Machine occupée</string>
     <string name="device_model_title">Modèle de machine</string>
     <string name="device_model_select">Sélectionnez le modèle de votre machine. Il détermine la manière dont GeeFlow communique avec elle. Un choix incorrect peut entraîner des erreurs de communication.</string>
+    <string name="common_hot_water">Eau chaude</string>
 </resources>

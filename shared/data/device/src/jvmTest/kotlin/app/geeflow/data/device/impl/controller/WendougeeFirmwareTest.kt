@@ -61,7 +61,7 @@ class WendougeeFirmwareTest {
 
     @Test
     fun `when model or firmware lacks ring switching then does not expose Agile Ring`() {
-        val lita = SupportedDevice.Lita
+        val lita = SupportedDevice.LitaBA
         val data = SupportedDevice.WendougeeDataS
 
         val supported = supportsAgileRing(lita, 212)

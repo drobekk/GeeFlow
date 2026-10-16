@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
@@ -94,7 +95,7 @@ internal fun BrewBar(
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.small)
                 .then(if (onHeaderClick != null) Modifier.clickable(onClick = onHeaderClick) else Modifier)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(start = 8.dp, end = 0.dp, top = 4.dp, bottom = 4.dp),
         ) {
             if (showEditIcon) EditIcon()
             Text(
@@ -112,8 +113,15 @@ internal fun BrewBar(
             }
             Text(
                 text = "${brew.time}s",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainerLow,
+                        MaterialTheme.shapes.small,
+                    )
+                    .padding(horizontal = 5.dp),
             )
         }
 

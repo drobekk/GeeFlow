@@ -10,6 +10,7 @@ sealed interface DeviceDashboardEvent {
     data class ToggleChartVisibility(val type: DeviceDashboardViewState.DashboardChartType) : DeviceDashboardEvent
     data object UserClicked : DeviceDashboardEvent
     data object DeviceClicked : DeviceDashboardEvent
+    data object HotWaterClicked : DeviceDashboardEvent
     data object ManualBrewClicked : DeviceDashboardEvent
     data object FlowControlClicked : DeviceDashboardEvent
     data object StopBrewClicked : DeviceDashboardEvent

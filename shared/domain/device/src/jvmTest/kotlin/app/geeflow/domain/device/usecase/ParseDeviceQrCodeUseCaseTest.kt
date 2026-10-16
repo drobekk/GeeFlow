@@ -57,18 +57,18 @@ class ParseDeviceQrCodeUseCaseTest {
 
         val device = useCase(url)
 
-        assertEquals(SupportedDevice.Lita.id, device?.modelId)
+        assertEquals(SupportedDevice.LitaBA.id, device?.modelId)
         assertEquals("qr-name", device?.modelSource)
     }
 
     @Test
-    fun `when QR contains a known category then resolves LITA family without guessing commercial variant`() {
+    fun `when QR identifies only the LITA family then requires variant selection`() {
         val useCase = ParseDeviceQrCodeUseCase()
         val url = "https://machine/?data={\"blemac\":\"aabbccddeeff\",\"name\":\"Machine\",\"category_code\":\"10024\"}"
 
         val device = useCase(url)
 
-        assertEquals(SupportedDevice.Lita.id, device?.modelId)
-        assertEquals("qr-category", device?.modelSource)
+        assertNull(device?.modelId)
+        assertNull(device?.modelSource)
     }
 }

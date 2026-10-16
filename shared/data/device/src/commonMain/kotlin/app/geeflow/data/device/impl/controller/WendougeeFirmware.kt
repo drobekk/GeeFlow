@@ -11,7 +11,7 @@ import kotlinx.coroutines.ensureActive
 internal const val AGILE_RING_MIN_FIRMWARE = 212
 
 internal fun supportsAgileRing(model: SupportedDevice, firmware: Int?): Boolean =
-    model == SupportedDevice.Lita && firmware != null && firmware >= AGILE_RING_MIN_FIRMWARE
+    model.isLita && firmware != null && firmware >= AGILE_RING_MIN_FIRMWARE
 
 @Suppress("TooGenericExceptionCaught")
 internal suspend fun readWendougeeFirmware(modbus: ModbusSession): Int? = try {

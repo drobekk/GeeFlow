@@ -93,4 +93,5 @@
     <string name="common_machine_busy">咖啡机忙碌中</string>
     <string name="device_model_title">咖啡机型号</string>
     <string name="device_model_select">请选择您的咖啡机型号。这决定了 GeeFlow 与设备的通信方式。选择错误的型号可能导致通信错误。</string>
+    <string name="common_hot_water">热水</string>
 </resources>

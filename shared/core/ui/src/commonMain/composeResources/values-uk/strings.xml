@@ -85,4 +85,5 @@
     <string name="common_machine_busy">Кавомашина зайнята</string>
     <string name="device_model_title">Модель кавомашини</string>
     <string name="device_model_select">Виберіть модель своєї кавомашини. Вона визначає спосіб зв’язку GeeFlow з пристроєм. Неправильний вибір може спричинити помилки зв’язку.</string>
+    <string name="common_hot_water">Гаряча вода</string>
 </resources>

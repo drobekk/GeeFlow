@@ -41,6 +41,7 @@ import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
+import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonAction
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.BackClicked
@@ -73,7 +74,6 @@ import geeflow.shared.core.ui.generated.resources.common_confirm
 import geeflow.shared.core.ui.generated.resources.common_go_back
 import geeflow.shared.core.ui.generated.resources.common_pressure
 import geeflow.shared.core.ui.generated.resources.common_save
-import geeflow.shared.core.ui.generated.resources.common_start
 import geeflow.shared.core.ui.generated.resources.unit_bar
 import geeflow.shared.core.ui.generated.resources.unit_milliliters_per_second
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
@@ -190,7 +190,7 @@ private fun ExpandedLayout(
             Spacer(Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             ) {
                 BrewBar(
                     brew = viewState.brew.copy(name = viewState.profileName),
@@ -199,34 +199,37 @@ private fun ExpandedLayout(
                     onToggle = { onEvent(ToggleChartVisibility(it)) },
                     onHeaderClick = { onEvent(RenameClicked) },
                     showEditIcon = true,
-                    modifier = Modifier.weight(1f).padding(bottom = 10.dp),
+                    modifier = Modifier.weight(1f),
                 )
                 HorizontalSpacer(16.dp)
                 BrewButton(
                     state = viewState.brewButtonState,
-                    onStartButtonClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
-                    onHeroButtonClick = { onEvent(StartClicked) },
-                    onEndButtonClick = { onEvent(ModeChanged(ControlMode.Flow)) },
-                    onStopClick = { onEvent(StopClicked) },
-                    startContentDescription = stringResource(CoreRes.string.common_pressure),
-                    heroContentDescription = stringResource(CoreRes.string.common_start),
-                    endContentDescription = stringResource(Res.string.free_control_mode_flow),
-                    startIcon = {
-                        Icon(
-                            painter = rememberVectorPainter(GeeFlowIcon.Pressure),
+                    sideActions = listOf(
+                        BrewButtonAction(
                             contentDescription = stringResource(CoreRes.string.common_pressure),
-                            modifier = Modifier.size(24.dp),
-                            tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    },
-                    endIcon = {
-                        Icon(
-                            painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                            onClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
+                        ) {
+                            Icon(
+                                painter = rememberVectorPainter(GeeFlowIcon.Pressure),
+                                contentDescription = stringResource(CoreRes.string.common_pressure),
+                                modifier = Modifier.size(24.dp),
+                                tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        BrewButtonAction(
                             contentDescription = stringResource(Res.string.free_control_mode_flow),
-                            modifier = Modifier.size(24.dp),
-                            tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    },
+                            onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
+                        ) {
+                            Icon(
+                                painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                                contentDescription = stringResource(Res.string.free_control_mode_flow),
+                                modifier = Modifier.size(24.dp),
+                                tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                    ),
+                    onHeroButtonClick = { onEvent(StartClicked) },
+                    onStopClick = { onEvent(StopClicked) },
                 )
             }
         }
@@ -285,32 +288,35 @@ private fun CompactLayout(
         bottomBar = {
             BrewButton(
                 state = viewState.brewButtonState,
-                onStartButtonClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
-                onHeroButtonClick = { onEvent(StartClicked) },
-                onEndButtonClick = { onEvent(ModeChanged(ControlMode.Flow)) },
-                onStopClick = { onEvent(StopClicked) },
-                startContentDescription = stringResource(CoreRes.string.common_pressure),
-                heroContentDescription = stringResource(CoreRes.string.common_start),
-                endContentDescription = stringResource(Res.string.free_control_mode_flow),
-                startIcon = {
-                    Icon(
-                        painter = rememberVectorPainter(GeeFlowIcon.Pressure),
+                sideActions = listOf(
+                    BrewButtonAction(
                         contentDescription = stringResource(CoreRes.string.common_pressure),
-                        modifier = Modifier.size(24.dp),
-                        tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-                endIcon = {
-                    Icon(
-                        painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                        onClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
+                    ) {
+                        Icon(
+                            painter = rememberVectorPainter(GeeFlowIcon.Pressure),
+                            contentDescription = stringResource(CoreRes.string.common_pressure),
+                            modifier = Modifier.size(24.dp),
+                            tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
+                    BrewButtonAction(
                         contentDescription = stringResource(Res.string.free_control_mode_flow),
-                        modifier = Modifier.size(24.dp),
-                        tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
+                        onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
+                    ) {
+                        Icon(
+                            painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                            contentDescription = stringResource(Res.string.free_control_mode_flow),
+                            modifier = Modifier.size(24.dp),
+                            tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
+                ),
+                onHeroButtonClick = { onEvent(StartClicked) },
+                onStopClick = { onEvent(StopClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 18.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
             )
         },
         snackbarHost = {

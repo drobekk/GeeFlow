@@ -44,7 +44,8 @@ internal fun AddDeviceDialogs(
             onDismissRequest = { onEvent(AddDeviceEvent.CancelWarningClicked) },
         ) {
             DeviceModelPicker(
-                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }.map { it.id to it.model },
+                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }
+                    .map { it.id to "${it.manufacturer} ${it.model}" },
                 onSelect = { onEvent(AddDeviceEvent.ModelSelected(it)) },
                 onClose = { onEvent(AddDeviceEvent.CancelWarningClicked) },
             )

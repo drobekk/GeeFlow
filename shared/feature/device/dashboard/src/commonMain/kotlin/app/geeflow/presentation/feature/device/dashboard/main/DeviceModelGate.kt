@@ -41,7 +41,10 @@ internal fun DeviceModelGate(deviceId: Long, onClose: () -> Unit, content: @Comp
         model != null -> content(model.id)
         else -> GeeFlowDialog(onDismissRequest = onClose) {
             DeviceModelPicker(
-                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }.map { it.id to it.model },
+                models = SupportedDevice
+                    .all()
+                    .filter { it != SupportedDevice.GeeFlowDemo }
+                    .map { it.id to "${it.manufacturer} ${it.model}" },
                 onSelect = viewModel::select,
                 onClose = onClose,
             )

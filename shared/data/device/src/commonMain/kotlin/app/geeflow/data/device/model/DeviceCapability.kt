@@ -6,6 +6,7 @@ enum class DeviceCapability {
     HeatingMode,
     WaterAlarm,
     ManualBrewing,
+    HotWaterDispensing,
     ProfileBrewing,
     CleaningMode,
     CleaningSettings,

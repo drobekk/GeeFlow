@@ -6,6 +6,7 @@ import app.geeflow.data.device.DeviceAccessoryControl
 import app.geeflow.data.device.DeviceBrewingControl
 import app.geeflow.data.device.DeviceConnectionControl
 import app.geeflow.data.device.DeviceController
+import app.geeflow.data.device.DeviceHotWaterControl
 import app.geeflow.data.device.DeviceMaintenanceControl
 import app.geeflow.data.device.DeviceProfileControl
 import app.geeflow.data.device.DeviceSettingsControl
@@ -16,6 +17,7 @@ import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARC
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATUS_REQUEST
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SET_LANGUAGE
 import app.geeflow.data.device.model.Device
+import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceConnection
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.AccessorySyncStatus
@@ -56,6 +58,7 @@ internal class WendougeeController(
         private set
     override val connection: DeviceConnectionControl get() = this
     override val settings: DeviceSettingsControl = WendougeeSettingsControl(this)
+    override val hotWater: DeviceHotWaterControl = WendougeeHotWaterControl(this)
     override val brewing: DeviceBrewingControl = WendougeeBrewingControl(this)
     override val maintenance: DeviceMaintenanceControl = WendougeeMaintenanceControl(this)
     override val profiles: DeviceProfileControl = WendougeeProfileControl(this)
@@ -65,7 +68,8 @@ internal class WendougeeController(
 
     override val constraints = wendougeeConstraints
 
-    override val capabilities = wendougeeCapabilities
+    override val capabilities = wendougeeCapabilities +
+        if (model == SupportedDevice.LitaLA) setOf(DeviceCapability.HotWaterDispensing) else emptySet()
 
     private val stateStore = WendougeeStateStore()
     override val deviceState = stateStore.machine

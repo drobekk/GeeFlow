@@ -12,6 +12,7 @@ import app.geeflow.data.device.DeviceAccessoryControl
 import app.geeflow.data.device.DeviceBrewingControl
 import app.geeflow.data.device.DeviceConnectionControl
 import app.geeflow.data.device.DeviceController
+import app.geeflow.data.device.DeviceHotWaterControl
 import app.geeflow.data.device.DeviceMaintenanceControl
 import app.geeflow.data.device.DeviceProfileControl
 import app.geeflow.data.device.DeviceSettingsControl
@@ -51,6 +52,7 @@ class DemoDeviceController(
         private set
     override val connection: DeviceConnectionControl get() = this
     override val settings: DeviceSettingsControl get() = this
+    override val hotWater: DeviceHotWaterControl = DeviceHotWaterControl.Unsupported
     override val brewing: DeviceBrewingControl get() = this
     override val maintenance: DeviceMaintenanceControl get() = this
     override val profiles: DeviceProfileControl get() = this

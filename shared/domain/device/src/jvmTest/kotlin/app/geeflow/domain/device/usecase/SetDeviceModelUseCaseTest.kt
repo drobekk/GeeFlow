@@ -24,11 +24,11 @@ class SetDeviceModelUseCaseTest {
             repository.getDeviceById(9)
         } returns Device(name = "Machine", connection = DeviceConnection.Ble("id", "mac"))
 
-        useCase(9, SupportedDevice.Lita.id)
+        useCase(9, SupportedDevice.LitaBA.id)
 
         coVerifyOrder {
             provider.forgetController(9)
-            repository.updateModel(9, SupportedDevice.Lita)
+            repository.updateModel(9, SupportedDevice.LitaBA)
         }
     }
 

@@ -93,4 +93,5 @@
     <string name="common_machine_busy">Machine busy</string>
     <string name="device_model_title">Device model</string>
     <string name="device_model_select">Choose your machine model. This determines how GeeFlow communicates with it. Selecting the wrong model may cause communication errors.</string>
+    <string name="common_hot_water">Hot water</string>
 </resources>

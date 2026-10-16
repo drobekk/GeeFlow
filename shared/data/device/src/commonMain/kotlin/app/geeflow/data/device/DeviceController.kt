@@ -21,6 +21,7 @@ interface DeviceController {
 
     val connection: DeviceConnectionControl
     val settings: DeviceSettingsControl
+    val hotWater: DeviceHotWaterControl
     val brewing: DeviceBrewingControl
     val maintenance: DeviceMaintenanceControl
     val profiles: DeviceProfileControl

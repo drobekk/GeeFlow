@@ -46,14 +46,14 @@ class DefaultDeviceControllerProviderTest {
         every { repository.devices } returns devices
         every { repository.getDeviceById(1) } answers { devices.value.single() }
         every { factory.create(SupportedDevice.WendougeeDataS) } returnsMany listOf(controller, replacement)
-        every { factory.create(SupportedDevice.Lita) } returns lita
+        every { factory.create(SupportedDevice.LitaBA) } returns lita
         val provider = DefaultDeviceControllerProvider(repository, factory, backgroundScope)
         val observed = mutableListOf<DeviceController>()
         backgroundScope.launch { provider.observeController(1).collect { observed += it } }
         runCurrent()
 
         provider.forgetController(1)
-        devices.value = listOf(device.copy(modelId = SupportedDevice.Lita.id))
+        devices.value = listOf(device.copy(modelId = SupportedDevice.LitaBA.id))
         runCurrent()
         provider.forgetController(1)
         devices.value = listOf(device)

@@ -84,4 +84,5 @@
     <string name="common_machine_busy">Aparatul este ocupat</string>
     <string name="device_model_title">Modelul aparatului</string>
     <string name="device_model_select">Selectează modelul aparatului tău. Acesta determină modul în care GeeFlow comunică cu dispozitivul. O alegere incorectă poate provoca erori de comunicare.</string>
+    <string name="common_hot_water">Apă fierbinte</string>
 </resources>

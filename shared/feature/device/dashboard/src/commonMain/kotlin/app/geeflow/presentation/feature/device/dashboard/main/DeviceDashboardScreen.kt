@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,7 +27,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -39,8 +37,8 @@ import app.geeflow.navigation.NavigatorEffect
 import app.geeflow.navigation.destination.DeviceDashboard
 import app.geeflow.platform.ForegroundEffect
 import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
-import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
+import app.geeflow.presentation.feature.device.dashboard.components.DashboardBrewButton
 import app.geeflow.presentation.feature.device.dashboard.components.TopBar
 import app.geeflow.presentation.feature.device.dashboard.maintenance.MaintenanceReminderHost
 import app.geeflow.presentation.feature.device.dashboard.model.chartModel
@@ -148,7 +146,6 @@ internal fun DeviceDashboardScreen(
     }
 }
 
-@OptIn(ExperimentalTextApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun DeviceDashboardContent(
     viewState: DeviceDashboardViewState,
@@ -210,7 +207,7 @@ private fun ExpandedDashboard(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     verticalAlignment = Alignment.Bottom,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 ) {
                     BrewBar(
                         brew = viewState.brew,
@@ -218,15 +215,12 @@ private fun ExpandedDashboard(
                         visibleCharts = viewState.visibleCharts,
                         onToggle = { onEvent(DeviceDashboardEvent.ToggleChartVisibility(it)) },
                         onHeaderClick = { onEvent(DeviceDashboardEvent.BrewDescriptionClicked) },
-                        modifier = Modifier.weight(1f).padding(bottom = 10.dp),
+                        modifier = Modifier.weight(1f),
                     )
                     HorizontalSpacer(16.dp)
-                    BrewButton(
-                        state = viewState.brewButtonState,
-                        onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
-                        onStartButtonClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
-                        onHeroButtonClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
-                        onEndButtonClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
+                    DashboardBrewButton(
+                        viewState = viewState,
+                        onEvent = onEvent,
                     )
                 }
             }
@@ -281,15 +275,12 @@ private fun CompactDashboard(
             )
         },
         bottomBar = {
-            BrewButton(
-                state = viewState.brewButtonState,
-                onStopClick = { onEvent(DeviceDashboardEvent.StopBrewClicked) },
-                onStartButtonClick = { onEvent(DeviceDashboardEvent.ManualBrewClicked) },
-                onHeroButtonClick = { onEvent(DeviceDashboardEvent.BrewClicked) },
-                onEndButtonClick = { onEvent(DeviceDashboardEvent.FlowControlClicked) },
+            DashboardBrewButton(
+                viewState = viewState,
+                onEvent = onEvent,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 12.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarState, modifier = Modifier.padding(horizontal = 16.dp)) },

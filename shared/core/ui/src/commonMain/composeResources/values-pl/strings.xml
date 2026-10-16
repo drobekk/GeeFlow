@@ -85,4 +85,5 @@
     <string name="common_machine_busy">Ekspres zajęty</string>
     <string name="device_model_title">Model ekspresu</string>
     <string name="device_model_select">Wybierz model swojego ekspresu. Określa on sposób komunikacji GeeFlow z urządzeniem. Nieprawidłowy wybór może powodować błędy komunikacji.</string>
+    <string name="common_hot_water">Gorąca woda</string>
 </resources>

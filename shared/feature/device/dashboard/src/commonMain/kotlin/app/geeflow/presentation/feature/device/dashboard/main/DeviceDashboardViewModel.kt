@@ -9,6 +9,7 @@ import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewMode
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewSession
+import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceState
 import app.geeflow.data.device.model.DeviceState.BoilerType
 import app.geeflow.data.device.model.DeviceState.BrewStatus
@@ -22,10 +23,12 @@ import app.geeflow.domain.brew.usecase.SaveBrewToHistoryUseCase
 import app.geeflow.domain.device.usecase.ConnectDeviceUseCase
 import app.geeflow.domain.device.usecase.DisconnectDeviceUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceBrewingSettingsUseCase
+import app.geeflow.domain.device.usecase.ObserveDeviceCapabilitiesUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.domain.device.usecase.RefreshAccessoriesUseCase
 import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
+import app.geeflow.domain.device.usecase.StartHotWaterUseCase
 import app.geeflow.domain.device.usecase.StartManualBrewingUseCase
 import app.geeflow.domain.device.usecase.StartProfileBrewingUseCase
 import app.geeflow.domain.device.usecase.StopBrewingUseCase
@@ -81,6 +84,7 @@ import co.touchlab.kermit.Logger
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_off
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_steam_boiler_on
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
@@ -98,6 +102,8 @@ internal class DeviceDashboardViewModel(
     private val connectDevice: ConnectDeviceUseCase,
     private val disconnectDevice: DisconnectDeviceUseCase,
     private val refreshAccessories: RefreshAccessoriesUseCase,
+    private val startHotWater: StartHotWaterUseCase,
+    private val observeDeviceCapabilities: ObserveDeviceCapabilitiesUseCase,
     private val startManualBrewing: StartManualBrewingUseCase,
     private val startProfileBrewing: StartProfileBrewingUseCase,
     private val stopBrewing: StopBrewingUseCase,
@@ -134,7 +140,11 @@ internal class DeviceDashboardViewModel(
                 }
             }
         }
-        launch { observeDeviceState(args.deviceId).collect { state -> updateMachineStateUi(state) } }
+        launch {
+            observeDeviceState(args.deviceId).combine(observeDeviceCapabilities(args.deviceId)) { state, capabilities ->
+                state to (DeviceCapability.HotWaterDispensing in capabilities)
+            }.collect { (state, hotWaterSupported) -> updateMachineStateUi(state, hotWaterSupported) }
+        }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
         launch { observeBrewData(args.deviceId).collect(::brewSessionDataChanged) }
         launch { getSelectedUser().collect { u -> modify { copy(user = user.copy(photoFileName = u?.photoUri)) } } }
@@ -165,6 +175,7 @@ internal class DeviceDashboardViewModel(
         is EditProfileClicked -> editSelectedProfile()
         is DialogDismissed -> modify { copy(dialog = null) }
         is OpenSystemSettingsClicked -> permissionsController.openAppSettings()
+        is DeviceDashboardEvent.HotWaterClicked -> launchCatching(::onError) { startHotWater(args.deviceId) }
         is ManualBrewClicked -> launchCatching(::onError) { startManualBrewing(args.deviceId) }
         is StopBrewClicked -> launchCatching(::onError) { stopBrewing(args.deviceId) }
         is FlowControlClicked -> navigate(To(FreeControl(args.deviceId)))
@@ -234,7 +245,7 @@ internal class DeviceDashboardViewModel(
                         copy(
                             brewButtonState = if (machineBusy) {
                                 BrewButtonState.Busy
-                            } else if (device.isBrewing) {
+                            } else if (device.isBrewing || device.dispensingHotWater) {
                                 BrewButtonState.Brewing
                             } else {
                                 BrewButtonState.Idle
@@ -260,9 +271,10 @@ internal class DeviceDashboardViewModel(
         modify { copy(brew = Brew(name = profile.name, description = selectedProfileDescription.orEmpty())) }
     }
 
-    private fun updateMachineStateUi(state: DeviceState) {
+    private fun updateMachineStateUi(state: DeviceState, hotWaterSupported: Boolean) {
         deviceConfig = state.config
-        machineBusy = state.brewStatus == BrewStatus.Cleaning || state.brewStatus == BrewStatus.WaterFlow
+        machineBusy = state.brewStatus == BrewStatus.Cleaning ||
+            (state.brewStatus == BrewStatus.WaterFlow && !hotWaterSupported)
         modify {
             val newBrewStatus = when (state.brewStatus) {
                 BrewStatus.Manual -> Device.BrewStatus.Manual
@@ -273,6 +285,8 @@ internal class DeviceDashboardViewModel(
 
             val currentButtonState = if (machineBusy) {
                 BrewButtonState.Busy
+            } else if (state.brewStatus == BrewStatus.WaterFlow) {
+                BrewButtonState.Brewing
             } else if (this.brewButtonState == BrewButtonState.Syncing) {
                 BrewButtonState.Syncing
             } else if (newBrewStatus != Device.BrewStatus.Idle) {
@@ -293,11 +307,13 @@ internal class DeviceDashboardViewModel(
                         ConnectionStatus.Connected -> Device.ConnectionStatus.Connected
                     },
                     brewStatus = newBrewStatus,
+                    dispensingHotWater = state.brewStatus == BrewStatus.WaterFlow,
                     smartScaleConnected = state.smartScale?.isConnected == true,
                     singleDoseGrinderConnected = state.singleDoseGrinder?.isConnected == true,
                     alarm = state.hasError,
                     error = state.error,
                 ),
+                hotWaterSupported = hotWaterSupported,
                 brewButtonState = currentButtonState,
             )
         }

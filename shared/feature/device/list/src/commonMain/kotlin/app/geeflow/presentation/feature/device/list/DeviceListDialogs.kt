@@ -35,7 +35,8 @@ internal fun DeviceListDialogs(
     when (dialog) {
         is Dialog.Model -> GeeFlowDialog(onDismissRequest = { onEvent(DialogDismissed) }) {
             DeviceModelPicker(
-                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }.map { it.id to it.model },
+                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }
+                    .map { it.id to "${it.manufacturer} ${it.model}" },
                 initialModelId = dialog.device.modelId,
                 onSelect = { onEvent(DeviceListEvent.DeviceModelSelected(dialog.device, it)) },
                 onClose = { onEvent(DialogDismissed) },
