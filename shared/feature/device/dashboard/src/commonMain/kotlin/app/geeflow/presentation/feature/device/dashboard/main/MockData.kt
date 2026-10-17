@@ -39,7 +39,7 @@ private val previewProfileProgram = BrewProgram.Phases(
     ),
 )
 
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
     val dataPoints = mutableMapOf<Float, ChartData>()
     var volume = 0f
