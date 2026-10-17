@@ -27,6 +27,18 @@ sealed class SupportedDevice(
         id = "wendougee.lita.la",
     )
 
+    data object LitaBR : SupportedDevice(
+        manufacturer = DeviceManufacturer.WENDOUGEE,
+        model = "LITA BR",
+        id = "wendougee.lita.br",
+    )
+
+    data object LitaLR : SupportedDevice(
+        manufacturer = DeviceManufacturer.WENDOUGEE,
+        model = "LITA LR",
+        id = "wendougee.lita.lr",
+    )
+
     data object GeeFlowDemo : SupportedDevice(
         manufacturer = DeviceManufacturer.GEEFLOW,
         model = "Demo",
@@ -34,13 +46,15 @@ sealed class SupportedDevice(
         id = "geeflow.demo",
     )
 
-    val isLita: Boolean get() = this == LitaBA || this == LitaLA
+    val isLita: Boolean get() = this == LitaBA || this == LitaLA || this == LitaBR || this == LitaLR
 
     companion object {
         fun all(): List<SupportedDevice> = listOf(
             WendougeeDataS,
             LitaBA,
             LitaLA,
+            LitaBR,
+            LitaLR,
             GeeFlowDemo,
         )
 
@@ -58,10 +72,14 @@ sealed class SupportedDevice(
 
         fun fromDeviceName(name: String): SupportedDevice? {
             val normalized = name.uppercase().replace('_', ' ').replace('-', ' ')
-            if (Regex("\\bLITA\\s+LA\\b").containsMatchIn(normalized)) return LitaLA
-            if (Regex("\\bLITA\\s+BA\\b").containsMatchIn(normalized)) return LitaBA
-            if (Regex("\\bDATA\\s*S\\b").containsMatchIn(normalized)) return WendougeeDataS
-            return null
+            return when {
+                Regex("\\bLITA\\s+LA\\b").containsMatchIn(normalized) -> LitaLA
+                Regex("\\bLITA\\s+BA\\b").containsMatchIn(normalized) -> LitaBA
+                Regex("\\bLITA\\s+BR\\b").containsMatchIn(normalized) -> LitaBR
+                Regex("\\bLITA\\s+LR\\b").containsMatchIn(normalized) -> LitaLR
+                Regex("\\bDATA\\s*S\\b").containsMatchIn(normalized) -> WendougeeDataS
+                else -> null
+            }
         }
 
         fun byId(id: String?): SupportedDevice? =

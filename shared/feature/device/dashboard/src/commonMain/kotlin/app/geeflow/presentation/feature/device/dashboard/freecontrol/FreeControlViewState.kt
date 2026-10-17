@@ -11,6 +11,7 @@ data class FreeControlViewState(
     val deviceName: String = "",
     val profileName: String = "",
     val mode: ControlMode = ControlMode.Pressure,
+    val flowControlSupported: Boolean = true,
     val pressureTarget: Float = 6.0f,
     val flowTarget: Float = 6.0f,
     val pressureRange: ClosedFloatingPointRange<Float> = 0f..0f,

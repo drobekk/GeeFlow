@@ -6,6 +6,17 @@ import kotlin.test.assertNull
 
 class SupportedDeviceTest {
     @Test
+    fun `when BR and LR are named explicitly then resolves their concrete models`() {
+        val names = listOf("Wendougee_LITA_BR_001122334455", "LITA-LR-001122334455")
+
+        val models = names.map(SupportedDevice::fromDeviceName)
+        val restored = models.map { SupportedDevice.byId(it?.id) }
+
+        assertEquals(listOf(SupportedDevice.LitaBR, SupportedDevice.LitaLR), models)
+        assertEquals(models, restored)
+    }
+
+    @Test
     fun `when LITA LA is named explicitly then recognizes the hot water model`() {
         val model = SupportedDevice.fromDeviceName("Wendougee_LITA_LA_001122334455")
 
@@ -16,7 +27,7 @@ class SupportedDeviceTest {
     fun `when listing models then offers only supported concrete variants`() {
         val models = SupportedDevice.all().map { it.model }
 
-        assertEquals(listOf("Data-S", "LITA BA", "LITA LA", "Demo"), models)
+        assertEquals(listOf("Data-S", "LITA BA", "LITA LA", "LITA BR", "LITA LR", "Demo"), models)
     }
 
     @Test

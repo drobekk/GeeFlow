@@ -12,6 +12,7 @@ import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.SaveFreeVariableProfileUseCase
 import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
+import app.geeflow.domain.device.usecase.GetProfilingCapabilitiesUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.domain.device.usecase.SetFreeBrewFlowUseCase
@@ -57,6 +58,7 @@ internal class FreeControlViewModel(
     observeDeviceState: ObserveDeviceStateUseCase,
     observeBrewData: ObserveBrewDataUseCase,
     observeDevice: ObserveDeviceUseCase,
+    getProfilingCapabilities: GetProfilingCapabilitiesUseCase,
     private val startFreeVariableBrewing: StartFreeVariableBrewingUseCase,
     private val stopFreeVariableBrewing: StopFreeVariableBrewingUseCase,
     private val setFreeBrewPressure: SetFreeBrewPressureUseCase,
@@ -66,7 +68,9 @@ internal class FreeControlViewModel(
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val appScope: CoroutineScope,
-) : BaseViewModel<FreeControlViewState, FreeControlViewModelEvent>(FreeControlViewState()) {
+) : BaseViewModel<FreeControlViewState, FreeControlViewModelEvent>(
+    FreeControlViewState(flowControlSupported = getProfilingCapabilities(args.deviceId).liveFlow != null),
+) {
 
     private var lastSession: BrewSession? = null
     private var targetUpdateJob: Job? = null
@@ -121,6 +125,7 @@ internal class FreeControlViewModel(
     }
 
     private fun onModeChanged(event: ModeChanged) {
+        if (event.mode == ControlMode.Flow && !viewState.value.flowControlSupported) return
         if (viewState.value.brewButtonState == BrewButtonState.Idle) {
             modify { copy(mode = event.mode) }
         }

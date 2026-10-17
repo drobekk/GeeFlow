@@ -30,6 +30,7 @@ internal class WendougeeProfileControl(private val owner: WendougeeController) :
     }
 
     override suspend fun startProfileBrewing(profile: BrewProfile) = brewOperationMutex.withLock {
+        require(assessNativeProfile(profile).isEmpty()) { "Profile is not supported by this model" }
         refreshBrewStatus(requireSession())
         if (deviceState.value.brewStatus != BrewStatus.Idle) return@withLock
         Logger.withTag(TAG).i { "Starting profile brew: ${profile.name}" }
@@ -43,6 +44,7 @@ internal class WendougeeProfileControl(private val owner: WendougeeController) :
     }
 
     override suspend fun bindProfile(profile: BrewProfile) = brewOperationMutex.withLock {
+        require(assessNativeProfile(profile).isEmpty()) { "Profile is not supported by this model" }
         Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
 
         requireSession().modbus.uploadProfile(profile, isBinding = true)
@@ -62,7 +64,10 @@ internal class WendougeeProfileControl(private val owner: WendougeeController) :
 
     override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == BrewStatus.FreeVariable
 
-    override fun assessNativeProfile(profile: BrewProfile) = TimedPumpProfileSupport.assessNative(profile)
+    override fun assessNativeProfile(profile: BrewProfile) = TimedPumpProfileSupport.assessNative(
+        profile = profile,
+        flowSupported = owner.profilingCapabilities.native?.flow == true,
+    )
 
     override fun telemetry() = deviceState.value.pumpTelemetry()
 }

@@ -64,12 +64,24 @@ internal class WendougeeController(
     override val profiles: DeviceProfileControl = WendougeeProfileControl(this)
     override val accessories: DeviceAccessoryControl = WendougeeAccessoryControl(this)
 
-    override val profilingCapabilities = TimedPumpProfileSupport.capabilities
+    override val profilingCapabilities = TimedPumpProfileSupport.capabilities.let { shared ->
+        when (model) {
+            SupportedDevice.LitaBR,
+            SupportedDevice.LitaLR -> shared.copy(
+                native = shared.native?.copy(flow = false),
+                liveFlow = null,
+            )
+            else -> shared
+        }
+    }
 
     override val constraints = wendougeeConstraints
 
-    override val capabilities = wendougeeCapabilities +
-        if (model == SupportedDevice.LitaLA) setOf(DeviceCapability.HotWaterDispensing) else emptySet()
+    override val capabilities = buildSet {
+        addAll(wendougeeCapabilities)
+        if (profilingCapabilities.liveFlow == null) remove(DeviceCapability.FlowProfiling)
+        if (model == SupportedDevice.LitaLA || model == SupportedDevice.LitaLR) add(DeviceCapability.HotWaterDispensing)
+    }
 
     private val stateStore = WendougeeStateStore()
     override val deviceState = stateStore.machine

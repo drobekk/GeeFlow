@@ -210,7 +210,7 @@ private fun ExpandedLayout(
                 HorizontalSpacer(16.dp)
                 BrewButton(
                     state = viewState.brewButtonState,
-                    sideActions = listOf(
+                    sideActions = listOfNotNull(
                         BrewButtonAction(
                             contentDescription = stringResource(CoreRes.string.common_pressure),
                             onClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
@@ -222,16 +222,20 @@ private fun ExpandedLayout(
                                 tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         },
-                        BrewButtonAction(
-                            contentDescription = stringResource(Res.string.free_control_mode_flow),
-                            onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
-                        ) {
-                            Icon(
-                                painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                        if (viewState.flowControlSupported) {
+                            BrewButtonAction(
                                 contentDescription = stringResource(Res.string.free_control_mode_flow),
-                                modifier = Modifier.size(24.dp),
-                                tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                                onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
+                            ) {
+                                Icon(
+                                    painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                                    contentDescription = stringResource(Res.string.free_control_mode_flow),
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        } else {
+                            null
                         },
                     ),
                     onHeroButtonClick = { onEvent(StartClicked) },
@@ -294,7 +298,7 @@ private fun CompactLayout(
         bottomBar = {
             BrewButton(
                 state = viewState.brewButtonState,
-                sideActions = listOf(
+                sideActions = listOfNotNull(
                     BrewButtonAction(
                         contentDescription = stringResource(CoreRes.string.common_pressure),
                         onClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
@@ -306,16 +310,20 @@ private fun CompactLayout(
                             tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     },
-                    BrewButtonAction(
-                        contentDescription = stringResource(Res.string.free_control_mode_flow),
-                        onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
-                    ) {
-                        Icon(
-                            painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                    if (viewState.flowControlSupported) {
+                        BrewButtonAction(
                             contentDescription = stringResource(Res.string.free_control_mode_flow),
-                            modifier = Modifier.size(24.dp),
-                            tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                            onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
+                        ) {
+                            Icon(
+                                painter = rememberVectorPainter(GeeFlowIcon.Flow),
+                                contentDescription = stringResource(Res.string.free_control_mode_flow),
+                                modifier = Modifier.size(24.dp),
+                                tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else {
+                        null
                     },
                 ),
                 onHeroButtonClick = { onEvent(StartClicked) },

@@ -56,10 +56,13 @@ internal object TimedPumpProfileSupport {
         return noExtensions && representable && plannedDurationMillis() >= MILLISECONDS_PER_SECOND
     }
 
-    fun assessNative(profile: BrewProfile): List<ProfileIssue> = buildList {
+    fun assessNative(profile: BrewProfile, flowSupported: Boolean = true): List<ProfileIssue> = buildList {
         if (profile.finishCondition == null) add(ProfileIssue(ProfileIssueCode.MissingGlobalGoal))
         when (val program = profile.program) {
             is BrewProgram.Recording -> {
+                if (!flowSupported && program.recording.controlMode == FreeHandControlMode.Flow) {
+                    add(ProfileIssue(ProfileIssueCode.UnsupportedControl))
+                }
                 if (program.recording.playbackPoints().size > MAX_RECORDING_POINTS) {
                     add(ProfileIssue(ProfileIssueCode.RecordingCapacity))
                 }
@@ -70,7 +73,7 @@ internal object TimedPumpProfileSupport {
                 program.phases.forEachIndexed { index, phase ->
                     val validControl = when (val control = phase.control) {
                         is PhaseControl.Pressure -> control.location == PressureLocation.Pump && control.bar in 0f..MAX_PRESSURE
-                        is PhaseControl.Flow -> control.millilitresPerSecond in 0f..MAX_FLOW
+                        is PhaseControl.Flow -> flowSupported && control.millilitresPerSecond in 0f..MAX_FLOW
                         is PhaseControl.PumpPause ->
                             index > 0 && index < program.phases.lastIndex &&
                                 program.phases[index - 1].control != PhaseControl.PumpPause

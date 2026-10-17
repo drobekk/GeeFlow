@@ -33,6 +33,9 @@ internal class WendougeeBrewingControl(private val owner: WendougeeController) :
 
     override suspend fun startFreeVariableBrewing(mode: FreeHandControlMode) = brewOperationMutex.withLock {
         val isFlow = mode == FreeHandControlMode.Flow
+        require(!isFlow || owner.profilingCapabilities.liveFlow != null) {
+            "Flow control is not supported by this model"
+        }
         refreshBrewStatus(requireSession())
         if (deviceState.value.brewStatus == BrewStatus.Idle) {
             Logger.withTag(TAG).i { "Starting free variable brew (isFlow=$isFlow)..." }
@@ -71,6 +74,7 @@ internal class WendougeeBrewingControl(private val owner: WendougeeController) :
     }
 
     override suspend fun setFreeBrewFlowTarget(flow: Float) {
+        requireNotNull(owner.profilingCapabilities.liveFlow) { "Flow control is not supported by this model" }
         requireSession().modbus.writeMultipleRegisters(
             WendougeeRegisters.FREE_VAR_TARGET_BASE,
             listOf(0, (flow * SENSOR_SCALE_FACTOR).toInt()),
