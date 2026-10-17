@@ -52,7 +52,25 @@ class DemoDeviceController(
         private set
     override val connection: DeviceConnectionControl get() = this
     override val settings: DeviceSettingsControl get() = this
-    override val hotWater: DeviceHotWaterControl = DeviceHotWaterControl.Unsupported
+    override val hotWater: DeviceHotWaterControl = object : DeviceHotWaterControl {
+        override suspend fun start() {
+            _deviceState.update { state ->
+                check(state.connectionStatus == DeviceState.ConnectionStatus.Connected)
+                check(!state.hasError && state.brewStatus == DeviceState.BrewStatus.Idle)
+                state.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.WaterFlow)
+            }
+        }
+
+        override suspend fun stop() {
+            _deviceState.update { state ->
+                if (state.brewStatus == DeviceState.BrewStatus.WaterFlow) {
+                    state.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.Idle)
+                } else {
+                    state
+                }
+            }
+        }
+    }
     override val brewing: DeviceBrewingControl get() = this
     override val maintenance: DeviceMaintenanceControl get() = this
     override val profiles: DeviceProfileControl get() = this
@@ -112,6 +130,7 @@ class DemoDeviceController(
         DeviceCapability.CommercialGrinderConnectivity,
         DeviceCapability.PressureProfiling,
         DeviceCapability.FlowProfiling,
+        DeviceCapability.HotWaterDispensing,
     )
 
     override suspend fun connect(device: Device): DeviceConnection {
