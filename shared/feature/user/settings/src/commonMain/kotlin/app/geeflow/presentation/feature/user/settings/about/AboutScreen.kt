@@ -8,16 +8,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import app.geeflow.BuildKonfig
+import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
+import app.geeflow.platform.openExternalUri
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.LicensesClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.PrivacyPolicyClicked
@@ -29,6 +34,7 @@ import app.geeflow.ui.components.GeeFlowNavigationListItem
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
+import co.touchlab.kermit.Logger
 import geeflow.shared.feature.user.settings.generated.resources.Res
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_licenses
@@ -41,33 +47,47 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_ab
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_terms_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_version
+import kotlinx.coroutines.CancellationException
 import org.jetbrains.compose.resources.stringResource
 
+@Suppress("TooGenericExceptionCaught")
 @Composable
 internal fun AboutScreen(
     viewModel: AboutViewModel,
     navigator: Navigator,
 ) {
     val uriHandler = LocalUriHandler.current
+    val snackbarState = remember { SnackbarHostState() }
 
     NavigatorEffect(navigator, viewModel.navEvent)
 
-    LaunchedEffect(viewModel) {
+    LaunchedEffect(viewModel, uriHandler) {
         viewModel.events.collect { event ->
             when (event) {
-                is AboutViewModelEvent.OpenUrl -> uriHandler.openUri(event.url)
+                is AboutViewModelEvent.OpenUrl -> {
+                    try {
+                        uriHandler.openExternalUri(event.url)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (failure: Exception) {
+                        Logger.e(failure) { "Could not open external link" }
+                        snackbarState.showSnackbar(failure.toUserMessage())
+                    }
+                }
             }
         }
     }
 
     Content(
         onEvent = viewModel::handleEvent,
+        snackbarState = snackbarState,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
+    snackbarState: SnackbarHostState = remember { SnackbarHostState() },
     onEvent: (AboutEvent) -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -76,6 +96,7 @@ private fun Content(
         subtitle = stringResource(Res.string.user_settings_about_description),
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
+        snackbarHost = { SnackbarHost(snackbarState) },
         modifier = Modifier,
         content = { paddingValues ->
             AboutContent(
