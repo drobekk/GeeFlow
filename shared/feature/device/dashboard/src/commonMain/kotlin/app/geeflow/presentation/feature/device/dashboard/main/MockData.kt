@@ -94,6 +94,8 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
             pressure = "5.5",
             connectionStatus = Device.ConnectionStatus.Connected,
             brewStatus = Device.BrewStatus.Profile,
+            smartScaleConnected = true,
+            singleDoseGrinderConnected = true,
         ),
         brew = Brew(
             name = "Preinfusion",
