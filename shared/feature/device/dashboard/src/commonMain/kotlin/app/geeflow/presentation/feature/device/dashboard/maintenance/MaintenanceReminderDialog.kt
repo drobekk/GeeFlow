@@ -39,13 +39,14 @@ internal fun MaintenanceReminderDialog(
     state: MaintenanceReminderViewState,
     onOpen: (CleaningType) -> Unit,
     onSkip: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val type = if (CleaningType.Deep in state.dueTypes) CleaningType.Deep else CleaningType.Daily
     val title = stringResource(
         if (type == CleaningType.Daily) Res.string.maintenance_daily else Res.string.maintenance_deep,
     )
     GeeFlowDialog(
-        onDismissRequest = { if (!state.busy) onSkip() },
+        onDismissRequest = { if (!state.busy) onDismiss() },
         properties = DialogProperties(dismissOnClickOutside = false),
     ) {
         Column(
@@ -55,7 +56,7 @@ internal fun MaintenanceReminderDialog(
         ) {
             GeeFlowDialogTopBar(
                 title = stringResource(Res.string.maintenance_reminder_due, title),
-                onCloseClick = { if (!state.busy) onSkip() },
+                onCloseClick = { if (!state.busy) onDismiss() },
             )
             VerticalSpacer(16.dp)
             Text(
@@ -100,5 +101,6 @@ private fun Preview() {
         state = MaintenanceReminderViewState(dueTypes = CleaningType.entries.toSet()),
         onOpen = {},
         onSkip = {},
+        onDismiss = {},
     )
 }

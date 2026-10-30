@@ -120,6 +120,7 @@ On the Wendougee Data-S, experimental profiles use the machine's native freehand
 - Due or overdue reminders appear on the machine's dashboard when the app is active and the machine is connected, idle, and reports no error, including after reconnecting or resuming the app
 - Reminders use local calendar dates, with no scheduled time or system notifications
 - Open Quick Maintenance from a reminder to select and start the suggested cleaning program, or choose Skip to move its next reminder forward by the configured interval
+- Closing the reminder with X or Back leaves its due date unchanged; it appears again when returning to the dashboard, resuming the app, or reconnecting the machine
 - Pressing Start counts as cleaning for reminder purposes, even if the program later fails or is stopped. A start rejected because of an active machine error does not reschedule reminders. Daily Cleaning reschedules its own reminder; Deep Cleaning reschedules both
 - When both reminders are due, a single reminder suggests Deep Cleaning, which also covers Daily Cleaning. Skipping it reschedules both reminders
 

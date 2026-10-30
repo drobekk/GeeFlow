@@ -36,12 +36,14 @@ internal class MaintenanceReminderViewModel(
             .collect { (saved, state) ->
                 settings = saved
                 val nowConnected = state.connectionStatus == DeviceState.ConnectionStatus.Connected
-                if (nowConnected && !connected) today = maintenanceDay()
+                val reconnected = nowConnected && !connected
+                if (reconnected) today = maintenanceDay()
                 connected = nowConnected
                 modify {
                     copy(
                         dueTypes = saved.dueTypes(today),
                         eligible = nowConnected && state.brewStatus == DeviceState.BrewStatus.Idle && !state.hasError,
+                        dismissed = if (reconnected) false else dismissed,
                     )
                 }
             }
@@ -49,7 +51,12 @@ internal class MaintenanceReminderViewModel(
 
     fun resumed() {
         today = maintenanceDay()
-        modify { copy(dueTypes = settings?.dueTypes(today).orEmpty()) }
+        modify { copy(dueTypes = settings?.dueTypes(today).orEmpty(), dismissed = false) }
+    }
+
+    fun dismiss() {
+        if (viewState.value.busy) return
+        modify { copy(dismissed = true) }
     }
 
     fun skip(types: Set<CleaningType>) {

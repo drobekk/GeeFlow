@@ -29,7 +29,7 @@ internal fun MaintenanceReminderHost(
     val autoFlush = koinInject<AutoFlushCoordinator>()
     val countdown by autoFlush.countdown.collectAsStateWithLifecycle()
     var active by remember { mutableStateOf(false) }
-    val visible = state.eligible && state.dueTypes.isNotEmpty() && countdown == null
+    val visible = state.eligible && !state.dismissed && state.dueTypes.isNotEmpty() && countdown == null
 
     LifecycleResumeEffect(viewModel) {
         active = true
@@ -44,6 +44,7 @@ internal fun MaintenanceReminderHost(
             state = state,
             onOpen = onOpen,
             onSkip = { viewModel.skip(state.dueTypes) },
+            onDismiss = viewModel::dismiss,
         )
     }
 }

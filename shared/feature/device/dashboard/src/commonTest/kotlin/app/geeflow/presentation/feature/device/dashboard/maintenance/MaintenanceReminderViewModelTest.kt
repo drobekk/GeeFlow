@@ -49,6 +49,50 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class MaintenanceReminderViewModelTest {
     @Test
+    fun `when reminder is dismissed then dates stay unchanged and resuming shows it again`() = runTest {
+        withFixture {
+            runCurrent()
+            val saved = firstSettings.value
+
+            viewModel.dismiss()
+            firstState.value = firstState.value.copy(brewBoilerTemp = 90f)
+            runCurrent()
+
+            assertTrue(viewModel.viewState.value.dismissed)
+            assertEquals(CleaningType.entries.toSet(), viewModel.viewState.value.dueTypes)
+            assertEquals(saved, firstSettings.value)
+            assertTrue(postponedDevices.isEmpty())
+            assertFalse(secondViewModel.viewState.value.dismissed)
+
+            viewModel.resumed()
+
+            assertFalse(viewModel.viewState.value.dismissed)
+            assertEquals(CleaningType.entries.toSet(), viewModel.viewState.value.dueTypes)
+            assertTrue(postponedDevices.isEmpty())
+        }
+    }
+
+    @Test
+    fun `when machine reconnects then dismissed reminder is shown again without postponing`() = runTest {
+        withFixture {
+            runCurrent()
+            viewModel.dismiss()
+            firstState.value = firstState.value.copy(connectionStatus = ConnectionStatus.Disconnected)
+            runCurrent()
+
+            assertTrue(viewModel.viewState.value.dismissed)
+
+            firstState.value = firstState.value.copy(connectionStatus = ConnectionStatus.Connected)
+            runCurrent()
+
+            assertFalse(viewModel.viewState.value.dismissed)
+            assertTrue(viewModel.viewState.value.eligible)
+            assertEquals(CleaningType.entries.toSet(), viewModel.viewState.value.dueTypes)
+            assertTrue(postponedDevices.isEmpty())
+        }
+    }
+
+    @Test
     fun `dashboard reminder is eligible only while its machine is connected and idle`() = runTest {
         withFixture {
             runCurrent()
