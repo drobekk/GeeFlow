@@ -3,14 +3,13 @@ package app.geeflow.data.device.impl.controller
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
-import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.TimedPumpProfileSupport
 import app.geeflow.domain.exception.RecordingCapacityExceededException
 
 /**
  * One Modbus register write that makes up part of a profile upload. The controller
  * dispatches these to [app.geeflow.data.device.ble.modbus.ModbusSession]
- * — framing, CRC, and ACK matching live there.
+ * Framing, CRC, and ACK matching live there.
  */
 sealed interface ProfileWrite {
     val register: Int
@@ -19,7 +18,9 @@ sealed interface ProfileWrite {
     data class Multiple(override val register: Int, val values: List<Int>) : ProfileWrite
 }
 
-class WendougeeProfileCompiler {
+class WendougeeProfileCompiler(
+    private val format: WendougeeProfileFormat = WendougeeProfileFormat.Legacy,
+) {
 
     fun buildProfileWrites(profile: BrewProfile, isBinding: Boolean = false): List<ProfileWrite> {
         val isWeight = profile.finishCondition is Condition.Weight
@@ -37,11 +38,10 @@ class WendougeeProfileCompiler {
         require(TimedPumpProfileSupport.assessNative(profile).isEmpty()) {
             "Profile cannot run natively on this device"
         }
-        val realMode = if (profile.recording != null) FV_FREE_MODE else 2
         return if (profile.recording != null) {
-            buildFreeVariableWrites(profile, realMode, isBinding, isWeight, targetValue)
+            buildFreeVariableWrites(profile, FV_FREE_MODE, isBinding, isWeight, targetValue)
         } else {
-            buildConstantModeWrites(profile, realMode, isBinding, isWeight, targetValue)
+            buildStageProfileWrites(profile, isBinding, isWeight, targetValue, format)
         }
     }
 
@@ -96,64 +96,6 @@ class WendougeeProfileCompiler {
         return writes
     }
 
-    private fun buildConstantModeWrites(
-        profile: BrewProfile,
-        realMode: Int,
-        isBinding: Boolean,
-        isWeight: Boolean,
-        targetValue: Float,
-    ): List<ProfileWrite> {
-        val writes = mutableListOf<ProfileWrite>()
-        val startReg = if (isBinding) WendougeeRegisters.CONSTANT_MODE_BOUND_BASE else WendougeeRegisters.CONSTANT_MODE_BASE
-
-        val headerValues = listOf(
-            if (isWeight) 0 else 1,
-            1,
-            1,
-            1,
-            if (!isWeight) targetValue.toInt() else 0,
-            if (isWeight) targetValue.toInt() else 0,
-            if (profile.autoLinkOpen) 1 else 0,
-        )
-        writes.add(ProfileWrite.Multiple(startReg, headerValues))
-
-        data class MachineStep(
-            val time: Int,
-            val bar: Float,
-            val flow: Float,
-            var awaitTime: Int = 0,
-            val isFlowPriority: Boolean,
-        )
-
-        val machineSteps = mutableListOf<MachineStep>()
-        profile.steps.forEach { step ->
-            when (step) {
-                is ProfileStep.Wait -> machineSteps.lastOrNull()?.let { it.awaitTime = step.time }
-                is ProfileStep.Pressure -> machineSteps.add(MachineStep(step.time, step.pressure, 0f, 0, false))
-                is ProfileStep.Flow -> machineSteps.add(MachineStep(step.time, 0f, step.flow, 0, true))
-            }
-        }
-
-        var currentReg = startReg + CONSTANT_MODE_HEADER_OFFSET
-        machineSteps.forEachIndexed { index, step ->
-            val isLast = index == machineSteps.size - 1
-            val stepValues = listOf(
-                step.time,
-                (step.bar * SENSOR_SCALE_FACTOR).toInt(),
-                (step.flow * SENSOR_SCALE_FACTOR).toInt(),
-                if (isLast) 0 else step.awaitTime,
-                if (isLast) 1 else 0,
-                if (step.isFlowPriority) 1 else 0,
-            )
-            writes.add(ProfileWrite.Multiple(currentReg, stepValues))
-            currentReg += STEP_REGISTER_SIZE
-        }
-
-        val modeRegister = if (isBinding) WendougeeRegisters.BOUND_PROFILE_MODE else WendougeeRegisters.FV_PROFILE_MODE
-        writes.add(ProfileWrite.Single(modeRegister, realMode))
-        return writes
-    }
-
     companion object {
         /** Native free-profile generator commits the uploaded banks to the selected shortcut. */
         fun profileCommitCoil(isBinding: Boolean): Int = if (isBinding) BOUND_PROFILE_COMMIT_COIL else PROFILE_COMMIT_COIL
@@ -166,7 +108,5 @@ class WendougeeProfileCompiler {
         private const val FV_TABLE_SIZE = 128
         private const val MAX_REGISTER_VALUE = 65535
         private const val FV_TABLE_ENDS_VALUE = 0x7f7f
-        private const val CONSTANT_MODE_HEADER_OFFSET = 8
-        private const val STEP_REGISTER_SIZE = 9
     }
 }

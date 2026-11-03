@@ -33,6 +33,17 @@ class WendougeeNativeProfileTest {
     private val compiler = WendougeeProfileCompiler()
 
     @Test
+    fun `when packed stage format is selected then recordings retain both legacy bank layouts`() {
+        val profile = recordingProfile()
+        val packed = WendougeeProfileCompiler(WendougeeProfileFormat.Packed)
+
+        val writes = listOf(false, true).map { packed.buildProfileWrites(profile, isBinding = it) }
+        val legacyWrites = listOf(false, true).map { compiler.buildProfileWrites(profile, isBinding = it) }
+
+        assertEquals(legacyWrites, writes)
+    }
+
+    @Test
     fun `when recording contains measured weights then bank words use whole grams`() {
         val profile = recordingProfile()
 

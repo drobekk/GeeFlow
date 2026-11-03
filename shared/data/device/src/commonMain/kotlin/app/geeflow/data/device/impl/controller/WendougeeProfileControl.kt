@@ -34,7 +34,8 @@ internal class WendougeeProfileControl(private val owner: WendougeeController) :
         refreshBrewStatus(requireSession())
         if (deviceState.value.brewStatus != BrewStatus.Idle) return@withLock
         Logger.withTag(TAG).i { "Starting profile brew: ${profile.name}" }
-        requireSession().modbus.uploadProfile(profile, isBinding = false)
+        val active = requireSession()
+        active.modbus.uploadProfile(profile, isBinding = false, format = active.profileFormat)
         refreshBrewStatus(requireSession())
         if (deviceState.value.brewStatus != BrewStatus.Idle) return@withLock
         if (profile.recording != null) {
@@ -47,7 +48,8 @@ internal class WendougeeProfileControl(private val owner: WendougeeController) :
         require(assessNativeProfile(profile).isEmpty()) { "Profile is not supported by this model" }
         Logger.withTag(TAG).i { "Binding profile to button: ${profile.name}" }
 
-        requireSession().modbus.uploadProfile(profile, isBinding = true)
+        val active = requireSession()
+        active.modbus.uploadProfile(profile, isBinding = true, format = active.profileFormat)
         if (profile.recording != null) {
             sendModbusPulse(WendougeeProfileCompiler.profileCommitCoil(isBinding = true), "Commit bound recorded profile")
         }

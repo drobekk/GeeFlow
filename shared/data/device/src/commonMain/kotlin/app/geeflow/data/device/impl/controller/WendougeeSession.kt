@@ -11,4 +11,6 @@ internal class WendougeeSession(
     val controlResponses: MutableSharedFlow<ByteArray> = MutableSharedFlow(),
     val frames: ModbusNotifications = ModbusNotifications(),
     val controlFrames: WendougeeControlFrames = WendougeeControlFrames(),
-)
+) {
+    var profileFormat: WendougeeProfileFormat = WendougeeProfileFormat.Legacy
+}

@@ -10,9 +10,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlin.time.Duration.Companion.milliseconds
 
-internal suspend fun ModbusSession.uploadProfile(profile: BrewProfile, isBinding: Boolean) {
+internal suspend fun ModbusSession.uploadProfile(
+    profile: BrewProfile,
+    isBinding: Boolean,
+    format: WendougeeProfileFormat,
+) {
     // Compile and validate the complete program before the first register write.
-    val writes = WendougeeProfileCompiler().buildProfileWrites(profile, isBinding)
+    val writes = WendougeeProfileCompiler(format).buildProfileWrites(profile, isBinding)
     for (write in writes) {
         writeProfileWithRetry {
             when (write) {

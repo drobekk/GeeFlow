@@ -231,6 +231,7 @@ internal class WendougeeController(
         withTimeout(INIT_POLL_TIMEOUT_MS) { deviceState.first { it.config != null } }
         readWaterAlarmRegister(active)
         val firmware = readWendougeeFirmware(active.modbus)
+        active.profileFormat = resolveWendougeeProfileFormat(model, firmware)
         stateStore.updateMachine {
             it.copy(firmwareVersion = firmware, agileRingSupported = supportsAgileRing(model, firmware))
         }
