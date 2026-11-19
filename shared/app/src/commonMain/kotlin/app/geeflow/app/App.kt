@@ -3,10 +3,12 @@ package app.geeflow.app
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import app.geeflow.app.autoflush.AutoFlushHost
 import app.geeflow.app.navigation.RootNavigation
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileLibrarySyncController
 import app.geeflow.app.screensaver.ScreensaverContainer
 import app.geeflow.app.theme.rememberAppColorScheme
 import app.geeflow.app.theme.rememberAppearanceSettings
@@ -20,6 +22,7 @@ import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
 import org.koin.plugin.module.dsl.koinConfiguration
 import app.geeflow.data.user.model.ThemeMode as UserThemeMode
 
@@ -32,6 +35,8 @@ fun App(closeApp: () -> Unit) {
     }
 
     KoinApplication(koinConfiguration<GeeFlowApp>()) {
+        val profileLibrarySync = koinInject<ProfileLibrarySyncController>()
+        LaunchedEffect(profileLibrarySync) { profileLibrarySync.start() }
         val appearance by rememberAppearanceSettings()
         val darkMode = when (appearance.themeMode) {
             UserThemeMode.SYSTEM -> isSystemInDarkTheme()
