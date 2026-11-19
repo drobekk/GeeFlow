@@ -4,26 +4,17 @@ import androidx.lifecycle.viewModelScope
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
 import app.geeflow.data.device.model.DeviceState
-import app.geeflow.data.device.model.SingleDoseGrinder
 import app.geeflow.data.device.model.SmartScale
-import app.geeflow.domain.device.usecase.ConnectSingleDoseGrinderUseCase
 import app.geeflow.domain.device.usecase.ConnectSmartScaleUseCase
-import app.geeflow.domain.device.usecase.DisconnectSingleDoseGrinderUseCase
 import app.geeflow.domain.device.usecase.DisconnectSmartScaleUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveFoundScalesUseCase
-import app.geeflow.domain.device.usecase.ObserveFoundSingleDoseGrindersUseCase
-import app.geeflow.domain.device.usecase.RequestSingleDoseGrinderListUseCase
 import app.geeflow.domain.device.usecase.RequestSmartScaleListUseCase
-import app.geeflow.domain.device.usecase.SetSingleDoseGrinderConnectivityUseCase
 import app.geeflow.domain.device.usecase.SetSmartScaleConnectivityUseCase
 import app.geeflow.presentation.feature.device.settings.ConnectivitySettings
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivityAccessoryType.SingleDose
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivityAccessoryType.SmartScale
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ConnectionClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SearchToggled
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.TypeSelected
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.AccessoryConnectionStatus
 import io.mockk.coVerify
 import io.mockk.every
@@ -46,78 +37,46 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConnectivitySettingsViewModelTest {
     @Test
-    fun `when enabling search in each tab then only the selected integration receives the command`() = runTest {
+    fun `when enabling search then smart scale discovery is enabled`() = runTest {
         withFixture {
             runCurrent()
 
-            viewModel.handleEvent(SearchToggled(true))
-            runCurrent()
-            viewModel.handleEvent(TypeSelected(SingleDose))
             viewModel.handleEvent(SearchToggled(true))
             runCurrent()
 
             coVerify(exactly = 1) { accessories.setSmartScaleConnectivity(true) }
-            coVerify(exactly = 1) { accessories.setSingleDoseGrinderConnectivity(true) }
         }
     }
 
     @Test
-    fun `when switching tabs during connection then pending grinder remains in its own tab`() = runTest {
+    fun `when connecting and disconnecting a scale then its state is reflected`() = runTest {
         withFixture {
             runCurrent()
-            viewModel.handleEvent(TypeSelected(SingleDose))
-
-            viewModel.handleEvent(ConnectionClicked("Milo Demo"))
-            viewModel.handleEvent(TypeSelected(SmartScale))
+            viewModel.handleEvent(ConnectionClicked("BOOKOO_Test"))
             runCurrent()
+            coVerify(exactly = 1) { accessories.connectSmartScale("BOOKOO_Test") }
 
-            assertEquals("BOOKOO_Test", viewModel.viewState.value.selectedAccessory.devices.single().name)
-            assertEquals(
-                AccessoryConnectionStatus.Disconnected,
-                viewModel.viewState.value.scale.devices.single().connectionStatus,
-            )
-            assertEquals(
-                AccessoryConnectionStatus.Connecting,
-                viewModel.viewState.value.grinder.devices.single().connectionStatus,
-            )
-            coVerify(exactly = 1) { accessories.connectSingleDoseGrinder("Milo Demo") }
-            coVerify(exactly = 0) { accessories.connectSmartScale(any()) }
-        }
-    }
-
-    @Test
-    fun `when grinder connection is confirmed then its button changes to connected`() = runTest {
-        withFixture {
+            state.value = state.value.copy(smartScale = SmartScale("BOOKOO_Test", true))
             runCurrent()
-            viewModel.handleEvent(TypeSelected(SingleDose))
-            viewModel.handleEvent(ConnectionClicked("Milo Demo"))
-            runCurrent()
-
-            state.value = state.value.copy(singleDoseGrinder = SingleDoseGrinder("Milo Demo", true))
-            runCurrent()
-
             assertEquals(
                 AccessoryConnectionStatus.Connected,
-                viewModel.viewState.value.grinder.devices.single().connectionStatus,
+                viewModel.viewState.value.scale.devices.single().connectionStatus,
             )
+
+            viewModel.handleEvent(ConnectionClicked("BOOKOO_Test"))
+            runCurrent()
+            coVerify(exactly = 1) { accessories.disconnectSmartScale() }
         }
     }
 
     @Test
-    fun `when rescanning and disconnecting grinder then scale commands are not sent`() = runTest {
+    fun `when rescanning then only smart scales are requested`() = runTest {
         withFixture {
-            state.value = state.value.copy(singleDoseGrinder = SingleDoseGrinder("Milo Demo", true))
             runCurrent()
-            viewModel.handleEvent(TypeSelected(SingleDose))
-
             viewModel.handleEvent(RescanClicked)
-            viewModel.handleEvent(ConnectionClicked("Milo Demo"))
             runCurrent()
 
-            coVerify(exactly = 1) { accessories.requestSingleDoseGrinderList() }
-            coVerify(exactly = 1) { accessories.disconnectSingleDoseGrinder() }
-            coVerify(exactly = 0) { accessories.requestSmartScaleList() }
-            coVerify(exactly = 0) { accessories.disconnectSmartScale() }
+            coVerify(exactly = 1) { accessories.requestSmartScaleList() }
         }
     }
 
@@ -139,7 +98,6 @@ class ConnectivitySettingsViewModelTest {
             DeviceState(
                 connectionStatus = DeviceState.ConnectionStatus.Connected,
                 smartScaleEnabled = true,
-                singleDoseGrinderEnabled = true,
             ),
         )
         private val provider = mockk<DeviceControllerProvider>()
@@ -150,8 +108,6 @@ class ConnectivitySettingsViewModelTest {
             every { provider.observeController(9) } returns flowOf(controller)
             every { controller.deviceState } returns state
             every { controller.foundScales } returns MutableStateFlow(listOf(SmartScale("BOOKOO_Test", false)))
-            every { controller.foundSingleDoseGrinders } returns
-                MutableStateFlow(listOf(SingleDoseGrinder("Milo Demo", false)))
             every { observeState(9) } returns state
         }
 
@@ -163,11 +119,6 @@ class ConnectivitySettingsViewModelTest {
             requestSmartScaleList = RequestSmartScaleListUseCase(provider),
             connectSmartScale = ConnectSmartScaleUseCase(provider),
             disconnectSmartScale = DisconnectSmartScaleUseCase(provider),
-            observeFoundGrinders = ObserveFoundSingleDoseGrindersUseCase(provider),
-            setGrinderConnectivity = SetSingleDoseGrinderConnectivityUseCase(provider),
-            requestGrinderList = RequestSingleDoseGrinderListUseCase(provider),
-            connectGrinder = ConnectSingleDoseGrinderUseCase(provider),
-            disconnectGrinder = DisconnectSingleDoseGrinderUseCase(provider),
         )
     }
 }

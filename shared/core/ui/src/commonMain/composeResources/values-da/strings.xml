@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Tilbage</string>
     <string name="common_close">Luk</string>
     <string name="common_confirm">Bekræft</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Mistede forbindelsen til maskinen under brygning.</string>
     <string name="error_required_measurement_lost">En påkrævet sensor blev afbrudt.</string>
     <string name="error_profile_unavailable">Profil ikke kompatibel med maskinens aktuelle tilstand.</string>
-    <string name="agreement_prefix">Jeg accepterer </string>
-    <string name="agreement_terms">Vilkår og betingelser</string>
-    <string name="agreement_and"> og </string>
-    <string name="agreement_privacy">Privatlivspolitik</string>
     <string name="maintenance_daily">Daglig rengøring</string>
     <string name="maintenance_deep">Dybderengøring</string>
     <string name="maintenance_daily_description">Rutineskyl for at fjerne kafferester fra bryghovedet.</string>

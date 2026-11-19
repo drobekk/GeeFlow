@@ -18,7 +18,29 @@ class DeviceRepositoryImpl(
     override val devices: StateFlow<List<Device>> = _devices.asStateFlow()
 
     init {
+        ensureLiangsLita()
         refresh()
+    }
+
+    /** Keep the printed serial separate from the BLE address used by the transport. */
+    private fun ensureLiangsLita() {
+        val defaultDevice = Device(
+            name = LIANGS_LITA_NAME,
+            connection = DeviceConnection.Ble(
+                peripheralId = LIANGS_LITA_BLE_ADDRESS,
+                macAddress = LIANGS_LITA_BLE_ADDRESS,
+            ),
+            manufacturer = SupportedDevice.LitaBA.manufacturer,
+            model = SupportedDevice.LitaBA.model,
+            modelId = SupportedDevice.LitaBA.id,
+            modelSource = "bundled-default",
+            serialNumber = LIANGS_LITA_SERIAL_NUMBER,
+        )
+        val saved = devicesDao.getDeviceByBleMac(LIANGS_LITA_BLE_ADDRESS)
+        when {
+            saved == null -> devicesDao.insertDevice(defaultDevice)
+            saved.serialNumber == null -> devicesDao.updateDefaultIdentity(saved.id, defaultDevice)
+        }
     }
 
     override fun addDevice(device: Device): Long {
@@ -73,5 +95,11 @@ class DeviceRepositoryImpl(
 
     private fun refresh() {
         _devices.value = devicesDao.getAllDevices()
+    }
+
+    private companion object {
+        const val LIANGS_LITA_NAME = "Liang's LITA"
+        const val LIANGS_LITA_SERIAL_NUMBER = "AB08118958"
+        const val LIANGS_LITA_BLE_ADDRESS = "10:20:BA:04:43:36"
     }
 }

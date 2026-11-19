@@ -12,13 +12,49 @@
     <string name="device_error_water_level">Abnormal water level in the machine. This error may concern the boiler water level or its sensor.</string>
     <string name="free_control_recording_too_long">This recording is too long to replay. Free hand profiles support about 63 seconds of recorded measurements.</string>
     <!-- Device Dashboard -->
-    <string name="device_dashboard_clean">Clean</string>
+    <string name="device_dashboard_clean">Cleaning settings</string>
     <string name="device_dashboard_alarm">Alarm</string>
     <string name="device_dashboard_connected_devices">Connected devices</string>
     <string name="device_dashboard_connected">Connected</string>
+    <string name="device_dashboard_profile_label">Brew profile</string>
     <string name="device_dashboard_disconnected">Disconnected</string>
     <string name="device_dashboard_connecting">Connecting</string>
     <string name="device_dashboard_syncing">Syncing</string>
+    <string name="device_dashboard_manual_control">Manual control</string>
+    <string name="device_dashboard_brew_controls">Brew controls</string>
+    <string name="device_dashboard_cup_flow_label">Cup flow</string>
+    <string name="device_dashboard_start_brew">Start brew</string>
+    <string name="device_dashboard_stop_brew">Stop brew</string>
+    <string name="device_dashboard_live">Live</string>
+    <string name="dashboard_brewing_state">Brewing</string>
+    <string name="dashboard_charts">Charts</string>
+    <string name="dashboard_chart_mode_combined">Combined</string>
+    <string name="dashboard_chart_mode_separate">Separate</string>
+    <string name="device_dashboard_last_shot">Last shot</string>
+    <string name="device_dashboard_history">History</string>
+    <string name="device_dashboard_ready">Ready</string>
+    <string name="device_dashboard_output">Output</string>
+    <string name="device_dashboard_target">Target</string>
+    <string name="device_dashboard_connect_scale">Connect scale</string>
+    <string name="device_dashboard_flow_range">Flow range</string>
+    <string name="device_dashboard_flow_range_exceeded">Range exceeded: %1$s is above %2$d ml/s</string>
+    <string name="device_dashboard_target_flow">Target flow: %1$s ml/s</string>
+    <string name="device_dashboard_pressure_chart">Pressure (bar)</string>
+    <string name="device_dashboard_water_flow_chart">Water flow (ml/s)</string>
+    <string name="device_dashboard_bookoo_reported_flow">BOOKOO flow</string>
+    <string name="device_dashboard_scale_derived_flow">BOOKOO from weight</string>
+    <string name="device_dashboard_scale_smoothed_flow">Weight-derived flow</string>
+    <string name="device_dashboard_bookoo_weight">BOOKOO weight</string>
+    <string name="device_dashboard_cup_flow_chart">Cup flow (g/s)</string>
+    <string name="device_dashboard_volume_relative_chart">Water output (relative)</string>
+    <string name="device_dashboard_weight_relative_chart">Cup weight (relative)</string>
+    <string name="device_dashboard_actual">Actual</string>
+    <string name="device_dashboard_phase_reached">Reached phase</string>
+    <string name="device_dashboard_phase_planned">Planned phase</string>
+    <string name="device_dashboard_time_axis">Time (seconds)</string>
+    <string name="device_dashboard_details">Details</string>
+    <string name="device_dashboard_combined_chart">Shot curve · relative scale</string>
+    <string name="device_dashboard_hide_details">Hide details</string>
 
     <string name="device_dashboard_select_charts">Select data types below to visualize your brew</string>
 
@@ -32,6 +68,22 @@
 
     <!-- Profile List -->
     <string name="profile_list_search">Search</string>
+    <string name="profile_list_all">All</string>
+    <string name="profile_list_favorites">Favorites</string>
+    <string name="profile_list_add_favorite">Add to Favorites</string>
+    <string name="profile_list_remove_favorite">Remove from Favorites</string>
+    <string name="profile_list_filter_pressure">Pressure</string>
+    <string name="profile_list_filter_flow">Flow</string>
+    <string name="profile_list_filter_mixed">Mixed</string>
+    <string name="profile_list_filter_recorded">Recorded</string>
+    <string name="profile_list_filter_other">Other</string>
+    <string name="profile_list_selected">Selected</string>
+    <string name="profile_list_target_weight">%1$s g target</string>
+    <string name="profile_list_target_volume">%1$s ml target</string>
+    <string name="profile_list_no_target">No stop target</string>
+    <string name="profile_list_new_profile">New profile</string>
+    <string name="profile_list_history">History</string>
+    <string name="profile_list_no_matches">No matching profiles</string>
     <string name="profile_list_delete">Delete profile</string>
     <string name="profile_list_duplicate">Duplicate profile</string>
     <string name="profile_list_duplicate_name">%1$s (copy)</string>
@@ -39,6 +91,13 @@
     <string name="profile_list_show_history">Show brew history</string>
     <string name="profile_list_show_profiles">Show profiles</string>
     <string name="profile_list_add_profile">Add profile</string>
+    <string name="profile_sync_title">Online profile library</string>
+    <string name="profile_sync_not_configured">Online library sync is not configured in this build.</string>
+    <string name="profile_sync_syncing">Syncing profiles…</string>
+    <string name="profile_sync_connected">Profile library is up to date.</string>
+    <string name="profile_sync_offline">Library is unreachable. Local profiles remain available.</string>
+    <string name="profile_sync_error">Profile library sync needs attention.</string>
+    <string name="profile_sync_close">Close</string>
 
     <!-- Brew History -->
     <string name="brew_history_empty">No brews recorded yet</string>
@@ -49,7 +108,37 @@
 
     <!-- Device Settings Quick -->
     <string name="settings_quick_title">Quick settings</string>
-    <string name="settings_quick_more">More settings</string>
+    <string name="dashboard_recipe_library">Recipe library</string>
+    <string name="dashboard_pinned_recipes">Pinned favorites</string>
+    <string name="dashboard_use_profile">Use profile</string>
+    <string name="dashboard_pinned_empty">Star recipes in the library to keep them here for quick start.</string>
+    <string name="dashboard_dose">Bean weight</string>
+    <string name="dashboard_grind">Grind</string>
+    <string name="dashboard_shot_date">Current shot</string>
+    <string name="dashboard_decent_shot_history">Decent shot history</string>
+    <string name="dashboard_shot_dose">Dose %1$s g</string>
+    <string name="dashboard_shot_dose_missing">Dose —</string>
+    <string name="dashboard_shot_preinfusion">Preinfusion</string>
+    <string name="dashboard_shot_extraction">Extraction</string>
+    <string name="dashboard_shot_total">Total</string>
+    <string name="dashboard_shot_time">Time</string>
+    <string name="dashboard_shot_weight">Weight</string>
+    <string name="dashboard_shot_water">Water</string>
+    <string name="dashboard_shot_brew_temperature">Brew boiler °C</string>
+    <string name="dashboard_shot_pump_flow">Pump flow ml/s</string>
+    <string name="dashboard_shot_pressure">Pressure bar</string>
+    <string name="dashboard_shot_estimated_split">Estimated</string>
+    <string name="dashboard_shot_estimated_volume">≈ Water volume estimated by integrating pump flow</string>
+    <string name="dashboard_shot_older">Older shot</string>
+    <string name="dashboard_shot_newer">Newer shot</string>
+    <string name="dashboard_ratio">Ratio</string>
+    <string name="dashboard_target_output">Target output</string>
+    <string name="dashboard_machine_weight_target">Machine stop · %1$s g</string>
+    <string name="dashboard_output_reference_only">Output is informational for this profile. Its saved stop rule stays the same.</string>
+    <string name="dashboard_connect_scale">Connect scale</string>
+    <string name="dashboard_connecting_scale">Connecting to scale…</string>
+    <string name="dashboard_scale_connected">Scale connected</string>
+    <string name="dashboard_live_recipe_review">Review the recipe mappings before brewing.</string>
 
     <!-- Free Control Screen -->
     <string name="free_control_screen_title">Freehand profile</string>
@@ -88,8 +177,12 @@
     <!-- Quick Maintenance Dialog -->
     <string name="quick_maintenance_title">Maintenance</string>
     <string name="quick_maintenance_start">Start cleaning</string>
+    <string name="quick_maintenance_start_flush">Start quick flush</string>
+    <string name="quick_maintenance_start_clean">Start cleaning</string>
     <string name="quick_maintenance_stop">Stop cleaning</string>
-    <string name="profile_experimental_info">This step needs GeeFlow to run. Keep the app open while brewing. Profiles with this step can’t be assigned to the machine’s button or paddle.</string>
+    <string name="quick_maintenance_stop_flush">Stop quick flush</string>
+    <string name="quick_maintenance_stop_clean">Stop cleaning</string>
+    <string name="profile_experimental_info">This profile uses a feature the machine can’t run on its own, so GeeFlow controls it live. Keep the app open while brewing. App controlled profiles can’t be assigned to a machine button or paddle.</string>
     <string name="experimental_phase_transition">Phase transition</string>
     <string name="experimental_phase_name">Phase name</string>
     <string name="experimental_phase_limit">Maximum duration: %1$d s. The phase ends when any condition is met, or its time expires.</string>
@@ -124,6 +217,8 @@
     <string name="experimental_current_measurement">Current measurement</string>
     <string name="experimental_above">At or above</string>
     <string name="experimental_below">At or below</string>
+    <string name="experimental_strictly_above">Strictly above</string>
+    <string name="experimental_strictly_below">Strictly below</string>
     <string name="experimental_selection">%1$s: %2$s</string>
     <string name="experimental_ramp_summary">%1$s · %2$s s</string>
     <string name="experimental_condition_summary">%1$s · %2$s %3$s</string>
@@ -169,6 +264,35 @@
     <string name="step_editor_pump_control">Pump control</string>
     <string name="step_editor_control_locked">Experimental steps use one pump control mode. This profile uses %1$s.</string>
     <string name="step_editor_ramp_style">Style</string>
+<string name="dashboard_review_recipe">Recipe review required</string>
+    <string name="dashboard_recipe_unavailable">Recipe unavailable</string>
+    <string name="dashboard_machine_not_ready">Machine disconnected or syncing</string>
+    <string name="dashboard_recipe_details">Recipe details</string>
+    <string name="dashboard_reference_yield">Reference yield</string>
+    <string name="dashboard_pause">Pause</string>
+    <string name="dashboard_done">Done</string>
+    <string name="dashboard_no_scale_found">No BOOKOO scale found</string>
+    <string name="dashboard_scale_not_connected">Not connected</string>
+    <string name="dashboard_app_scale">App scale</string>
+    <string name="dashboard_connect_app_scale">Connect</string>
+    <string name="dashboard_disconnect_app_scale">Disconnect</string>
+    <string name="dashboard_weight_stop_unavailable">No app scale connected. The recipe will run as programmed.</string>
+    <string name="dashboard_scan">Scan</string>
+    <string name="dashboard_decrease">Decrease %1$s</string>
+    <string name="dashboard_increase">Increase %1$s</string>
+    <string name="dashboard_cup_rate">Cup flow %1$s</string>
+    <string name="dashboard_connect_machine">Connect machine</string>
+    <string name="dashboard_disconnect_machine">Disconnect machine</string>
+    <string name="dashboard_import_recipe">Create or import live recipe</string>
+    <string name="dashboard_recipe_actions">Recipe actions</string>
+    <string name="dashboard_ready_recipe">Ready</string>
+    <string name="dashboard_edit_recipe">Edit recipe</string>
+    <string name="dashboard_machine_error">Machine error</string>
+    <string name="dashboard_scale_required">Scale required</string>
+    <string name="dashboard_phase_details">Recipe details · %1$d phases</string>
+    <string name="dashboard_profile_settings">Profile settings</string>
+
+    <string name="settings_quick_more">More settings</string>
     <string name="profile_editor_single_dose_title">Single Dose grinder</string>
     <string name="profile_editor_single_dose_toggle">Use with this profile</string>
     <string name="profile_editor_single_dose_toggle_description">Keep grinding settings in this profile</string>
@@ -176,4 +300,31 @@
     <string name="profile_editor_grinding_speed">Grinding speed</string>
     <string name="profile_editor_single_dose_set_grinder">Set grinder</string>
     <string name="profile_list_grinder_settings_sent">Grinder settings sent</string>
+    <string name="profile_editor_advanced_recipe">This recipe uses conditional control. Edit its stages in the web library; details and the shot finish goal can be changed here.</string>
+    <string name="profile_list_target_none">No target</string>
+    <string name="profile_sync_ready">Not synced yet</string>
+    <string name="dashboard_parameters">Recipe parameters</string>
+    <string name="dashboard_history_save_grind">Save grind</string>
+    <string name="dashboard_history_last_sample">Temperature, flow and pressure: last recorded sample</string>
+    <string name="dashboard_phase_dynamic">Adaptive target</string>
+    <string name="dashboard_phase_max">up to %1$s s</string>
+    <string name="dashboard_phase_until">Until %1$s · %2$s</string>
+    <string name="dashboard_phase_stage">stage</string>
+    <string name="dashboard_phase_total">total</string>
+    <string name="dashboard_phase_pressure_pump">Pump pressure</string>
+    <string name="dashboard_phase_pressure_group">Group pressure</string>
+    <string name="dashboard_phase_pressure_boiler">Boiler pressure</string>
+    <string name="dashboard_phase_water_flow">Water flow</string>
+    <string name="dashboard_phase_cup_flow">Cup flow</string>
+    <string name="dashboard_phase_weight">Cup weight</string>
+    <string name="dashboard_phase_volume">Water volume</string>
+    <string name="dashboard_phase_time">Time</string>
+    <string name="dashboard_source_details">Source details</string>
+    <string name="dashboard_flow_title">Flow</string>
+    <string name="dashboard_history_grind_saved">Grind saved</string>
+    <string name="dashboard_history_index">Record %1$d</string>
+    <string name="dashboard_phase_and">and</string>
+    <string name="dashboard_phase_or">or</string>
+    <string name="dashboard_phase_min">minimum %1$s s</string>
+    <string name="dashboard_phase_stable">measurement stability %1$s s</string>
 </resources>

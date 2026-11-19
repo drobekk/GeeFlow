@@ -5,7 +5,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -19,14 +18,14 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import app.geeflow.app.App
-import app.geeflow.ui.icons.AppLogo
-import app.geeflow.ui.icons.GeeFlowIcon
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.app_name
+import geeflow.shared.core.ui.generated.resources.liang_lita_app_icon
 import io.github.vinceglb.filekit.FileKit
 import java.awt.Taskbar
 import javax.imageio.ImageIO
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.painterResource
 
 fun main() {
     FileKit.init(appId = "app.geeflow")
@@ -40,7 +39,7 @@ fun main() {
                 onCloseRequest = ::exitApplication,
                 state = state,
                 title = stringResource(Res.string.app_name),
-                icon = rememberVectorPainter(GeeFlowIcon.AppLogo),
+                icon = painterResource(Res.drawable.liang_lita_app_icon),
                 undecorated = isFullscreen,
                 onKeyEvent = { event ->
                     handleFullscreenKey(event) {

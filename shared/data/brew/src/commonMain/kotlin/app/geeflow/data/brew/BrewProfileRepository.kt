@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.StateFlow
 interface BrewProfileRepository {
     val brewProfiles: StateFlow<List<BrewProfile>>
     fun addBrewProfile(brewProfile: BrewProfile)
+    fun upsertSynchronizedProfile(brewProfile: BrewProfile): BrewProfile
+    fun removeSynchronizedProfile(id: Long)
+    fun pendingSyncDeletions(userId: Long): List<Long>
+    fun clearPendingSyncDeletions(userId: Long, profileIds: Set<Long>)
     fun getBrewProfilesForUser(userId: Long): List<BrewProfile>
     fun getBrewProfileById(id: Long): BrewProfile?
     fun removeBrewProfile(id: Long)

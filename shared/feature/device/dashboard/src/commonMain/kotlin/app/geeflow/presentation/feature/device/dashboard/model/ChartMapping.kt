@@ -29,5 +29,6 @@ internal fun BrewSession.toChartData(): Map<Float, ChartData> = dataPoints.mapVa
         weightPerSecond = point.weightRate,
         volume = point.volume,
         volumePerSecond = point.flowRate,
+        temperatureC = point.brewBoilerTempC,
     )
 }

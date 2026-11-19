@@ -152,4 +152,44 @@ class ObserveBrewDataUseCaseTest {
         assertEquals(point, result.dataPoints.values.single())
         assertNotNull(result.startTime)
     }
+    @Test
+    fun `new native shot ignores previous telemetry and starts its own clock`() = runTest {
+        val origin = kotlin.time.Clock.System.now()
+        val states = MutableStateFlow(DeviceState(
+            brewStatus = DeviceState.BrewStatus.Profile,
+            statusTime = origin,
+            telemetryTime = origin - 300.seconds,
+            pressure = 9f,
+        ))
+        every { controller.deviceState } returns states
+        val sessions = mutableListOf<BrewSession>()
+        backgroundScope.launch { ObserveBrewDataUseCase(coordinator, provider, getSelected)(9).collect { sessions.add(it) } }
+        runCurrent()
+        assertTrue(sessions.last().dataPoints.isEmpty(), "Do not fabricate a zero sample from stale telemetry")
+        assertEquals(origin, sessions.last().startTime)
+        assertTrue(sessions.last().elapsedSeconds < 2)
+
+        states.value = states.value.copy(telemetryTime = origin + 0.1.seconds, pressure = 1f)
+        runCurrent()
+        assertEquals(listOf(0.1f), sessions.last().dataPoints.keys.toList())
+        assertEquals(1f, sessions.last().dataPoints.values.single().pressure)
+    }
+
+    @Test
+    fun `fresh zero sample starts at zero even after a long idle`() = runTest {
+        val origin = kotlin.time.Clock.System.now()
+        every { controller.deviceState } returns MutableStateFlow(DeviceState(
+            brewStatus = DeviceState.BrewStatus.Profile,
+            statusTime = origin,
+            telemetryTime = origin,
+            pressure = 0f,
+            flowRate = 0f,
+            time = 0,
+        ))
+        val session = ObserveBrewDataUseCase(coordinator, provider, getSelected)(9).first()
+        assertEquals(listOf(0f), session.dataPoints.keys.toList())
+        assertEquals(0f, session.dataPoints.values.single().pressure)
+        assertEquals(origin, session.startTime)
+    }
+
 }

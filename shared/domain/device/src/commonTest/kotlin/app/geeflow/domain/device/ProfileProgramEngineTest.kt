@@ -50,6 +50,24 @@ class ProfileProgramEngineTest {
         assertEquals("program_complete", timeout.tick(1000, telemetry(volume = 0f, pressure = 3f)).finish)
     }
 
+    @Test
+    fun `strict pressure exit does not match at the boundary`() {
+        val first = BrewPhase(
+            id = "preinfusion",
+            control = PhaseControl.Pressure(6f),
+            maximumDurationMillis = 10000,
+            exitConditions = listOf(
+                ExitCondition(BrewMetric.PumpPressure, ThresholdComparison.StrictlyAbove, 6f),
+            ),
+        )
+        val next = BrewPhase("extraction", control = PhaseControl.Pressure(9f), maximumDurationMillis = 90000)
+        val engine = ProfileProgramEngine(profile(first, next))
+
+        assertEquals("preinfusion", engine.tick(100, telemetry(pressure = 6f)).phaseId)
+        assertEquals("extraction", engine.tick(200, telemetry(pressure = 6.01f)).phaseId)
+        assertEquals(ThresholdComparison.StrictlyAbove, engine.transitions.last().condition?.comparison)
+    }
+
     private fun profile(vararg phases: BrewPhase) = BrewProfile(
         userId = 1,
         name = "Test",
@@ -179,7 +197,7 @@ class ProfileProgramEngineTest {
             program = BrewProgram.Recording(recording),
             finishCondition = Condition.Volume(500f)
         )
-        val engine = ProfileProgramEngine(profile)
+        val engine = ProfileProgramEngine(profile, simulation = true)
         assertEquals(PhaseControl.Flow(2f), engine.tick(63000, telemetry()).target)
         assertEquals(PhaseControl.Flow(4f), engine.tick(90000, telemetry()).target)
         assertEquals("recording_timeout", engine.tick(166000, telemetry()).finish)

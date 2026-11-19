@@ -1,7 +1,7 @@
 <resources>
     <!-- Devices list screen -->
-    <string name="device_list_screen_title">设备</string>
-    <string name="device_list_screen_subtitle">查看和管理你的设备</string>
+    <string name="device_list_screen_title">互联设备</string>
+    <string name="device_list_screen_subtitle">查看和管理你的互联设备</string>
     <string name="device_list_screen_add_device">添加设备</string>
     <string name="device_list_screen_set_as_default">设为默认</string>
     <string name="device_list_screen_rename">重命名</string>

@@ -7,8 +7,8 @@
     <string name="add_device_screen_qr_parsing_error">Nepodarilo sa načítať údaje zariadenia</string>
     <string name="add_device_screen_empty">Žiadne zariadenia. Zapnite kávovar.</string>
     <string name="add_device_demo">Pridať demo zariadenie</string>
-    <string name="add_device_warning_title">Upozornenie a varovanie</string>
-    <string name="add_device_warning_message">Neoficiálna aplikácia tretej strany. Využíva protokol výrobcu reverzným inžinierstvom, bez oficiálnej certifikácie.\n\nAplikácia odosiela priame príkazy hardvéru – chyby firmvéru môžu spôsobiť poruchu kávovaru.\n\nPokračovaním súhlasíte, že:\n• Softvér používate na vlastné riziko.\n• Môže dôjsť k poškodeniu alebo strate záruky.\n• Nikdy nenechávajte kávovar bez dozoru pod kontrolou aplikácie.</string>
-    <string name="add_device_warning_accept">Prijímam riziká</string>
-    <string name="add_device_warning_cancel">Zrušiť</string>
+    <string name="add_device_warning_title">Machine safety</string>
+    <string name="add_device_warning_message">Keep the espresso machine attended while the app controls it. Stop brewing immediately if the machine behaves unexpectedly.</string>
+    <string name="add_device_warning_accept">Continue</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

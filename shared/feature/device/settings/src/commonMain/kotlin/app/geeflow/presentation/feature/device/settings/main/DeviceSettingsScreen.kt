@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,15 +19,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
+import app.geeflow.navigation.destination.DeviceSettings
 import app.geeflow.presentation.feature.device.settings.BrewingSettings
 import app.geeflow.presentation.feature.device.settings.ConnectivitySettings
 import app.geeflow.presentation.feature.device.settings.MaintenanceSettings
@@ -47,7 +55,6 @@ import geeflow.shared.feature.device.settings.generated.resources.device_setting
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_maintenance_description
-import geeflow.shared.feature.device.settings.generated.resources.device_settings_subtitle
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -56,14 +63,32 @@ internal fun DeviceSettingsScreen(
     navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-    val selectedIndex = when (navigator.getCurrentDestination()) {
-        is BrewingSettings -> viewState.items.indexOfFirst { it is Item.Brewing }
-        is MaintenanceSettings -> viewState.items.indexOfFirst { it is Item.Maintenance }
-        is ConnectivitySettings -> viewState.items.indexOfFirst { it is Item.Connectivity }
-        else -> null
-    }.takeIf { it != null && it >= 0 }
+    val destination = navigator.getCurrentDestination()
+    val expanded = isListDetailExpanded()
+    var initializedWidePane by rememberSaveable { mutableStateOf(false) }
+    val selectedIndex = viewState.items.indexOfFirst { item ->
+        when (item) {
+            is Item.Brewing -> destination is BrewingSettings
+            is Item.Maintenance -> destination is MaintenanceSettings
+            is Item.Connectivity -> destination is ConnectivitySettings
+            is Item.Preference -> destination == item.destination
+        }
+    }.takeIf { it >= 0 }
 
     NavigatorEffect(navigator, viewModel.navEvent)
+    LaunchedEffect(expanded, viewState.items, destination) {
+        if (expanded && !initializedWidePane && viewState.items.isNotEmpty()) {
+            initializedWidePane = true
+            if (destination is DeviceSettings && destination.entryPoint == null) {
+                viewModel.handleEvent(ItemClicked(viewState.items.first()))
+            }
+        }
+    }
+    if (expanded) {
+        NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None)) {
+            viewModel.handleEvent(BackClicked)
+        }
+    }
     Content(
         viewState = viewState,
         selectedIndex = selectedIndex,
@@ -82,8 +107,8 @@ private fun Content(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
     GeeFlowListScaffold(
+        plain = true,
         title = viewState.deviceName,
-        subtitle = stringResource(Res.string.device_settings_subtitle),
         navIconClick = { onEvent(BackClicked) },
         expanded = expanded,
         scrollBehavior = scrollBehavior,
@@ -104,14 +129,18 @@ private fun Content(
                     item = item,
                     onEvent = onEvent,
                     backgroundColor = if (expanded) {
-                        MaterialTheme.colorScheme.background
+                        if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
                     } else {
                         MaterialTheme.colorScheme.surfaceContainerLow
                     },
                     modifier = Modifier
                         .then(
                             if (selected) {
-                                Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
+                                Modifier.border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                    MaterialTheme.shapes.large
+                                )
                             } else {
                                 Modifier
                             },
@@ -141,11 +170,12 @@ private fun SettingsItem(
         Text(
             text = item.name,
             style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             color = contentColor,
         )
-        Text(
+        if (item.description.isNotBlank()) Text(
             text = item.description,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

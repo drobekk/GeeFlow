@@ -5,6 +5,7 @@ import app.geeflow.data.brew.model.ExitCondition
 internal data class ChartPhaseBoundary(
     val seconds: Double,
     val stepNumber: Int? = null,
+    val phaseLabel: String? = null,
     val conditions: List<ExitCondition> = emptyList(),
     val matchedConditions: Set<ExitCondition> = emptySet(),
     val actual: Boolean = false,

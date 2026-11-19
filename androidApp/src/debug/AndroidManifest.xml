@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+
+    <application>
+        <activity
+            android:name="app.geeflow.ble.ConnectionProtocolDiagnosticActivity"
+            android:label="GeeFlow BLE diagnostic"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="app.geeflow.action.BLE_PROTOCOL_DIAGNOSTIC" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

@@ -10,6 +10,7 @@ import app.geeflow.domain.user.model.AppearanceSettings
 import app.geeflow.platform.getThemeProvider
 import app.geeflow.ui.theme.ThemeMode
 import app.geeflow.ui.theme.colorscheme.EmeraldSeed
+import app.geeflow.ui.theme.colorscheme.EspressoDarkSeed
 import app.geeflow.ui.theme.colorscheme.EspressoSeed
 import app.geeflow.ui.theme.colorscheme.RoseSeed
 import app.geeflow.ui.theme.colorscheme.SapphireSeed
@@ -27,12 +28,18 @@ internal fun rememberAppColorScheme(
     val systemTheme = systemThemeProvider.getSystemColorScheme(darkMode)
 
     val seedColor = when (appearance.appTheme) {
-        AppTheme.ESPRESSO -> EspressoSeed
+        AppTheme.ESPRESSO -> if (darkMode) EspressoDarkSeed else EspressoSeed
         AppTheme.SAPPHIRE -> SapphireSeed
         AppTheme.EMERALD -> EmeraldSeed
         AppTheme.ROSE -> RoseSeed
         AppTheme.CUSTOM -> Color(appearance.customSeedColor)
-        AppTheme.SYSTEM -> if (systemTheme != null) return systemTheme else EspressoSeed
+        AppTheme.SYSTEM -> if (systemTheme != null) {
+            return systemTheme
+        } else if (darkMode) {
+            EspressoDarkSeed
+        } else {
+            EspressoSeed
+        }
     }
 
     return rememberDynamicColorScheme(

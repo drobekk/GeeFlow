@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Назад</string>
     <string name="common_close">Закрити</string>
     <string name="common_confirm">Підтвердити</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Втрачено зв\'язок із кавомашиною під час заварювання.</string>
     <string name="error_required_measurement_lost">Потрібний датчик було від\'єднано.</string>
     <string name="error_profile_unavailable">Профіль несумісний із поточним станом кавомашини.</string>
-    <string name="agreement_prefix">Я приймаю </string>
-    <string name="agreement_terms">Умови використання</string>
-    <string name="agreement_and"> та </string>
-    <string name="agreement_privacy">Політику конфіденційності</string>
     <string name="maintenance_daily">Щоденне очищення</string>
     <string name="maintenance_deep">Глибоке очищення</string>
     <string name="maintenance_daily_description">Регулярний пролив для видалення залишків кави з групи.</string>

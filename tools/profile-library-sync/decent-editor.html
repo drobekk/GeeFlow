@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decent recipe editor</title>
+<style>
+body { font: 16px system-ui; margin: 2rem auto; padding: 0 1rem; max-width: 60rem; color: #251c16; background: #fffaf4; }
+fieldset, details { border: 1px solid #c9b6a8; border-radius: .6rem; padding: 1rem; margin-block: .75rem; }
+section { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .75rem; }
+label { display: grid; gap: .25rem; }
+input, select, textarea, button { font: inherit; padding: .45rem; min-width: 0; }
+button, summary { cursor: pointer; }
+nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+output { display: block; min-height: 1.5rem; }
+</style>
+<a href="./">Profile library</a>
+<h1>Decent recipe editor</h1>
+<nav>
+  <button id="import">Import JSON</button>
+  <input id="file" type="file" accept=".json,application/json" hidden>
+  <button id="export">Export JSON</button>
+  <button id="add">Add stage</button>
+</nav>
+<output id="status" role="status"></output>
+<details open><summary>Profile settings</summary><section id="profile"></section></details>
+<div id="stages"></div>
+<script type="module" src="./decent-editor.js"></script>
+</html>

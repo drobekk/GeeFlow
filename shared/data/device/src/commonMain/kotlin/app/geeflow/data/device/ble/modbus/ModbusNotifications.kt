@@ -1,7 +1,9 @@
 package app.geeflow.data.device.ble.modbus
 
 /** Reassembles bounded RTU replies and discards noise and frames with invalid CRC. */
-internal class ModbusNotifications {
+internal class ModbusNotifications(
+    private val onCompleteFrame: ((frame: ByteArray, crcValid: Boolean) -> Unit)? = null,
+) {
     private var pending = byteArrayOf()
 
     fun reset() {
@@ -31,7 +33,9 @@ internal class ModbusNotifications {
                 continue
             }
             val frame = pending.copyOfRange(0, length)
-            if (ModbusCrc.verify(frame)) {
+            val crcValid = ModbusCrc.verify(frame)
+            runCatching { onCompleteFrame?.invoke(frame.copyOf(), crcValid) }
+            if (crcValid) {
                 result += frame
                 pending = pending.drop(length).toByteArray()
             } else {
@@ -40,6 +44,8 @@ internal class ModbusNotifications {
         }
         return result
     }
+
+    fun pendingSnapshot(): ByteArray = pending.copyOf()
 
     @Suppress("ReturnCount")
     private fun responseLength(bytes: ByteArray): Int? {

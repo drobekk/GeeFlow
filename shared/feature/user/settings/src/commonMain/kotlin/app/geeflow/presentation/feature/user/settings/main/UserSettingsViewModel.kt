@@ -5,10 +5,10 @@ import app.geeflow.core.presentation.launch
 import app.geeflow.domain.user.usecase.GetSelectedUserUseCase
 import app.geeflow.navigation.destination.UserList
 import app.geeflow.navigation.destination.UserSettings
-import app.geeflow.presentation.feature.user.settings.AboutSettings
-import app.geeflow.presentation.feature.user.settings.AppearanceSettings
-import app.geeflow.presentation.feature.user.settings.BrewingPreferencesSettings
-import app.geeflow.presentation.feature.user.settings.ProfileSettings
+import app.geeflow.navigation.destination.AboutSettings
+import app.geeflow.navigation.destination.AppearanceSettings
+import app.geeflow.navigation.destination.BrewingPreferencesSettings
+import app.geeflow.navigation.destination.ProfileSettings
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ItemClicked
@@ -55,21 +55,13 @@ internal class UserSettingsViewModel(
 
     private fun buildItems() = launch {
         val items = listOf(
+            Item.AppearanceDisplay(
+                name = getString(Res.string.user_settings_appearance),
+                description = "",
+            ),
             Item.Profile(
                 name = getString(Res.string.user_settings_profile),
                 description = getString(Res.string.user_settings_profile_description),
-            ),
-            Item.BrewingPreferences(
-                name = getString(Res.string.user_settings_brewing_preferences),
-                description = getString(Res.string.user_settings_brewing_preferences_description),
-            ),
-            Item.AppearanceDisplay(
-                name = getString(Res.string.user_settings_appearance),
-                description = getString(Res.string.user_settings_appearance_description),
-            ),
-            Item.About(
-                name = getString(Res.string.user_settings_about),
-                description = getString(Res.string.user_settings_about_description),
             ),
         )
         modify { copy(items = items) }

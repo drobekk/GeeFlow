@@ -93,6 +93,9 @@ fun GeeFlowToggleListItem(
     unit: String = "",
     allowDecimal: Boolean? = null,
     inputTitle: String? = null,
+    initialValue: Float? = null,
+    adjustmentStep: Float? = null,
+    applyOnSelection: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
         vertical = 16.dp,
@@ -134,7 +137,21 @@ fun GeeFlowToggleListItem(
         contentPadding = contentPadding,
     )
 
-    if (showInputPad) {
+    if (showInputPad && applyOnSelection) {
+        val options = items.ifEmpty {
+            valueRange?.let { range -> (range.start.toInt()..range.endInclusive.toInt()).map(Int::toString) }.orEmpty()
+        }
+        if (options.isNotEmpty()) {
+            GeeFlowSettingOptions(
+                title = inputTitle ?: title,
+                options = options,
+                current = initialValue ?: value.extractFloat(),
+                unit = unit,
+                onSelect = onValueConfirmed,
+                onDismiss = { showInputPad = false },
+            )
+        }
+    } else if (showInputPad) {
         GeeFlowDialog(
             onDismissRequest = { showInputPad = false },
         ) {
@@ -152,6 +169,8 @@ fun GeeFlowToggleListItem(
                     valueRange = effectiveRange,
                     unit = unit,
                     allowDecimal = effectiveAllowDecimal,
+                    initialValue = initialValue,
+                    adjustmentStep = adjustmentStep,
                     onConfirm = { confirmedValue ->
                         val confirmedString = if (items.isNotEmpty()) {
                             items.firstOrNull { it.extractFloat() == confirmedValue }

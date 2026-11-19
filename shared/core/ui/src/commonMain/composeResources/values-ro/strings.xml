@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Înapoi</string>
     <string name="common_close">Închide</string>
     <string name="common_confirm">Confirmă</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">S-a pierdut comunicarea cu espressorul în timpul extracției.</string>
     <string name="error_required_measurement_lost">Un senzor necesar a fost deconectat.</string>
     <string name="error_profile_unavailable">Profilul nu este compatibil cu starea curentă a espressorului.</string>
-    <string name="agreement_prefix">Accept </string>
-    <string name="agreement_terms">Termenii și condițiile</string>
-    <string name="agreement_and"> și </string>
-    <string name="agreement_privacy">Politica de confidențialitate</string>
     <string name="maintenance_daily">Curățare zilnică</string>
     <string name="maintenance_deep">Curățare profundă</string>
     <string name="maintenance_daily_description">Clătire de rutină pentru a elimina reziduurile de cafea din grup.</string>

@@ -7,11 +7,14 @@ import app.geeflow.data.device.DeviceBrewingControl
 import app.geeflow.data.device.DeviceConnectionControl
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceHotWaterControl
+import app.geeflow.data.device.MachineDiagnosticEvent
+import app.geeflow.data.device.MachineDiagnosticEventSource
 import app.geeflow.data.device.DeviceMaintenanceControl
 import app.geeflow.data.device.DeviceProfileControl
 import app.geeflow.data.device.DeviceSettingsControl
 import app.geeflow.data.device.TimedPumpProfileSupport
 import app.geeflow.data.device.ble.modbus.ModbusSession
+import app.geeflow.data.device.ble.modbus.ModbusSessionDiagnosticSink
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_LIST_REQUEST
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_SEARCH_QUERY
 import app.geeflow.data.device.impl.controller.WendougeeCommands.CMD_SCALE_STATUS_REQUEST
@@ -39,6 +42,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.isActive
@@ -47,13 +51,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class WendougeeController(
     val model: SupportedDevice,
     private val scope: CoroutineScope,
     private val transport: WendougeeBleTransport,
-) : DeviceController, DeviceConnectionControl {
+) : DeviceController, DeviceConnectionControl, MachineDiagnosticEventSource {
     override var connectionGeneration: Long = 0
         private set
     override val connection: DeviceConnectionControl get() = this
@@ -66,6 +71,11 @@ internal class WendougeeController(
 
     override val profilingCapabilities = TimedPumpProfileSupport.capabilities.let { shared ->
         when (model) {
+            SupportedDevice.LitaBA -> shared.copy(
+                liveModeSwitch = true,
+                verifiedSecondaryLimits = true,
+                timestampedCupWeight = true,
+            )
             SupportedDevice.LitaBR,
             SupportedDevice.LitaLR -> shared.copy(
                 native = shared.native?.copy(flow = false),
@@ -84,6 +94,8 @@ internal class WendougeeController(
     }
 
     private val stateStore = WendougeeStateStore()
+    private val mutableDiagnosticEvents = MutableSharedFlow<MachineDiagnosticEvent>(extraBufferCapacity = 512)
+    override val diagnosticEvents: SharedFlow<MachineDiagnosticEvent> = mutableDiagnosticEvents
     override val deviceState = stateStore.machine
     override val foundScales = stateStore.scales
     override val foundSingleDoseGrinders = stateStore.grinders
@@ -148,6 +160,9 @@ internal class WendougeeController(
                     defaultTimeout = 1000.milliseconds,
                     completeFrames = true,
                     sessionJob = currentCoroutineContext()[Job],
+                    diagnosticSink = ModbusSessionDiagnosticSink { name, fields ->
+                        mutableDiagnosticEvents.tryEmit(MachineDiagnosticEvent(name, Clock.System.now(), fields))
+                    },
                 )
                 val active = WendougeeSession(link, modbus, responses)
                 session = active
@@ -231,7 +246,6 @@ internal class WendougeeController(
         withTimeout(INIT_POLL_TIMEOUT_MS) { deviceState.first { it.config != null } }
         readWaterAlarmRegister(active)
         val firmware = readWendougeeFirmware(active.modbus)
-        active.profileFormat = resolveWendougeeProfileFormat(model, firmware)
         stateStore.updateMachine {
             it.copy(firmwareVersion = firmware, agileRingSupported = supportsAgileRing(model, firmware))
         }

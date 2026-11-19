@@ -80,6 +80,8 @@ internal fun BrewProgram.toTargetData(
 }
 
 private fun BrewProgram.Phases.toPhase(transitions: List<PhaseTransition>): Map<Float, ChartData> = buildMap {
+    // Dynamic targets require actual execution trace values, not a fictitious zero-based preview.
+    if (version == 2 && phases.any { it.targetSource != null || it.ramp.source != null || it.secondaryLimit != null || it.adaptiveFlowProbe != null }) return@buildMap
     var offset = 0L
     var previous: PhaseControl? = null
     for (phase in phases) {

@@ -1,0 +1,546 @@
+{
+  "schemaVersion": 2,
+  "revision": 7,
+  "profiles": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440009",
+      "revision": 0,
+      "favorite": false,
+      "deleted": false,
+      "profile": {
+        "name": "Adaptive v2 · adaptive-capture adaptation",
+        "description": "This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent. It unites Brakel's Londonium, Rao's Blooming and Gagné's Adaptive profiles. The flow rate during extraction will automatically adjust itself from the flow rate actually happening during the Pressurize step and then gently increase it from there.  A 15g dose is typical.  Aim for a flow rate around 1.5 ml/s at the Pressurize step. 15g in, 33g out, in 32 seconds is a typical recipe for a medium roast.  Grind fine enough to keep dripping during preinfusion to around 4g. If you have a bluetooth scale, you can keep track of how much dripping into the cup there is before the ramp stage.  4 grams of total dripping, within 1 gram, seems to give the best tasting results. Try adusting your grind and dose to get that amount of dripping, and see if you like how it tastes.\n\nDecent smooth transitions are translated as linear phase ramps. Firmware equivalence is unverified.\n\nSource temperature and limiter data are preserved. Live support requires device verification.\n\nSource frame 1 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.\n\nSource frame 2 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.\n\nSource frame 3 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.\n\nSource frame 5 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.\n\nSource limiter.range=0.6 is preserved. GeeFlow response parameters are separate simulation defaults, not a DE1 conversion.\n\nSource frame 6 (Extraction start) is a zero-duration transition, retained in the original source.\n\nSource frame 7 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.\n\nSource limiter.range=0.6 is preserved. GeeFlow response parameters are separate simulation defaults, not a DE1 conversion.\n\nExplicit adaptation: capture filtered pump flow at pressurization exit and use it as extraction ramp start. Source transition frame was not executed as a fixed-flow reset.",
+        "finishCondition": {
+          "type": "weight",
+          "target": 36
+        },
+        "autoLinkOpen": false,
+        "singleDoseSettings": {
+          "enabled": false,
+          "grindingSize": 300,
+          "grindingSpeed": 500
+        },
+        "program": {
+          "type": "phases",
+          "version": 2,
+          "execution": {
+            "maximumTotalDurationMillis": 40000
+          },
+          "phases": [
+            {
+              "id": "decent-1",
+              "name": "Prefill",
+              "control": {
+                "type": "flow",
+                "millilitresPerSecond": 8
+              },
+              "maximumDurationMillis": 5000,
+              "minimumDurationMillis": 0,
+              "ramp": {
+                "style": "Instant",
+                "durationMillis": 0,
+                "start": "PreviousTarget"
+              },
+              "exitConditions": [],
+              "conditionOperator": "Or",
+              "temperatureC": 93
+            },
+            {
+              "id": "decent-2",
+              "name": "Fill",
+              "control": {
+                "type": "flow",
+                "millilitresPerSecond": 8
+              },
+              "maximumDurationMillis": 12000,
+              "minimumDurationMillis": 0,
+              "ramp": {
+                "style": "Instant",
+                "durationMillis": 0,
+                "start": "PreviousTarget"
+              },
+              "exitConditions": [
+                {
+                  "metric": "PumpPressure",
+                  "comparison": "StrictlyAbove",
+                  "threshold": 3,
+                  "scope": "Total"
+                }
+              ],
+              "conditionOperator": "Or",
+              "temperatureC": 93
+            },
+            {
+              "id": "decent-3",
+              "name": "Compressing",
+              "control": {
+                "type": "pressure",
+                "bar": 3,
+                "location": "Pump"
+              },
+              "maximumDurationMillis": 12000,
+              "minimumDurationMillis": 0,
+              "ramp": {
+                "style": "Instant",
+                "durationMillis": 0,
+                "start": "PreviousTarget"
+              },
+              "exitConditions": [
+                {
+                  "metric": "PumpFlow",
+                  "comparison": "StrictlyBelow",
+                  "threshold": 3,
+                  "scope": "Total"
+                }
+              ],
+              "conditionOperator": "Or",
+              "temperatureC": 88
+            },
+            {
+              "id": "decent-4",
+              "name": "Dripping",
+              "control": {
+                "type": "pressure",
+                "bar": 0.1,
+                "location": "Pump"
+              },
+              "maximumDurationMillis": 6000,
+              "minimumDurationMillis": 0,
+              "ramp": {
+                "style": "Instant",
+                "durationMillis": 0,
+                "start": "PreviousTarget"
+              },
+              "exitConditions": [],
+              "conditionOperator": "Or",
+              "temperatureC": 88
+            },
+            {
+              "id": "decent-5",
+              "name": "Pressurize",
+              "control": {
+                "type": "pressure",
+                "bar": 11,
+                "location": "Pump"
+              },
+              "maximumDurationMillis": 6000,
+              "minimumDurationMillis": 0,
+              "ramp": {
+                "style": "Linear",
+                "durationMillis": 6000,
+                "start": "PreviousTarget"
+              },
+              "exitConditions": [
+                {
+                  "metric": "PumpPressure",
+                  "comparison": "StrictlyAbove",
+                  "threshold": 8.8,
+                  "scope": "Total"
+                }
+              ],
+              "conditionOperator": "Or",
+              "temperatureC": 88,
+              "secondaryLimit": {
+                "metric": "PumpFlow",
+                "ceiling": 3.5,
+                "hysteresis": 0.2,
+                "reductionPerSecond": 1,
+                "recoveryPerSecond": 0.25,
+                "overshootAllowance": 1,
+                "tripDurationMillis": 1000
+              },
+              "exitCaptures": [
+                {
+                  "name": "extractionStartFlow",
+                  "metric": "PumpFlow",
+                  "windowMillis": 500,
+                  "maximumAgeMillis": 500,
+                  "filter": "Mean",
+                  "minimum": 0,
+                  "maximum": 12
+                }
+              ]
+            },
+            {
+              "id": "decent-7",
+              "name": "Extraction",
+              "control": {
+                "type": "flow",
+                "millilitresPerSecond": 3.5
+              },
+              "maximumDurationMillis": 60000,
+              "minimumDurationMillis": 0,
+              "ramp": {
+                "style": "Linear",
+                "durationMillis": 60000,
+                "start": "PreviousTarget",
+                "source": {
+                  "kind": "CapturedValue",
+                  "capture": "extractionStartFlow"
+                }
+              },
+              "exitConditions": [],
+              "conditionOperator": "Or",
+              "temperatureC": 88,
+              "secondaryLimit": {
+                "metric": "PumpPressure",
+                "ceiling": 9.5,
+                "hysteresis": 0.2,
+                "reductionPerSecond": 1,
+                "recoveryPerSecond": 0.25,
+                "overshootAllowance": 1,
+                "tripDurationMillis": 1000
+              }
+            }
+          ],
+          "recipe": {
+            "templateId": "decent-6c359036f686a652",
+            "source": {
+              "format": "decent-json-v2",
+              "title": "Adaptive v2",
+              "author": "Decent",
+              "url": "",
+              "sha256": "6c359036f686a652664e8a61ade092cb0993d65efc7c9f1a53561077a2fbb7a5",
+              "original": {
+                "title": "Adaptive v2",
+                "author": "Decent",
+                "notes": "This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent. It unites Brakel's Londonium, Rao's Blooming and Gagné's Adaptive profiles. The flow rate during extraction will automatically adjust itself from the flow rate actually happening during the Pressurize step and then gently increase it from there.  A 15g dose is typical.  Aim for a flow rate around 1.5 ml/s at the Pressurize step. 15g in, 33g out, in 32 seconds is a typical recipe for a medium roast.  Grind fine enough to keep dripping during preinfusion to around 4g. If you have a bluetooth scale, you can keep track of how much dripping into the cup there is before the ramp stage.  4 grams of total dripping, within 1 gram, seems to give the best tasting results. Try adusting your grind and dose to get that amount of dripping, and see if you like how it tastes.",
+                "beverage_type": "espresso",
+                "steps": [
+                  {
+                    "name": "Prefill",
+                    "temperature": "93.00",
+                    "sensor": "coffee",
+                    "pump": "flow",
+                    "transition": "fast",
+                    "pressure": "3.0",
+                    "flow": "8.0",
+                    "seconds": "5.00",
+                    "volume": "100",
+                    "weight": "0.0",
+                    "limiter": {
+                      "value": "0",
+                      "range": "0.6"
+                    }
+                  },
+                  {
+                    "name": "Fill",
+                    "temperature": "93.00",
+                    "sensor": "coffee",
+                    "pump": "flow",
+                    "transition": "fast",
+                    "pressure": "3.0",
+                    "flow": "8.0",
+                    "seconds": "12.00",
+                    "volume": "100",
+                    "weight": "0.0",
+                    "exit": {
+                      "type": "pressure",
+                      "condition": "over",
+                      "value": "3.00"
+                    },
+                    "limiter": {
+                      "value": "0",
+                      "range": "0.6"
+                    }
+                  },
+                  {
+                    "name": "Compressing",
+                    "temperature": "88.00",
+                    "sensor": "coffee",
+                    "pump": "pressure",
+                    "transition": "fast",
+                    "pressure": "3.0",
+                    "flow": "6.8",
+                    "seconds": "12.00",
+                    "volume": "100",
+                    "weight": "0",
+                    "exit": {
+                      "type": "flow",
+                      "condition": "under",
+                      "value": "3.00"
+                    },
+                    "limiter": {
+                      "value": "0",
+                      "range": "0.6"
+                    }
+                  },
+                  {
+                    "name": "Dripping",
+                    "temperature": "88.00",
+                    "sensor": "coffee",
+                    "pump": "pressure",
+                    "transition": "fast",
+                    "pressure": "0.1",
+                    "flow": "6.8",
+                    "seconds": "6.00",
+                    "volume": "0",
+                    "weight": "0",
+                    "limiter": {
+                      "value": "0",
+                      "range": "0.6"
+                    }
+                  },
+                  {
+                    "name": "Pressurize",
+                    "temperature": "88.00",
+                    "sensor": "coffee",
+                    "pump": "pressure",
+                    "transition": "smooth",
+                    "pressure": "11.0",
+                    "flow": "",
+                    "seconds": "6.00",
+                    "volume": "100",
+                    "weight": "0.0",
+                    "exit": {
+                      "type": "pressure",
+                      "condition": "over",
+                      "value": "8.80"
+                    },
+                    "limiter": {
+                      "value": "3.5",
+                      "range": "0.6"
+                    }
+                  },
+                  {
+                    "name": "Extraction start",
+                    "temperature": "88.00",
+                    "sensor": "coffee",
+                    "pump": "flow",
+                    "transition": "fast",
+                    "pressure": "3.0",
+                    "flow": "1.5",
+                    "seconds": "0.00",
+                    "volume": "0",
+                    "weight": "0",
+                    "exit": {
+                      "type": "pressure",
+                      "condition": "over",
+                      "value": "0"
+                    },
+                    "limiter": {
+                      "value": "9.5",
+                      "range": "0.6"
+                    }
+                  },
+                  {
+                    "name": "Extraction",
+                    "temperature": "88.00",
+                    "sensor": "coffee",
+                    "pump": "flow",
+                    "transition": "smooth",
+                    "pressure": "3.0",
+                    "flow": "3.5",
+                    "seconds": "60.00",
+                    "volume": "100",
+                    "weight": "0.0",
+                    "limiter": {
+                      "value": "9.5",
+                      "range": "0.6"
+                    }
+                  }
+                ],
+                "tank_temperature": "0",
+                "target_weight": "36",
+                "target_volume": "36",
+                "target_volume_count_start": "3",
+                "legacy_profile_type": "settings_2c",
+                "type": "advanced",
+                "lang": "en",
+                "hidden": "0",
+                "reference_file": "best_practice",
+                "changes_since_last_espresso": "",
+                "version": "2"
+              }
+            },
+            "templatePhases": [
+              {
+                "id": "decent-1",
+                "name": "Prefill",
+                "control": {
+                  "type": "flow",
+                  "millilitresPerSecond": 8
+                },
+                "maximumDurationMillis": 5000,
+                "minimumDurationMillis": 0,
+                "ramp": {
+                  "style": "Instant",
+                  "durationMillis": 0,
+                  "start": "PreviousTarget"
+                },
+                "exitConditions": [],
+                "conditionOperator": "Or",
+                "temperatureC": 93
+              },
+              {
+                "id": "decent-2",
+                "name": "Fill",
+                "control": {
+                  "type": "flow",
+                  "millilitresPerSecond": 8
+                },
+                "maximumDurationMillis": 12000,
+                "minimumDurationMillis": 0,
+                "ramp": {
+                  "style": "Instant",
+                  "durationMillis": 0,
+                  "start": "PreviousTarget"
+                },
+                "exitConditions": [
+                  {
+                    "metric": "PumpPressure",
+                    "comparison": "StrictlyAbove",
+                    "threshold": 3,
+                    "scope": "Total"
+                  }
+                ],
+                "conditionOperator": "Or",
+                "temperatureC": 93
+              },
+              {
+                "id": "decent-3",
+                "name": "Compressing",
+                "control": {
+                  "type": "pressure",
+                  "bar": 3,
+                  "location": "Pump"
+                },
+                "maximumDurationMillis": 12000,
+                "minimumDurationMillis": 0,
+                "ramp": {
+                  "style": "Instant",
+                  "durationMillis": 0,
+                  "start": "PreviousTarget"
+                },
+                "exitConditions": [
+                  {
+                    "metric": "PumpFlow",
+                    "comparison": "StrictlyBelow",
+                    "threshold": 3,
+                    "scope": "Total"
+                  }
+                ],
+                "conditionOperator": "Or",
+                "temperatureC": 88
+              },
+              {
+                "id": "decent-4",
+                "name": "Dripping",
+                "control": {
+                  "type": "pressure",
+                  "bar": 0.1,
+                  "location": "Pump"
+                },
+                "maximumDurationMillis": 6000,
+                "minimumDurationMillis": 0,
+                "ramp": {
+                  "style": "Instant",
+                  "durationMillis": 0,
+                  "start": "PreviousTarget"
+                },
+                "exitConditions": [],
+                "conditionOperator": "Or",
+                "temperatureC": 88
+              },
+              {
+                "id": "decent-5",
+                "name": "Pressurize",
+                "control": {
+                  "type": "pressure",
+                  "bar": 11,
+                  "location": "Pump"
+                },
+                "maximumDurationMillis": 6000,
+                "minimumDurationMillis": 0,
+                "ramp": {
+                  "style": "Linear",
+                  "durationMillis": 6000,
+                  "start": "PreviousTarget"
+                },
+                "exitConditions": [
+                  {
+                    "metric": "PumpPressure",
+                    "comparison": "StrictlyAbove",
+                    "threshold": 8.8,
+                    "scope": "Total"
+                  }
+                ],
+                "conditionOperator": "Or",
+                "temperatureC": 88,
+                "secondaryLimit": {
+                  "metric": "PumpFlow",
+                  "ceiling": 3.5,
+                  "hysteresis": 0.2,
+                  "reductionPerSecond": 1,
+                  "recoveryPerSecond": 0.25,
+                  "overshootAllowance": 1,
+                  "tripDurationMillis": 1000
+                },
+                "exitCaptures": [
+                  {
+                    "name": "extractionStartFlow",
+                    "metric": "PumpFlow",
+                    "windowMillis": 500,
+                    "maximumAgeMillis": 500,
+                    "filter": "Mean",
+                    "minimum": 0,
+                    "maximum": 12
+                  }
+                ]
+              },
+              {
+                "id": "decent-7",
+                "name": "Extraction",
+                "control": {
+                  "type": "flow",
+                  "millilitresPerSecond": 3.5
+                },
+                "maximumDurationMillis": 60000,
+                "minimumDurationMillis": 0,
+                "ramp": {
+                  "style": "Linear",
+                  "durationMillis": 60000,
+                  "start": "PreviousTarget",
+                  "source": {
+                    "kind": "CapturedValue",
+                    "capture": "extractionStartFlow"
+                  }
+                },
+                "exitConditions": [],
+                "conditionOperator": "Or",
+                "temperatureC": 88,
+                "secondaryLimit": {
+                  "metric": "PumpPressure",
+                  "ceiling": 9.5,
+                  "hysteresis": 0.2,
+                  "reductionPerSecond": 1,
+                  "recoveryPerSecond": 0.25,
+                  "overshootAllowance": 1,
+                  "tripDurationMillis": 1000
+                }
+              }
+            ],
+            "settings": {
+              "targetYieldG": 36
+            },
+            "diagnostics": [
+              "Decent smooth transitions are translated as linear phase ramps. Firmware equivalence is unverified.",
+              "Source temperature and limiter data are preserved. Live support requires device verification.",
+              "Source frame 1 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.",
+              "Source frame 2 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.",
+              "Source frame 3 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.",
+              "Source frame 5 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.",
+              "Source limiter.range=0.6 is preserved. GeeFlow response parameters are separate simulation defaults, not a DE1 conversion.",
+              "Source frame 6 (Extraction start) is a zero-duration transition, retained in the original source.",
+              "Source frame 7 volume=100 is retained as source metadata; its DE1 semantics are not silently converted.",
+              "Source limiter.range=0.6 is preserved. GeeFlow response parameters are separate simulation defaults, not a DE1 conversion.",
+              "Explicit adaptation: capture filtered pump flow at pressurization exit and use it as extraction ramp start. Source transition frame was not executed as a fixed-flow reset."
+            ],
+            "adaptation": "adaptive-capture",
+            "unresolvedSemantics": []
+          }
+        }
+      }
+    }
+  ]
+}

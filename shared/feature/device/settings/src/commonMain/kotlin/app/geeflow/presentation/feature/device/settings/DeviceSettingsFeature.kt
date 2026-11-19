@@ -12,11 +12,11 @@ import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsS
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModel
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsScreen
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewModel
-import app.geeflow.presentation.feature.device.settings.main.DeviceSettingsDetailsPlaceholder
 import app.geeflow.presentation.feature.device.settings.main.DeviceSettingsScreen
 import app.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewModel
 import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsScreen
 import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsViewModel
+import app.geeflow.ui.theme.ClearScreenTheme
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -40,24 +40,24 @@ internal class DeviceSettingsNavFeature : NavFeature {
 
     @OptIn(ExperimentalMaterial3AdaptiveApi::class)
     override fun EntryProviderScope<NavKey>.provideEntries(navigator: Navigator) {
-        entry<Main>(metadata = listPane(detailPlaceholder = { DeviceSettingsDetailsPlaceholder() })) {
+        entry<Main>(metadata = listPane()) {
             val viewModel = koinViewModel<DeviceSettingsViewModel> { parametersOf(it) }
-            DeviceSettingsScreen(viewModel, navigator)
+            ClearScreenTheme { DeviceSettingsScreen(viewModel, navigator) }
         }
 
         entry<BrewingSettings>(metadata = detailPane()) {
             val viewModel = koinViewModel<BrewingSettingsViewModel> { parametersOf(it) }
-            BrewingSettingsScreen(viewModel, navigator)
+            ClearScreenTheme { BrewingSettingsScreen(viewModel, navigator) }
         }
 
         entry<MaintenanceSettings>(metadata = detailPane()) {
             val viewModel = koinViewModel<MaintenanceSettingsViewModel> { parametersOf(it) }
-            MaintenanceSettingsScreen(viewModel, navigator)
+            ClearScreenTheme { MaintenanceSettingsScreen(viewModel, navigator) }
         }
 
         entry<ConnectivitySettings>(metadata = detailPane()) {
             val viewModel = koinViewModel<ConnectivitySettingsViewModel> { parametersOf(it) }
-            ConnectivitySettingsScreen(viewModel, navigator)
+            ClearScreenTheme { ConnectivitySettingsScreen(viewModel, navigator) }
         }
     }
 

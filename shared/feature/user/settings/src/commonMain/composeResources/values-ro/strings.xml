@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Aspect și afișaj</string>
     <string name="user_settings_appearance_description">Temă, limbă și ecran</string>
     <string name="user_settings_about">Despre</string>
-    <string name="user_settings_about_description">Termeni, confidențialitate, licențe și versiune</string>
+    <string name="user_settings_about_description">Versiunea aplicației și licențe</string>
     <string name="user_settings_appearance_title">Aspect și afișaj</string>
     <string name="user_settings_appearance_dark_mode">Aspect</string>
     <string name="user_settings_appearance_dark_mode_system">După sistem</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Resetează profilurile la setările din fabrică</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Se vor reseta toate profilurile la valorile implicite. Acțiunea este ireversibilă.</string>
     <string name="user_settings_about_title">Despre</string>
-    <string name="user_settings_about_terms">Termeni și condiții</string>
-    <string name="user_settings_about_terms_description">Termeni de utilizare și avertismente hardware</string>
-    <string name="user_settings_about_privacy_policy">Politica de confidențialitate</string>
-    <string name="user_settings_about_privacy_policy_description">Ce date sunt colectate și de ce</string>
-    <string name="user_settings_about_source_code">Cod sursă</string>
-    <string name="user_settings_about_source_code_description">Explorează codul sau raportează erori pe GitHub</string>
     <string name="user_settings_about_licenses">Licențe open source</string>
     <string name="user_settings_about_licenses_description">Informații despre licențele software ale terților</string>
     <string name="user_settings_about_version">Versiune</string>

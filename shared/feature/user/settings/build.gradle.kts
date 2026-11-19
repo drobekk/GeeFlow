@@ -19,7 +19,6 @@ koinCompiler {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.shared.core.commerce)
             implementation(projects.shared.core.navigation)
             implementation(projects.shared.core.presentation)
             implementation(projects.shared.core.ui)

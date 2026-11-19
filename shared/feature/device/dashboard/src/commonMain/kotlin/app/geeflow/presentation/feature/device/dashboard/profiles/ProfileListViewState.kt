@@ -7,10 +7,10 @@ import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 data class ProfileListViewState(
     val profiles: List<Profile> = emptyList(),
     val smartScaleConnected: Boolean = false,
-    val singleDoseGrinderConnected: Boolean = false,
     val showHistory: Boolean = false,
     val history: List<HistoryBrew> = emptyList(),
     val historyLoading: Boolean = false,
+    val profileLibrarySyncState: ProfileLibrarySyncState = ProfileLibrarySyncState(),
 ) {
     data class Profile(
         val id: String,
@@ -18,14 +18,15 @@ data class ProfileListViewState(
         val name: String,
         val description: String,
         val brewByWeight: Boolean,
-        val singleDoseEnabled: Boolean = false,
         val experimental: Boolean = false,
         val canBind: Boolean = true,
         val bound: Boolean = false,
         val selected: Boolean = false,
+        val favorite: Boolean = false,
         val program: BrewProgram? = null,
         val finishCondition: Condition? = null,
         val targetData: Map<Float, ChartData> = emptyMap(),
+        val controlKind: ProfileControlKind = program?.controlKind() ?: ProfileControlKind.Other,
     )
 
     data class HistoryBrew(

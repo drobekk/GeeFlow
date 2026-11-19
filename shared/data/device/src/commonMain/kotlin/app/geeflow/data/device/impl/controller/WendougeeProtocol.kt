@@ -27,6 +27,7 @@ internal const val SCALE_LIST_DELAY_MS = 200L
 internal const val POST_INIT_DELAY_MS = 300L
 internal const val NOTIFY_RESET_DELAY_MS = 100L
 internal const val POLL_BETWEEN_DELAY_MS = 30L
+internal const val STOP_PRIORITY_POLL_DELAY_MS = 20L
 internal const val POLL_TIMEOUT_MS = 800L
 internal const val INIT_POLL_TIMEOUT_MS = 3000L
 internal const val SCAN_TIMEOUT_MS = 12_000L

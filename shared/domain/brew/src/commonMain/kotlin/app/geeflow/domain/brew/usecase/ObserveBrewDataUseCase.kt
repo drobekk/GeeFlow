@@ -70,6 +70,7 @@ class ObserveBrewDataUseCase(
         dataPoints = data.toMap(),
         recording = recorder?.snapshot(),
         executionTrace = trace,
+        endedAt = endTime,
     )
 
     private fun DeviceState.BrewStatus.isBrewing() = this == DeviceState.BrewStatus.Manual ||
@@ -88,25 +89,15 @@ class ObserveBrewDataUseCase(
         if (currentlyBrewing) {
             val now = Clock.System.now()
             if (!acc.isBrewing) {
-                acc.reset(trace?.startedAt ?: state.telemetryTime ?: now, state)
+                acc.reset(state.sessionOrigin(trace, now), state)
             }
 
             acc.recorder?.capture(state)
             val elapsed = acc.startTime?.let { now - it } ?: Duration.ZERO
             val elapsedSeconds = elapsed.toDouble(DurationUnit.SECONDS).toFloat()
 
-            acc.timeInSeconds = elapsedSeconds.toInt()
-            val currentPoint = state.toDataPoint(acc.lastPoint)
-            val freshTelemetry = state.telemetryTime != acc.lastTelemetryTime
-            if (acc.lastPoint == null || freshTelemetry || currentPoint != acc.lastPoint) {
-                val sampleTime = state.telemetryTime.takeIf { freshTelemetry } ?: now
-                val sampleSeconds = acc.startTime?.let { sampleTime - it }
-                    ?.toDouble(DurationUnit.SECONDS)?.toFloat()?.coerceAtLeast(0f) ?: 0f
-                acc.data[sampleSeconds] = currentPoint
-                acc.lastSampleSeconds = sampleSeconds
-                acc.lastPoint = currentPoint
-                acc.lastTelemetryTime = state.telemetryTime
-            }
+            acc.timeInSeconds = elapsedSeconds.toInt().coerceAtLeast(0)
+            acc.captureMeasurement(state, now)
         } else {
             if (acc.isBrewing && status == DeviceState.BrewStatus.Idle) {
                 acc.lastPoint?.let { previous ->
@@ -114,10 +105,43 @@ class ObserveBrewDataUseCase(
                     acc.data[acc.lastSampleSeconds] = finalPoint
                     acc.lastPoint = finalPoint
                 }
+                acc.endTime = state.telemetryTime ?: Clock.System.now()
             }
             acc.isBrewing = false
         }
         return acc
+    }
+
+    private fun DeviceState.sessionOrigin(trace: ProfileExecutionTrace?, now: Instant) =
+        trace?.startedAt ?: statusTime ?: telemetryTime ?: now
+
+    private fun Accumulator.captureMeasurement(state: DeviceState, now: Instant) {
+        val sampleIsCurrent = state.telemetryTime?.let { it >= requireNotNull(startTime) } ?: true
+        if (!sampleIsCurrent) return
+        val currentPoint = state.toDataPoint(lastPoint)
+        val freshTelemetry = state.telemetryTime != lastTelemetryTime
+        val previousPoint = lastPoint
+        val controlMeasurementChanged = previousPoint == null ||
+            currentPoint.pressure != previousPoint.pressure ||
+            currentPoint.weight != previousPoint.weight ||
+            currentPoint.volume != previousPoint.volume ||
+            currentPoint.flowRate != previousPoint.flowRate ||
+            currentPoint.weightRate != previousPoint.weightRate
+        val newMeasurement = previousPoint == null || freshTelemetry || controlMeasurementChanged
+        if (newMeasurement) {
+            val sampleTime = state.telemetryTime.takeIf { freshTelemetry } ?: now
+            val sampleSeconds = startTime?.let { sampleTime - it }
+                ?.toDouble(DurationUnit.SECONDS)?.toFloat()?.coerceAtLeast(0f) ?: 0f
+            data[sampleSeconds] = currentPoint
+            lastSampleSeconds = sampleSeconds
+            lastPoint = currentPoint
+            lastTelemetryTime = state.telemetryTime
+        } else if (currentPoint != previousPoint) {
+            // Refresh non-control telemetry such as boiler temperatures on the latest sample
+            // without inventing another machine sample time.
+            data[lastSampleSeconds] = currentPoint
+            lastPoint = currentPoint
+        }
     }
 
     private fun DeviceState.toDataPoint(previous: BrewDataPoint?) = BrewDataPoint(
@@ -126,6 +150,9 @@ class ObserveBrewDataUseCase(
         volume = volume ?: previous?.volume ?: 0f,
         flowRate = flowRate ?: 0f,
         weightRate = weightRate ?: 0f,
+        brewBoilerTempC = brewBoilerTemp,
+        steamBoilerTempC = steamBoilerTemp,
+        machineElapsedSeconds = time,
     )
 
     private class Accumulator {
@@ -134,6 +161,7 @@ class ObserveBrewDataUseCase(
         var recorder: FreeHandRecorder? = null
         var isBrewing = false
         var startTime: Instant? = null
+        var endTime: Instant? = null
         var status: DeviceState.BrewStatus = DeviceState.BrewStatus.Idle
         var timeInSeconds: Int = 0
         var lastSampleSeconds: Float = 0f
@@ -151,6 +179,7 @@ class ObserveBrewDataUseCase(
             data.clear()
             isBrewing = true
             startTime = now
+            endTime = null
             this.status = status
             lastSampleSeconds = 0f
             lastPoint = null

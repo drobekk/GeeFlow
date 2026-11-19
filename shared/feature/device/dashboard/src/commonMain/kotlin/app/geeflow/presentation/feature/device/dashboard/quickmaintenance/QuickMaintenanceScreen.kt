@@ -61,8 +61,10 @@ import geeflow.shared.core.ui.generated.resources.maintenance_daily_description
 import geeflow.shared.core.ui.generated.resources.maintenance_deep
 import geeflow.shared.core.ui.generated.resources.maintenance_deep_description
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
-import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_start
-import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_stop
+import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_start_clean
+import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_start_flush
+import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_stop_clean
+import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_stop_flush
 import geeflow.shared.feature.device.dashboard.generated.resources.quick_maintenance_title
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -281,7 +283,12 @@ private fun Buttons(
     ) {
         Text(
             stringResource(
-                if (viewState.isCleaning) Res.string.quick_maintenance_stop else Res.string.quick_maintenance_start,
+                when {
+                    viewState.isCleaning && viewState.selectedType == CleaningType.Daily -> Res.string.quick_maintenance_stop_flush
+                    viewState.isCleaning -> Res.string.quick_maintenance_stop_clean
+                    viewState.selectedType == CleaningType.Daily -> Res.string.quick_maintenance_start_flush
+                    else -> Res.string.quick_maintenance_start_clean
+                },
             ),
         )
     }

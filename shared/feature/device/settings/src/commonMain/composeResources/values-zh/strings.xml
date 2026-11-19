@@ -7,7 +7,7 @@
     <string name="device_settings_brewing_description">锅炉参数和按键绑定</string>
     <string name="device_settings_maintenance">维护</string>
     <string name="device_settings_maintenance_description">清洁和缺水警报</string>
-    <string name="device_settings_connectivity">连接</string>
+    <string name="device_settings_connectivity">互联设备</string>
     <string name="device_settings_connectivity_description">外部智能配件</string>
 
     <!-- Device Settings Maintenance -->
@@ -23,7 +23,6 @@
     <string name="device_dashboard_connecting">正在连接</string>
 
     <!-- Device Settings Connectivity -->
-    <string name="device_settings_connectivity_smart_scale">智能秤</string>
     <string name="device_settings_connectivity_smart_scale_description">搜索附近的智能秤</string>
     <string name="device_settings_connectivity_searching">正在搜索兼容设备…</string>
     <string name="device_settings_connectivity_not_found">找不到你的设备？</string>
@@ -42,11 +41,14 @@
     <string name="device_settings_treat_manual_as_flush">视为冲洗</string>
     <string name="device_settings_treat_manual_as_flush_description">不保存历史记录或图表</string>
     <string name="device_settings_connectivity_enable_search">启用搜索</string>
-    <string name="device_settings_connectivity_single_dose_description">搜索附近的磨豆机</string>
     <string name="device_settings_connectivity_disabled_info">启用搜索以查找并连接设备。</string>
     <string name="device_settings_connectivity_connection_help">无法连接。请确认配件已开启且在附近，然后重试。如有必要，请重启咖啡机。</string>
-    <string name="device_settings_connectivity_single_dose">单次定量</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">启用控制环。在某些环境中可能偶尔出现干扰。</string>
     <string name="device_settings_firmware_version">固件：%1$d</string>
+    <string name="device_settings_profile">个人资料</string>
+    <string name="device_settings_preferences">萃取偏好</string>
+    <string name="device_settings_appearance">外观和偏好</string>
+    <string name="device_settings_about">关于</string>
+    <string name="device_settings_switch_user">切换用户</string>
 </resources>

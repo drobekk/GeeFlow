@@ -19,6 +19,14 @@ CREATE TABLE brew_profiles (
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Local deletions must survive a failed/offline sync so they can become cloud tombstones.
+CREATE TABLE pending_brew_profile_deletions (
+  userId INTEGER NOT NULL,
+  profileId INTEGER NOT NULL,
+  PRIMARY KEY (userId, profileId),
+  FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+);
+
 selectAll:
 SELECT * FROM brew_profiles ORDER BY position ASC;
 
@@ -33,3 +41,15 @@ INSERT OR REPLACE INTO brew_profiles(id, userId, name, description, finishCondit
 
 deleteById:
 DELETE FROM brew_profiles WHERE id = ?;
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+recordPendingDeletion:
+INSERT OR IGNORE INTO pending_brew_profile_deletions(userId, profileId) VALUES (?, ?);
+
+selectPendingDeletionsByUserId:
+SELECT profileId FROM pending_brew_profile_deletions WHERE userId = ?;
+
+deletePendingDeletion:
+DELETE FROM pending_brew_profile_deletions WHERE userId = ? AND profileId = ?;

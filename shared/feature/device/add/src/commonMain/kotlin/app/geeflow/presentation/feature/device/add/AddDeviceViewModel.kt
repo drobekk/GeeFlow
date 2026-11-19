@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.add
 
+import androidx.lifecycle.viewModelScope
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.Platform
 import app.geeflow.core.presentation.launch
@@ -43,7 +44,20 @@ internal class AddDeviceViewModel(
     private val addDeviceUseCase: AddDeviceUseCase,
     private val parseDeviceQrCodeUseCase: ParseDeviceQrCodeUseCase,
     private val nearbyDevicesController: NearbyDevicesController,
-) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(AddDeviceViewState(platform.getMethod())) {
+) : BaseViewModel<AddDeviceViewState, AddDeviceViewModelEvent>(
+    AddDeviceViewState(platform.getMethod(), qrCodeAvailable = platform.type != Platform.Type.Desktop)
+) {
+
+    private val manualPairing = ManualPairingController(
+        scope = viewModelScope,
+        permissions = permissionsController,
+        nearby = nearbyDevicesController,
+        read = { viewState.value.manual },
+        update = { entry -> modify { copy(manual = entry) } },
+        confirm = { device, matches ->
+            modify { copy(dialog = AddDeviceViewState.Dialog.ManualConfirmation(device, matches)) }
+        },
+    )
 
     init {
         if (viewState.value.method is NearbyDevices) startScanning()
@@ -51,28 +65,18 @@ internal class AddDeviceViewModel(
     }
 
     fun handleEvent(event: AddDeviceEvent) = when (event) {
-        is AddDeviceEvent.ModelSelected -> {
-            val pending = (viewState.value.dialog as? AddDeviceViewState.Dialog.ModelSelection)?.device
-            val model = SupportedDevice.byId(event.modelId)
-            if (pending != null && model != null) {
-                handleDeviceSelected(
-                    pending.copy(
-                        manufacturer = model.manufacturer,
-                        model = model.model,
-                        modelId = model.id,
-                        modelSource = "user",
-                    )
-                )
-            }
-            Unit
-        }
+        is AddDeviceEvent.ModelSelected -> selectModel(event.modelId)
+        is AddDeviceEvent.ManualEvent -> handleManualEvent(event)
         is BackClicked -> navigate(NavEvent.Back)
         is ShowNearbyDevicesClicked -> {
+            manualPairing.stop()
             startScanning()
             modify { copy(method = NearbyDevices()) }
         }
 
         is ShowQrCodeScannerClicked -> {
+            manualPairing.stop()
+            nearbyDevicesController.stopScanning()
             modify { copy(method = QrCodeScanner()) }
         }
 
@@ -85,7 +89,7 @@ internal class AddDeviceViewModel(
             addDeviceAndNavigate(
                 Device(
                     id = 0L,
-                    name = "Demo",
+                    name = "LITA BA · Demo",
                     connection = DeviceConnection.Ble(
                         peripheralId = demoMac,
                         macAddress = demoMac,
@@ -106,10 +110,74 @@ internal class AddDeviceViewModel(
         }
     }
 
+    private fun selectModel(modelId: String) {
+        val model = SupportedDevice.byId(modelId)?.takeIf { it != SupportedDevice.GeeFlowDemo }
+        val dialog = viewState.value.dialog
+        if (model != null && dialog is AddDeviceViewState.Dialog.ManualModelSelection) {
+            manualPairing.stop()
+            modify {
+                copy(
+                    dialog = null,
+                    manual = manual.copy(modelId = model.id, searchStarted = false, devices = emptyList())
+                )
+            }
+        } else if (model != null && dialog is AddDeviceViewState.Dialog.ModelSelection) {
+            handleDeviceSelected(
+                dialog.device.copy(
+                    manufacturer = model.manufacturer,
+                    model = model.model,
+                    modelId = model.id,
+                    modelSource = "user",
+                )
+            )
+        }
+    }
+
+    private fun handleManualEvent(event: AddDeviceEvent.ManualEvent) = when (event) {
+        is AddDeviceEvent.ShowManualEntryClicked -> {
+            if (viewState.value.method != AddDeviceViewState.Method.Manual) {
+                manualPairing.stop()
+                nearbyDevicesController.stopScanning()
+                modify { copy(method = AddDeviceViewState.Method.Manual) }
+            }
+            Unit
+        }
+        is AddDeviceEvent.SerialNumberChanged -> {
+            manualPairing.stop()
+            modify {
+                copy(
+                    manual = manual.copy(serialNumber = event.value, searchStarted = false, error = null, devices = emptyList())
+                )
+            }
+        }
+        is AddDeviceEvent.BluetoothAddressChanged -> {
+            manualPairing.stop()
+            modify {
+                copy(
+                    manual = manual.copy(
+                        bluetoothAddress = event.value,
+                        searchStarted = false,
+                        error = null,
+                        devices = emptyList(),
+                    )
+                )
+            }
+        }
+        is AddDeviceEvent.ManualModelClicked -> modify { copy(dialog = AddDeviceViewState.Dialog.ManualModelSelection) }
+        is AddDeviceEvent.SearchManualDeviceClicked -> manualPairing.search()
+        is AddDeviceEvent.ManualDeviceClicked -> manualPairing.select(event.id)
+        is AddDeviceEvent.ConfirmManualDeviceClicked -> {
+            val pending = (viewState.value.dialog as? AddDeviceViewState.Dialog.ManualConfirmation)?.device
+            pending?.let(::handleDeviceSelected)
+        }
+    }
+
     private fun startScanning() {
         withBluetoothPermissions {
-            nearbyDevicesController.startScanning()
-            showMissingPermissionMessage(false)
+            if (viewState.value.method is NearbyDevices) {
+                nearbyDevicesController.startScanning()
+                showMissingPermissionMessage(false)
+            }
         }
     }
 
@@ -131,6 +199,12 @@ internal class AddDeviceViewModel(
     }
 
     private fun onDevicesFound(devices: Set<DiscoveredBleDevice>) {
+        val entry = viewState.value.manual
+        if (viewState.value.method == AddDeviceViewState.Method.Manual && entry.searching) {
+            val items = devices.mapNotNull { entry.candidate(it.device, it.peripheral.name) }
+                .sortedByDescending { it.serialMatches }
+            modify { copy(manual = manual.copy(devices = items)) }
+        }
         (viewState.value.method as? NearbyDevices)?.let {
             val items = devices.mapNotNull { discovered ->
                 val ble = discovered.device.connection as? DeviceConnection.Ble
@@ -176,6 +250,7 @@ internal class AddDeviceViewModel(
 
     override fun onCleared() {
         super.onCleared()
+        manualPairing.stop()
         nearbyDevicesController.stopScanning()
     }
 }

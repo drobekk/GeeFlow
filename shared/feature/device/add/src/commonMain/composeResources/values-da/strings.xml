@@ -7,8 +7,8 @@
     <string name="add_device_screen_qr_parsing_error">Kunne ikke læse enhedsdata</string>
     <string name="add_device_screen_empty">Ingen enheder fundet. Tænd din maskine.</string>
     <string name="add_device_demo">Tilføj demo-maskine</string>
-    <string name="add_device_warning_title">Ansvarsfraskrivelse</string>
-    <string name="add_device_warning_message">Uofficiel tredjeparts-app. Benytter producentens protokol via reverse-engineering, uden officiel godkendelse.\n\nDa appen sender direkte hardwarekommandoer, kan fejl forårsage forkert drift.\n\nVed at fortsætte accepterer du:\n• Brug sker helt på eget ansvar.\n• Kan forårsage skader eller ophæve garantien.\n• Efterlad aldrig maskinen uden opsyn under app-styring.</string>
-    <string name="add_device_warning_accept">Jeg accepterer risikoen</string>
-    <string name="add_device_warning_cancel">Annuller</string>
+    <string name="add_device_warning_title">Machine safety</string>
+    <string name="add_device_warning_message">Keep the espresso machine attended while the app controls it. Stop brewing immediately if the machine behaves unexpectedly.</string>
+    <string name="add_device_warning_accept">Continue</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

@@ -3,10 +3,14 @@ package app.geeflow.app.navigation
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -16,8 +20,12 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.geeflow.navigation.NavFeature
+import app.geeflow.navigation.destination.DeviceDashboard
+import app.geeflow.navigation.destination.DeviceSettings
+import app.geeflow.navigation.destination.FreeControl
 import app.geeflow.ui.animations.BackwardTransition
 import app.geeflow.ui.animations.ForwardTransition
+import app.geeflow.ui.theme.ClearScreenTheme
 import kotlinx.serialization.modules.plus
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
@@ -33,27 +41,31 @@ internal fun RootNavigation(closeApp: () -> Unit) {
     val dialogSceneStrategy = remember { DialogSceneStrategy<NavKey>() }
     val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
 
-    NavDisplay(
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-        ),
-        onBack = {
-            if (backStack.isNotEmpty()) {
-                backStack.removeAt(backStack.lastIndex)
-            }
-        },
-        sceneStrategies = listOf(listDetailStrategy, dialogSceneStrategy),
-        backStack = backStack,
-        transitionSpec = { ForwardTransition },
-        popTransitionSpec = { BackwardTransition },
-        predictivePopTransitionSpec = { fadeIn() togetherWith fadeOut() },
-        entryProvider = entryProvider {
-            navFeatures.forEach {
-                with(it) { provideEntries(navigator) }
-            }
-        },
-    )
+    val machineWorkspace = backStack.any { it is DeviceDashboard || it is DeviceSettings || it is FreeControl }
+    ClearScreenTheme(enabled = machineWorkspace) {
+        NavDisplay(
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
+            onBack = {
+                if (backStack.isNotEmpty()) {
+                    backStack.removeAt(backStack.lastIndex)
+                }
+            },
+            sceneStrategies = listOf(listDetailStrategy, dialogSceneStrategy),
+            backStack = backStack,
+            transitionSpec = { ForwardTransition },
+            popTransitionSpec = { BackwardTransition },
+            predictivePopTransitionSpec = { fadeIn() togetherWith fadeOut() },
+            entryProvider = entryProvider {
+                navFeatures.forEach {
+                    with(it) { provideEntries(navigator) }
+                }
+            },
+        )
+    }
 }
 
 private fun List<NavFeature>.savedStateConfig() = SavedStateConfiguration {

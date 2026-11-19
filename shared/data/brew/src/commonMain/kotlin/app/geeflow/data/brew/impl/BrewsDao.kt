@@ -10,6 +10,7 @@ import org.koin.core.annotation.Singleton
 @Singleton
 class BrewsDao(database: AppDatabase) {
     private val dbQuery = database.brewProfileQueries
+    private val defaultProfileSeedQuery = database.defaultProfileSeedQueries
 
     fun getAllBrewProfiles() = dbQuery.selectAll(::mapToBrewProfile).executeAsList()
 
@@ -19,7 +20,14 @@ class BrewsDao(database: AppDatabase) {
     fun getBrewProfileById(id: Long) =
         dbQuery.selectById(id, ::mapToBrewProfile).executeAsOneOrNull()
 
-    fun insertBrewProfile(brewProfile: BrewProfile) {
+    fun hasDefaultProfileSeed(userId: Long, seedKey: String): Boolean =
+        defaultProfileSeedQuery.selectDefaultProfileSeed(userId, seedKey).executeAsOne()
+
+    fun markDefaultProfileSeeded(userId: Long, seedKey: String) {
+        defaultProfileSeedQuery.insertDefaultProfileSeed(userId, seedKey)
+    }
+
+    fun insertBrewProfile(brewProfile: BrewProfile): Long {
         dbQuery.insertBrewProfile(
             id = if (brewProfile.id == 0L) null else brewProfile.id,
             userId = brewProfile.userId,
@@ -33,10 +41,22 @@ class BrewsDao(database: AppDatabase) {
             program = brewProfile.program,
             position = brewProfile.position.toLong(),
         )
+        return dbQuery.lastInsertId().executeAsOne()
     }
 
     fun deleteBrewProfile(id: Long) {
         dbQuery.deleteById(id)
+    }
+
+    fun recordPendingDeletion(userId: Long, profileId: Long) {
+        dbQuery.recordPendingDeletion(userId, profileId)
+    }
+
+    fun getPendingDeletions(userId: Long): List<Long> =
+        dbQuery.selectPendingDeletionsByUserId(userId).executeAsList()
+
+    fun clearPendingDeletions(userId: Long, profileIds: Set<Long>) {
+        profileIds.forEach { profileId -> dbQuery.deletePendingDeletion(userId, profileId) }
     }
 
     @Suppress("LongParameterList")

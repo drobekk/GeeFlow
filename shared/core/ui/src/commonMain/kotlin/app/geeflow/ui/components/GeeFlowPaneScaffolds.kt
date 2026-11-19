@@ -33,12 +33,13 @@ fun GeeFlowListScaffold(
     navIconClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     expanded: Boolean = isListDetailExpanded(),
+    plain: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val scrollModifier = if (scrollBehavior != null) {
+    val scrollModifier = if (!plain && scrollBehavior != null) {
         Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     } else {
         Modifier
@@ -48,23 +49,27 @@ fun GeeFlowListScaffold(
             modifier = Modifier.weight(1f),
             contentWindowInsets = if (expanded) GeeFlowInsets.startPane else GeeFlowInsets.content,
             containerColor = if (expanded) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.background,
-            horizontalWave = !expanded,
+            horizontalWave = !expanded && !plain,
             header = {
-                GeeFlowTopBar(
-                    title = title,
-                    subtitle = subtitle,
-                    navIconClick = navIconClick,
-                    navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
-                    scrollBehavior = scrollBehavior,
-                    windowInsets = WindowInsets(0, 0, 0, 0),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                if (plain) {
+                    ClearPageHeader(title, subtitle, navIconClick)
+                } else {
+                    GeeFlowTopBar(
+                        title = title,
+                        subtitle = subtitle,
+                        navIconClick = navIconClick,
+                        navIconPainter = rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
+                        scrollBehavior = scrollBehavior,
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             },
             snackbarHost = snackbarHost,
             floatingActionButton = floatingActionButton,
             content = content,
         )
-        if (expanded) {
+        if (expanded && !plain) {
             WaveDivider(MaterialTheme.colorScheme.surfaceContainer, orientation = WaveOrientation.Vertical)
         }
     }
@@ -78,6 +83,7 @@ fun GeeFlowDetailScaffold(
     navIconClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     expanded: Boolean = isListDetailExpanded(),
+    plain: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
@@ -85,24 +91,29 @@ fun GeeFlowDetailScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     GeeFlowScaffoldFrame(
-        modifier = if (!expanded && scrollBehavior != null) {
+        modifier = if (!expanded && !plain && scrollBehavior != null) {
             modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         } else {
             modifier
         },
         contentWindowInsets = if (expanded) GeeFlowInsets.endPane else GeeFlowInsets.content,
+        horizontalWave = !plain,
         header = if (expanded) {
             null
         } else {
             {
-                GeeFlowTopBar(
-                    title = title,
-                    subtitle = subtitle,
-                    navIconClick = navIconClick,
-                    scrollBehavior = scrollBehavior,
-                    windowInsets = WindowInsets(0, 0, 0, 0),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                if (plain) {
+                    ClearPageHeader(title, subtitle, navIconClick)
+                } else {
+                    GeeFlowTopBar(
+                        title = title,
+                        subtitle = subtitle,
+                        navIconClick = navIconClick,
+                        scrollBehavior = scrollBehavior,
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         },
         snackbarHost = snackbarHost,

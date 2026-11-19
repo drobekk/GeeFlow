@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Ulkoasu ja näyttö</string>
     <string name="user_settings_appearance_description">Teema, kieli ja näyttö</string>
     <string name="user_settings_about">Tietoja</string>
-    <string name="user_settings_about_description">Ehdot, tietosuoja, lisenssit ja versio</string>
+    <string name="user_settings_about_description">Sovellusversio ja lisenssit</string>
     <string name="user_settings_appearance_title">Ulkoasu ja näyttö</string>
     <string name="user_settings_appearance_dark_mode">Ulkoasu</string>
     <string name="user_settings_appearance_dark_mode_system">Järjestelmän mukaan</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Palauta profiilit tehdasasetuksiin</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Palauttaa kaikki profiilit tehdasasetuksiin. Tätä ei voi kumota.</string>
     <string name="user_settings_about_title">Tietoja</string>
-    <string name="user_settings_about_terms">Käyttöehdot</string>
-    <string name="user_settings_about_terms_description">Lue palveluehdot ja laitevaroitukset</string>
-    <string name="user_settings_about_privacy_policy">Tietosuojaseloste</string>
-    <string name="user_settings_about_privacy_policy_description">Mitä tietoja kerätään ja miksi</string>
-    <string name="user_settings_about_source_code">Lähdekoodi</string>
-    <string name="user_settings_about_source_code_description">Tutustu koodiin ja raportoi virheitä GitHubissa</string>
     <string name="user_settings_about_licenses">Avoimen lähdekoodin lisenssit</string>
     <string name="user_settings_about_licenses_description">Kolmannen osapuolen ohjelmistojen lisenssit</string>
     <string name="user_settings_about_version">Versio</string>

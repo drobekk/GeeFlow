@@ -28,6 +28,10 @@ import app.geeflow.ui.modifier.verticalScrollWithFade
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.feature.device.add.generated.resources.Res
+import geeflow.shared.feature.device.add.generated.resources.add_device_manual_confirm_hint
+import geeflow.shared.feature.device.add.generated.resources.add_device_manual_confirm_title
+import geeflow.shared.feature.device.add.generated.resources.add_device_manual_connect
+import geeflow.shared.feature.device.add.generated.resources.add_device_manual_serial_match
 import geeflow.shared.feature.device.add.generated.resources.add_device_warning_accept
 import geeflow.shared.feature.device.add.generated.resources.add_device_warning_cancel
 import geeflow.shared.feature.device.add.generated.resources.add_device_warning_message
@@ -40,6 +44,17 @@ internal fun AddDeviceDialogs(
     onEvent: (AddDeviceEvent) -> Unit,
 ) {
     when (dialog) {
+        AddDeviceViewState.Dialog.ManualModelSelection -> GeeFlowDialog(
+            onDismissRequest = { onEvent(AddDeviceEvent.CancelWarningClicked) },
+        ) {
+            DeviceModelPicker(
+                models = SupportedDevice.all().filter { it != SupportedDevice.GeeFlowDemo }
+                    .map { it.id to "${it.manufacturer} ${it.model}" },
+                onSelect = { onEvent(AddDeviceEvent.ModelSelected(it)) },
+                onClose = { onEvent(AddDeviceEvent.CancelWarningClicked) },
+            )
+        }
+        is AddDeviceViewState.Dialog.ManualConfirmation -> ManualConfirmationDialog(dialog, onEvent)
         is AddDeviceViewState.Dialog.ModelSelection -> GeeFlowDialog(
             onDismissRequest = { onEvent(AddDeviceEvent.CancelWarningClicked) },
         ) {
@@ -52,6 +67,35 @@ internal fun AddDeviceDialogs(
         }
         is ExperimentalWarning -> ExperimentalWarningDialog(onEvent = onEvent)
         null -> {}
+    }
+}
+
+@Composable
+private fun ManualConfirmationDialog(
+    dialog: AddDeviceViewState.Dialog.ManualConfirmation,
+    onEvent: (AddDeviceEvent) -> Unit,
+) {
+    GeeFlowDialog(onDismissRequest = { onEvent(AddDeviceEvent.CancelWarningClicked) }) {
+        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            GeeFlowDialogTopBar(
+                title = stringResource(Res.string.add_device_manual_confirm_title),
+                onCloseClick = { onEvent(AddDeviceEvent.CancelWarningClicked) },
+            )
+            Column(
+                Modifier.weight(1f, fill = false).verticalScrollWithFade(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(dialog.device.name, style = MaterialTheme.typography.titleLarge)
+                Text(dialog.device.model, style = MaterialTheme.typography.bodyLarge)
+                Text((dialog.device.connection as DeviceConnection.Ble).macAddress, style = MaterialTheme.typography.bodyLarge)
+                if (dialog.serialMatches) Text(stringResource(Res.string.add_device_manual_serial_match))
+                Text(stringResource(Res.string.add_device_manual_confirm_hint), style = MaterialTheme.typography.bodyMedium)
+            }
+            Button(
+                onClick = { onEvent(AddDeviceEvent.ConfirmManualDeviceClicked) },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            ) { Text(stringResource(Res.string.add_device_manual_connect)) }
+        }
     }
 }
 

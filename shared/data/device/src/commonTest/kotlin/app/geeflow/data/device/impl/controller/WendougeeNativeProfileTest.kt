@@ -1,15 +1,19 @@
 package app.geeflow.data.device.impl.controller
 
 import app.geeflow.data.brew.model.BrewDataPoint
+import app.geeflow.data.brew.model.BrewMetric
+import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.FreeHandSample
+import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceProfileControl
+import app.geeflow.data.device.model.requiredMetrics
 import app.geeflow.data.device.TimedPumpProfileSupport
 import app.geeflow.data.device.assessProfile
 import app.geeflow.data.device.ble.modbus.ModbusCrcException
@@ -23,6 +27,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertSame
@@ -31,6 +36,93 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class WendougeeNativeProfileTest {
     private val compiler = WendougeeProfileCompiler()
+
+    @Test
+    fun `profile assessment distinguishes native app controlled and unsupported programs`() = runTest {
+        val demo = DemoDeviceController(backgroundScope)
+        val lita = object : DeviceController by demo {
+            override val profilingCapabilities = TimedPumpProfileSupport.capabilities
+            override val profiles = object : DeviceProfileControl by demo.profiles {
+                override fun assessNativeProfile(profile: BrewProfile) = TimedPumpProfileSupport.assessNative(profile)
+            }
+        }
+        val profiles = listOf(
+            BrewProfile(
+                userId = 1,
+                name = "Native pressure",
+                description = "",
+                finishCondition = Condition.Volume(40f),
+                steps = listOf(ProfileStep.Pressure(8, 3f), ProfileStep.Pressure(30, 9f)),
+            ),
+            BrewProfile(
+                userId = 1,
+                name = "App controlled",
+                description = "",
+                finishCondition = Condition.Volume(40f),
+                program = BrewProgram.Phases(
+                    phases = listOf(BrewPhase("adaptive", control = PhaseControl.Pressure(4f), maximumDurationMillis = 10_000)),
+                    version = 2,
+                ),
+            ),
+            BrewProfile(
+                userId = 1,
+                name = "Unsupported mode switch",
+                description = "",
+                finishCondition = Condition.Volume(40f),
+                program = BrewProgram.Phases(
+                    phases = listOf(
+                        BrewPhase("pressure", control = PhaseControl.Pressure(4f), maximumDurationMillis = 10_000),
+                        BrewPhase("flow", control = PhaseControl.Flow(3f), maximumDurationMillis = 10_000),
+                    ),
+                    version = 2,
+                ),
+            ),
+            BrewProfile(
+                userId = 1,
+                name = "Native pressure variant",
+                description = "",
+                finishCondition = Condition.Volume(40f),
+                steps = listOf(ProfileStep.Pressure(10, 5f)),
+            ),
+            BrewProfile(
+                userId = 1,
+                name = "Native flow",
+                description = "",
+                finishCondition = Condition.Volume(40f),
+                steps = listOf(ProfileStep.Flow(20, 3f)),
+            ),
+        )
+        profiles.forEach { profile ->
+            assertTrue(BrewMetric.PumpedVolume in profile.requiredMetrics())
+            assertFalse(BrewMetric.CupWeight in profile.requiredMetrics())
+        }
+
+        val supports = profiles.map { profile -> profile to lita.assessProfile(profile) }
+        assertEquals(
+            listOf(
+                ProfileExecution.Native,
+                ProfileExecution.AppControlled,
+                ProfileExecution.Unsupported,
+                ProfileExecution.Native,
+                ProfileExecution.Native,
+            ),
+            supports.map { it.second.execution },
+        )
+        supports.forEach { (profile, support) ->
+            if (support.execution == ProfileExecution.Unsupported) {
+                assertTrue(support.issues.any { it.code == app.geeflow.data.device.model.ProfileIssueCode.ModeSwitch })
+            } else assertTrue(support.issues.isEmpty())
+            assertEquals(support.execution == ProfileExecution.Native, support.bindingAllowed)
+
+            if (support.execution == ProfileExecution.Native) {
+                val writes = compiler.buildProfileWrites(profile)
+                val nativeStages = writes.filterIsInstance<ProfileWrite.Multiple>().filter { it.values.size == 6 }
+                assertEquals(profile.steps.size, nativeStages.size)
+                val goal = (profile.finishCondition as Condition.Volume).target.toInt()
+                assertTrue(ProfileWrite.Multiple(2048, listOf(1, 1, 1, 1, goal, 0, 0)) in writes)
+            }
+        }
+    }
 
     @Test
     fun `when packed stage format is selected then recordings retain both legacy bank layouts`() {

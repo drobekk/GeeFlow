@@ -3,6 +3,7 @@ package app.geeflow.app.db
 import app.cash.sqldelight.EnumColumnAdapter
 import app.geeflow.data.brew.impl.BrewDataPointsAdapter
 import app.geeflow.data.brew.impl.BrewProgramAdapter
+import app.geeflow.data.brew.impl.BrewScaleSamplesAdapter
 import app.geeflow.data.brew.impl.ConditionAdapter
 import app.geeflow.data.brew.impl.FreeHandRecordingAdapter
 import app.geeflow.data.brew.impl.ProfileExecutionTraceAdapter
@@ -31,6 +32,8 @@ class AppDatabaseModule {
             profileRecordingAdapter = FreeHandRecordingAdapter,
             dataPointsAdapter = BrewDataPointsAdapter,
             executionTraceAdapter = ProfileExecutionTraceAdapter,
+            scaleSamplesAdapter = BrewScaleSamplesAdapter,
+            profileProgramAdapter = BrewProgramAdapter,
         ),
     )
 

@@ -24,6 +24,9 @@ data class ProfilingCapabilities(
     val minimumWriteIntervalMillis: Long = 200,
     val telemetry: Set<BrewMetric> = emptySet(),
     val binding: Boolean = false,
+    val verifiedSecondaryLimits: Boolean = false,
+    val perPhaseTemperature: Boolean = false,
+    val timestampedCupWeight: Boolean = false,
 )
 
 data class NativeProfilingCapabilities(
@@ -60,7 +63,7 @@ data class ProfileSupport(
     val experimental: Boolean get() = execution == ProfileExecution.AppControlled
 }
 
-data class BrewTelemetry(val values: Map<BrewMetric, Float>) {
+data class BrewTelemetry(val values: Map<BrewMetric, Float>, val sampledAtMillis: Map<BrewMetric, Long> = emptyMap()) {
     operator fun get(metric: BrewMetric): Float? = values[metric]?.takeIf { it.isFinite() }
 }
 
@@ -102,7 +105,15 @@ fun BrewProfile.requiredMetrics(): Set<BrewMetric> = buildSet {
         null -> Unit
     }
     (program as? BrewProgram.Phases)?.phases?.forEach { phase ->
+        addAll((phase.entryCaptures + phase.exitCaptures).map { it.metric })
+        phase.targetSource?.metric?.let { add(it) }
+        phase.ramp.source?.metric?.let { add(it) }
+        phase.secondaryLimit?.metric?.let { add(it) }
         addAll(phase.exitConditions.map { it.metric }.filter { it != BrewMetric.PhaseTime })
         if (phase.ramp.style != RampStyle.Instant) phase.control.metric()?.let { add(it) }
+        if (phase.adaptiveFlowProbe != null) {
+            add(BrewMetric.PumpPressure)
+            add(BrewMetric.PumpFlow)
+        }
     }
 }

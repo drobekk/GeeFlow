@@ -18,6 +18,7 @@ internal fun BrewProgram?.chartBoundaries(transitions: List<PhaseTransition>): L
             ChartPhaseBoundary(
                 seconds = transition.elapsedMillis / 1000.0,
                 stepNumber = index + 1,
+                phaseLabel = "Step ${index + 1}",
                 conditions = listOfNotNull(transition.condition),
                 matchedConditions = setOfNotNull(transition.condition),
                 actual = true,
@@ -41,6 +42,7 @@ internal fun BrewProgram?.chartBoundaries(transitions: List<PhaseTransition>): L
                 ChartPhaseBoundary(
                     seconds = elapsedMillis / 1000.0,
                     stepNumber = index + 1,
+                    phaseLabel = phase.name.ifBlank { "Step ${index + 1}" },
                     conditions = conditions,
                     matchedConditions = phase.matchedConditions(transition = transition, time = time),
                     actual = transition != null,

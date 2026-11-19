@@ -6,4 +6,5 @@ data class ChartData(
     val weightPerSecond: Float,
     val volume: Float,
     val volumePerSecond: Float,
+    val temperatureC: Float? = null,
 )

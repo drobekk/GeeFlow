@@ -45,7 +45,6 @@ kotlin {
             implementation(libs.mockk)
         }
         commonMain.dependencies {
-            api(projects.shared.core.commerce)
             api(projects.shared.core.navigation)
             api(projects.shared.core.presentation)
             api(projects.shared.core.ui)
@@ -69,6 +68,9 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.filekit.coil)
             implementation(libs.materialKolor)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.serialization.kotlinxJson)
         }
         commonTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)
@@ -76,6 +78,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.ktor.client.cio)
 
             implementation(libs.blue.falcon.engine.windows)
             implementation(libs.blue.falcon.engine.macos.jvm)
@@ -83,9 +86,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.koin.android)
             implementation(libs.blue.falcon.engine.android)
+            implementation(libs.ktor.client.okhttp)
         }
         iosMain.dependencies {
             implementation(libs.blue.falcon.engine.ios)
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

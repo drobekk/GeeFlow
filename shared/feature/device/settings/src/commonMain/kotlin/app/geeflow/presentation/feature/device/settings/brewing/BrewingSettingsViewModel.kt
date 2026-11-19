@@ -16,7 +16,6 @@ import app.geeflow.domain.device.usecase.SetManualBrewSettingsUseCase
 import app.geeflow.domain.device.usecase.SetPulseHeatingModeUseCase
 import app.geeflow.navigation.NavEvent
 import app.geeflow.presentation.feature.device.settings.BrewingSettings
-import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.ApplyClicked
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.AutoFlushDelayChanged
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.AutoFlushToggled
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsEvent.BrewBoilerToggled
@@ -33,6 +32,8 @@ import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_settings_applied
 import geeflow.shared.core.ui.generated.resources.error_generic
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -58,6 +59,8 @@ internal class BrewingSettingsViewModel(
     private var agileRingEdited = false
 
     private var saveJob: Job? = null
+    private var machineSettingsLoaded = false
+    private var preferencesLoaded = false
 
     init {
         loadMachineState()
@@ -86,6 +89,7 @@ internal class BrewingSettingsViewModel(
                     if (!configApplied && state.config != null) {
                         configApplied = true
                         updateViewState(state)
+                        machineSettingsLoaded = true
                     } else {
                         modify {
                             copy(
@@ -98,6 +102,7 @@ internal class BrewingSettingsViewModel(
         }
         launch {
             observeDeviceBrewingSettings(arguments.deviceId).collect { settings ->
+                preferencesLoaded = true
                 savedDeviceBrewingSettings = settings
                 deviceSnapshot = deviceSnapshot?.copy(
                     treatManualAsFlush = settings.treatManualAsFlush,
@@ -163,106 +168,136 @@ internal class BrewingSettingsViewModel(
         modify { withApplyVisible() }
     }
 
-    fun handleEvent(event: BrewingSettingsEvent) = when (event) {
-        is SteamBoilerToggled -> modify {
-            copy(
-                steamBoiler = steamBoiler.copy(enabled = event.enabled),
-            ).withApplyVisible()
+    fun handleEvent(event: BrewingSettingsEvent) {
+        if (event is CloseClicked) {
+            navigate(NavEvent.Back)
+            return
         }
-
-        is BrewBoilerToggled -> modify {
-            copy(
-                brewBoiler = brewBoiler.copy(enabled = event.enabled),
-            ).withApplyVisible()
-        }
-
-        is SteamTempChanged -> modify {
-            copy(
-                steamBoiler = steamBoiler.copy(selectedTemp = event.temp),
-            ).withApplyVisible()
-        }
-
-        is BrewTempChanged -> modify {
-            copy(
-                brewBoiler = brewBoiler.copy(selectedTemp = event.temp),
-            ).withApplyVisible()
-        }
-
-        is PulseHeatingToggled -> modify { copy(pulseHeatingEnabled = event.enabled).withApplyVisible() }
-        is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
-        is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
-        is AutoFlushToggled -> {
-            deviceBrewingSettingsEdited = true
-            modify { copy(autoFlushEnabled = event.enabled).withApplyVisible() }
-        }
-        is AutoFlushDelayChanged -> {
-            deviceBrewingSettingsEdited = true
-            modify { copy(autoFlushDelaySeconds = event.seconds).withApplyVisible() }
-        }
-        is BrewingSettingsEvent.TreatManualAsFlushChanged -> {
-            deviceBrewingSettingsEdited = true
-            modify { copy(treatManualAsFlush = event.enabled).withApplyVisible() }
-        }
-        is BrewingSettingsEvent.AgileRingToggled -> {
-            if (viewState.value.agileRingEnabled != null) {
-                agileRingEdited = true
-                modify { copy(agileRingEnabled = event.enabled).withApplyVisible() }
+        val localPreference = event is AutoFlushToggled || event is AutoFlushDelayChanged ||
+            event is BrewingSettingsEvent.TreatManualAsFlushChanged
+        if (localPreference && !preferencesLoaded || !localPreference && !machineSettingsLoaded) return
+        when (event) {
+            is SteamBoilerToggled -> modify {
+                copy(
+                    steamBoiler = steamBoiler.copy(enabled = event.enabled),
+                ).withApplyVisible()
             }
-            Unit
+
+            is BrewBoilerToggled -> modify {
+                copy(
+                    brewBoiler = brewBoiler.copy(enabled = event.enabled),
+                ).withApplyVisible()
+            }
+
+            is SteamTempChanged -> modify {
+                copy(
+                    steamBoiler = steamBoiler.copy(selectedTemp = event.temp),
+                ).withApplyVisible()
+            }
+
+            is BrewTempChanged -> modify {
+                copy(
+                    brewBoiler = brewBoiler.copy(selectedTemp = event.temp),
+                ).withApplyVisible()
+            }
+
+            is PulseHeatingToggled -> modify { copy(pulseHeatingEnabled = event.enabled).withApplyVisible() }
+            is PaddlePressureChanged -> modify { copy(paddle = paddle.copy(pressure = event.pressure)).withApplyVisible() }
+            is PaddleTimeChanged -> modify { copy(paddle = paddle.copy(time = event.time)).withApplyVisible() }
+            is AutoFlushToggled -> {
+                deviceBrewingSettingsEdited = true
+                modify { copy(autoFlushEnabled = event.enabled).withApplyVisible() }
+            }
+            is AutoFlushDelayChanged -> {
+                deviceBrewingSettingsEdited = true
+                modify { copy(autoFlushDelaySeconds = event.seconds).withApplyVisible() }
+            }
+            is BrewingSettingsEvent.TreatManualAsFlushChanged -> {
+                deviceBrewingSettingsEdited = true
+                modify { copy(treatManualAsFlush = event.enabled).withApplyVisible() }
+            }
+            is BrewingSettingsEvent.AgileRingToggled -> {
+                if (viewState.value.agileRingEnabled != null) {
+                    agileRingEdited = true
+                    modify { copy(agileRingEnabled = event.enabled).withApplyVisible() }
+                }
+                Unit
+            }
+            is CloseClicked -> Unit
         }
-        is ApplyClicked -> saveSettings()
-        is CloseClicked -> navigate(NavEvent.Back)
+        saveSettings()
     }
 
-    private fun saveSettings() = with(viewState.value) {
-        val submittedState = this
-        saveJob?.cancel()
-        saveJob = launchCatching(
-            onError = (::showError),
-            block = {
+    private fun saveSettings() {
+        if (saveJob?.isActive == true || !viewState.value.applyButtonVisible) return
+        saveJob = launchCatching(onError = ::showError) {
+            withContext(NonCancellable) {
                 modify { copy(applyButtonLoading = true) }
-                setBoilerSettings(
-                    deviceId = arguments.deviceId,
-                    boilerType = BoilerType.Steam,
-                    enabled = steamBoiler.enabled,
-                    temp = steamBoiler.selectedTemp.toInt(),
-                )
-                setBoilerSettings(
-                    deviceId = arguments.deviceId,
-                    boilerType = BoilerType.Brew,
-                    enabled = brewBoiler.enabled,
-                    temp = brewBoiler.selectedTemp.toInt(),
-                )
-                setPulseHeatingMode(arguments.deviceId, pulseHeatingEnabled)
-                setManualBrewSettings(
-                    deviceId = arguments.deviceId,
-                    pressure = paddle.pressure.toFloat(),
-                    timeSec = paddle.time.toFloat(),
-                )
-                submittedState.agileRingEnabled?.let { enabled ->
-                    if (enabled != deviceSnapshot?.agileRingEnabled) setAgileRing(arguments.deviceId, enabled)
+                try {
+                    while (viewState.value.applyButtonVisible) {
+                        val draft = viewState.value
+                        val previous = deviceSnapshot ?: break
+                        val next = snapshotFromState(draft)
+                        if (next.steamBoilerEnabled != previous.steamBoilerEnabled || next.steamTemp != previous.steamTemp) {
+                            setBoilerSettings(arguments.deviceId, BoilerType.Steam, next.steamBoilerEnabled, next.steamTemp.toInt())
+                            deviceSnapshot = deviceSnapshot?.copy(steamBoilerEnabled = next.steamBoilerEnabled, steamTemp = next.steamTemp)
+                        }
+                        if (next.brewBoilerEnabled != previous.brewBoilerEnabled || next.brewTemp != previous.brewTemp) {
+                            setBoilerSettings(arguments.deviceId, BoilerType.Brew, next.brewBoilerEnabled, next.brewTemp.toInt())
+                            deviceSnapshot = deviceSnapshot?.copy(brewBoilerEnabled = next.brewBoilerEnabled, brewTemp = next.brewTemp)
+                        }
+                        if (next.pulseHeatingEnabled != previous.pulseHeatingEnabled) {
+                            setPulseHeatingMode(arguments.deviceId, next.pulseHeatingEnabled)
+                            deviceSnapshot = deviceSnapshot?.copy(pulseHeatingEnabled = next.pulseHeatingEnabled)
+                        }
+                        if (next.paddlePressure != previous.paddlePressure || next.paddleTime != previous.paddleTime) {
+                            setManualBrewSettings(arguments.deviceId, next.paddlePressure.toFloat(), next.paddleTime.toFloat())
+                            deviceSnapshot = deviceSnapshot?.copy(paddlePressure = next.paddlePressure, paddleTime = next.paddleTime)
+                        }
+                        next.agileRingEnabled?.takeIf { it != previous.agileRingEnabled }?.let { enabled ->
+                            setAgileRing(arguments.deviceId, enabled)
+                            deviceSnapshot = deviceSnapshot?.copy(agileRingEnabled = enabled)
+                        }
+                        agileRingEdited = viewState.value.agileRingEnabled != next.agileRingEnabled
+                        val settings = DeviceBrewingSettings(
+                            treatManualAsFlush = draft.treatManualAsFlush,
+                            autoFlushEnabled = draft.autoFlushEnabled,
+                            autoFlushDelaySeconds = draft.autoFlushDelaySeconds.toInt(),
+                        )
+                        if (settings != savedDeviceBrewingSettings) {
+                            saveDeviceBrewingSettings(arguments.deviceId, settings)
+                            savedDeviceBrewingSettings = settings
+                        }
+                        deviceBrewingSettingsEdited = viewState.value.treatManualAsFlush != settings.treatManualAsFlush ||
+                            viewState.value.autoFlushEnabled != settings.autoFlushEnabled ||
+                            viewState.value.autoFlushDelaySeconds != settings.autoFlushDelaySeconds.toString()
+                        deviceSnapshot = next
+                        modify { withApplyVisible() }
+                    }
+                } finally {
+                    modify { copy(applyButtonLoading = false) }
                 }
-                agileRingEdited = false
-                val settings = DeviceBrewingSettings(
-                    treatManualAsFlush = treatManualAsFlush,
-                    autoFlushEnabled = autoFlushEnabled,
-                    autoFlushDelaySeconds = autoFlushDelaySeconds.toInt(),
-                )
-                saveDeviceBrewingSettings(arguments.deviceId, settings)
-                savedDeviceBrewingSettings = settings
-                deviceBrewingSettingsEdited = viewState.value.treatManualAsFlush != settings.treatManualAsFlush ||
-                    viewState.value.autoFlushEnabled != settings.autoFlushEnabled ||
-                    viewState.value.autoFlushDelaySeconds != settings.autoFlushDelaySeconds.toString()
-                deviceSnapshot = snapshotFromState(submittedState)
-                modify { copy(applyButtonLoading = false).withApplyVisible() }
-                emitEvent(ShowSnackbar(getString(Res.string.common_settings_applied)))
-            },
-        )
+            }
+        }
     }
 
     private fun showError(throwable: Throwable) {
         Logger.e(throwable) { "Error while saving brewing settings" }
-        modify { copy(applyButtonLoading = false) }
+        val saved = deviceSnapshot
+        agileRingEdited = false
+        deviceBrewingSettingsEdited = false
+        if (saved != null) modify {
+            copy(
+                brewBoiler = brewBoiler.copy(enabled = saved.brewBoilerEnabled, selectedTemp = saved.brewTemp),
+                steamBoiler = steamBoiler.copy(enabled = saved.steamBoilerEnabled, selectedTemp = saved.steamTemp),
+                pulseHeatingEnabled = saved.pulseHeatingEnabled,
+                paddle = paddle.copy(pressure = saved.paddlePressure, time = saved.paddleTime),
+                agileRingEnabled = saved.agileRingEnabled,
+                treatManualAsFlush = saved.treatManualAsFlush,
+                autoFlushEnabled = saved.autoFlushEnabled,
+                autoFlushDelaySeconds = saved.autoFlushDelaySeconds,
+            ).withApplyVisible()
+        }
         launch { emitEvent(ShowSnackbar(getString(Res.string.error_generic))) }
     }
 

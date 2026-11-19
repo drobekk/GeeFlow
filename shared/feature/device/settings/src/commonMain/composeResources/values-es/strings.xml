@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Aviso de nivel de agua bajo</string>
     <string name="device_water_alarm_error">Nivel de agua bajo. Rellena el depósito.</string>
     <string name="device_dashboard_connecting">Conectando…</string>
-    <string name="device_settings_connectivity_smart_scale">Báscula inteligente</string>
     <string name="device_settings_connectivity_smart_scale_description">Buscar básculas inteligentes cercanas</string>
     <string name="device_settings_connectivity_searching">Buscando dispositivos compatibles…</string>
     <string name="device_settings_connectivity_not_found">¿No ves tu dispositivo?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Pulsación larga como purga</string>
     <string name="device_settings_treat_manual_as_flush_description">Sin historial ni gráfica</string>
     <string name="device_settings_connectivity_enable_search">Activar búsqueda</string>
-    <string name="device_settings_connectivity_single_dose_description">Buscar molinillos cercanos</string>
     <string name="device_settings_connectivity_disabled_info">Activa la búsqueda para encontrar y conectar un dispositivo.</string>
     <string name="device_settings_connectivity_connection_help">No se pudo conectar. Comprueba que el accesorio esté encendido y cerca e inténtalo de nuevo. Si es necesario, reinicia la cafetera.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Activa el anillo de control. En algunos entornos pueden producirse interferencias ocasionales.</string>
     <string name="device_settings_firmware_version">Firmware: %1$d</string>

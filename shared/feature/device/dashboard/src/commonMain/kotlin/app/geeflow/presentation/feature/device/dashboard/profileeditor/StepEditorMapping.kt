@@ -43,6 +43,9 @@ internal fun StepEditorViewState.toStep(): ProfileEditorViewState.Step? {
         ramp = ramp,
         exitConditions = exits,
         conditionOperator = conditionOperator,
+        adaptiveFlowProbe = source.adaptiveFlowProbe?.takeIf {
+            type == StepType.Flow && ramp.style != RampStyle.Instant && ramp.durationMillis >= it.samplingDurationMillis
+        },
     )
 }
 

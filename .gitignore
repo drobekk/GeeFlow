@@ -23,5 +23,7 @@ app.db
 !README.md
 !PRIVACY_POLICY.md
 !TERMS_AND_CONDITIONS.md
+!docs/development/gradle-setup.md
+!docs/development/live-recipes.md
 *.txt
 **/aboutlibraries.json

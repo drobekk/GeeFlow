@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Terug</string>
     <string name="common_close">Sluiten</string>
     <string name="common_confirm">Bevestigen</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Communicatie met machine verloren tijdens zetten.</string>
     <string name="error_required_measurement_lost">Vereiste sensor is losgekoppeld.</string>
     <string name="error_profile_unavailable">Profiel niet compatibel met huidige machinestatus.</string>
-    <string name="agreement_prefix">Ik accepteer de </string>
-    <string name="agreement_terms">Algemene voorwaarden</string>
-    <string name="agreement_and"> en het </string>
-    <string name="agreement_privacy">Privacybeleid</string>
     <string name="maintenance_daily">Dagelijkse reiniging</string>
     <string name="maintenance_deep">Grondige reiniging</string>
     <string name="maintenance_daily_description">Routinematig spoelen om koffieresten uit zetgroep te verwijderen.</string>

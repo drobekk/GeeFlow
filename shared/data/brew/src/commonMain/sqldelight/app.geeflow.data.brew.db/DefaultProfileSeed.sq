@@ -1,0 +1,14 @@
+CREATE TABLE default_profile_seeds (
+  userId INTEGER NOT NULL,
+  seedKey TEXT NOT NULL,
+  PRIMARY KEY(userId, seedKey),
+  FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+selectDefaultProfileSeed:
+SELECT EXISTS (
+  SELECT 1 FROM default_profile_seeds WHERE userId = ? AND seedKey = ?
+) AS seeded;
+
+insertDefaultProfileSeed:
+INSERT OR IGNORE INTO default_profile_seeds(userId, seedKey) VALUES (?, ?);

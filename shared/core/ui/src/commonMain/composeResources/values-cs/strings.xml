@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Zpět</string>
     <string name="common_close">Zavřít</string>
     <string name="common_confirm">Potvrdit</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Ztráta spojení s kávovarem během extrakce.</string>
     <string name="error_required_measurement_lost">Požadovaný senzor byl odpojen.</string>
     <string name="error_profile_unavailable">Profil není kompatibilní s aktuálním stavem kávovaru.</string>
-    <string name="agreement_prefix">Přijímám </string>
-    <string name="agreement_terms">Obchodní podmínky</string>
-    <string name="agreement_and"> a </string>
-    <string name="agreement_privacy">Zásady ochrany soukromí</string>
     <string name="maintenance_daily">Denní čištění</string>
     <string name="maintenance_deep">Hloubkové čištění</string>
     <string name="maintenance_daily_description">Pravidelný proplach k odstranění zbytků kávy ze sprchy.</string>

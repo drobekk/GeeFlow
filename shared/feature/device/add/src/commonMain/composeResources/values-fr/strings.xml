@@ -7,8 +7,8 @@
     <string name="add_device_screen_qr_parsing_error">Données de l’appareil illisibles</string>
     <string name="add_device_screen_empty">Aucun appareil trouvé. Réveillez votre machine.</string>
     <string name="add_device_demo">Ajouter une machine démo</string>
-    <string name="add_device_warning_title">Avertissement &amp; Sécurité</string>
-    <string name="add_device_warning_message">Application tierce non officielle. Utilise le protocole du fabricant rétro-conçu, sans affiliation ni certification.\n\nL’envoi de commandes directes peut provoquer un comportement inattendu en cas de bug.\n\nEn continuant, vous acceptez que :\n• Vous utilisez ce logiciel à vos risques et périls.\n• Cela peut annuler votre garantie ou endommager la machine.\n• Ne jamais laisser la machine sans surveillance sous contrôle de l’app.</string>
-    <string name="add_device_warning_accept">J’accepte les risques</string>
-    <string name="add_device_warning_cancel">Annuler</string>
+    <string name="add_device_warning_title">Machine safety</string>
+    <string name="add_device_warning_message">Keep the espresso machine attended while the app controls it. Stop brewing immediately if the machine behaves unexpectedly.</string>
+    <string name="add_device_warning_accept">Continue</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

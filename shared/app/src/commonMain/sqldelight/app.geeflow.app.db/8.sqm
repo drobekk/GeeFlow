@@ -1,0 +1,2 @@
+ALTER TABLE brew_history_metadata ADD COLUMN recipeRatio REAL;
+ALTER TABLE brew_history_metadata ADD COLUMN recipeTargetGrams REAL;

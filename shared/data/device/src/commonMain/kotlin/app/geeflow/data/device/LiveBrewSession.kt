@@ -10,3 +10,7 @@ interface LiveBrewSession {
     suspend fun applyTarget(target: PhaseControl): PhaseControl
     suspend fun stop()
 }
+
+interface TransportTimedLiveBrewSession : LiveBrewSession {
+    suspend fun applyTarget(target: PhaseControl, onTransportSend: () -> Unit): PhaseControl
+}

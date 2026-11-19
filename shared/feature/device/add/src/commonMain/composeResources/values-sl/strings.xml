@@ -7,8 +7,8 @@
     <string name="add_device_screen_qr_parsing_error">Podatkov naprave ni bilo mogoče prebrati</string>
     <string name="add_device_screen_empty">Ni najdenih naprav. Vklopite aparat.</string>
     <string name="add_device_demo">Dodaj demo napravo</string>
-    <string name="add_device_warning_title">Opozorilo in izjava</string>
-    <string name="add_device_warning_message">Neuradna aplikacija tretje osebe. Uporablja protokol proizvajalca prek vzvratnega inženiringa, brez uradne podpore.\n\nKer pošilja neposredne ukaze strojni opremi, lahko napake povzročijo nepravilno delovanje aparata.\n\nZ nadaljevanjem potrjujete, da:\n• Aplikacijo uporabljate na lastno odgovornost.\n• Lahko povzroči poškodbe ali izgubo garancije.\n• Aparata nikoli ne puščajte brez nadzora pod nadzorom aplikacije.</string>
-    <string name="add_device_warning_accept">Sprejemam tveganja</string>
-    <string name="add_device_warning_cancel">Prekliči</string>
+    <string name="add_device_warning_title">Machine safety</string>
+    <string name="add_device_warning_message">Keep the espresso machine attended while the app controls it. Stop brewing immediately if the machine behaves unexpectedly.</string>
+    <string name="add_device_warning_accept">Continue</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

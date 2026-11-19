@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Videz in zaslon</string>
     <string name="user_settings_appearance_description">Tema, jezik in zaslon</string>
     <string name="user_settings_about">O aplikaciji</string>
-    <string name="user_settings_about_description">Pogoji, zasebnost, licence in različica</string>
+    <string name="user_settings_about_description">Različica aplikacije in licence</string>
     <string name="user_settings_appearance_title">Videz in zaslon</string>
     <string name="user_settings_appearance_dark_mode">Videz</string>
     <string name="user_settings_appearance_dark_mode_system">Sistemsko</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Ponastavi profile na tovarniške nastavitve</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Ponastavilo bo vse profile na tovarniške. Tega ni mogoče razveljaviti.</string>
     <string name="user_settings_about_title">O aplikaciji</string>
-    <string name="user_settings_about_terms">Pogoji uporabe</string>
-    <string name="user_settings_about_terms_description">Pogoji storitve in varnostna opozorila</string>
-    <string name="user_settings_about_privacy_policy">Pravilnik o zasebnosti</string>
-    <string name="user_settings_about_privacy_policy_description">Kaj se zbira in zakaj</string>
-    <string name="user_settings_about_source_code">Izvorna koda</string>
-    <string name="user_settings_about_source_code_description">Raziščite kodo ali prijavite napake na GitHubu</string>
     <string name="user_settings_about_licenses">Odprtokodne licence</string>
     <string name="user_settings_about_licenses_description">Informacije o licencah zunanje programske opreme</string>
     <string name="user_settings_about_version">Različica</string>

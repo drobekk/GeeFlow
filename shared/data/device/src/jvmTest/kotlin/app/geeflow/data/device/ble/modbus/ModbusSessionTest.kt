@@ -50,6 +50,55 @@ class ModbusSessionTest {
     }
 
     @Test
+    fun `when diagnostic observer is enabled then records request raw frame and CRC validation`() = runTest {
+        val notifications = MutableSharedFlow<ByteArray>()
+        val events = mutableListOf<Pair<String, Map<String, String>>>()
+        val reply = frame(1, 3, 2, 0, 7)
+        val session = ModbusSession(
+            notifications = notifications,
+            write = {
+                notifications.emit(reply.copyOfRange(0, 3))
+                notifications.emit(reply.copyOfRange(3, reply.size))
+            },
+            unitId = 1,
+            defaultTimeout = 1.seconds,
+            diagnosticSink = ModbusSessionDiagnosticSink { name, fields -> events += name to fields },
+        )
+
+        assertEquals(listOf(7), session.readHoldingRegisters(0, 1))
+
+        assertEquals("modbus_tx", events.first().first)
+        assertEquals("010300000001840a", events.first().second["hex"])
+        val responseFrame = events.single { it.first == "modbus_response_frame" }.second
+        assertEquals(reply.joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }, responseFrame["hex"])
+        assertEquals("true", responseFrame["crcValid"])
+        assertEquals("true", events.single { it.first == "modbus_response_validated" }.second["crcValid"])
+    }
+
+    @Test
+    fun `when response times out after a partial frame then records pending bytes`() = runTest {
+        val notifications = MutableSharedFlow<ByteArray>()
+        val events = mutableListOf<Pair<String, Map<String, String>>>()
+        val session = ModbusSession(
+            notifications = notifications,
+            write = { notifications.emit(byteArrayOf(1, 3, 4, 0, 7)) },
+            unitId = 1,
+            defaultTimeout = 1.seconds,
+            diagnosticSink = ModbusSessionDiagnosticSink { name, fields -> events += name to fields },
+        )
+
+        val pending = async { runCatching { session.readHoldingRegisters(0, 2) } }
+        runCurrent()
+        advanceTimeBy(1_000)
+        runCurrent()
+        pending.await()
+
+        val timeout = events.single { it.first == "modbus_response_timeout" }.second
+        assertEquals("0103040007", timeout["pendingHex"])
+        assertEquals("5", timeout["pendingLength"])
+    }
+
+    @Test
     fun `when write receives a stale value echo then waits for its own value`() = runTest {
         val notifications = MutableSharedFlow<ByteArray>()
         val writes = mutableListOf<ByteArray>()

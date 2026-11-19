@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Внешний вид и экран</string>
     <string name="user_settings_appearance_description">Тема, язык и экран</string>
     <string name="user_settings_about">О приложении</string>
-    <string name="user_settings_about_description">Условия, конфиденциальность, лицензии и версия</string>
+    <string name="user_settings_about_description">Версия приложения и лицензии</string>
     <string name="user_settings_appearance_title">Внешний вид и экран</string>
     <string name="user_settings_appearance_dark_mode">Оформление</string>
     <string name="user_settings_appearance_dark_mode_system">Как в системе</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Сбросить профили до заводских настроек</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Все профили будут сброшены до стандартных. Это действие необратимо.</string>
     <string name="user_settings_about_title">О приложении</string>
-    <string name="user_settings_about_terms">Условия использования</string>
-    <string name="user_settings_about_terms_description">Условия сервиса и безопасность оборудования</string>
-    <string name="user_settings_about_privacy_policy">Политика конфиденциальности</string>
-    <string name="user_settings_about_privacy_policy_description">Какие данные собираются и зачем</string>
-    <string name="user_settings_about_source_code">Исходный код</string>
-    <string name="user_settings_about_source_code_description">Код проекта и сообщения об ошибках на GitHub</string>
     <string name="user_settings_about_licenses">Лицензии Open Source</string>
     <string name="user_settings_about_licenses_description">Лицензии стороннего программного обеспечения</string>
     <string name="user_settings_about_version">Версия</string>

@@ -48,4 +48,5 @@ internal fun Step.toPhase() = BrewPhase(
     ramp = ramp,
     exitConditions = exitConditions,
     conditionOperator = conditionOperator,
+    adaptiveFlowProbe = adaptiveFlowProbe,
 )

@@ -2,11 +2,14 @@ package app.geeflow.presentation.feature.user.settings
 
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy.Companion.detailPane
-import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy.Companion.listPane
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import app.geeflow.navigation.NavFeature
 import app.geeflow.navigation.Navigator
+import app.geeflow.navigation.destination.ProfileSettings
+import app.geeflow.navigation.destination.BrewingPreferencesSettings
+import app.geeflow.navigation.destination.AppearanceSettings
+import app.geeflow.navigation.destination.AboutSettings
 import app.geeflow.navigation.destination.UserSettings
 import app.geeflow.presentation.feature.user.settings.about.AboutScreen
 import app.geeflow.presentation.feature.user.settings.about.AboutViewModel
@@ -15,7 +18,6 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsViewModel
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesScreen
 import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesViewModel
-import app.geeflow.presentation.feature.user.settings.main.UserSettingsDetailsPlaceholder
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsScreen
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsViewModel
 import app.geeflow.presentation.feature.user.settings.profile.ProfileSettingsScreen
@@ -27,18 +29,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Single
 
 @Serializable
-internal object ProfileSettings : NavKey
-
-@Serializable
-internal object BrewingPreferencesSettings : NavKey
-
-@Serializable
-internal object AppearanceSettings : NavKey
-
-@Serializable
-internal object AboutSettings : NavKey
-
-@Serializable
 internal object LicensesList : NavKey
 
 @Single
@@ -46,7 +36,7 @@ internal class UserSettingsNavFeature : NavFeature {
 
     @OptIn(ExperimentalMaterial3AdaptiveApi::class)
     override fun EntryProviderScope<NavKey>.provideEntries(navigator: Navigator) {
-        entry<UserSettings>(metadata = listPane(detailPlaceholder = { UserSettingsDetailsPlaceholder() })) {
+        entry<UserSettings> {
             val viewModel = koinViewModel<UserSettingsViewModel>()
             UserSettingsScreen(viewModel, navigator)
         }
@@ -63,7 +53,8 @@ internal class UserSettingsNavFeature : NavFeature {
 
         entry<AppearanceSettings>(metadata = detailPane()) {
             val viewModel = koinViewModel<AppearanceSettingsViewModel>()
-            AppearanceSettingsScreen(viewModel, navigator)
+            val preferences = koinViewModel<BrewingPreferencesViewModel>()
+            AppearanceSettingsScreen(viewModel, preferences, navigator)
         }
 
         entry<AboutSettings>(metadata = detailPane()) {

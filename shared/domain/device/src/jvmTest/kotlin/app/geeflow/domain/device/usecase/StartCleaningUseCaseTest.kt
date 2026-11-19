@@ -5,6 +5,9 @@ import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewHistoryEntry
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.BookooScalePacketEvent
+import app.geeflow.data.device.BookooScaleState
+import app.geeflow.data.device.ScaleReadingSource
 import app.geeflow.data.device.DeviceMaintenanceControl
 import app.geeflow.data.device.MaintenanceSettingsRepository
 import app.geeflow.data.device.impl.controller.DemoDeviceController
@@ -20,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlin.test.AfterTest
@@ -82,7 +86,15 @@ class StartCleaningUseCaseTest {
         override fun deleteBrew(id: Long) = Unit
     }
     private val start = StartCleaningUseCase(
-        coordinator = ProfileExecutionCoordinator(provider, scope, ProfileExecutionRecorder(history)),
+        coordinator = ProfileExecutionCoordinator(
+            provider,
+            object : ScaleReadingSource {
+                override val state = MutableStateFlow(BookooScaleState())
+                override val packets = MutableSharedFlow<BookooScalePacketEvent>()
+            },
+            scope,
+            ProfileExecutionRecorder(history),
+        ),
         maintenance = repository,
         provider = provider,
     )

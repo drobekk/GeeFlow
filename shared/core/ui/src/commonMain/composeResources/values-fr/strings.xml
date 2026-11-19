@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Retour</string>
     <string name="common_close">Fermer</string>
     <string name="common_confirm">Confirmer</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Perte de communication avec la machine en cours d’extraction.</string>
     <string name="error_required_measurement_lost">Un capteur requis a été déconnecté.</string>
     <string name="error_profile_unavailable">Profil incompatible avec l’état actuel de la machine.</string>
-    <string name="agreement_prefix">J’accepte les </string>
-    <string name="agreement_terms">Conditions d’utilisation</string>
-    <string name="agreement_and"> et la </string>
-    <string name="agreement_privacy">Politique de confidentialité</string>
     <string name="maintenance_daily">Nettoyage quotidien</string>
     <string name="maintenance_deep">Nettoyage approfondi</string>
     <string name="maintenance_daily_description">Rinçage de routine pour éliminer les résidus de café du groupe.</string>

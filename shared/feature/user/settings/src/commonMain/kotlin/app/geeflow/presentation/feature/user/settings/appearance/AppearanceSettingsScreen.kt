@@ -40,6 +40,9 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.ScreensaverTimeoutClicked
 import app.geeflow.presentation.feature.user.settings.appearance.components.AppearanceDialogs
+import app.geeflow.presentation.feature.user.settings.brewing.BrewingContent
+import app.geeflow.presentation.feature.user.settings.brewing.BrewingPreferencesViewModel
+import app.geeflow.presentation.feature.user.settings.brewing.components.BrewingPreferencesDialogs
 import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowListItem
 import app.geeflow.ui.components.GeeFlowNavigationListItem
@@ -73,26 +76,32 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun AppearanceSettingsScreen(
     viewModel: AppearanceSettingsViewModel,
+    preferences: BrewingPreferencesViewModel,
     navigator: Navigator,
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val brewing by preferences.viewState.collectAsStateWithLifecycle()
     val languageLauncher = rememberLanguageSettingsLauncher()
 
     NavigatorEffect(navigator, viewModel.navEvent)
+    NavigatorEffect(navigator, preferences.navEvent)
 
     Content(
         viewState = viewState,
         isLanguageSupported = languageLauncher != null,
         onLanguageClicked = { languageLauncher?.invoke() },
         onEvent = viewModel::handleEvent,
+        preferencesContent = { BrewingContent(brewing, preferences::handleEvent) },
     )
 
+    BrewingPreferencesDialogs(brewing.dialog, brewing.temperatureUnit, preferences::handleEvent)
     AppearanceDialogs(
         dialog = viewState.dialog,
         currentThemeMode = viewState.themeMode,
         currentAppTheme = viewState.appTheme,
         currentPaletteStyle = viewState.paletteStyle,
         currentCustomSeedColor = viewState.customSeedColor,
+        currentScreensaverTimeout = viewState.screensaverTimeoutMinutes,
         onEvent = viewModel::handleEvent,
     )
 }
@@ -104,26 +113,25 @@ private fun Content(
     isLanguageSupported: Boolean = false,
     onLanguageClicked: () -> Unit = {},
     onEvent: (AppearanceSettingsEvent) -> Unit = {},
+    preferencesContent: @Composable () -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
         title = stringResource(Res.string.user_settings_appearance_title),
-        subtitle = stringResource(Res.string.user_settings_appearance_description),
+        plain = true,
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
         modifier = Modifier,
         content = { paddingValues ->
-            AppearanceContent(
-                viewState = viewState,
-                isLanguageSupported = isLanguageSupported,
-                onLanguageClicked = onLanguageClicked,
-                onEvent = onEvent,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+            Column(
+                Modifier.fillMaxSize()
                     .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
                     .padding(vertical = GeeFlowTheme.spacing.contentVertical),
-            )
+            ) {
+                AppearanceContent(viewState, isLanguageSupported, onLanguageClicked, onEvent)
+                preferencesContent()
+            }
         },
     )
 }

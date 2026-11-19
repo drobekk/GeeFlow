@@ -4,23 +4,26 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
@@ -64,11 +67,12 @@ import geeflow.shared.core.ui.generated.resources.common_open_settings
 import geeflow.shared.core.ui.generated.resources.permission_bluetooth_missing
 import geeflow.shared.feature.device.add.generated.resources.Res
 import geeflow.shared.feature.device.add.generated.resources.add_device_demo
+import geeflow.shared.feature.device.add.generated.resources.add_device_method_manual
+import geeflow.shared.feature.device.add.generated.resources.add_device_method_nearby
+import geeflow.shared.feature.device.add.generated.resources.add_device_method_qr
 import geeflow.shared.feature.device.add.generated.resources.add_device_screen_description
 import geeflow.shared.feature.device.add.generated.resources.add_device_screen_empty
 import geeflow.shared.feature.device.add.generated.resources.add_device_screen_no_camera_permission
-import geeflow.shared.feature.device.add.generated.resources.add_device_screen_scan_qr
-import geeflow.shared.feature.device.add.generated.resources.add_device_screen_show_nearby
 import geeflow.shared.feature.device.add.generated.resources.add_device_screen_title
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -127,15 +131,6 @@ private fun AddDeviceContent(
         navIconClick = { onEvent(BackClicked) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         scrollBehavior = scrollBehavior,
-        floatingActionButton = {
-            if (viewState.method.changeMethodButtonVisible) {
-                FloatingActionButton(
-                    viewState = viewState,
-                    onEvent = onEvent,
-                )
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
         content = {
             Content(
                 viewState = viewState,
@@ -158,53 +153,52 @@ private fun Content(
     onEvent: (AddDeviceEvent) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    val modifier = Modifier
-
-    AnimatedContent(
-        modifier = Modifier.fillMaxSize(),
-        targetState = viewState.method,
-        contentKey = { it::class },
-    ) { method ->
-        when (method) {
-            is NearbyDevices -> NearbyDevicesList(
-                model = method,
-                onEvent = onEvent,
-                contentPadding = contentPadding,
-                modifier = modifier,
+    Column(Modifier.fillMaxSize().padding(contentPadding)) {
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FilterChip(
+                selected = viewState.method is NearbyDevices,
+                onClick = { onEvent(ShowNearbyDevicesClicked) },
+                label = { Text(stringResource(Res.string.add_device_method_nearby)) },
+                modifier = Modifier.heightIn(min = 48.dp),
             )
-
-            is QrCodeScanner -> Scanner(
-                model = method,
-                onEvent = onEvent,
-                contentPadding = contentPadding,
+            if (viewState.qrCodeAvailable) {
+                FilterChip(
+                    selected = viewState.method is QrCodeScanner,
+                    onClick = { onEvent(ShowQrCodeScannerClicked) },
+                    label = { Text(stringResource(Res.string.add_device_method_qr)) },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                )
+            }
+            FilterChip(
+                selected = viewState.method == AddDeviceViewState.Method.Manual,
+                onClick = { onEvent(AddDeviceEvent.ShowManualEntryClicked) },
+                label = { Text(stringResource(Res.string.add_device_method_manual)) },
+                modifier = Modifier.heightIn(min = 48.dp),
             )
+        }
+        AnimatedContent(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            targetState = viewState.method,
+            contentKey = { it::class },
+        ) { method ->
+            when (method) {
+                is NearbyDevices -> NearbyDevicesList(
+                    model = method,
+                    onEvent = onEvent,
+                    contentPadding = PaddingValues(0.dp),
+                )
+                is QrCodeScanner -> Scanner(
+                    model = method,
+                    onEvent = onEvent,
+                    contentPadding = PaddingValues(0.dp),
+                )
+                AddDeviceViewState.Method.Manual -> ManualDeviceEntry(viewState.manual, onEvent)
+            }
         }
     }
-}
-
-@Composable
-private fun FloatingActionButton(
-    viewState: AddDeviceViewState,
-    onEvent: (AddDeviceEvent) -> Unit,
-    modifier: Modifier = Modifier,
-) = FloatingActionButton(
-    modifier = modifier,
-    onClick = {
-        when (viewState.method) {
-            is NearbyDevices -> onEvent(ShowQrCodeScannerClicked)
-            is QrCodeScanner -> onEvent(ShowNearbyDevicesClicked)
-        }
-    },
-) {
-    Text(
-        text = stringResource(
-            when (viewState.method) {
-                is NearbyDevices -> Res.string.add_device_screen_scan_qr
-                is QrCodeScanner -> Res.string.add_device_screen_show_nearby
-            },
-        ),
-        modifier = Modifier.padding(horizontal = 24.dp),
-    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

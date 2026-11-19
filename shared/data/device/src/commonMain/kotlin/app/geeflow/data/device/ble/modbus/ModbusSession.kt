@@ -12,9 +12,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
+
+internal fun interface ModbusSessionDiagnosticSink {
+    fun event(name: String, fields: Map<String, String>)
+}
 
 /**
  * One Modbus session against a single peripheral and request/response characteristic pair.
@@ -33,6 +38,7 @@ class ModbusSession internal constructor(
     private val defaultTimeout: Duration,
     private val completeFrames: Boolean = false,
     private val sessionJob: Job? = null,
+    private val diagnosticSink: ModbusSessionDiagnosticSink? = null,
 ) {
     private val mutex = Mutex()
     private var needsDrain = false
@@ -136,14 +142,31 @@ class ModbusSession internal constructor(
                     "Request unit/function mismatch"
                 }
                 if (needsDrain) drainAfterTimeout()
+                diagnosticSink.recordEvent("modbus_tx", mapOf("hex" to payload.toHex(), "length" to payload.size.toString()))
+                var frameParser: ModbusNotifications? = null
                 try {
                     withTimeout(timeout) {
                         coroutineScope {
-                            val frames = ModbusNotifications()
+                            val frames = ModbusNotifications { frame, crcValid ->
+                                diagnosticSink.recordEvent(
+                                    "modbus_response_frame",
+                                    mapOf("hex" to frame.toHex(), "length" to frame.size.toString(), "crcValid" to crcValid.toString()),
+                                )
+                            }
+                            frameParser = frames
                             var matched: ByteArray? = null
                             val ack = async(start = CoroutineStart.UNDISPATCHED) {
                                 notifications.first { bytes ->
-                                    matched = (if (completeFrames) listOf(bytes) else frames.receive(bytes)).firstOrNull {
+                                    val receivedFrames = if (completeFrames) {
+                                        diagnosticSink.recordEvent(
+                                            "modbus_response_frame",
+                                            mapOf("hex" to bytes.toHex(), "length" to bytes.size.toString(), "crcValid" to ModbusCrc.verify(bytes).toString()),
+                                        )
+                                        listOf(bytes)
+                                    } else {
+                                        frames.receive(bytes)
+                                    }
+                                    matched = receivedFrames.firstOrNull {
                                         matchResponse(it, payload, expectedFc, addressMatcher)
                                     }
                                     matched != null
@@ -152,10 +175,30 @@ class ModbusSession internal constructor(
                             }
                             write(payload)
                             val response = ack.await()
-                            ModbusFrame.parseResponse(response, unitId, expectedFc)
+                            try {
+                                ModbusFrame.parseResponse(response, unitId, expectedFc)
+                                diagnosticSink.recordEvent(
+                                    "modbus_response_validated",
+                                    mapOf("hex" to response.toHex(), "length" to response.size.toString(), "crcValid" to ModbusCrc.verify(response).toString()),
+                                )
+                            } catch (failure: Throwable) {
+                                diagnosticSink.recordEvent(
+                                    "modbus_response_rejected",
+                                    mapOf("hex" to response.toHex(), "crcValid" to ModbusCrc.verify(response).toString(), "error" to (failure.message ?: failure::class.simpleName.orEmpty())),
+                                )
+                                throw failure
+                            }
                             response
                         }
                     }
+                } catch (exception: TimeoutCancellationException) {
+                    val pending = frameParser?.pendingSnapshot() ?: byteArrayOf()
+                    diagnosticSink.recordEvent(
+                        "modbus_response_timeout",
+                        mapOf("timeoutMs" to timeout.inWholeMilliseconds.toString(), "pendingHex" to pending.toHex(), "pendingLength" to pending.size.toString()),
+                    )
+                    needsDrain = true
+                    throw exception
                 } catch (exception: CancellationException) {
                     needsDrain = true
                     throw exception
@@ -242,3 +285,9 @@ class ModbusSession internal constructor(
         private const val ADDRESS_LO_IDX = 3
     }
 }
+
+private fun ModbusSessionDiagnosticSink?.recordEvent(name: String, fields: Map<String, String>) {
+    runCatching { this?.event(name, fields) }
+}
+
+private fun ByteArray.toHex(): String = joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }

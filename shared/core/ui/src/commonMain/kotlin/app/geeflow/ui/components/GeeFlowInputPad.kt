@@ -13,7 +13,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +40,12 @@ import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_confirm
+import geeflow.shared.core.ui.generated.resources.common_decrease_value
 import geeflow.shared.core.ui.generated.resources.common_delete
 import geeflow.shared.core.ui.generated.resources.common_go_back
+import geeflow.shared.core.ui.generated.resources.common_increase_value
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
 private const val DecimalSeparator = "."
 private const val MaxDecimals = 1
@@ -51,11 +56,9 @@ private val DigitRows = listOf(
 )
 
 /**
- * Numeric pad for typing a value in place of dragging a [GeeFlowSlider]. Starts empty so the value
- * is typed outright rather than edited, cannot confirm outside [valueRange], and drops the
- * separator key when [allowDecimal] is off. Meant to take over its host's whole content: delete
- * sits beside the value, and the bottom-right cell of the grid backs out until something is typed,
- * then confirms.
+ * Numeric pad for typing a value in place of dragging a [GeeFlowSlider]. An optional current value
+ * can be shown and adjusted before editing. The pad cannot confirm outside [valueRange], and drops
+ * the separator key when [allowDecimal] is off.
  */
 @Composable
 fun GeeFlowInputPad(
@@ -66,8 +69,13 @@ fun GeeFlowInputPad(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary,
     allowDecimal: Boolean = true,
+    initialValue: Float? = null,
+    adjustmentStep: Float? = null,
 ) {
-    var input by remember { mutableStateOf("") }
+    var input by remember(initialValue, allowDecimal) {
+        mutableStateOf(initialValue?.toPadString(allowDecimal).orEmpty())
+    }
+    var replaceInitialValue by remember(initialValue) { mutableStateOf(initialValue != null) }
     val value = input.toFloatOrNull()
     val valid = value != null && value in valueRange
     val displayColor = when {
@@ -76,7 +84,20 @@ fun GeeFlowInputPad(
         else -> MaterialTheme.colorScheme.error
     }
 
-    val onKey: (String) -> Unit = { input = input.append(it, allowDecimal) }
+    val onKey: (String) -> Unit = {
+        input = if (replaceInitialValue) {
+            if (it == DecimalSeparator) "0$DecimalSeparator" else it
+        } else {
+            input.append(it, allowDecimal)
+        }
+        replaceInitialValue = false
+    }
+    val adjust: (Float) -> Unit = { delta ->
+        val adjusted = ((value ?: initialValue ?: valueRange.start) + delta)
+            .coerceIn(valueRange.start, valueRange.endInclusive)
+        input = adjusted.toPadString(allowDecimal)
+        replaceInitialValue = false
+    }
 
     Column(
         // Sized to the key grid so the header's delete key lines up with the third column.
@@ -87,8 +108,27 @@ fun GeeFlowInputPad(
             input = input,
             unit = unit,
             color = displayColor,
-            onDelete = { input = input.dropLast(1) },
+            onDelete = {
+                input = input.dropLast(1)
+                replaceInitialValue = false
+            },
         )
+
+        adjustmentStep?.takeIf { it > 0f }?.let { step ->
+            KeyRow {
+                PadIconKey(
+                    painter = rememberVectorPainter(Icons.Filled.Remove),
+                    contentDescription = stringResource(Res.string.common_decrease_value),
+                    onClick = { adjust(-step) },
+                )
+                Spacer(Modifier.width(KeyWidth))
+                PadIconKey(
+                    painter = rememberVectorPainter(Icons.Filled.Add),
+                    contentDescription = stringResource(Res.string.common_increase_value),
+                    onClick = { adjust(step) },
+                )
+            }
+        }
 
         DigitRows.forEach { row ->
             KeyRow { row.forEach { key -> PadKey(label = key, onClick = { onKey(key) }) } }
@@ -215,6 +255,12 @@ private fun String.append(key: String, allowDecimal: Boolean): String = when {
     contains(DecimalSeparator) && substringAfter(DecimalSeparator).length >= MaxDecimals -> this
     this == "0" && key != DecimalSeparator -> key
     else -> this + key
+}
+
+private fun Float.toPadString(allowDecimal: Boolean): String {
+    if (!allowDecimal) return roundToInt().toString()
+    val rounded = (this * 10f).roundToInt() / 10f
+    return if (rounded % 1f == 0f) rounded.toInt().toString() else rounded.toString()
 }
 
 private val KeyWidth = 64.dp

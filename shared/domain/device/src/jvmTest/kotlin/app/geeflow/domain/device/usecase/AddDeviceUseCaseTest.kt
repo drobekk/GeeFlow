@@ -37,4 +37,18 @@ class AddDeviceUseCaseTest {
         assertEquals(11L, result)
         verify(exactly = 1) { devices.addDevice(device) }
     }
+
+    @Test
+    fun `manual entry retains serial label and reuses existing address deduplication`() = runTest {
+        val manual = device.copy(
+            name = "LITA BA · AB00000001",
+            model = "LITA BA",
+            manufacturer = "Wendougee",
+            modelSource = "manual-entry"
+        )
+        every { devices.getDeviceByBleMacAddress(any()) } returns null
+        every { devices.addDevice(manual) } returns 12L
+        assertEquals(12L, AddDeviceUseCase(devices)(manual))
+        verify(exactly = 1) { devices.addDevice(manual) }
+    }
 }

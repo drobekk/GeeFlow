@@ -4,11 +4,12 @@ package app.geeflow.data.device.impl.controller
 
 import app.geeflow.data.brew.model.FreeHandControlMode
 import app.geeflow.data.device.DeviceBrewingControl
+import app.geeflow.data.device.LiveTargetDiagnosticWriter
 import app.geeflow.data.device.model.DeviceState.BrewStatus
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.sync.withLock
 
-internal class WendougeeBrewingControl(private val owner: WendougeeController) : DeviceBrewingControl {
+internal class WendougeeBrewingControl(private val owner: WendougeeController) : DeviceBrewingControl, LiveTargetDiagnosticWriter {
     private val deviceState get() = owner.mutableState
     private val brewOperationMutex get() = owner.operationMutex
     private fun requireSession() = owner.requireSession()
@@ -52,6 +53,20 @@ internal class WendougeeBrewingControl(private val owner: WendougeeController) :
         }
     }
 
+    override suspend fun setFreeVariableBrewingMode(mode: FreeHandControlMode) = brewOperationMutex.withLock {
+        require(mode != FreeHandControlMode.Flow || owner.profilingCapabilities.liveFlow != null) {
+            "Flow control is not supported by this model"
+        }
+        val active = requireSession()
+        refreshBrewStatus(active)
+        check(deviceState.value.brewStatus == BrewStatus.FreeVariable) { "Mode changes require an active free-variable brew" }
+        if (deviceState.value.freeHandControlMode == mode) return@withLock
+
+        active.modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, listOf(0, 0))
+        active.modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_MODE, if (mode == FreeHandControlMode.Flow) 1 else 0)
+        owner.updateState { it.copy(freeHandControlMode = mode) }
+    }
+
     override suspend fun stopFreeVariableBrewing() = brewOperationMutex.withLock {
         val active = requireSession()
         // The brew command toggles a coil. Refresh status before every attempt to avoid restarting an idle machine.
@@ -80,5 +95,32 @@ internal class WendougeeBrewingControl(private val owner: WendougeeController) :
             listOf(0, (flow * SENSOR_SCALE_FACTOR).toInt()),
         )
         Logger.withTag(TAG).d { "Free variable flow target set to $flow ml/s" }
+    }
+
+    override suspend fun writeLiveTargetWords(words: List<Int>) {
+        require(words.size == 2 && words.all { it in 0..120 }) {
+            "Diagnostic target must contain two words between 0 and 120"
+        }
+        val active = requireSession()
+        refreshBrewStatus(active)
+        check(deviceState.value.brewStatus == BrewStatus.FreeVariable) {
+            "Diagnostic target writes require an active free-variable brew"
+        }
+        active.modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, words)
+    }
+
+    override suspend fun writeLiveModeValue(modeValue: Int, logicalMode: FreeHandControlMode) = brewOperationMutex.withLock {
+        require(modeValue in 0..1) { "Diagnostic mode value must be 0 or 1" }
+        require(logicalMode != FreeHandControlMode.Flow || owner.profilingCapabilities.liveFlow != null) {
+            "Flow control is not supported by this model"
+        }
+        val active = requireSession()
+        refreshBrewStatus(active)
+        check(deviceState.value.brewStatus == BrewStatus.FreeVariable) {
+            "Diagnostic mode writes require an active free-variable brew"
+        }
+        active.modbus.writeMultipleRegisters(WendougeeRegisters.FREE_VAR_TARGET_BASE, listOf(0, 0))
+        active.modbus.writeSingleRegister(WendougeeRegisters.FREE_VAR_MODE, modeValue)
+        owner.updateState { it.copy(freeHandControlMode = logicalMode) }
     }
 }

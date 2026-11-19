@@ -15,7 +15,6 @@ sealed interface AppearanceSettingsEvent {
     data class PaletteStyleChanged(val style: AppPaletteStyle) : AppearanceSettingsEvent
     data object CustomColorClicked : AppearanceSettingsEvent
     data class CustomColorChanged(val colorArgb: Int) : AppearanceSettingsEvent
-    data class CustomColorConfirmed(val colorArgb: Int) : AppearanceSettingsEvent
     data class FullScreenChanged(val enabled: Boolean) : AppearanceSettingsEvent
     data class KeepScreenOnChanged(val enabled: Boolean) : AppearanceSettingsEvent
     data class KeepScreenOnOnlyWhileChargingChanged(val enabled: Boolean) : AppearanceSettingsEvent

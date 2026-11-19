@@ -30,8 +30,6 @@ import app.geeflow.data.device.model.CleaningReminder
 import app.geeflow.data.device.model.CleaningType
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
-import app.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
-import app.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
 import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningCountChanged
 import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningRestChanged
 import app.geeflow.presentation.feature.device.settings.maintenance.MaintenanceSettingsEvent.CleaningTimeChanged
@@ -112,31 +110,15 @@ private fun MaintenanceSettingsContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
+        plain = true,
         title = stringResource(Res.string.device_settings_maintenance),
-        subtitle = stringResource(Res.string.device_settings_maintenance_description),
         navIconClick = { onEvent(CloseClicked) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            SettingsApplyFab(
-                loading = viewState.applyButtonLoading,
-                visible = viewState.applyButtonVisible,
-                onClick = { onEvent(MaintenanceSettingsEvent.ApplyClicked) },
-            )
-        },
         scrollBehavior = scrollBehavior,
-        content = {
-            AdaptiveContent(
-                viewState = viewState,
-                onEvent = onEvent,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(it)
-                    .padding(bottom = SettingsApplyFabPadding),
-            )
+        content = { padding ->
+            AdaptiveContent(viewState, onEvent, Modifier.fillMaxSize().padding(padding))
         },
-        modifier = Modifier
-            .imePadding(),
+        modifier = Modifier.imePadding(),
     )
 }
 
@@ -149,16 +131,21 @@ private fun AdaptiveContent(
     BoxWithConstraints(modifier) {
         if (isWidthLarge()) {
             Row(
-                Modifier.padding(
-                    vertical = GeeFlowTheme.spacing.contentVertical,
-                ),
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = GeeFlowTheme.spacing.contentVertical),
             ) {
                 Column(Modifier.weight(1f)) { CleaningSections(viewState, onEvent) }
                 HorizontalSpacer(24.dp)
                 Column(Modifier.weight(1f)) { WaterAlarmSection(viewState.waterAlarm, onEvent) }
             }
         } else {
-            CompactContent(viewState, onEvent)
+            CompactContent(
+                viewState,
+                onEvent,
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+            )
         }
     }
 }
@@ -231,6 +218,7 @@ private fun CleaningSection(
         value = "${cleaning.timeSec} ${stringResource(CoreRes.string.common_sec)}",
         items = cleaning.timeList,
         unit = stringResource(CoreRes.string.common_sec),
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(CleaningTimeChanged(it, type)) },
         modifier = Modifier.fillMaxWidth(),
     )
@@ -240,6 +228,7 @@ private fun CleaningSection(
         value = "${cleaning.restSec} ${stringResource(CoreRes.string.common_sec)}",
         items = cleaning.restList,
         unit = stringResource(CoreRes.string.common_sec),
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(CleaningRestChanged(it, type)) },
         modifier = Modifier.fillMaxWidth(),
     )
@@ -249,6 +238,7 @@ private fun CleaningSection(
         value = "${cleaning.count} ${stringResource(CoreRes.string.common_times)}",
         items = cleaning.countList,
         unit = stringResource(CoreRes.string.common_times),
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(CleaningCountChanged(it, type)) },
         modifier = Modifier.fillMaxWidth(),
     )
@@ -264,6 +254,7 @@ private fun CleaningSection(
         onCheckedChanged = {
             onEvent(MaintenanceSettingsEvent.ReminderChanged(type, cleaning.reminder.copy(enabled = it)))
         },
+        applyOnSelection = true,
         onValueConfirmed = {
             onEvent(MaintenanceSettingsEvent.ReminderChanged(type, cleaning.reminder.copy(intervalDays = it.toInt())))
         },

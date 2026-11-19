@@ -7,9 +7,7 @@ import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.destination.Intro
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import org.koin.core.annotation.Single
 
-@Single
 internal class IntroNavFeature : NavFeature {
     override val serializerModule: SerializersModule = SerializersModule {
         polymorphic(NavKey::class) {

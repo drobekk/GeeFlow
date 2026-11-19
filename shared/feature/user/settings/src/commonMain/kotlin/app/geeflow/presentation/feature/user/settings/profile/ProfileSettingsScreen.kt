@@ -91,7 +91,7 @@ private fun Content(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
         title = viewState.name.ifEmpty { stringResource(Res.string.user_settings_profile_title) },
-        subtitle = stringResource(Res.string.user_settings_profile_description),
+        plain = true,
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
         modifier = Modifier,

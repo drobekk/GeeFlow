@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Natrag</string>
     <string name="common_close">Zatvori</string>
     <string name="common_confirm">Potvrdi</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Prekinuta komunikacija s aparatom tijekom kuhanja.</string>
     <string name="error_required_measurement_lost">Potreban senzor je odspojen.</string>
     <string name="error_profile_unavailable">Profil nije kompatibilan s trenutnim stanjem aparata.</string>
-    <string name="agreement_prefix">Prihvaćam </string>
-    <string name="agreement_terms">Uvjete korištenja</string>
-    <string name="agreement_and"> i </string>
-    <string name="agreement_privacy">Pravila privatnosti</string>
     <string name="maintenance_daily">Dnevno čišćenje</string>
     <string name="maintenance_deep">Dubinsko čišćenje</string>
     <string name="maintenance_daily_description">Rutinsko ispiranje ostataka kave iz grupe.</string>

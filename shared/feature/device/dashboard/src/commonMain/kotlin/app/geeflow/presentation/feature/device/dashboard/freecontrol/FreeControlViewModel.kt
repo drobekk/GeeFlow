@@ -2,12 +2,14 @@
 
 package app.geeflow.presentation.feature.device.dashboard.freecontrol
 
+import androidx.lifecycle.viewModelScope
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
 import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.data.brew.model.BrewSession
 import app.geeflow.data.device.model.DeviceState
+import app.geeflow.data.device.model.isDemo
 import app.geeflow.data.user.model.ChartType
 import app.geeflow.domain.brew.usecase.ObserveBrewDataUseCase
 import app.geeflow.domain.brew.usecase.SaveFreeVariableProfileUseCase
@@ -45,12 +47,11 @@ import geeflow.shared.feature.device.dashboard.generated.resources.free_control_
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_recording_too_long
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import kotlin.time.Duration.Companion.milliseconds
 
 @KoinViewModel
 internal class FreeControlViewModel(
@@ -65,6 +66,8 @@ internal class FreeControlViewModel(
     private val setFreeBrewFlow: SetFreeBrewFlowUseCase,
     private val saveFreeVariableProfile: SaveFreeVariableProfileUseCase,
     private val getDeviceConstraints: GetDeviceConstraintsUseCase,
+    private val getFlowChartRange: app.geeflow.domain.user.usecase.GetFlowChartRangeUseCase,
+    private val setFlowChartRange: app.geeflow.domain.user.usecase.SetFlowChartRangeUseCase,
     private val getVisibleCharts: GetVisibleChartsUseCase,
     private val toggleChartVisibility: ToggleChartVisibilityUseCase,
     private val appScope: CoroutineScope,
@@ -73,12 +76,19 @@ internal class FreeControlViewModel(
 ) {
 
     private var lastSession: BrewSession? = null
-    private var targetUpdateJob: Job? = null
+    private val targetSender = ManualTargetSender<Pair<ControlMode, Float>>(viewModelScope) { (mode, value) ->
+        try {
+            if (mode == ControlMode.Pressure) setFreeBrewPressure(args.deviceId, value) else setFreeBrewFlow(args.deviceId, value)
+        } catch (error: Exception) {
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            onError(error)
+        }
+    }
 
     init {
         launch {
             observeDevice(args.deviceId).collect { device ->
-                device?.let { modify { copy(deviceName = it.name) } }
+                device?.let { modify { copy(deviceName = it.name, isDemo = it.isDemo) } }
             }
         }
         launch {
@@ -92,16 +102,18 @@ internal class FreeControlViewModel(
                 brewSessionDataChanged(session)
             }
         }
+        launch { getFlowChartRange().collect { range -> modify { copy(flowChartRange = range) } } }
         launch { getVisibleCharts().collect(::chartsVisibilityChanged) }
     }
 
     fun handleEvent(event: FreeControlEvent) = when (event) {
+        is FreeControlEvent.FlowRangeSelected -> launch { setFlowChartRange(event.range) }
         is BackClicked -> navigate(NavEvent.Back)
         is ModeChanged -> onModeChanged(event)
         is TargetChanged -> onTargetChanged(event.value)
         is StartClicked -> startBrewing()
         is StopClicked -> {
-            targetUpdateJob?.cancel()
+            targetSender.cancel()
             launchCatching(::onError) { stopFreeVariableBrewing(args.deviceId) }
         }
 
@@ -113,7 +125,7 @@ internal class FreeControlViewModel(
     }
 
     private fun startBrewing(): Job = launchCatching(::onError) {
-        targetUpdateJob?.cancel()
+        targetSender.cancel()
         modify { copy(sessionCompleted = false, brewButtonState = BrewButtonState.Syncing) }
         val isFlow = viewState.value.mode == ControlMode.Flow
         startFreeVariableBrewing(args.deviceId, isFlow)
@@ -127,6 +139,7 @@ internal class FreeControlViewModel(
     private fun onModeChanged(event: ModeChanged) {
         if (event.mode == ControlMode.Flow && !viewState.value.flowControlSupported) return
         if (viewState.value.brewButtonState == BrewButtonState.Idle) {
+            targetSender.cancel()
             modify { copy(mode = event.mode) }
         }
     }
@@ -137,17 +150,7 @@ internal class FreeControlViewModel(
         } else {
             modify { copy(flowTarget = value) }
         }
-        targetUpdateJob?.cancel()
-        targetUpdateJob = launch {
-            delay(TARGET_UPDATE_DEBOUNCE_MS.milliseconds)
-            launchCatching(::onError) {
-                if (viewState.value.mode == ControlMode.Pressure) {
-                    setFreeBrewPressure(args.deviceId, viewState.value.pressureTarget)
-                } else {
-                    setFreeBrewFlow(args.deviceId, viewState.value.flowTarget)
-                }
-            }
-        }
+        targetSender.submit(viewState.value.mode to value)
     }
 
     private fun saveSession() {
@@ -161,10 +164,14 @@ internal class FreeControlViewModel(
     }
 
     private fun updateFromDeviceState(state: DeviceState) {
+        if (state.connectionStatus != DeviceState.ConnectionStatus.Connected) targetSender.cancel()
         val wasActive = viewState.value.brewButtonState == BrewButtonState.Brewing
         val isNowIdle = state.brewStatus == DeviceState.BrewStatus.Idle
         modify {
             copy(
+                currentPressure = state.pressure?.toString(),
+                connected = state.connectionStatus == DeviceState.ConnectionStatus.Connected,
+                scaleConnected = state.smartScale?.isConnected == true,
                 brewButtonState = if (state.brewStatus == DeviceState.BrewStatus.FreeVariable) {
                     BrewButtonState.Brewing
                 } else if (!isNowIdle) {
@@ -201,6 +208,7 @@ internal class FreeControlViewModel(
     }
 
     override fun onCleared() {
+        targetSender.cancel()
         super.onCleared()
         if (viewState.value.brewButtonState == BrewButtonState.Brewing) {
             appScope.launch {
@@ -208,9 +216,5 @@ internal class FreeControlViewModel(
                     .onFailure { Logger.e(throwable = it) { "${this::class.simpleName}" } }
             }
         }
-    }
-
-    companion object {
-        private const val TARGET_UPDATE_DEBOUNCE_MS = 200L
     }
 }

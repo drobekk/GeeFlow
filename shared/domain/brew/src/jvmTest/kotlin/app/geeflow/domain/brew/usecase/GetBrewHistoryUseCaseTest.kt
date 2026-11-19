@@ -30,4 +30,15 @@ class GetBrewHistoryUseCaseTest {
         assertEquals(emptyList(), result)
         verify(exactly = 1) { history.getBrews(7, "Shot", 20, 40) }
     }
+
+    @Test
+    fun `device history query includes the selected device id`() = runTest {
+        every { history.getBrewsForDevice(7, 12, "Londinium", 20, 40) } returns emptyList()
+        val useCase = GetBrewHistoryUseCase(history, users)
+
+        val result = useCase.forDevice(12, "Londinium", 20, 40)
+
+        assertEquals(emptyList(), result)
+        verify(exactly = 1) { history.getBrewsForDevice(7, 12, "Londinium", 20, 40) }
+    }
 }

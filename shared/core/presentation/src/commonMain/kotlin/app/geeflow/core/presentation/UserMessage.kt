@@ -13,6 +13,8 @@ import app.geeflow.domain.exception.RecordingNoVolumeException
 import app.geeflow.domain.exception.RequiredMeasurementLostException
 import app.geeflow.domain.exception.ScaleNotConnectedException
 import app.geeflow.domain.exception.TelemetryTimeoutException
+import app.geeflow.domain.exception.YieldScaleNotReadyException
+import app.geeflow.domain.exception.YieldScaleProblem
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.error_app_backgrounded_brew
 import geeflow.shared.core.ui.generated.resources.error_connect_device
@@ -28,6 +30,10 @@ import geeflow.shared.core.ui.generated.resources.error_recording_too_complex
 import geeflow.shared.core.ui.generated.resources.error_required_measurement_lost
 import geeflow.shared.core.ui.generated.resources.error_scale_not_connected
 import geeflow.shared.core.ui.generated.resources.error_telemetry_timeout
+import geeflow.shared.core.ui.generated.resources.error_yield_scale_missing
+import geeflow.shared.core.ui.generated.resources.error_yield_scale_not_tared
+import geeflow.shared.core.ui.generated.resources.error_yield_scale_stale
+import geeflow.shared.core.ui.generated.resources.error_yield_scale_waiting
 import org.jetbrains.compose.resources.getString
 
 suspend fun Throwable.toUserMessage(): String = when (this) {
@@ -43,6 +49,14 @@ suspend fun Throwable.toUserMessage(): String = when (this) {
     is MachineControlChangedException -> getString(Res.string.error_machine_control_changed)
     is TelemetryTimeoutException -> getString(Res.string.error_telemetry_timeout)
     is RequiredMeasurementLostException -> getString(Res.string.error_required_measurement_lost)
+    is YieldScaleNotReadyException -> getString(
+        when (problem) {
+            YieldScaleProblem.Missing -> Res.string.error_yield_scale_missing
+            YieldScaleProblem.WaitingForReading -> Res.string.error_yield_scale_waiting
+            YieldScaleProblem.StaleReading -> Res.string.error_yield_scale_stale
+            YieldScaleProblem.NotTared -> Res.string.error_yield_scale_not_tared
+        },
+    )
     is ProfileUnavailableException -> getString(Res.string.error_profile_unavailable)
     else -> getString(Res.string.error_generic)
 }

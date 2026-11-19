@@ -158,15 +158,19 @@ internal class BrewChartMarker(
         val canvasX = start + direction * layerDimensions.xSpacing * ((time - ranges.minX) / ranges.xStep).toFloat()
         if (canvasX < layerBounds.left || canvasX > layerBounds.right) return
         val yRange = ranges.getYRange(null)
-        val values = series.mapNotNull { item -> item.valueAt(time)?.let { item to it } }
+        val values = series.mapNotNull { item ->
+            val chartValue = item.valueAt(time) ?: return@mapNotNull null
+            val labelValue = item.labelAt(time) ?: return@mapNotNull null
+            Triple(item, chartValue, labelValue)
+        }
         if (values.isEmpty()) return
         val target = BrewMarkerTarget(
             x = time,
             canvasX = canvasX,
-            points = values.map { (item, value) ->
+            points = values.map { (item, chartValue, labelValue) ->
                 LineCartesianLayerMarkerTarget.Point(
-                    entry = LineCartesianLayerModel.Entry(time, value),
-                    canvasY = layerBounds.bottom - ((value - yRange.minY) / yRange.length * layerBounds.height).toFloat(),
+                    entry = LineCartesianLayerModel.Entry(time, labelValue),
+                    canvasY = layerBounds.bottom - ((chartValue - yRange.minY) / yRange.length * layerBounds.height).toFloat(),
                     color = item.color,
                 )
             },

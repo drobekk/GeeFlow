@@ -23,7 +23,6 @@
     <string name="device_dashboard_connecting">Connecting</string>
 
     <!-- Device Settings Connectivity -->
-    <string name="device_settings_connectivity_smart_scale">Smart Scale</string>
     <string name="device_settings_connectivity_smart_scale_description">Search for nearby smart scales</string>
     <string name="device_settings_connectivity_searching">Searching for compatible devices…</string>
     <string name="device_settings_connectivity_not_found">Not seeing your device?</string>
@@ -42,11 +41,14 @@
     <string name="device_settings_treat_manual_as_flush">Treat as flush</string>
     <string name="device_settings_treat_manual_as_flush_description">No history or chart</string>
     <string name="device_settings_connectivity_enable_search">Enable search</string>
-    <string name="device_settings_connectivity_single_dose_description">Search for nearby grinders</string>
     <string name="device_settings_connectivity_disabled_info">Enable search to find and connect a device.</string>
     <string name="device_settings_connectivity_connection_help">Could not connect. Check that the accessory is on and nearby, then try again. If needed, restart the coffee machine.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Enable the control ring. Occasional interference may occur in some environments.</string>
     <string name="device_settings_firmware_version">Firmware: %1$d</string>
+    <string name="device_settings_profile">Profile</string>
+    <string name="device_settings_preferences">Brewing preferences</string>
+    <string name="device_settings_appearance">Appearance and preferences</string>
+    <string name="device_settings_about">About</string>
+    <string name="device_settings_switch_user">Switch user</string>
 </resources>

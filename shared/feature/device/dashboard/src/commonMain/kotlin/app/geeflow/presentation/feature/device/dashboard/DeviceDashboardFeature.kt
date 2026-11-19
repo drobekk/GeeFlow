@@ -19,6 +19,10 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardScreen
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewModel
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceModelGate
+import app.geeflow.presentation.feature.device.dashboard.livecontrol.LiveRecipeEditorRoute
+import app.geeflow.presentation.feature.device.dashboard.livecontrol.LiveRecipeEditorScreen
+import app.geeflow.presentation.feature.device.dashboard.livecontrol.LiveBrewTestRoute
+import app.geeflow.presentation.feature.device.dashboard.livecontrol.LiveBrewTestScreen
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorScreen
 import app.geeflow.presentation.feature.device.dashboard.profileeditor.ProfileEditorViewModel
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewModel
@@ -26,6 +30,7 @@ import app.geeflow.presentation.feature.device.dashboard.quickmaintenance.QuickM
 import app.geeflow.presentation.feature.device.dashboard.quickmaintenance.QuickMaintenanceViewModel
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsScreen
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewModel
+import app.geeflow.ui.theme.ClearScreenTheme
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -71,11 +76,15 @@ internal class DeviceDashboardNavFeature : NavFeature {
         }
         entry<FreeControl> {
             val viewModel = koinViewModel<FreeControlViewModel> { parametersOf(it) }
-            FreeControlScreen(viewModel, navigator)
+            ClearScreenTheme { FreeControlScreen(viewModel, navigator) }
         }
         entry<ProfileEditor> {
             val viewModel = koinViewModel<ProfileEditorViewModel> { parametersOf(it) }
             ProfileEditorScreen(viewModel, navigator)
+        }
+        entry<LiveRecipeEditorRoute> { LiveRecipeEditorScreen(it, navigator) }
+        entry<LiveBrewTestRoute> {
+            LiveBrewTestScreen(it.deviceId, navigator, it.recipeId)
         }
     }
 
@@ -86,6 +95,8 @@ internal class DeviceDashboardNavFeature : NavFeature {
             subclass(QuickMaintenance::class, QuickMaintenance.serializer())
             subclass(FreeControl::class, FreeControl.serializer())
             subclass(ProfileEditor::class, ProfileEditor.serializer())
+            subclass(LiveBrewTestRoute::class, LiveBrewTestRoute.serializer())
+            subclass(LiveRecipeEditorRoute::class, LiveRecipeEditorRoute.serializer())
         }
     }
 }

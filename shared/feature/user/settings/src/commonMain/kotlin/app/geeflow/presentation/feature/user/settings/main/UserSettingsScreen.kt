@@ -30,14 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.geeflow.commerce.NoOpTipFeature
-import app.geeflow.commerce.TipFeature
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
-import app.geeflow.presentation.feature.user.settings.AboutSettings
-import app.geeflow.presentation.feature.user.settings.AppearanceSettings
-import app.geeflow.presentation.feature.user.settings.BrewingPreferencesSettings
-import app.geeflow.presentation.feature.user.settings.ProfileSettings
+import app.geeflow.navigation.destination.AboutSettings
+import app.geeflow.navigation.destination.AppearanceSettings
+import app.geeflow.navigation.destination.BrewingPreferencesSettings
+import app.geeflow.navigation.destination.ProfileSettings
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.BackClicked
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ChangeUserClicked
 import app.geeflow.presentation.feature.user.settings.main.UserSettingsEvent.ItemClicked
@@ -59,7 +57,6 @@ import geeflow.shared.feature.user.settings.generated.resources.user_settings_pr
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_profile_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_subtitle
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 
 @Composable
 internal fun UserSettingsScreen(
@@ -77,13 +74,10 @@ internal fun UserSettingsScreen(
 
     NavigatorEffect(navigator, viewModel.navEvent)
 
-    val tipFeature = koinInject<TipFeature>()
-
     Content(
         viewState = viewState,
         selectedIndex = selectedIndex,
         onEvent = viewModel::handleEvent,
-        tipFeature = tipFeature,
     )
 }
 
@@ -93,7 +87,6 @@ private fun Content(
     viewState: UserSettingsViewState,
     selectedIndex: Int? = null,
     onEvent: (UserSettingsEvent) -> Unit = {},
-    tipFeature: TipFeature = NoOpTipFeature,
 ) {
     val expanded = isListDetailExpanded()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -135,15 +128,6 @@ private fun Content(
                         )
                         .clip(MaterialTheme.shapes.large),
                 )
-            }
-            if (tipFeature.isAvailable) {
-                item {
-                    tipFeature.TipSection(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                    )
-                }
             }
         }
     }

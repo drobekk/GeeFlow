@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Wstecz</string>
     <string name="common_close">Zamknij</string>
     <string name="common_confirm">Potwierdź</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Utracono łączność z ekspresem podczas parzenia.</string>
     <string name="error_required_measurement_lost">Odłączono czujnik wymagany przez ten profil.</string>
     <string name="error_profile_unavailable">Profil niezgodny z ekspresem w bieżącym stanie.</string>
-    <string name="agreement_prefix">Akceptuję </string>
-    <string name="agreement_terms">Regulamin</string>
-    <string name="agreement_and"> oraz </string>
-    <string name="agreement_privacy">Politykę prywatności</string>
     <string name="maintenance_daily">Codzienne czyszczenie</string>
     <string name="maintenance_deep">Głębokie czyszczenie</string>
     <string name="maintenance_daily_description">Rutynowe płukanie z resztek kawy w grupie.</string>

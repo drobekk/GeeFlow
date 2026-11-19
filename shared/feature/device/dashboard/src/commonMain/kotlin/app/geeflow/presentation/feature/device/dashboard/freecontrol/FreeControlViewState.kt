@@ -9,6 +9,11 @@ import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardVie
 
 data class FreeControlViewState(
     val deviceName: String = "",
+    val isDemo: Boolean = false,
+    val connected: Boolean = false,
+    val currentPressure: String? = null,
+    val scaleConnected: Boolean = false,
+    val flowChartRange: app.geeflow.data.user.model.FlowChartRange = app.geeflow.data.user.model.FlowChartRange.FOUR,
     val profileName: String = "",
     val mode: ControlMode = ControlMode.Pressure,
     val flowControlSupported: Boolean = true,

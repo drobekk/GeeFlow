@@ -78,6 +78,7 @@ internal fun BrewHeader(
     modifier: Modifier = Modifier,
     onHeaderClick: (() -> Unit)? = null,
     showEditIcon: Boolean = false,
+    showTime: Boolean = true,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -101,18 +102,20 @@ internal fun BrewHeader(
         } else {
             Spacer(modifier = Modifier.weight(1f))
         }
-        Text(
-            text = "${brew.time}s",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.surfaceContainerLow,
-                    MaterialTheme.shapes.small,
-                )
-                .padding(horizontal = 5.dp),
-        )
+        if (showTime) {
+            Text(
+                text = "${brew.time}s",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainerLow,
+                        MaterialTheme.shapes.small,
+                    )
+                    .padding(horizontal = 5.dp),
+            )
+        }
     }
 }
 
@@ -123,6 +126,7 @@ internal fun BrewStatistics(
     visibleCharts: Set<DashboardChartType>,
     onToggle: (DashboardChartType) -> Unit,
     modifier: Modifier = Modifier,
+    showPrimaryMetrics: Boolean = true,
 ) {
     val lastPoint = brew.data.values.lastOrNull()
 
@@ -147,68 +151,118 @@ internal fun BrewStatistics(
     val totalWeight = lastPoint?.weight ?: 0f
     val totalVolume = lastPoint?.volume ?: 0f
 
-    Row(
-        modifier = modifier.fillMaxWidth().height(50.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        SummaryItem(
-            modifier = Modifier.weight(1f),
-            values = listOf(
-                ValueEntry(
-                    value = currentPressure,
-                    unit = stringResource(Res.string.unit_bar),
-                    color = MaterialTheme.colorScheme.error,
-                    type = Pressure,
-                    showDivider = visibleCharts.contains(Pressure),
-                    showAvg = !isBrewing && brew.data.isNotEmpty(),
+    if (showPrimaryMetrics) {
+        Row(
+            modifier = modifier.fillMaxWidth().height(50.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SummaryItem(
+                modifier = Modifier.weight(1f),
+                values = listOf(
+                    ValueEntry(
+                        value = currentPressure,
+                        unit = stringResource(Res.string.unit_bar),
+                        color = GeeFlowTheme.colors.pressure,
+                        type = Pressure,
+                        showDivider = visibleCharts.contains(Pressure),
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
+                    ),
                 ),
-            ),
-            onToggle = onToggle,
-        )
-        SummaryItem(
-            modifier = Modifier.weight(2f),
-            values = listOf(
-                ValueEntry(
-                    value = currentWeightRate,
-                    unit = stringResource(Res.string.unit_grams_per_second),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    type = WeightRate,
-                    showDivider = visibleCharts.contains(WeightRate),
-                    showAvg = !isBrewing && brew.data.isNotEmpty(),
+                onToggle = onToggle,
+            )
+            SummaryItem(
+                modifier = Modifier.weight(2f),
+                values = listOf(
+                    ValueEntry(
+                        value = currentWeightRate,
+                        unit = stringResource(Res.string.unit_grams_per_second),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        type = WeightRate,
+                        showDivider = visibleCharts.contains(WeightRate),
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
+                    ),
+                    ValueEntry(
+                        value = currentFlow,
+                        unit = stringResource(Res.string.unit_milliliters_per_second),
+                        color = GeeFlowTheme.colors.water,
+                        type = FlowRate,
+                        showDivider = visibleCharts.contains(FlowRate),
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
+                    ),
                 ),
-                ValueEntry(
-                    value = currentFlow,
-                    unit = stringResource(Res.string.unit_milliliters_per_second),
-                    color = GeeFlowTheme.colors.water,
-                    type = FlowRate,
-                    showDivider = visibleCharts.contains(FlowRate),
-                    showAvg = !isBrewing && brew.data.isNotEmpty(),
+                onToggle = onToggle,
+            )
+            SummaryItem(
+                modifier = Modifier.weight(2f),
+                values = listOf(
+                    ValueEntry(
+                        value = totalWeight.toDouble(),
+                        unit = stringResource(Res.string.unit_grams),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        type = Weight,
+                        showDivider = visibleCharts.contains(Weight),
+                        showAvg = false,
+                    ),
+                    ValueEntry(
+                        value = totalVolume.toDouble(),
+                        unit = stringResource(Res.string.unit_milliliters),
+                        color = GeeFlowTheme.colors.waterVariant,
+                        type = Volume,
+                        showDivider = visibleCharts.contains(Volume),
+                        showAvg = false,
+                    ),
                 ),
-            ),
-            onToggle = onToggle,
-        )
-        SummaryItem(
-            modifier = Modifier.weight(2f),
-            values = listOf(
-                ValueEntry(
-                    value = totalWeight.toDouble(),
-                    unit = stringResource(Res.string.unit_grams),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    type = Weight,
-                    showDivider = visibleCharts.contains(Weight),
-                    showAvg = false,
+                onToggle = onToggle,
+            )
+        }
+    } else {
+        Row(
+            modifier = modifier.fillMaxWidth().height(50.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SummaryItem(
+                modifier = Modifier.weight(1f),
+                values = listOf(
+                    ValueEntry(
+                        value = currentWeightRate,
+                        unit = stringResource(Res.string.unit_grams_per_second),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        type = WeightRate,
+                        showDivider = visibleCharts.contains(WeightRate),
+                        showAvg = !isBrewing && brew.data.isNotEmpty(),
+                    ),
                 ),
-                ValueEntry(
-                    value = totalVolume.toDouble(),
-                    unit = stringResource(Res.string.unit_milliliters),
-                    color = GeeFlowTheme.colors.waterVariant,
-                    type = Volume,
-                    showDivider = visibleCharts.contains(Volume),
-                    showAvg = false,
+                onToggle = onToggle,
+            )
+            SummaryItem(
+                modifier = Modifier.weight(1f),
+                values = listOf(
+                    ValueEntry(
+                        value = totalWeight.toDouble(),
+                        unit = stringResource(Res.string.unit_grams),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        type = Weight,
+                        showDivider = visibleCharts.contains(Weight),
+                        showAvg = false,
+                    ),
                 ),
-            ),
-            onToggle = onToggle,
-        )
+                onToggle = onToggle,
+            )
+            SummaryItem(
+                modifier = Modifier.weight(1f),
+                values = listOf(
+                    ValueEntry(
+                        value = totalVolume.toDouble(),
+                        unit = stringResource(Res.string.unit_milliliters),
+                        color = GeeFlowTheme.colors.waterVariant,
+                        type = Volume,
+                        showDivider = visibleCharts.contains(Volume),
+                        showAvg = false,
+                    ),
+                ),
+                onToggle = onToggle,
+            )
+        }
     }
 }
 

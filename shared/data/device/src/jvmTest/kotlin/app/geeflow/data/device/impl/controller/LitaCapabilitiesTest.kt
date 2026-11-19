@@ -6,10 +6,12 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class LitaCapabilitiesTest {
     @Test
-    fun `when LA is selected then enables hot water without changing shared brewing capabilities`() = runTest {
+    fun `when LA is selected then enables hot water while BA retains verified scale control`() = runTest {
         val transport = mockk<WendougeeBleTransport>()
         val ba = WendougeeController(SupportedDevice.LitaBA, backgroundScope, transport)
         val la = WendougeeController(SupportedDevice.LitaLA, backgroundScope, transport)
@@ -17,7 +19,10 @@ class LitaCapabilitiesTest {
         val added = la.capabilities - ba.capabilities
 
         assertEquals(setOf(DeviceCapability.HotWaterDispensing), added)
-        assertEquals(ba.profilingCapabilities, la.profilingCapabilities)
+        assertFalse(la.profilingCapabilities.liveModeSwitch)
+        assertFalse(la.profilingCapabilities.timestampedCupWeight)
+        assertTrue(ba.profilingCapabilities.liveModeSwitch)
+        assertTrue(ba.profilingCapabilities.timestampedCupWeight)
     }
 
     @Test
@@ -36,6 +41,9 @@ class LitaCapabilitiesTest {
         )
 
         assertEquals(data.capabilities, lita.capabilities)
-        assertEquals(data.profilingCapabilities, lita.profilingCapabilities)
+        assertFalse(data.profilingCapabilities.liveModeSwitch)
+        assertTrue(lita.profilingCapabilities.liveModeSwitch)
+        assertTrue(lita.profilingCapabilities.verifiedSecondaryLimits)
+        assertTrue(lita.profilingCapabilities.timestampedCupWeight)
     }
 }

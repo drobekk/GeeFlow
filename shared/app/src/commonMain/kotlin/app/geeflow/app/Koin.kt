@@ -2,7 +2,6 @@ package app.geeflow.app
 
 import app.geeflow.PlatformModule
 import app.geeflow.app.db.AppDatabaseModule
-import app.geeflow.commerce.CommerceModule
 import app.geeflow.data.brew.DataBrewModule
 import app.geeflow.data.device.DataDeviceModule
 import app.geeflow.data.user.DataUserModule
@@ -13,7 +12,6 @@ import app.geeflow.presentation.feature.device.add.FeatureDeviceAddModule
 import app.geeflow.presentation.feature.device.dashboard.FeatureDeviceDashboardModule
 import app.geeflow.presentation.feature.device.list.FeatureDeviceListModule
 import app.geeflow.presentation.feature.device.settings.FeatureDeviceSettingsModule
-import app.geeflow.presentation.feature.intro.FeatureIntroModule
 import app.geeflow.presentation.feature.user.list.FeatureUserListModule
 import app.geeflow.presentation.feature.user.settings.FeatureUserSettingsModule
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +30,6 @@ class GeeFlowApp
 @Module(
     includes = [
         PlatformModule::class,
-        CommerceModule::class,
         AppDatabaseModule::class,
         DataBrewModule::class,
         DataUserModule::class,
@@ -44,7 +41,6 @@ class GeeFlowApp
         FeatureDeviceAddModule::class,
         FeatureDeviceDashboardModule::class,
         FeatureDeviceSettingsModule::class,
-        FeatureIntroModule::class,
         FeatureUserSettingsModule::class,
         FeatureUserListModule::class,
     ],

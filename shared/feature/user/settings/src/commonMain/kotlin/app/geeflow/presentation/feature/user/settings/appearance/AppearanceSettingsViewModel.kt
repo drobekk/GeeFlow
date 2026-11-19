@@ -20,7 +20,6 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.BackClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.CustomColorChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.CustomColorClicked
-import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.CustomColorConfirmed
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeClicked
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DialogDismissed
@@ -97,13 +96,6 @@ internal class AppearanceSettingsViewModel(
             modify { copy(customSeedColor = event.colorArgb) }
             colorPickerJob?.cancel()
             colorPickerJob = launch {
-                setCustomSeedColor(event.colorArgb)
-            }
-        }
-        is CustomColorConfirmed -> {
-            colorPickerJob?.cancel()
-            launch {
-                modify { copy(dialog = null) }
                 setCustomSeedColor(event.colorArgb)
             }
         }

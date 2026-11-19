@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
 import app.geeflow.ui.theme.colorscheme.EspressoSeed
+import app.geeflow.ui.theme.colorscheme.EspressoDarkSeed
 import com.materialkolor.PaletteStyle
 import com.materialkolor.rememberDynamicColorScheme
 
@@ -52,7 +53,7 @@ class GeeFlowPreviewWrapper : PreviewWrapperProvider {
         GeeFlowTheme(
             darkMode = isSystemInDarkTheme,
             colorScheme = rememberDynamicColorScheme(
-                seedColor = EspressoSeed,
+                seedColor = if (isSystemInDarkTheme) EspressoDarkSeed else EspressoSeed,
                 isDark = isSystemInDarkTheme,
                 style = PaletteStyle.TonalSpot,
             ),

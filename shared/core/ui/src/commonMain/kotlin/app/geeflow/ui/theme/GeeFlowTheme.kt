@@ -8,6 +8,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.theme.colorscheme.EspressoSeed
+import app.geeflow.ui.theme.colorscheme.EspressoDarkSeed
 import com.materialkolor.PaletteStyle
 import com.materialkolor.rememberDynamicColorScheme
 
@@ -47,7 +48,7 @@ fun GeeFlowThemePreview(
     GeeFlowTheme(
         darkMode = darkMode,
         colorScheme = rememberDynamicColorScheme(
-            seedColor = EspressoSeed,
+            seedColor = if (darkMode) EspressoDarkSeed else EspressoSeed,
             isDark = darkMode,
             style = PaletteStyle.TonalSpot,
         ),

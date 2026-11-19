@@ -8,95 +8,48 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import app.geeflow.BuildKonfig
-import app.geeflow.core.presentation.toUserMessage
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
-import app.geeflow.platform.openExternalUri
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.BackClicked
 import app.geeflow.presentation.feature.user.settings.about.AboutEvent.LicensesClicked
-import app.geeflow.presentation.feature.user.settings.about.AboutEvent.PrivacyPolicyClicked
-import app.geeflow.presentation.feature.user.settings.about.AboutEvent.SourceCodeClicked
-import app.geeflow.presentation.feature.user.settings.about.AboutEvent.TermsAndConditionsClicked
 import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowListItem
 import app.geeflow.ui.components.GeeFlowNavigationListItem
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
-import co.touchlab.kermit.Logger
 import geeflow.shared.feature.user.settings.generated.resources.Res
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_licenses
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_licenses_description
-import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_privacy_policy
-import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_privacy_policy_description
-import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_source_code
-import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_source_code_description
-import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_terms
-import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_terms_description
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_title
 import geeflow.shared.feature.user.settings.generated.resources.user_settings_about_version
-import kotlinx.coroutines.CancellationException
 import org.jetbrains.compose.resources.stringResource
 
-@Suppress("TooGenericExceptionCaught")
 @Composable
 internal fun AboutScreen(
     viewModel: AboutViewModel,
     navigator: Navigator,
 ) {
-    val uriHandler = LocalUriHandler.current
-    val snackbarState = remember { SnackbarHostState() }
-
     NavigatorEffect(navigator, viewModel.navEvent)
-
-    LaunchedEffect(viewModel, uriHandler) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is AboutViewModelEvent.OpenUrl -> {
-                    try {
-                        uriHandler.openExternalUri(event.url)
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (failure: Exception) {
-                        Logger.e(failure) { "Could not open external link" }
-                        snackbarState.showSnackbar(failure.toUserMessage())
-                    }
-                }
-            }
-        }
-    }
-
-    Content(
-        onEvent = viewModel::handleEvent,
-        snackbarState = snackbarState,
-    )
+    Content(onEvent = viewModel::handleEvent)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Content(
-    snackbarState: SnackbarHostState = remember { SnackbarHostState() },
-    onEvent: (AboutEvent) -> Unit = {},
-) {
+private fun Content(onEvent: (AboutEvent) -> Unit = {}) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
         title = stringResource(Res.string.user_settings_about_title),
-        subtitle = stringResource(Res.string.user_settings_about_description),
+        plain = true,
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
-        snackbarHost = { SnackbarHost(snackbarState) },
         modifier = Modifier,
         content = { paddingValues ->
             AboutContent(
@@ -118,27 +71,6 @@ private fun AboutContent(
 ) {
     Column(modifier = modifier) {
         GeeFlowNavigationListItem(
-            title = stringResource(Res.string.user_settings_about_terms),
-            subtitle = stringResource(Res.string.user_settings_about_terms_description),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onEvent(TermsAndConditionsClicked) },
-        )
-        GeeFlowNavigationListItem(
-            title = stringResource(Res.string.user_settings_about_privacy_policy),
-            subtitle = stringResource(Res.string.user_settings_about_privacy_policy_description),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onEvent(PrivacyPolicyClicked) },
-        )
-        GeeFlowNavigationListItem(
-            title = stringResource(Res.string.user_settings_about_source_code),
-            subtitle = stringResource(Res.string.user_settings_about_source_code_description),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onEvent(SourceCodeClicked) },
-        )
-        GeeFlowNavigationListItem(
             title = stringResource(Res.string.user_settings_about_licenses),
             subtitle = stringResource(Res.string.user_settings_about_licenses_description),
             modifier = Modifier
@@ -148,8 +80,7 @@ private fun AboutContent(
         GeeFlowListItem(
             title = stringResource(Res.string.user_settings_about_version),
             subtitle = "${BuildKonfig.APP_VERSION} (${BuildKonfig.APP_VERSION_CODE})",
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

@@ -1,0 +1,14 @@
+ALTER TABLE brew_history ADD COLUMN profileProgram TEXT;
+
+CREATE TABLE brew_history_metadata (
+  deviceId INTEGER NOT NULL,
+  startedAt INTEGER NOT NULL,
+  doseGrams REAL,
+  grindSetting TEXT,
+  endedAt INTEGER,
+  extractionStartMillis INTEGER,
+  extractionStartEstimated INTEGER,
+  finalWeightGrams REAL,
+  updatedAt INTEGER NOT NULL,
+  PRIMARY KEY (deviceId, startedAt)
+);

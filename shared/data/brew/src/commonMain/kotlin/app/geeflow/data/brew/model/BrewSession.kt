@@ -10,8 +10,10 @@ data class BrewSession(
     val inProgress: Boolean = false,
     val elapsedSeconds: Int = 0,
     val dataPoints: Map<Float, BrewDataPoint> = emptyMap(),
+    val scaleSamples: List<BrewScaleSample> = emptyList(),
     val recording: FreeHandRecording? = null,
     val executionTrace: ProfileExecutionTrace? = null,
+    val endedAt: Instant? = null,
 )
 
 @Serializable
@@ -21,4 +23,7 @@ data class BrewDataPoint(
     val volume: Float,
     val flowRate: Float,
     val weightRate: Float,
+    val brewBoilerTempC: Float? = null,
+    val steamBoilerTempC: Float? = null,
+    val machineElapsedSeconds: Int? = null,
 )

@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Advarsel om lav vandstand</string>
     <string name="device_water_alarm_error">Lav vandstand. Fyld vandtanken.</string>
     <string name="device_dashboard_connecting">Forbinder…</string>
-    <string name="device_settings_connectivity_smart_scale">Smart-vægt</string>
     <string name="device_settings_connectivity_smart_scale_description">Søg efter smarte vægte i nærheden</string>
     <string name="device_settings_connectivity_searching">Søger efter enheder…</string>
     <string name="device_settings_connectivity_not_found">Ser du ikke din enhed?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Langt padletryk som skyl</string>
     <string name="device_settings_treat_manual_as_flush_description">Ingen historik eller graf</string>
     <string name="device_settings_connectivity_enable_search">Aktivér søgning</string>
-    <string name="device_settings_connectivity_single_dose_description">Søg efter kværne i nærheden</string>
     <string name="device_settings_connectivity_disabled_info">Aktivér søgning for at finde og forbinde en enhed.</string>
     <string name="device_settings_connectivity_connection_help">Kunne ikke oprette forbindelse. Kontrollér, at tilbehøret er tændt og i nærheden, og prøv igen. Genstart om nødvendigt kaffemaskinen.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Aktivér kontrolringen. Lejlighedsvis interferens kan forekomme i visse omgivelser.</string>
     <string name="device_settings_firmware_version">Firmware: %1$d</string>

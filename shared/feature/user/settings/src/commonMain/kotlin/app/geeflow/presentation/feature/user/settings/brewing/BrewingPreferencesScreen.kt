@@ -68,7 +68,7 @@ private fun Content(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
         title = stringResource(Res.string.user_settings_brewing_preferences_title),
-        subtitle = stringResource(Res.string.user_settings_brewing_preferences_description),
+        plain = true,
         navIconClick = { onEvent(BackClicked) },
         scrollBehavior = scrollBehavior,
         modifier = Modifier,
@@ -87,7 +87,7 @@ private fun Content(
 }
 
 @Composable
-private fun BrewingContent(
+internal fun BrewingContent(
     viewState: BrewingPreferencesViewState,
     onEvent: (BrewingPreferencesEvent) -> Unit = {},
     modifier: Modifier = Modifier,

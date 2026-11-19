@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.device.dashboard.profileeditor
 
+import app.geeflow.data.brew.model.AdaptiveFlowProbe
 import app.geeflow.data.brew.model.ConditionOperator
 import app.geeflow.data.brew.model.ExitCondition
 import app.geeflow.data.brew.model.PhaseRamp
@@ -19,13 +20,13 @@ internal data class ProfileEditorViewState(
     val experimental: Boolean = false,
     val supportIssues: List<ProfileIssueCode> = emptyList(),
     val isRecording: Boolean = false,
+    val advancedProgram: Boolean = false,
     val profileName: String = "",
     val description: String = "",
     val displayDescription: String = "",
     val steps: List<Step> = emptyList(),
     val finishTarget: FinishTarget = FinishTarget(),
     val singleDoseSettings: SingleDoseSettings = SingleDoseSettings(),
-    val singleDoseGrinderReady: Boolean = false,
     val targetData: Map<Float, ChartData> = emptyMap(),
     val pressureRange: ClosedFloatingPointRange<Float> = 0f..0f,
     val flowRange: ClosedFloatingPointRange<Float> = 0f..0f,
@@ -35,7 +36,7 @@ internal data class ProfileEditorViewState(
     val dialog: ProfileEditorDialog? = null,
 ) {
     /** A profile made up of nothing but waits would never brew, so it can be neither tested nor saved. */
-    private val hasProgram: Boolean = (isRecording && targetData.isNotEmpty()) || steps.any { it.type != StepType.Wait }
+    private val hasProgram: Boolean = advancedProgram || (isRecording && targetData.isNotEmpty()) || steps.any { it.type != StepType.Wait }
     val canTest: Boolean = supportIssues.isEmpty() && hasProgram
     val canSave: Boolean = profileName.isNotBlank() && hasProgram
     val experimentalControlType: StepType? get() = if (steps.any { it.experimental }) {
@@ -57,6 +58,7 @@ internal data class ProfileEditorViewState(
         val exitConditions: List<ExitCondition> = emptyList(),
         val conditionOperator: ConditionOperator = ConditionOperator.Or,
         val experimental: Boolean = false,
+        val adaptiveFlowProbe: AdaptiveFlowProbe? = null,
 
     )
 
@@ -87,8 +89,6 @@ internal enum class FinishTargetType {
 
 internal sealed interface ProfileEditorDialog {
     data object Details : ProfileEditorDialog
-    data class SingleDose(val settings: SingleDoseSettings) : ProfileEditorDialog
-
     data class FinishTargetValue(val type: FinishTargetType, val target: Float) : ProfileEditorDialog
 }
 

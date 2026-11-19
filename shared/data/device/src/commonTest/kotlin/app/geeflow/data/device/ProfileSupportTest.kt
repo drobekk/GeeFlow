@@ -70,13 +70,48 @@ class ProfileSupportTest {
         assertTrue(demo.assessProfile(weighted, checkAvailability = true).issues.isNotEmpty())
     }
 
-    @Test fun `mixed app controlled profile is rejected`() {
+    @Test fun `mixed app controlled profile needs mode switching`() {
         val phases = (recipe.program as BrewProgram.Phases).phases
         val mixed = recipe.copy(
             program = BrewProgram.Phases(phases + phases.first().copy(id = "flow", control = PhaseControl.Flow(4f)))
         )
-        assertEquals(ProfileExecution.Unsupported, demo.assessProfile(mixed).execution)
+        val withoutSwitch = object : DeviceController by demo {
+            override val profilingCapabilities = demo.profilingCapabilities.copy(liveModeSwitch = false)
+        }
+        assertEquals(ProfileExecution.Unsupported, withoutSwitch.assessProfile(mixed).execution)
+        assertEquals(ProfileExecution.AppControlled, demo.assessProfile(mixed).execution)
         assertFalse(demo.assessProfile(mixed).bindingAllowed)
+    }
+
+    @Test fun outOfRangeRecordingTargetsCannotBeSilentlyClampedOnEitherRoute() {
+        for (version in listOf(1, 2)) {
+            val recording = app.geeflow.data.brew.model.FreeHandRecording(
+                app.geeflow.data.brew.model.FreeHandControlMode.Pressure,
+                listOf(app.geeflow.data.brew.model.FreeHandSample(0,app.geeflow.data.brew.model.BrewDataPoint(14f,0f,0f,0f,0f))))
+            val profile = recipe.copy(finishCondition=Condition.Volume(36f),program=BrewProgram.Recording(recording,version=version))
+            assertEquals(ProfileExecution.Unsupported,demo.assessProfile(profile).execution)
+        }
+    }
+
+    @Test fun advancedRecipesFollowTheVerifiedDeviceRoutes() {
+        val base = (recipe.program as BrewProgram.Phases).copy(version = 2)
+        val phase = base.phases.first()
+        val variants = listOf(
+            recipe.copy(program = base.copy(phases = listOf(phase.copy(temperatureC = 93f)))),
+            recipe.copy(program = base.copy(phases = listOf(phase.copy(secondaryLimit = app.geeflow.data.brew.model.SecondaryLimit(BrewMetric.PumpFlow, 3f))))),
+            recipe.copy(program = base, finishCondition = Condition.Weight(36f)),
+            recipe.copy(program = base.copy(phases = listOf(phase.copy(exitConditions = listOf(ExitCondition(BrewMetric.CupWeight, ThresholdComparison.Above, 10f)))))),
+        )
+        assertEquals(
+            listOf(
+                ProfileExecution.Unsupported,
+                ProfileExecution.AppControlled,
+                ProfileExecution.AppControlled,
+                ProfileExecution.AppControlled,
+            ),
+            variants.map { demo.assessProfile(it).execution },
+        )
+        assertEquals(ProfileExecution.AppControlled, demo.assessProfile(recipe.copy(program = base)).execution)
     }
 
     @Test

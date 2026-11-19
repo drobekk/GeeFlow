@@ -9,13 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -28,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,20 +46,16 @@ import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsE
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewState.Boiler
 import app.geeflow.presentation.feature.device.settings.brewing.BrewingSettingsViewState.Paddle
-import app.geeflow.presentation.feature.device.settings.components.SettingsApplyFab
-import app.geeflow.presentation.feature.device.settings.components.SettingsApplyFabPadding
 import app.geeflow.ui.EventsDispatcher
 import app.geeflow.ui.components.GeeFlowDetailScaffold
 import app.geeflow.ui.components.GeeFlowToggleListItem
 import app.geeflow.ui.components.GeeFlowValueListItem
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.components.VerticalSpacer
-import app.geeflow.ui.icons.Flush
-import app.geeflow.ui.icons.GeeFlowIcon
-import app.geeflow.ui.isWidthLarge
+import app.geeflow.ui.text.ClearText
+import app.geeflow.ui.text.clearText
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
-import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_brew_boiler
 import geeflow.shared.core.ui.generated.resources.common_current_temperature
 import geeflow.shared.core.ui.generated.resources.common_pressure
@@ -75,7 +69,6 @@ import geeflow.shared.feature.device.settings.generated.resources.device_setting
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_boiler
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_description
-import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_paddle
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_paddle_pressure_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_paddle_time_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_pulse_heating
@@ -120,31 +113,15 @@ private fun BrewSettingsContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     GeeFlowDetailScaffold(
+        plain = true,
         title = stringResource(Res.string.device_settings_brewing),
-        subtitle = stringResource(Res.string.device_settings_brewing_description),
         navIconClick = { onEvent(CloseClicked) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            SettingsApplyFab(
-                loading = viewState.applyButtonLoading,
-                visible = viewState.applyButtonVisible,
-                onClick = { onEvent(BrewingSettingsEvent.ApplyClicked) },
-            )
-        },
         scrollBehavior = scrollBehavior,
-        content = {
-            AdaptiveContent(
-                viewState = viewState,
-                onEvent = onEvent,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(it)
-                    .padding(bottom = SettingsApplyFabPadding),
-            )
+        content = { padding ->
+            AdaptiveContent(viewState, onEvent, Modifier.fillMaxSize().padding(padding))
         },
-        modifier = Modifier
-            .imePadding(),
+        modifier = Modifier.imePadding(),
     )
 }
 
@@ -155,20 +132,23 @@ private fun AdaptiveContent(
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier) {
-        if (isWidthLarge()) {
+        if (maxWidth >= SettingsTwoColumnWidth.dp) {
             Row(
-                Modifier.padding(
-                    vertical = GeeFlowTheme.spacing.contentVertical,
-                ),
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 16.dp, horizontal = 16.dp),
             ) {
-                Column(Modifier.weight(1f)) { BoilerSection(viewState, onEvent) }
+                SettingsPanel(Modifier.weight(1f)) { BoilerSection(viewState, onEvent) }
                 HorizontalSpacer(24.dp)
-                Column(Modifier.weight(1f)) {
-                    PaddleSection(viewState, onEvent)
-                }
+                SettingsPanel(Modifier.weight(1f)) { PaddleSection(viewState, onEvent) }
             }
         } else {
-            CompactContent(viewState, onEvent)
+            CompactContent(
+                viewState,
+                onEvent,
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+            )
         }
     }
 }
@@ -182,14 +162,13 @@ private fun CompactContent(
     Column(
         modifier = modifier
             .padding(
-                vertical = GeeFlowTheme.spacing.contentVertical,
+                vertical = 16.dp,
+                horizontal = 16.dp,
             ),
     ) {
-        BoilerSection(viewState, onEvent)
-        VerticalSpacer(24.dp)
-        HorizontalDivider(modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal))
-        VerticalSpacer(24.dp)
-        PaddleSection(viewState, onEvent)
+        SettingsPanel { BoilerSection(viewState, onEvent) }
+        VerticalSpacer(16.dp)
+        SettingsPanel { PaddleSection(viewState, onEvent) }
     }
 }
 
@@ -200,7 +179,7 @@ private fun BoilerSection(
 ) {
     SectionTitle(
         text = stringResource(Res.string.device_settings_brewing_boiler),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
     )
     VerticalSpacer(16.dp)
     GeeFlowToggleListItem(
@@ -213,9 +192,12 @@ private fun BoilerSection(
         value = "${viewState.brewBoiler.selectedTemp}°",
         items = viewState.brewBoiler.tempList,
         unit = "°",
+        initialValue = viewState.brewBoiler.selectedTemp.toFloatOrNull(),
+        adjustmentStep = 1f,
         onCheckedChanged = { onEvent(BrewBoilerToggled(it)) },
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(BrewTempChanged(it)) },
-        contentPadding = PaddingValues(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         modifier = Modifier.fillMaxWidth(),
     )
     GeeFlowToggleListItem(
@@ -228,9 +210,12 @@ private fun BoilerSection(
         value = "${viewState.steamBoiler.selectedTemp}°",
         items = viewState.steamBoiler.tempList,
         unit = "°",
+        initialValue = viewState.steamBoiler.selectedTemp.toFloatOrNull(),
+        adjustmentStep = 1f,
         onCheckedChanged = { onEvent(SteamBoilerToggled(it)) },
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(SteamTempChanged(it)) },
-        contentPadding = PaddingValues(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         modifier = Modifier.fillMaxWidth(),
     )
     GeeFlowToggleListItem(
@@ -239,7 +224,7 @@ private fun BoilerSection(
         checked = viewState.pulseHeatingEnabled,
         onCheckedChanged = { onEvent(PulseHeatingToggled(it)) },
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     )
 }
 
@@ -250,22 +235,12 @@ private fun PaddleSection(
 ) {
     val paddle = state.paddle
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = GeeFlowTheme.spacing.contentHorizontal),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SectionTitle(
-            text = stringResource(Res.string.device_settings_brewing_paddle),
+            text = clearText(ClearText.FlushManual),
             modifier = Modifier.weight(1f, fill = false),
-        )
-        HorizontalSpacer(8.dp)
-        Icon(
-            imageVector = GeeFlowIcon.Flush,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
-                .padding(6.dp)
-                .size(20.dp),
         )
     }
     VerticalSpacer(16.dp)
@@ -275,6 +250,7 @@ private fun PaddleSection(
         value = "${paddle.pressure} ${stringResource(CoreRes.string.unit_bar)}",
         items = paddle.pressureList,
         unit = stringResource(CoreRes.string.unit_bar),
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(PaddlePressureChanged(it)) },
         modifier = Modifier.fillMaxWidth(),
     )
@@ -284,13 +260,14 @@ private fun PaddleSection(
         value = "${paddle.time} ${stringResource(CoreRes.string.common_sec)}",
         items = paddle.timeList,
         unit = stringResource(CoreRes.string.common_sec),
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(PaddleTimeChanged(it)) },
         modifier = Modifier.fillMaxWidth(),
     )
     state.firmwareVersion?.let { version ->
         Text(
             text = stringResource(Res.string.device_settings_firmware_version, version),
-            modifier = Modifier.padding(horizontal = GeeFlowTheme.spacing.contentHorizontal, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
         )
     }
     GeeFlowToggleListItem(
@@ -309,9 +286,21 @@ private fun PaddleSection(
         allowDecimal = false,
         unit = stringResource(CoreRes.string.common_sec),
         onCheckedChanged = { onEvent(AutoFlushToggled(it)) },
+        applyOnSelection = true,
         onValueConfirmed = { onEvent(AutoFlushDelayChanged(it)) },
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+@Composable
+private fun SettingsPanel(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Column(
+        modifier.fillMaxWidth().clip(
+            MaterialTheme.shapes.large
+        ).background(MaterialTheme.colorScheme.surface).padding(vertical = 16.dp)
+    ) {
+        content()
+    }
 }
 
 @Composable
@@ -320,8 +309,9 @@ private fun SectionTitle(
     modifier: Modifier = Modifier,
 ) = Text(
     text = text,
-    style = MaterialTheme.typography.titleLarge,
-    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    style = MaterialTheme.typography.titleMedium,
+    fontWeight = FontWeight.SemiBold,
+    color = MaterialTheme.colorScheme.onSurface,
     modifier = modifier,
 )
 
@@ -355,3 +345,5 @@ private fun Preview() {
         ),
     )
 }
+
+private const val SettingsTwoColumnWidth = 760

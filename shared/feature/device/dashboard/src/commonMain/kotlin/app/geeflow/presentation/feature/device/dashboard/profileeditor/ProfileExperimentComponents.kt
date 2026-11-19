@@ -30,6 +30,8 @@ import geeflow.shared.feature.device.dashboard.generated.resources.experimental_
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_previous_target
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_pump_pressure
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_ramp_summary
+import geeflow.shared.feature.device.dashboard.generated.resources.experimental_strictly_above
+import geeflow.shared.feature.device.dashboard.generated.resources.experimental_strictly_below
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_title
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_unsupported
 import geeflow.shared.feature.device.dashboard.generated.resources.experimental_water
@@ -105,6 +107,8 @@ internal fun <T> enumLabel(value: T): String = when (value) {
             RampStart.CurrentMeasurement -> Res.string.experimental_current_measurement
             ThresholdComparison.Above -> Res.string.experimental_above
             ThresholdComparison.Below -> Res.string.experimental_below
+            ThresholdComparison.StrictlyAbove -> Res.string.experimental_strictly_above
+            ThresholdComparison.StrictlyBelow -> Res.string.experimental_strictly_below
             else -> Res.string.experimental_unsupported
         },
     )

@@ -7,19 +7,25 @@ internal data class BrewMarkerSeries(
     val y: List<Double>,
     val color: Color,
     val unit: String,
+    val labelY: List<Double> = y,
 ) {
     init {
         require(x.size == y.size)
+        require(x.size == labelY.size)
     }
 
     /** Matches the chart's straight segments without inserting entries into the model or history. */
-    fun valueAt(time: Double): Double? {
+    fun valueAt(time: Double): Double? = interpolate(y, time)
+
+    fun labelAt(time: Double): Double? = interpolate(labelY, time)
+
+    private fun interpolate(values: List<Double>, time: Double): Double? {
         val index = x.binarySearch(time)
-        if (index >= 0) return y[index]
+        if (index >= 0) return values[index]
         val next = -index - 1
         if (next == 0 || next == x.size) return null
         val previous = next - 1
         val fraction = (time - x[previous]) / (x[next] - x[previous])
-        return y[previous] + fraction * (y[next] - y[previous])
+        return values[previous] + fraction * (values[next] - values[previous])
     }
 }

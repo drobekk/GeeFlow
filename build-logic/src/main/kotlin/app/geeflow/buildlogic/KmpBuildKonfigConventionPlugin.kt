@@ -23,6 +23,10 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
                 ?: System.getenv("CURRENT_PROJECT_VERSION")?.takeIf { it.isNotBlank() }
                 ?: libs.findVersion("appVersionCode").get().requiredVersion
         val appPackageName = libs.findVersion("appPackageName").get().requiredVersion
+        val profileLibraryToken = (project.findProperty("profileLibraryToken") as? String)
+            ?.takeIf { it.isNotBlank() }
+            ?: System.getenv("PROFILE_LIBRARY_TOKEN")?.takeIf { it.isNotBlank() }
+            ?: ""
 
         extensions.configure<BuildKonfigExtension> {
             packageName.set(appPackageName)
@@ -31,6 +35,7 @@ class KmpBuildKonfigConventionPlugin : Plugin<Project> {
                 buildConfigField(FieldSpec.Type.STRING, "APP_VERSION", appVersion)
                 buildConfigField(FieldSpec.Type.STRING, "APP_VERSION_CODE", appVersionCode)
                 buildConfigField(FieldSpec.Type.STRING, "PACKAGE_NAME", appPackageName)
+                buildConfigField(FieldSpec.Type.STRING, "PROFILE_LIBRARY_TOKEN", profileLibraryToken)
             }
         }
 

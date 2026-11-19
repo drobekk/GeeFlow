@@ -3,8 +3,8 @@ agp = "9.4.1"
 android-compileSdk = "37"
 android-minSdk = "28"
 android-targetSdk = "37"
-appVersion = "1.0.0"
-appVersionCode = "1"
+appVersion = "1.0.11"
+appVersionCode = "11"
 appPackageName = "app.geeflow"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
@@ -24,6 +24,7 @@ kermit = "2.2.0"
 koin = "4.2.2"
 koin-plugin = "1.2.1"
 kotlin = "2.4.20"
+ktor = "3.6.1"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
 material3 = "1.10.0-alpha05"
@@ -45,11 +46,9 @@ reorderable = "3.1.0"
 detekt = "2.0.0-alpha.6"
 aboutLibraries = "15.2.0"
 buildKonfig = "0.23.0"
-inAppPurchase = "1.0.43"
 
 [libraries]
 mockk = { module = "io.mockk:mockk-jvm", version.ref = "mockk" }
-inapppurchase = { module = "io.github.aditya-gupta99:inAppPurchase-kmp", version.ref = "inAppPurchase" }
 aboutLibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutLibraries-gradlePlugin = { module = "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin", version.ref = "aboutLibraries" }
@@ -111,6 +110,12 @@ jetbrains-material3-adaptiveNavigation3 = { module = "org.jetbrains.compose.mate
 jetbrains-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "compose-multiplatform-lifecycle" }
 androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "multiplatform-nav3-ui" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinxJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
 moko-permissions-bluetooth = { module = "dev.icerock.moko:permissions-bluetooth", version.ref = "moko" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }

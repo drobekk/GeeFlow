@@ -14,6 +14,12 @@ class ScaleNotConnectedException(val deviceId: Long) : BusinessException(
     "Smart scale for device $deviceId is not connected",
 )
 
+enum class YieldScaleProblem { Missing, WaitingForReading, StaleReading, NotTared }
+
+class YieldScaleNotReadyException(val problem: YieldScaleProblem) : BusinessException(
+    "Yield cutoff scale is not ready: $problem",
+)
+
 class GrinderNotConnectedException(val deviceId: Long) : BusinessException(
     "Single Dose grinder for device $deviceId is not connected",
 )

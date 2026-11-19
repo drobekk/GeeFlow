@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Avertissement niveau d’eau bas</string>
     <string name="device_water_alarm_error">Niveau d’eau bas. Remplissez le réservoir.</string>
     <string name="device_dashboard_connecting">Connexion…</string>
-    <string name="device_settings_connectivity_smart_scale">Balance connectée</string>
     <string name="device_settings_connectivity_smart_scale_description">Rechercher des balances connectées à proximité</string>
     <string name="device_settings_connectivity_searching">Recherche d’appareils…</string>
     <string name="device_settings_connectivity_not_found">Appareil introuvable ?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Appui long palette = rinçage</string>
     <string name="device_settings_treat_manual_as_flush_description">Sans historique ni graphique</string>
     <string name="device_settings_connectivity_enable_search">Activer la recherche</string>
-    <string name="device_settings_connectivity_single_dose_description">Rechercher des moulins à proximité</string>
     <string name="device_settings_connectivity_disabled_info">Activez la recherche pour trouver et connecter un appareil.</string>
     <string name="device_settings_connectivity_connection_help">Connexion impossible. Vérifiez que l’accessoire est allumé et à proximité, puis réessayez. Si nécessaire, redémarrez la machine à café.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Activez la bague de contrôle. Des interférences occasionnelles peuvent survenir dans certains environnements.</string>
     <string name="device_settings_firmware_version">Firmware : %1$d</string>

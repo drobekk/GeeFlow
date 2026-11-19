@@ -25,5 +25,8 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             api(projects.shared.core.datastore)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+        }
     }
 }

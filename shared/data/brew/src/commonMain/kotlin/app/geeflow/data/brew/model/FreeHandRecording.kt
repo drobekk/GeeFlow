@@ -24,6 +24,7 @@ data class FreeHandRecording(
                 a.elapsedMillis < b.elapsedMillis
             }
         ) { "Recording timestamps must start at zero and increase" }
+        require(samples.all { sample -> listOf(sample.data.pressure, sample.data.flowRate, sample.data.volume, sample.data.weight, sample.data.weightRate).all { it.isFinite() && it >= 0f } }) { "Recording contains an invalid measurement" }
         val count = (samples.last().elapsedMillis.toDouble() / SAMPLE_INTERVAL_MS).roundToInt() + 1
         return List(count) { index ->
             val time = index * SAMPLE_INTERVAL_MS

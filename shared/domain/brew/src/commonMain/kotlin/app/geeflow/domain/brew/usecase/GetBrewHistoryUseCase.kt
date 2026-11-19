@@ -15,4 +15,9 @@ class GetBrewHistoryUseCase(
         val userId = userRepository.selectedUser.first()?.id ?: return emptyList()
         return brewHistoryRepository.getBrews(userId, query, limit, offset)
     }
+
+    suspend fun forDevice(deviceId: Long, query: String, limit: Int, offset: Int): List<BrewHistoryEntry> {
+        val userId = userRepository.selectedUser.first()?.id ?: return emptyList()
+        return brewHistoryRepository.getBrewsForDevice(userId, deviceId, query, limit, offset)
+    }
 }

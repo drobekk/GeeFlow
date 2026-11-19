@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Aspecto y pantalla</string>
     <string name="user_settings_appearance_description">Tema, idioma y pantalla</string>
     <string name="user_settings_about">Acerca de</string>
-    <string name="user_settings_about_description">Términos, privacidad, licencias y versión</string>
+    <string name="user_settings_about_description">Versión de la app y licencias</string>
     <string name="user_settings_appearance_title">Aspecto y pantalla</string>
     <string name="user_settings_appearance_dark_mode">Apariencia</string>
     <string name="user_settings_appearance_dark_mode_system">Predeterminado del sistema</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Restablecer perfiles a valores de fábrica</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Se restablecerán todos los perfiles de fábrica. No se puede deshacer.</string>
     <string name="user_settings_about_title">Acerca de</string>
-    <string name="user_settings_about_terms">Términos y condiciones</string>
-    <string name="user_settings_about_terms_description">Términos de servicio y seguridad de hardware</string>
-    <string name="user_settings_about_privacy_policy">Política de privacidad</string>
-    <string name="user_settings_about_privacy_policy_description">Qué datos se recopilan y por qué</string>
-    <string name="user_settings_about_source_code">Código fuente</string>
-    <string name="user_settings_about_source_code_description">Explora el código o reporta problemas en GitHub</string>
     <string name="user_settings_about_licenses">Licencias open source</string>
     <string name="user_settings_about_licenses_description">Información de licencias de terceros</string>
     <string name="user_settings_about_version">Versión</string>

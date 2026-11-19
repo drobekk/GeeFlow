@@ -6,15 +6,16 @@ import app.geeflow.data.device.model.DeviceCapability
 import app.geeflow.data.device.model.DeviceCapability.BrewBoiler
 import app.geeflow.data.device.model.DeviceCapability.CleaningMode
 import app.geeflow.data.device.model.DeviceCapability.CleaningSettings
-import app.geeflow.data.device.model.DeviceCapability.CommercialGrinderConnectivity
 import app.geeflow.data.device.model.DeviceCapability.HeatingMode
-import app.geeflow.data.device.model.DeviceCapability.SingleDoseGrinderConnectivity
 import app.geeflow.data.device.model.DeviceCapability.SmartScaleConnectivity
 import app.geeflow.data.device.model.DeviceCapability.SteamBoiler
 import app.geeflow.data.device.model.DeviceCapability.WaterAlarm
 import app.geeflow.domain.device.usecase.GetDeviceCapabilitiesUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceUseCase
 import app.geeflow.navigation.destination.DeviceSettings
+import app.geeflow.navigation.destination.ProfileSettings
+import app.geeflow.navigation.destination.AppearanceSettings
+import app.geeflow.navigation.destination.UserList
 import app.geeflow.navigation.destination.DeviceSettings.EntryPoint
 import app.geeflow.presentation.feature.device.settings.BrewingSettings
 import app.geeflow.presentation.feature.device.settings.ConnectivitySettings
@@ -23,6 +24,11 @@ import app.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent
 import app.geeflow.presentation.feature.device.settings.main.DeviceSettingsEvent.ItemClicked
 import app.geeflow.presentation.feature.device.settings.main.DeviceSettingsViewState.Item
 import geeflow.shared.feature.device.settings.generated.resources.Res
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_profile
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_preferences
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_appearance
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_about
+import geeflow.shared.feature.device.settings.generated.resources.device_settings_switch_user
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_brewing_description
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity
@@ -40,11 +46,7 @@ internal class DeviceSettingsViewModel(
     private val getDeviceCapabilitiesUseCase: GetDeviceCapabilitiesUseCase,
 ) : BaseViewModel<DeviceSettingsViewState, Unit>(DeviceSettingsViewState()) {
 
-    private val connectivityCapabilities = setOf(
-        SmartScaleConnectivity,
-        SingleDoseGrinderConnectivity,
-        CommercialGrinderConnectivity,
-    )
+    private val connectivityCapabilities = setOf(SmartScaleConnectivity)
     private val brewingCapabilities = setOf(SteamBoiler, BrewBoiler, HeatingMode)
     private val maintenanceCapabilities = setOf(CleaningMode, CleaningSettings, WaterAlarm)
 
@@ -72,6 +74,7 @@ internal class DeviceSettingsViewModel(
     private fun onItemClicked(item: Item) {
         popTo(args, false)
         when (item) {
+            is Item.Preference -> navigateTo(item.destination)
             is Item.Brewing -> navigateTo(BrewingSettings(args.deviceId))
             is Item.Maintenance -> navigateTo(MaintenanceSettings(args.deviceId))
             is Item.Connectivity -> navigateTo(ConnectivitySettings(args.deviceId))
@@ -107,6 +110,14 @@ internal class DeviceSettingsViewModel(
                     description = getString(Res.string.device_settings_connectivity_description),
                 ),
             )
+        }
+        val preferences = listOf(
+            Res.string.device_settings_appearance to AppearanceSettings,
+            Res.string.device_settings_switch_user to UserList,
+            Res.string.device_settings_profile to ProfileSettings,
+        )
+        preferences.forEach { (label, destination) ->
+            items.add(Item.Preference(getString(label), destination))
         }
         modify { copy(items = items) }
     }

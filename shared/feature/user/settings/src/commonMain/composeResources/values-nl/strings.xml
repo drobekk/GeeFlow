@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Uiterlijk &amp; weergave</string>
     <string name="user_settings_appearance_description">Thema, taal en scherm</string>
     <string name="user_settings_about">Over</string>
-    <string name="user_settings_about_description">Voorwaarden, privacy, licenties en versie</string>
+    <string name="user_settings_about_description">Appversie en licenties</string>
     <string name="user_settings_appearance_title">Uiterlijk &amp; weergave</string>
     <string name="user_settings_appearance_dark_mode">Weergave</string>
     <string name="user_settings_appearance_dark_mode_system">Systeem volgen</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Zetprofielen terugzetten naar fabrieksinstellingen</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Herstelt alle profielen naar fabrieksinstellingen. Kan niet ongedaan worden gemaakt.</string>
     <string name="user_settings_about_title">Over</string>
-    <string name="user_settings_about_terms">Algemene voorwaarden</string>
-    <string name="user_settings_about_terms_description">Servicevoorwaarden en veiligheid</string>
-    <string name="user_settings_about_privacy_policy">Privacybeleid</string>
-    <string name="user_settings_about_privacy_policy_description">Wat verzameld wordt en waarom</string>
-    <string name="user_settings_about_source_code">Broncode</string>
-    <string name="user_settings_about_source_code_description">Bekijk code of meld problemen op GitHub</string>
     <string name="user_settings_about_licenses">Open source-licenties</string>
     <string name="user_settings_about_licenses_description">Licenties van externe software</string>
     <string name="user_settings_about_version">Versie</string>

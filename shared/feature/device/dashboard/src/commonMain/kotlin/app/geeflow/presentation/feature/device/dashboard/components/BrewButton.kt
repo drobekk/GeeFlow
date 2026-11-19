@@ -10,7 +10,9 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -24,11 +26,16 @@ import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +53,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -55,14 +63,13 @@ import app.geeflow.ui.components.WaveDivider
 import app.geeflow.ui.icons.FlowControl
 import app.geeflow.ui.icons.Flush
 import app.geeflow.ui.icons.GeeFlowIcon
-import app.geeflow.ui.icons.Logo
 import app.geeflow.ui.theme.GeeFlowComponentPreview
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_flush
 import geeflow.shared.core.ui.generated.resources.common_machine_busy
-import geeflow.shared.core.ui.generated.resources.common_start
-import geeflow.shared.core.ui.generated.resources.common_stop
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_start_brew
+import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_stop_brew
 import geeflow.shared.feature.device.dashboard.generated.resources.device_dashboard_syncing
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_screen_title
 import kotlinx.coroutines.Job
@@ -85,7 +92,11 @@ fun BrewButton(
     onHeroButtonClick: () -> Unit,
     onStopClick: () -> Unit,
     modifier: Modifier = Modifier,
-    heroContentDescription: String = stringResource(Res.string.common_start),
+    stopContentDescription: String = stringResource(DashboardRes.string.device_dashboard_stop_brew),
+    heroContentDescription: String = stringResource(DashboardRes.string.device_dashboard_start_brew),
+    startEnabled: Boolean = true,
+    heroIcon: @Composable () -> Unit = { Icon(Icons.Filled.PlayArrow, contentDescription = null) },
+    stopIcon: @Composable () -> Unit = { Icon(Icons.Filled.Stop, contentDescription = null) },
 ) {
     require(sideActions.size in 1..MaxSideActions)
     val coroutineScope = rememberCoroutineScope()
@@ -127,14 +138,7 @@ fun BrewButton(
         },
     )
     val transition = updateTransition(targetState = state, label = "BrewingTransition")
-    val heroAction = BrewButtonAction(heroContentDescription, onHeroButtonClick) {
-        Icon(
-            painter = rememberVectorPainter(GeeFlowIcon.Logo),
-            contentDescription = null,
-            modifier = Modifier.size(HeroIconSize),
-            tint = MaterialTheme.colorScheme.onPrimary,
-        )
-    }
+    val heroAction = BrewButtonAction(heroContentDescription, onHeroButtonClick, heroIcon)
 
     Box(
         modifier = modifier
@@ -167,8 +171,9 @@ fun BrewButton(
             contentAlignment = Alignment.Center,
         ) { buttonState ->
             ActiveStateContent(
-                text = stringResource(Res.string.common_stop).uppercase(),
+                text = stopContentDescription,
                 textColor = MaterialTheme.colorScheme.onError,
+                icon = stopIcon,
                 modifier = Modifier.visible(buttonState == BrewButtonState.Brewing),
             )
             ActiveStateContent(
@@ -185,6 +190,7 @@ fun BrewButton(
                 sideActions = sideActions,
                 heroAction = heroAction,
                 enabled = state == BrewButtonState.Idle,
+                startEnabled = startEnabled,
                 onActionClick = { action ->
                     dismissTooltip()
                     action.onClick()
@@ -234,6 +240,7 @@ private fun BrewContent(
     sideActions: List<BrewButtonAction>,
     heroAction: BrewButtonAction,
     enabled: Boolean,
+    startEnabled: Boolean,
     onActionClick: (BrewButtonAction) -> Unit,
     onActionLongClick: (BrewButtonAction, Alignment) -> Unit,
     modifier: Modifier = Modifier,
@@ -251,19 +258,42 @@ private fun BrewContent(
                 modifier = Modifier.semantics { contentDescription = action.contentDescription },
                 onLongClick = { onActionLongClick(action, Alignment.TopStart) },
             ) {
-                action.icon()
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(Modifier.size(SideIconSize), contentAlignment = Alignment.Center) { action.icon() }
+                    Text(
+                        text = action.contentDescription,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
+        val heroEnabled = enabled && startEnabled
+        val heroColor = if (heroEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         BrewSideButton(
-            enabled = enabled,
+            enabled = heroEnabled,
             onClick = { onActionClick(heroAction) },
             onLongClick = { onActionLongClick(heroAction, Alignment.TopEnd) },
             modifier = Modifier
                 .clip(MaterialTheme.shapes.large)
-                .background(MaterialTheme.colorScheme.primary)
+                .background(if (heroEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                 .semantics { contentDescription = heroAction.contentDescription },
         ) {
-            heroAction.icon()
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CompositionLocalProvider(LocalContentColor provides heroColor) {
+                    Box(Modifier.size(SideIconSize), contentAlignment = Alignment.Center) { heroAction.icon() }
+                }
+                Text(
+                    text = heroAction.contentDescription,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                    color = heroColor,
+                )
+            }
         }
     }
 }
@@ -297,18 +327,25 @@ private fun RowScope.BrewSideButton(
 private fun ActiveStateContent(
     text: String,
     textColor: Color,
+    icon: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleLarge,
-        color = textColor,
-        textAlign = TextAlign.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(horizontal = 32.dp),
-    )
+    Row(
+        modifier = modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CompositionLocalProvider(LocalContentColor provides textColor) {
+            icon?.invoke()
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            color = textColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(start = if (icon == null) 0.dp else 8.dp),
+        )
+    }
 }
 
 enum class BrewButtonState {
@@ -324,8 +361,8 @@ private val TransientTooltipDuration = 2000L.milliseconds
 private const val MaxSideActions = 3
 
 private val SideButtonMinWidth = 64.dp
-private val ButtonHeight = 50.dp
-private val HeroIconSize = 32.dp
+private val ButtonHeight = 60.dp
+private val SideIconSize = 24.dp
 private val TooltipVerticalOffset = (-44).dp
 private val TooltipHorizontalOffset = 32.dp
 private val TooltipShadowElevation = 4.dp

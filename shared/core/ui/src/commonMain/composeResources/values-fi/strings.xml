@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Takaisin</string>
     <string name="common_close">Sulje</string>
     <string name="common_confirm">Vahvista</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Yhteys keittimeen katkesi uuton aikana.</string>
     <string name="error_required_measurement_lost">Profiilin vaatima anturi irtosi.</string>
     <string name="error_profile_unavailable">Profiili ei ole yhteensopiva keittimen tilan kanssa.</string>
-    <string name="agreement_prefix">Hyväksyn </string>
-    <string name="agreement_terms">Käyttöehdot</string>
-    <string name="agreement_and"> ja </string>
-    <string name="agreement_privacy">Tietosuojaselosteen</string>
     <string name="maintenance_daily">Päivittäinen puhdistus</string>
     <string name="maintenance_deep">Perusteellinen puhdistus</string>
     <string name="maintenance_daily_description">Rutiinihuuhtelu kahvijäämien poistamiseksi uuttoryhmästä.</string>

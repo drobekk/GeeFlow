@@ -9,14 +9,10 @@ import app.geeflow.domain.device.usecase.GetDeviceConstraintsUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.SetBoilerSettingsUseCase
 import app.geeflow.navigation.NavEvent
-import app.geeflow.navigation.destination.DeviceSettings
-import app.geeflow.navigation.destination.DeviceSettings.EntryPoint
 import app.geeflow.presentation.feature.device.dashboard.QuickSettings
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewBoilerToggled
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.BrewTempChanged
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.CloseClicked
-import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.ConfirmClicked
-import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.MoreSettingsClicked
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamBoilerToggled
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsEvent.SteamTempChanged
 import app.geeflow.presentation.feature.device.dashboard.quicksettings.QuickSettingsViewModelEvent.ShowSnackbar
@@ -24,6 +20,8 @@ import co.touchlab.kermit.Logger
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.error_generic
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
@@ -37,6 +35,7 @@ internal class QuickSettingsViewModel(
 ) : BaseViewModel<QuickSettingsViewState, QuickSettingsViewModelEvent>(QuickSettingsViewState()) {
 
     private var applyJob: Job? = null
+    private val applied = mutableMapOf<BoilerType, Pair<Boolean, String>>()
 
     init {
         loadMachineState()
@@ -57,6 +56,8 @@ internal class QuickSettingsViewModel(
                     if (!configApplied && state.config != null) {
                         configApplied = true
                         updateMachineState(state)
+                        applied[BoilerType.Brew] = desired(BoilerType.Brew)
+                        applied[BoilerType.Steam] = desired(BoilerType.Steam)
                     } else {
                         modify {
                             copy(
@@ -85,44 +86,50 @@ internal class QuickSettingsViewModel(
         )
     }
 
-    fun handleEvent(event: QuickSettingsEvent) = when (event) {
-        is SteamBoilerToggled -> modify { copy(steamBoiler = steamBoiler.copy(enabled = event.enabled)) }
-        is BrewBoilerToggled -> modify { copy(brewBoiler = brewBoiler.copy(enabled = event.enabled)) }
-        is SteamTempChanged -> modify { copy(steamBoiler = steamBoiler.copy(selectedTemp = event.temp)) }
-        is BrewTempChanged -> modify { copy(brewBoiler = brewBoiler.copy(selectedTemp = event.temp)) }
-        is ConfirmClicked -> saveSettings()
-        is CloseClicked -> navigate(NavEvent.Back)
-        is MoreSettingsClicked -> {
+    fun handleEvent(event: QuickSettingsEvent) {
+        if (event is CloseClicked) {
             navigate(NavEvent.Back)
-            navigate(NavEvent.To(DeviceSettings(arguments.deviceId, if (event.isExpanded) EntryPoint.Brewing else null)))
+            return
         }
+        if (applied.isEmpty()) return
+        when (event) {
+            is SteamBoilerToggled -> modify { copy(steamBoiler = steamBoiler.copy(enabled = event.enabled)) }
+            is BrewBoilerToggled -> modify { copy(brewBoiler = brewBoiler.copy(enabled = event.enabled)) }
+            is SteamTempChanged -> modify { copy(steamBoiler = steamBoiler.copy(selectedTemp = event.temp)) }
+            is BrewTempChanged -> modify { copy(brewBoiler = brewBoiler.copy(selectedTemp = event.temp)) }
+            is CloseClicked -> Unit
+        }
+        saveSettings()
+    }
+
+    private fun desired(type: BoilerType): Pair<Boolean, String> = with(viewState.value) {
+        val boiler = if (type == BoilerType.Brew) brewBoiler else steamBoiler
+        boiler.enabled to boiler.selectedTemp
     }
 
     private fun saveSettings() {
-        applyJob?.cancel()
-        applyJob = launchCatching(
-            onError = (::showError),
-            block = {
-                modify { copy(applying = true) }
-                setBoilerSettings(
-                    deviceId = arguments.deviceId,
-                    boilerType = BoilerType.Steam,
-                    enabled = viewState.value.steamBoiler.enabled,
-                    temp = viewState.value.steamBoiler.selectedTemp.toInt(),
-                )
-                setBoilerSettings(
-                    deviceId = arguments.deviceId,
-                    boilerType = BoilerType.Brew,
-                    enabled = viewState.value.brewBoiler.enabled,
-                    temp = viewState.value.brewBoiler.selectedTemp.toInt(),
-                )
-                modify { copy(applying = false) }
-                navigate(NavEvent.Back)
-            },
-        )
+        if (applyJob?.isActive == true) return
+        applyJob = launchCatching(onError = ::showError) {
+            withContext(NonCancellable) {
+                while (true) {
+                    val type = applied.keys.firstOrNull { applied[it] != desired(it) } ?: break
+                    val request = desired(type)
+                    setBoilerSettings(arguments.deviceId, type, request.first, request.second.toInt())
+                    applied[type] = request
+                }
+            }
+        }
     }
 
     private fun showError(throwable: Throwable) {
+        modify {
+            val brew = applied[BoilerType.Brew]
+            val steam = applied[BoilerType.Steam]
+            copy(
+                brewBoiler = brew?.let { brewBoiler.copy(enabled = it.first, selectedTemp = it.second) } ?: brewBoiler,
+                steamBoiler = steam?.let { steamBoiler.copy(enabled = it.first, selectedTemp = it.second) } ?: steamBoiler,
+            )
+        }
         Logger.e(throwable) { "Error while updating quick settings" }
         launch { emitEvent(ShowSnackbar(getString(Res.string.error_generic))) }
     }

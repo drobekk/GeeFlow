@@ -3,26 +3,18 @@ package app.geeflow.presentation.feature.device.settings.connectivity
 import app.geeflow.core.presentation.BaseViewModel
 import app.geeflow.core.presentation.launch
 import app.geeflow.core.presentation.launchCatching
-import app.geeflow.domain.device.usecase.ConnectSingleDoseGrinderUseCase
 import app.geeflow.domain.device.usecase.ConnectSmartScaleUseCase
-import app.geeflow.domain.device.usecase.DisconnectSingleDoseGrinderUseCase
 import app.geeflow.domain.device.usecase.DisconnectSmartScaleUseCase
 import app.geeflow.domain.device.usecase.ObserveDeviceStateUseCase
 import app.geeflow.domain.device.usecase.ObserveFoundScalesUseCase
-import app.geeflow.domain.device.usecase.ObserveFoundSingleDoseGrindersUseCase
-import app.geeflow.domain.device.usecase.RequestSingleDoseGrinderListUseCase
 import app.geeflow.domain.device.usecase.RequestSmartScaleListUseCase
-import app.geeflow.domain.device.usecase.SetSingleDoseGrinderConnectivityUseCase
 import app.geeflow.domain.device.usecase.SetSmartScaleConnectivityUseCase
 import app.geeflow.navigation.NavEvent
 import app.geeflow.presentation.feature.device.settings.ConnectivitySettings
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivityAccessoryType.SingleDose
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivityAccessoryType.SmartScale
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.CloseClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ConnectionClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SearchToggled
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.TypeSelected
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.AccessoryConnectionStatus
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.AccessoryState
@@ -33,13 +25,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-@Suppress("LongParameterList")
 internal class ConnectivitySettingsViewModel(
     @InjectedParam val arguments: ConnectivitySettings,
     private val observeDeviceState: ObserveDeviceStateUseCase,
@@ -48,15 +38,10 @@ internal class ConnectivitySettingsViewModel(
     private val requestSmartScaleList: RequestSmartScaleListUseCase,
     private val connectSmartScale: ConnectSmartScaleUseCase,
     private val disconnectSmartScale: DisconnectSmartScaleUseCase,
-    private val observeFoundGrinders: ObserveFoundSingleDoseGrindersUseCase,
-    private val setGrinderConnectivity: SetSingleDoseGrinderConnectivityUseCase,
-    private val requestGrinderList: RequestSingleDoseGrinderListUseCase,
-    private val connectGrinder: ConnectSingleDoseGrinderUseCase,
-    private val disconnectGrinder: DisconnectSingleDoseGrinderUseCase,
 ) : BaseViewModel<ConnectivitySettingsViewState, ConnectivitySettingsViewModelEvent>(ConnectivitySettingsViewState()) {
 
-    private val connecting = MutableStateFlow<Map<ConnectivityAccessoryType, String>>(emptyMap())
-    private val connectionJobs = mutableMapOf<ConnectivityAccessoryType, Job>()
+    private val connecting = MutableStateFlow<String?>(null)
+    private var connectionJob: Job? = null
 
     init {
         observeState()
@@ -67,94 +52,66 @@ internal class ConnectivitySettingsViewModel(
             combine(
                 observeDeviceState(arguments.deviceId),
                 observeFoundScales(arguments.deviceId),
-                observeFoundGrinders(arguments.deviceId),
                 connecting,
-            ) { state, scales, grinders, pending ->
-                val scaleName = state.smartScale?.name
-                val grinderName = state.singleDoseGrinder?.name
-                finishConnection(SmartScale, state.smartScaleEnabled, scaleName)
-                finishConnection(SingleDose, state.singleDoseGrinderEnabled, grinderName)
+            ) { state, scales, pending ->
+                val connectedName = state.smartScale?.name
+                val pendingName = pending
+                if (!state.smartScaleEnabled || pendingName == connectedName) stopConnecting()
                 AccessoryState(
                     enabled = state.smartScaleEnabled,
                     isSearching = state.smartScaleSearchActive,
                     devices = if (state.smartScaleEnabled) {
-                        scales.map { viewItem(it.name, pending[SmartScale], scaleName) }
-                    } else {
-                        emptyList()
-                    },
-                ) to AccessoryState(
-                    enabled = state.singleDoseGrinderEnabled,
-                    isSearching = state.singleDoseGrinderSearchActive,
-                    devices = if (state.singleDoseGrinderEnabled) {
-                        grinders.map { viewItem(it.name, pending[SingleDose], grinderName) }
+                        scales.map { viewItem(it.name, pendingName, connectedName) }
                     } else {
                         emptyList()
                     },
                 )
-            }.collect { (scale, grinder) -> modify { copy(scale = scale, grinder = grinder) } }
+            }.collect { scale -> modify { copy(scale = scale) } }
         }
     }
 
     fun handleEvent(event: ConnectivitySettingsEvent) {
-        val type = viewState.value.selectedType
         when (event) {
-            is TypeSelected -> modify { copy(selectedType = event.type) }
             is SearchToggled -> {
-                if (!event.enabled) stopConnecting(type)
+                if (!event.enabled) stopConnecting()
                 launchCatching(onError = { showConnectionHelp() }) {
-                    when (type) {
-                        SmartScale -> setSmartScaleConnectivity(arguments.deviceId, event.enabled)
-                        SingleDose -> setGrinderConnectivity(arguments.deviceId, event.enabled)
-                    }
+                    setSmartScaleConnectivity(arguments.deviceId, event.enabled)
                 }
             }
-            is ConnectionClicked -> onConnectionClicked(type, event.name)
+            is ConnectionClicked -> onConnectionClicked(event.name)
             RescanClicked -> launchCatching(onError = { showConnectionHelp() }) {
-                when (type) {
-                    SmartScale -> requestSmartScaleList(arguments.deviceId)
-                    SingleDose -> requestGrinderList(arguments.deviceId)
-                }
+                requestSmartScaleList(arguments.deviceId)
             }
             CloseClicked -> navigate(NavEvent.Back)
         }
     }
 
-    private fun onConnectionClicked(type: ConnectivityAccessoryType, name: String) {
-        val accessory = viewState.value.selectedAccessory
-        if (!accessory.enabled || connecting.value.containsKey(type)) return
+    private fun onConnectionClicked(name: String) {
+        val accessory = viewState.value.scale
+        if (!accessory.enabled || connecting.value != null) return
         val device = accessory.devices.firstOrNull { it.name == name } ?: return
         if (device.connectionStatus == AccessoryConnectionStatus.Connected) {
             launchCatching(onError = { showConnectionHelp() }) {
-                when (type) {
-                    SmartScale -> disconnectSmartScale(arguments.deviceId)
-                    SingleDose -> disconnectGrinder(arguments.deviceId)
-                }
+                disconnectSmartScale(arguments.deviceId)
             }
         } else {
-            connecting.update { it + (type to name) }
-            connectionJobs[type] = launchCatching(onError = {
-                stopConnecting(type)
+            connecting.value = name
+            connectionJob = launchCatching(onError = {
+                stopConnecting()
                 showConnectionHelp()
             }) {
-                when (type) {
-                    SmartScale -> connectSmartScale(arguments.deviceId, name)
-                    SingleDose -> connectGrinder(arguments.deviceId, name)
-                }
+                connectSmartScale(arguments.deviceId, name)
                 delay(ConnectionTimeoutMs)
-                connecting.update { it - type }
+                connecting.value = null
                 showConnectionHelp()
             }
         }
     }
 
-    private fun finishConnection(type: ConnectivityAccessoryType, enabled: Boolean, connectedName: String?) {
-        val name = connecting.value[type] ?: return
-        if (!enabled || name == connectedName) stopConnecting(type)
-    }
-
-    private fun stopConnecting(type: ConnectivityAccessoryType) {
-        connecting.update { it - type }
-        connectionJobs.remove(type)?.cancel()
+    private fun stopConnecting() {
+        connecting.value = null
+        connectionJob?.cancel()
+        connectionJob = null
     }
 
     private fun showConnectionHelp() {

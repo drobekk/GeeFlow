@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Предупреждение о низком уровне</string>
     <string name="device_water_alarm_error">Мало воды. Наполните резервуар.</string>
     <string name="device_dashboard_connecting">Подключение…</string>
-    <string name="device_settings_connectivity_smart_scale">Умные весы</string>
     <string name="device_settings_connectivity_smart_scale_description">Поиск умных весов поблизости</string>
     <string name="device_settings_connectivity_searching">Поиск совместимых устройств…</string>
     <string name="device_settings_connectivity_not_found">Не видите своё устройство?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Долгое нажатие как пролив</string>
     <string name="device_settings_treat_manual_as_flush_description">Без истории и графика</string>
     <string name="device_settings_connectivity_enable_search">Включить поиск</string>
-    <string name="device_settings_connectivity_single_dose_description">Поиск кофемолок поблизости</string>
     <string name="device_settings_connectivity_disabled_info">Включите поиск, чтобы найти и подключить устройство.</string>
     <string name="device_settings_connectivity_connection_help">Не удалось подключиться. Убедитесь, что аксессуар включён и находится рядом, и повторите попытку. При необходимости перезапустите кофемашину.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Включите кольцо управления. В некоторых условиях возможны периодические помехи.</string>
     <string name="device_settings_firmware_version">Прошивка: %1$d</string>

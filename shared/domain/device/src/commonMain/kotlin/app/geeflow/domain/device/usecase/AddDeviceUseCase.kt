@@ -16,7 +16,7 @@ class AddDeviceUseCase(
             val existing = deviceRepository.getDeviceByBleMacAddress(ble.macAddress)
             if (existing != null) return existing.id
         }
-        val name = device.supportedDevice?.model ?: device.name
+        val name = if (device.modelSource == "manual-entry") device.name else device.supportedDevice?.model ?: device.name
         return deviceRepository.addDevice(device.copy(name = name))
     }
 }

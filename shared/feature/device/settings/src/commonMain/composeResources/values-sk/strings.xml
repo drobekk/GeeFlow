@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Varovanie pred nízkou hladinou</string>
     <string name="device_water_alarm_error">Nízka hladina vody. Doplňte nádržku.</string>
     <string name="device_dashboard_connecting">Pripájanie…</string>
-    <string name="device_settings_connectivity_smart_scale">Inteligentná váha</string>
     <string name="device_settings_connectivity_smart_scale_description">Vyhľadávať inteligentné váhy v okolí</string>
     <string name="device_settings_connectivity_searching">Vyhľadávanie zariadení…</string>
     <string name="device_settings_connectivity_not_found">Nevidíte svoje zariadenie?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Dlhý stisk páky ako preplach</string>
     <string name="device_settings_treat_manual_as_flush_description">Bez histórie a grafu</string>
     <string name="device_settings_connectivity_enable_search">Zapnúť vyhľadávanie</string>
-    <string name="device_settings_connectivity_single_dose_description">Vyhľadávať mlynčeky v okolí</string>
     <string name="device_settings_connectivity_disabled_info">Zapnite vyhľadávanie, aby ste našli a pripojili zariadenie.</string>
     <string name="device_settings_connectivity_connection_help">Pripojenie zlyhalo. Skontrolujte, či je príslušenstvo zapnuté a nablízku, a skúste to znova. V prípade potreby reštartujte kávovar.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Zapnite ovládací krúžok. V niektorých prostrediach sa môže vyskytnúť občasné rušenie.</string>
     <string name="device_settings_firmware_version">Firmvér: %1$d</string>

@@ -7,8 +7,8 @@
     <string name="add_device_screen_qr_parsing_error">Kan apparaatgegevens niet lezen</string>
     <string name="add_device_screen_empty">Geen apparaten gevonden. Zet je espressomachine aan.</string>
     <string name="add_device_demo">Demo-apparaat toevoegen</string>
-    <string name="add_device_warning_title">Disclaimer &amp; waarschuwing</string>
-    <string name="add_device_warning_message">Dit is een niet-officiële app van derden. Het gebruikt het fabrieksprotocol via reverse-engineering en wordt niet door de fabrikant ondersteund.\n\nOmdat de app directe hardwarecommando’s verstuurt, kunnen bugs storingen veroorzaken.\n\nDoor door te gaan erken je dat:\n• Je de software op eigen risico gebruikt.\n• Dit schade kan veroorzaken of garantie kan laten vervallen.\n• Laat de machine nooit onbeheerd achter onder app-bediening.</string>
-    <string name="add_device_warning_accept">Ik accepteer de risico’s</string>
-    <string name="add_device_warning_cancel">Annuleren</string>
+    <string name="add_device_warning_title">Machine safety</string>
+    <string name="add_device_warning_message">Keep the espresso machine attended while the app controls it. Stop brewing immediately if the machine behaves unexpectedly.</string>
+    <string name="add_device_warning_accept">Continue</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

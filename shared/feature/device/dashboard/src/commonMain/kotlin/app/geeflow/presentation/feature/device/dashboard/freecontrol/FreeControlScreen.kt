@@ -1,27 +1,39 @@
 package app.geeflow.presentation.feature.device.dashboard.freecontrol
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -29,23 +41,25 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
-import app.geeflow.presentation.feature.device.dashboard.components.BrewBar
-import app.geeflow.presentation.feature.device.dashboard.components.BrewButton
-import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonAction
 import app.geeflow.presentation.feature.device.dashboard.components.BrewButtonState
 import app.geeflow.presentation.feature.device.dashboard.components.BrewCharts
-import app.geeflow.presentation.feature.device.dashboard.components.BrewHeader
-import app.geeflow.presentation.feature.device.dashboard.components.BrewStatistics
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.BackClicked
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.ModeChanged
 import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControlEvent.RenameClicked
@@ -59,33 +73,27 @@ import app.geeflow.presentation.feature.device.dashboard.freecontrol.FreeControl
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 import app.geeflow.presentation.feature.device.dashboard.model.BrewChartModel
 import app.geeflow.ui.EventsDispatcher
-import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
-import app.geeflow.ui.components.GeeFlowSlider
 import app.geeflow.ui.components.HorizontalSpacer
 import app.geeflow.ui.icons.Flow
-import app.geeflow.ui.icons.GeeFlowIcon
 import app.geeflow.ui.icons.Pressure
-import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.modifier.geeFlowInsetsPadding
+import app.geeflow.ui.text.ClearText
+import app.geeflow.ui.text.clearText
+import app.geeflow.ui.theme.ClearScreenTheme
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import app.geeflow.ui.theme.GeeFlowTheme
 import geeflow.shared.core.ui.generated.resources.common_cancel
 import geeflow.shared.core.ui.generated.resources.common_confirm
-import geeflow.shared.core.ui.generated.resources.common_go_back
-import geeflow.shared.core.ui.generated.resources.common_pressure
-import geeflow.shared.core.ui.generated.resources.common_save
-import geeflow.shared.core.ui.generated.resources.unit_bar
-import geeflow.shared.core.ui.generated.resources.unit_milliliters_per_second
+import geeflow.shared.core.ui.generated.resources.common_sec
 import geeflow.shared.feature.device.dashboard.generated.resources.Res
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_default_profile_name
-import geeflow.shared.feature.device.dashboard.generated.resources.free_control_mode_flow
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_rename_dialog_name
 import geeflow.shared.feature.device.dashboard.generated.resources.free_control_rename_dialog_title
-import geeflow.shared.feature.device.dashboard.generated.resources.free_control_screen_title
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 import geeflow.shared.core.ui.generated.resources.Res as CoreRes
 
 @Composable
@@ -130,275 +138,362 @@ private fun FreeControlContent(
     snackbarState: SnackbarHostState,
     onEvent: (FreeControlEvent) -> Unit,
 ) {
-    if (isWidthExpanded()) {
-        Box(Modifier.fillMaxSize()) {
-            ExpandedLayout(viewState, onEvent)
-            SnackbarHost(
-                hostState = snackbarState,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .windowInsetsPadding(GeeFlowInsets.bottom),
-            )
+    var chartDialog by rememberSaveable { mutableStateOf(false) }
+    ClearScreenTheme {
+        if (chartDialog) ManualChartsDialog(viewState, onEvent) { chartDialog = false }
+        BoxWithConstraints(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).geeFlowInsetsPadding()) {
+            val phone = maxWidth < 600.dp
+            var showCharts by rememberSaveable { mutableStateOf(false) }
+            Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FreeControlTopBar(viewState, onEvent, onCharts = { chartDialog = true }, phone = phone)
+                if (phone) {
+                    ManualLiveReadings(viewState, compact = true)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(!showCharts, { showCharts = false }, label = { Text(clearText(ClearText.Control)) })
+                        FilterChip(showCharts, { showCharts = true }, label = { Text(clearText(ClearText.ShotCharts)) })
+                    }
+                    if (showCharts) {
+                        ManualShotCharts(viewState, onEvent, Modifier.weight(1f))
+                        ManualBrewButton(viewState, onEvent)
+                    } else {
+                        ManualControlPanel(viewState, onEvent, Modifier.weight(1f))
+                    }
+                } else {
+                    Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ManualLiveReadings(viewState)
+                            ManualShotCharts(viewState, onEvent, Modifier.weight(1f))
+                        }
+                        ManualControlPanel(viewState, onEvent, Modifier.width(340.dp).fillMaxHeight())
+                    }
+                }
+            }
+            SnackbarHost(snackbarState, Modifier.align(Alignment.BottomCenter))
         }
-    } else {
-        CompactLayout(viewState, snackbarState, onEvent)
     }
 }
 
 @Composable
-private fun ExpandedLayout(
-    viewState: FreeControlViewState,
-    onEvent: (FreeControlEvent) -> Unit,
-) {
-    val isPressure = viewState.mode == ControlMode.Pressure
-    val pressureColor = MaterialTheme.colorScheme.error
-    val flowColor = GeeFlowTheme.colors.water
-    val sliderValue = if (isPressure) viewState.pressureTarget else viewState.flowTarget
-    val sliderUnit = stringResource(
-        if (isPressure) {
-            CoreRes.string.unit_bar
-        } else {
-            CoreRes.string.unit_milliliters_per_second
-        },
+private fun ManualLiveReadings(state: FreeControlViewState, compact: Boolean = false) {
+    val last = state.brew.data.entries.maxByOrNull { it.key }?.value
+    val active = state.brewButtonState == BrewButtonState.Brewing
+    val seconds = state.brew.time.coerceAtLeast(0)
+    val pressure = state.currentPressure?.toFloatOrNull()?.let { (it * TargetPrecision).roundToInt() / TargetPrecision }
+    val flow = if (active) {
+        last?.volumePerSecond?.let {
+            (it * TargetPrecision).roundToInt() / TargetPrecision
+        } ?: 0f
+    } else {
+        0f
+    }
+    val output = last?.weight?.let { (it * TargetPrecision).roundToInt() / TargetPrecision } ?: 0f
+    val readings = listOf(
+        clearText(ClearText.Pressure) to "${if (state.connected) pressure ?: "—" else "—"} bar",
+        clearText(ClearText.WaterFlow) to "${if (state.connected) flow else "—"} ml/s",
+        clearText(ClearText.Time) to "$seconds ${stringResource(CoreRes.string.common_sec)}",
+        clearText(
+            ClearText.Output
+        ) to if (state.scaleConnected && state.connected) "$output g" else clearText(ClearText.NotAvailable),
     )
-    val sliderColor = if (isPressure) pressureColor else flowColor
-    val sliderRange = if (isPressure) viewState.pressureRange else viewState.flowRange
-
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .geeFlowInsetsPadding(),
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .padding(start = 16.dp),
-        ) {
-            FreeControlTopBar(
-                sessionCompleted = viewState.sessionCompleted,
-                brewButtonState = viewState.brewButtonState,
-                onBack = { onEvent(BackClicked) },
-                onSave = { onEvent(SaveClicked) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 16.dp),
-            )
-            BrewCharts(
-                model = BrewChartModel(measurements = viewState.brew.data),
-                visibleCharts = viewState.visibleCharts,
-                modifier = Modifier.weight(1f),
-            )
-            Spacer(Modifier.height(16.dp))
-            BrewHeader(
-                brew = viewState.brew.copy(name = viewState.profileName),
-                onHeaderClick = { onEvent(RenameClicked) },
-                showEditIcon = true,
-            )
-            Spacer(Modifier.height(12.dp))
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-            ) {
-                BrewStatistics(
-                    brew = viewState.brew.copy(name = viewState.profileName),
-                    isBrewing = viewState.brewButtonState == BrewButtonState.Brewing,
-                    visibleCharts = viewState.visibleCharts,
-                    onToggle = { onEvent(ToggleChartVisibility(it)) },
-                    modifier = Modifier.weight(1f),
-                )
-                HorizontalSpacer(16.dp)
-                BrewButton(
-                    state = viewState.brewButtonState,
-                    sideActions = listOfNotNull(
-                        BrewButtonAction(
-                            contentDescription = stringResource(CoreRes.string.common_pressure),
-                            onClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
-                        ) {
-                            Icon(
-                                painter = rememberVectorPainter(GeeFlowIcon.Pressure),
-                                contentDescription = stringResource(CoreRes.string.common_pressure),
-                                modifier = Modifier.size(24.dp),
-                                tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
+    Column {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            readings.forEachIndexed { index, (label, value) ->
+                val color = when (index) {
+                    0 -> GeeFlowTheme.colors.pressure
+                    1 -> GeeFlowTheme.colors.water
+                    else -> MaterialTheme.colorScheme.onSurface
+                }
+                Column(
+                    Modifier.weight(1f).clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surface).padding(8.dp)
+                ) {
+                    Text(
+                        label,
+                        style = if (compact) MaterialTheme.typography.labelMedium else MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                    )
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            value.substringBefore(" "),
+                            color = color,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = if (compact) 16.sp else 32.sp,
+                            maxLines = 1,
+                        )
+                        val unit = value.substringAfter(" ", "")
+                        if (unit.isNotBlank()) {
+                            Text(
+                                unit,
+                                color = color,
+                                fontSize = if (compact) 12.sp else 16.sp,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
+                                maxLines = 1,
                             )
-                        },
-                        if (viewState.flowControlSupported) {
-                            BrewButtonAction(
-                                contentDescription = stringResource(Res.string.free_control_mode_flow),
-                                onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
-                            ) {
-                                Icon(
-                                    painter = rememberVectorPainter(GeeFlowIcon.Flow),
-                                    contentDescription = stringResource(Res.string.free_control_mode_flow),
-                                    modifier = Modifier.size(24.dp),
-                                    tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        } else {
-                            null
-                        },
-                    ),
-                    onHeroButtonClick = { onEvent(StartClicked) },
-                    onStopClick = { onEvent(StopClicked) },
-                )
+                        }
+                    }
+                }
             }
         }
-
-        GeeFlowSlider(
-            value = sliderValue,
-            onValueChange = { onEvent(TargetChanged(it)) },
-            valueRange = sliderRange,
-            unit = sliderUnit,
-            color = sliderColor,
-            vertical = true,
-            modifier = Modifier
-                .width(SliderColumnWidth)
-                .fillMaxHeight()
-                .padding(16.dp),
+        Text(
+            if (!state.connected) {
+                clearText(ClearText.DisconnectedControls)
+            } else if (active) {
+                clearText(ClearText.LiveRecording)
+            } else if (state.sessionCompleted) {
+                clearText(ClearText.LiveLastShot)
+            } else {
+                clearText(ClearText.ReadyRecord)
+            },
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
 @Composable
-private fun CompactLayout(
-    viewState: FreeControlViewState,
-    snackbarState: SnackbarHostState,
-    onEvent: (FreeControlEvent) -> Unit,
-) {
-    val isPressure = viewState.mode == ControlMode.Pressure
-    val pressureColor = MaterialTheme.colorScheme.error
-    val flowColor = GeeFlowTheme.colors.water
-    val sliderValue = if (isPressure) viewState.pressureTarget else viewState.flowTarget
-    val sliderUnit = stringResource(
-        if (isPressure) {
-            CoreRes.string.unit_bar
-        } else {
-            CoreRes.string.unit_milliliters_per_second
-        },
+private fun ManualShotCharts(state: FreeControlViewState, onEvent: (FreeControlEvent) -> Unit, modifier: Modifier) {
+    BrewCharts(
+        model = BrewChartModel(measurements = state.brew.data),
+        visibleCharts = state.visibleCharts,
+        modifier = modifier,
     )
-    val sliderColor = if (isPressure) pressureColor else flowColor
-    val sliderRange = if (isPressure) viewState.pressureRange else viewState.flowRange
+}
 
-    Scaffold(
-        contentWindowInsets = GeeFlowInsets.content,
-        modifier = Modifier
-            .fillMaxSize()
-            .geeFlowInsetsPadding(),
-        topBar = {
-            FreeControlTopBar(
-                sessionCompleted = viewState.sessionCompleted,
-                brewButtonState = viewState.brewButtonState,
-                onBack = { onEvent(BackClicked) },
-                onSave = { onEvent(SaveClicked) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
-            )
-        },
-        bottomBar = {
-            BrewButton(
-                state = viewState.brewButtonState,
-                sideActions = listOfNotNull(
-                    BrewButtonAction(
-                        contentDescription = stringResource(CoreRes.string.common_pressure),
-                        onClick = { onEvent(ModeChanged(ControlMode.Pressure)) },
-                    ) {
-                        Icon(
-                            painter = rememberVectorPainter(GeeFlowIcon.Pressure),
-                            contentDescription = stringResource(CoreRes.string.common_pressure),
-                            modifier = Modifier.size(24.dp),
-                            tint = if (isPressure) pressureColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    },
-                    if (viewState.flowControlSupported) {
-                        BrewButtonAction(
-                            contentDescription = stringResource(Res.string.free_control_mode_flow),
-                            onClick = { onEvent(ModeChanged(ControlMode.Flow)) },
-                        ) {
-                            Icon(
-                                painter = rememberVectorPainter(GeeFlowIcon.Flow),
-                                contentDescription = stringResource(Res.string.free_control_mode_flow),
-                                modifier = Modifier.size(24.dp),
-                                tint = if (!isPressure) flowColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    } else {
-                        null
-                    },
-                ),
-                onHeroButtonClick = { onEvent(StartClicked) },
-                onStopClick = { onEvent(StopClicked) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-            )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarState, modifier = Modifier.padding(horizontal = 16.dp))
-        },
-    ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            BrewCharts(
-                model = BrewChartModel(measurements = viewState.brew.data),
-                visibleCharts = viewState.visibleCharts,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 24.dp, end = 24.dp),
-            )
-            BrewBar(
-                brew = viewState.brew.copy(name = viewState.profileName),
-                isBrewing = viewState.brewButtonState == BrewButtonState.Brewing,
-                visibleCharts = viewState.visibleCharts,
-                onToggle = { onEvent(ToggleChartVisibility(it)) },
-                onHeaderClick = { onEvent(RenameClicked) },
-                showEditIcon = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, top = 16.dp, end = 24.dp),
-            )
-            GeeFlowSlider(
-                value = sliderValue,
-                onValueChange = { onEvent(TargetChanged(it)) },
-                valueRange = sliderRange,
-                unit = sliderUnit,
-                color = sliderColor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(SliderHeight)
-                    .padding(start = 24.dp, top = 20.dp, end = 24.dp, bottom = 4.dp),
+@Composable
+private fun ManualControlPanel(
+    state: FreeControlViewState,
+    onEvent: (FreeControlEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val pressure = state.mode == ControlMode.Pressure
+    val color = if (pressure) GeeFlowTheme.colors.pressure else GeeFlowTheme.colors.water
+    val value = if (pressure) state.pressureTarget else state.flowTarget
+    val range = if (pressure) state.pressureRange else state.flowRange
+    val unit = if (pressure) "bar" else "ml/s"
+    var fine by rememberSaveable { mutableStateOf(false) }
+    Column(
+        modifier.clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surface).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(1f)) {
+                ControlMethodButton(
+                    clearText(ClearText.Pressure),
+                    ControlMode.Pressure,
+                    state,
+                    GeeFlowTheme.colors.pressure,
+                    onEvent
+                )
+            }
+            if (state.flowControlSupported) {
+                Box(Modifier.weight(1f)) {
+                    ControlMethodButton(
+                        clearText(ClearText.WaterFlow),
+                        ControlMode.Flow,
+                        state,
+                        GeeFlowTheme.colors.water,
+                        onEvent
+                    )
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    if (pressure) clearText(ClearText.TargetPressure) else clearText(ClearText.TargetWaterFlow),
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    "${(value * TargetPrecision).roundToInt() / TargetPrecision} $unit",
+                    color = color,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            FilterChip(
+                fine,
+                { fine = !fine },
+                label = { Text(if (fine) clearText(ClearText.FineQuarter) else clearText(ClearText.Fine)) }
             )
         }
+        if (!pressure) {
+            val rangeLabel = if (value > state.flowChartRange.maxMillilitersPerSecond) {
+                clearText(ClearText.RangeFlag, state.flowChartRange.maxMillilitersPerSecond)
+            } else {
+                " "
+            }
+            Text(
+                rangeLabel,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
+        ManualGesturePad(value, range, unit, fine, state.connected, color, {
+            onEvent(TargetChanged(it))
+        }, Modifier.weight(1f).fillMaxWidth())
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedButton(onClick = {
+                onEvent(TargetChanged(steppedManualTarget(value, -TargetStep, range)))
+            }, enabled = state.connected, modifier = Modifier.heightIn(min = 48.dp)) {
+                Icon(Icons.Filled.Remove, contentDescription = clearText(ClearText.DecreaseTenth))
+            }
+            Text(
+                clearText(ClearText.DragHold),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+            )
+            OutlinedButton(onClick = {
+                onEvent(TargetChanged(steppedManualTarget(value, TargetStep, range)))
+            }, enabled = state.connected, modifier = Modifier.heightIn(min = 48.dp)) {
+                Icon(Icons.Filled.Add, contentDescription = clearText(ClearText.IncreaseTenth))
+            }
+        }
+        ManualBrewButton(state, onEvent)
+    }
+}
+
+@Composable
+private fun ManualBrewButton(state: FreeControlViewState, onEvent: (FreeControlEvent) -> Unit) {
+    val active = state.brewButtonState == BrewButtonState.Brewing
+    Button(
+        onClick = { onEvent(if (active) StopClicked else StartClicked) },
+        enabled = state.connected && state.brewButtonState in setOf(BrewButtonState.Idle, BrewButtonState.Brewing),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (active) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+        ),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
+    ) {
+        Icon(if (active) Icons.Filled.Stop else Icons.Filled.PlayArrow, contentDescription = null)
+        HorizontalSpacer(8.dp)
+        Text(
+            when {
+                active -> clearText(ClearText.StopBrew)
+                state.brewButtonState == BrewButtonState.Syncing -> clearText(ClearText.Starting)
+                else -> clearText(ClearText.StartBrew)
+            }
+        )
+    }
+}
+
+@Composable
+private fun ControlMethodButton(
+    label: String,
+    mode: ControlMode,
+    state: FreeControlViewState,
+    color: androidx.compose.ui.graphics.Color,
+    onEvent: (FreeControlEvent) -> Unit,
+) {
+    val selected = state.mode == mode
+    OutlinedButton(
+        onClick = { onEvent(ModeChanged(mode)) },
+        enabled = state.brewButtonState == BrewButtonState.Idle,
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = color,
+            containerColor = if (selected) color.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(
+            if (selected) 1.5.dp else 0.5.dp,
+            if (selected) color else MaterialTheme.colorScheme.outlineVariant
+        ),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics { this.selected = selected },
+    ) {
+        if (selected) Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+        HorizontalSpacer(6.dp)
+        Text(label)
     }
 }
 
 @Composable
 private fun FreeControlTopBar(
-    onBack: () -> Unit,
-    onSave: () -> Unit,
-    sessionCompleted: Boolean,
-    brewButtonState: BrewButtonState,
-    modifier: Modifier = Modifier,
+    state: FreeControlViewState,
+    onEvent: (FreeControlEvent) -> Unit,
+    onCharts: () -> Unit,
+    phone: Boolean,
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack) {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = stringResource(CoreRes.string.common_go_back),
+    Column {
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = { onEvent(BackClicked) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                Text(clearText(ClearText.Back))
+            }
+            Text(
+                clearText(ClearText.ManualControl),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
             )
+            if (!phone) {
+                HorizontalSpacer(12.dp)
+                Text(
+                    if (state.deviceName in setOf(
+                            "Demo",
+                            "LITA BA · Demo"
+                        )
+                    ) {
+                        clearText(ClearText.LitaBaDemo)
+                    } else {
+                        state.deviceName
+                    },
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.weight(1f))
+                ManualRecordingActions(state, onEvent, onCharts)
+            }
         }
-        Text(
-            text = stringResource(Res.string.free_control_screen_title),
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Spacer(Modifier.weight(1f))
+        if (phone) ManualRecordingActions(state, onEvent, onCharts)
+    }
+}
+
+@Composable
+private fun ManualRecordingActions(state: FreeControlViewState, onEvent: (FreeControlEvent) -> Unit, onCharts: () -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        TextButton(onClick = onCharts, modifier = Modifier.heightIn(min = 48.dp)) {
+            Icon(Icons.Filled.Tune, contentDescription = null)
+            Text(clearText(ClearText.Charts))
+        }
+        TextButton(onClick = { onEvent(RenameClicked) }, modifier = Modifier.heightIn(min = 48.dp)) {
+            Icon(Icons.Filled.Edit, contentDescription = null)
+            Text(clearText(ClearText.Name))
+        }
         Button(
-            onClick = onSave,
-            enabled = sessionCompleted && brewButtonState == BrewButtonState.Idle,
-            modifier = Modifier.padding(end = 8.dp),
+            onClick = { onEvent(SaveClicked) },
+            enabled = state.sessionCompleted && state.brewButtonState == BrewButtonState.Idle,
+            modifier = Modifier.heightIn(min = 48.dp),
         ) {
-            Text(stringResource(CoreRes.string.common_save))
+            Icon(Icons.Filled.Save, contentDescription = null)
+            HorizontalSpacer(6.dp)
+            Text(clearText(ClearText.SaveProfile))
         }
     }
+}
+
+@Composable
+private fun ManualChartsDialog(state: FreeControlViewState, onEvent: (FreeControlEvent) -> Unit, onClose: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text(clearText(ClearText.VisibleCharts)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                listOf(
+                    DashboardChartType.Pressure to clearText(ClearText.PressureUnit),
+                    DashboardChartType.FlowRate to clearText(ClearText.FlowUnit),
+                    DashboardChartType.WeightRate to clearText(ClearText.CupFlowUnit),
+                    DashboardChartType.Volume to clearText(ClearText.WaterVolumeUnit),
+                    DashboardChartType.Weight to clearText(ClearText.CupWeightUnit),
+                ).forEach { (chart, label) ->
+                    FilterChip(
+                        selected = chart in state.visibleCharts,
+                        onClick = { onEvent(ToggleChartVisibility(chart)) },
+                        label = { Text(label) },
+                        leadingIcon = {
+                            if (chart in state.visibleCharts) Icon(Icons.Filled.Check, contentDescription = null)
+                        },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onClose) { Text(clearText(ClearText.Done)) } },
+    )
 }
 
 @Composable
@@ -435,8 +530,8 @@ private fun RenameProfileDialog(
     )
 }
 
-private val SliderColumnWidth = 112.dp
-private val SliderHeight = 72.dp
+private const val TargetPrecision = 10f
+private const val TargetStep = 0.1f
 
 @PreviewWrapper(GeeFlowPreviewWrapper::class)
 @Composable

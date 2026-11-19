@@ -14,4 +14,5 @@ data class Device(
     val boundProfileId: Long? = null,
     val modelId: String? = null,
     val modelSource: String? = null,
+    val serialNumber: String? = null,
 )

@@ -1,0 +1,2 @@
+ALTER TABLE brew_history ADD COLUMN deviceId INTEGER;
+CREATE INDEX brew_history_device_started_idx ON brew_history(userId, deviceId, startedAt);

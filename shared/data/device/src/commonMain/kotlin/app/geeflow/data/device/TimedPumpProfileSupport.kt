@@ -39,7 +39,6 @@ internal object TimedPumpProfileSupport {
         livePressure = mapOf(PressureLocation.Pump to TargetRange(0f, MAX_PRESSURE, .1f)),
         liveFlow = TargetRange(0f, MAX_FLOW, .1f),
         livePause = true,
-        // Live register changes were acknowledged but did not switch the active regulator in device tests.
         liveModeSwitch = false,
         minimumWriteIntervalMillis = 100L,
         telemetry = setOf(BrewMetric.PumpPressure, BrewMetric.PumpFlow, BrewMetric.PumpedVolume, BrewMetric.CupWeight),
@@ -50,16 +49,21 @@ internal object TimedPumpProfileSupport {
         val nativeExit = exitConditions.isEmpty() || exitConditions.singleOrNull()?.let {
             it.metric == BrewMetric.PhaseTime && it.comparison == ThresholdComparison.Above && it.threshold % 1f == 0f
         } == true
-        val noExtensions = nativeExit && minimumDurationMillis == 0L && ramp.style == RampStyle.Instant
+        val noExtensions = nativeExit && minimumDurationMillis == 0L && ramp.style == RampStyle.Instant &&
+            adaptiveFlowProbe == null
         val representable = maximumDurationMillis % MILLISECONDS_PER_SECOND == 0L &&
             maximumDurationMillis in MILLISECONDS_PER_SECOND..MAX_PHASE_DURATION_MS
         return noExtensions && representable && plannedDurationMillis() >= MILLISECONDS_PER_SECOND
     }
 
     fun assessNative(profile: BrewProfile, flowSupported: Boolean = true): List<ProfileIssue> = buildList {
+        if (profile.program.version == 2) add(ProfileIssue(ProfileIssueCode.NativeFeature))
         if (profile.finishCondition == null) add(ProfileIssue(ProfileIssueCode.MissingGlobalGoal))
         when (val program = profile.program) {
             is BrewProgram.Recording -> {
+                if (program.recording.samples.any { sample ->
+                    (if (program.recording.controlMode == FreeHandControlMode.Flow) sample.data.flowRate else sample.data.pressure) !in 0f..MAX_PRESSURE
+                }) add(ProfileIssue(ProfileIssueCode.UnsupportedControl))
                 if (!flowSupported && program.recording.controlMode == FreeHandControlMode.Flow) {
                     add(ProfileIssue(ProfileIssueCode.UnsupportedControl))
                 }
@@ -89,8 +93,8 @@ internal object TimedPumpProfileSupport {
 
 internal suspend fun DeviceController.openFreeHandSession(initial: PhaseControl): LiveBrewSession {
     val generation = connectionGeneration
-    val flow = initial is PhaseControl.Flow
-    brewing.startFreeVariableBrewing(if (flow) FreeHandControlMode.Flow else FreeHandControlMode.Pressure)
+    var mode = if (initial is PhaseControl.Flow) FreeHandControlMode.Flow else FreeHandControlMode.Pressure
+    brewing.startFreeVariableBrewing(mode)
 
     return object : LiveBrewSession {
         override suspend fun applyTarget(target: PhaseControl): PhaseControl {
@@ -106,18 +110,30 @@ internal suspend fun DeviceController.openFreeHandSession(initial: PhaseControl)
 
                 PhaseControl.PumpPause -> target
             }
+            val nextMode = when (actual) {
+                is PhaseControl.Flow -> FreeHandControlMode.Flow
+                is PhaseControl.Pressure -> FreeHandControlMode.Pressure
+                PhaseControl.PumpPause -> mode
+            }
+            if (nextMode != mode) {
+                check(profilingCapabilities.liveModeSwitch)
+                brewing.setFreeVariableBrewingMode(nextMode)
+                mode = nextMode
+            }
             when (actual) {
                 is PhaseControl.Flow -> {
-                    check(flow)
                     brewing.setFreeBrewFlowTarget(actual.millilitresPerSecond)
                 }
 
                 is PhaseControl.Pressure -> {
-                    check(!flow)
                     brewing.setFreeBrewPressureTarget(actual.bar)
                 }
 
-                PhaseControl.PumpPause -> if (flow) brewing.setFreeBrewFlowTarget(0f) else brewing.setFreeBrewPressureTarget(0f)
+                PhaseControl.PumpPause -> if (mode == FreeHandControlMode.Flow) {
+                    brewing.setFreeBrewFlowTarget(0f)
+                } else {
+                    brewing.setFreeBrewPressureTarget(0f)
+                }
             }
             return actual
         }

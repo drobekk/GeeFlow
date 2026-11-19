@@ -29,6 +29,9 @@ internal class FreeHandRecorder(private val startedAt: Instant, private val mode
                     volume = state.volume ?: 0f,
                     flowRate = state.flowRate ?: 0f,
                     weightRate = state.weightRate ?: 0f,
+                    brewBoilerTempC = state.brewBoilerTemp,
+                    steamBoilerTempC = state.steamBoilerTemp,
+                    machineElapsedSeconds = state.time,
                 ),
             ),
         )

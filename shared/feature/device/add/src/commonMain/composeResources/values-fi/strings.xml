@@ -7,8 +7,8 @@
     <string name="add_device_screen_qr_parsing_error">Laitetietoja ei voitu lukea</string>
     <string name="add_device_screen_empty">Laitteita ei löytynyt. Laita keitin päälle.</string>
     <string name="add_device_demo">Lisää demo-laite</string>
-    <string name="add_device_warning_title">Vastuuvapauslauseke</string>
-    <string name="add_device_warning_message">Tämä on epävirallinen kolmannen osapuolen sovellus. Se käyttää valmistajan protokollaa takaisinmallinnettuna ilman valmistajan tukea.\n\nKoska sovellus lähettää suoria laitekomentoja, virheet voivat aiheuttaa laitteen toimintahäiriöitä.\n\nJatkamalla hyväksyt, että:\n• Käytät ohjelmistoa omalla vastuullasi.\n• Käyttö voi vahingoittaa laitetta tai mitätöidä takuun.\n• Älä koskaan jätä keitintä valvomatta sovellusohjauksessa.</string>
-    <string name="add_device_warning_accept">Hyväksyn riskit</string>
-    <string name="add_device_warning_cancel">Peruuta</string>
+    <string name="add_device_warning_title">Machine safety</string>
+    <string name="add_device_warning_message">Keep the espresso machine attended while the app controls it. Stop brewing immediately if the machine behaves unexpectedly.</string>
+    <string name="add_device_warning_accept">Continue</string>
+    <string name="add_device_warning_cancel">Cancel</string>
 </resources>

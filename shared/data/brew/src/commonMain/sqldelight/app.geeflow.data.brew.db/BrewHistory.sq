@@ -4,6 +4,8 @@ import app.geeflow.data.brew.model.ProfileStep;
 import app.geeflow.data.brew.model.FreeHandRecording;
 import kotlin.Float;
 import app.geeflow.data.brew.model.ProfileExecutionTrace;
+import app.geeflow.data.brew.model.BrewScaleSample;
+import app.geeflow.data.brew.model.BrewProgram;
 import kotlin.collections.List;
 import kotlin.collections.Map;
 
@@ -13,6 +15,7 @@ import kotlin.collections.Map;
 CREATE TABLE brew_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   userId INTEGER NOT NULL,
+  deviceId INTEGER,
   profileId INTEGER,
   profileName TEXT,
   mode TEXT AS BrewMode NOT NULL DEFAULT 'Profile',
@@ -21,30 +24,78 @@ CREATE TABLE brew_history (
   profileSteps TEXT AS List<ProfileStep> NOT NULL DEFAULT '[]',
   profileRecording TEXT AS FreeHandRecording,
   executionTrace TEXT AS ProfileExecutionTrace,
+  scaleSamples TEXT AS List<BrewScaleSample> NOT NULL DEFAULT '[]',
+  profileProgram TEXT AS BrewProgram,
   dataPoints TEXT AS Map<Float, BrewDataPoint> NOT NULL,
   FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX brew_history_user_started_idx ON brew_history(userId, startedAt);
+CREATE INDEX brew_history_device_started_idx ON brew_history(userId, deviceId, startedAt);
+
+CREATE TABLE brew_history_metadata (
+  deviceId INTEGER NOT NULL,
+  startedAt INTEGER NOT NULL,
+  doseGrams REAL,
+  grindSetting TEXT,
+  endedAt INTEGER,
+  extractionStartMillis INTEGER,
+  extractionStartEstimated INTEGER,
+  finalWeightGrams REAL,
+  recipeRatio REAL,
+  recipeTargetGrams REAL,
+  updatedAt INTEGER NOT NULL,
+  PRIMARY KEY (deviceId, startedAt)
+);
 
 -- The samples column is deliberately left out: the list only needs metadata, and a page of
 -- curves would be orders of magnitude larger than the rows shown.
 selectPage:
-SELECT id, userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, profileRecording, executionTrace
-FROM brew_history
-WHERE userId = :userId
-  AND (COALESCE(profileName, '') LIKE :pattern
-    OR mode LIKE :pattern
-    OR strftime('%Y-%m-%d %H:%M', startedAt / 1000, 'unixepoch', 'localtime') LIKE :pattern)
-ORDER BY startedAt DESC
+SELECT h.id, h.userId, h.deviceId, h.profileId, h.profileName, h.mode, h.startedAt, h.durationSeconds,
+       h.profileSteps, h.profileRecording, h.executionTrace, h.profileProgram,
+       m.doseGrams, m.grindSetting, m.endedAt, m.extractionStartMillis, m.extractionStartEstimated, m.finalWeightGrams, m.recipeRatio, m.recipeTargetGrams
+FROM brew_history h
+LEFT JOIN brew_history_metadata m ON m.deviceId = h.deviceId AND m.startedAt = h.startedAt
+WHERE h.userId = :userId
+  AND (COALESCE(h.profileName, '') LIKE :pattern
+    OR h.mode LIKE :pattern
+    OR strftime('%Y-%m-%d %H:%M', h.startedAt / 1000, 'unixepoch', 'localtime') LIKE :pattern)
+ORDER BY h.startedAt DESC
+LIMIT :limit OFFSET :offset;
+
+selectPageForDevice:
+SELECT h.id, h.userId, h.deviceId, h.profileId, h.profileName, h.mode, h.startedAt, h.durationSeconds,
+       h.profileSteps, h.profileRecording, h.executionTrace, h.profileProgram,
+       m.doseGrams, m.grindSetting, m.endedAt, m.extractionStartMillis, m.extractionStartEstimated, m.finalWeightGrams, m.recipeRatio, m.recipeTargetGrams
+FROM brew_history h
+LEFT JOIN brew_history_metadata m ON m.deviceId = h.deviceId AND m.startedAt = h.startedAt
+WHERE h.userId = :userId
+  AND h.deviceId = :deviceId
+  AND (COALESCE(h.profileName, '') LIKE :pattern
+    OR h.mode LIKE :pattern
+    OR strftime('%Y-%m-%d %H:%M', h.startedAt / 1000, 'unixepoch', 'localtime') LIKE :pattern)
+ORDER BY h.startedAt DESC
 LIMIT :limit OFFSET :offset;
 
 selectDataPoints:
 SELECT dataPoints FROM brew_history WHERE id = ?;
 
+selectScaleSamples:
+SELECT scaleSamples FROM brew_history WHERE id = ?;
+
 insertBrew:
-INSERT INTO brew_history(userId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, profileRecording, executionTrace, dataPoints)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO brew_history(userId, deviceId, profileId, profileName, mode, startedAt, durationSeconds, profileSteps, profileRecording, executionTrace, scaleSamples, profileProgram, dataPoints)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectShotMetadata:
+SELECT deviceId, startedAt, doseGrams, grindSetting, endedAt, extractionStartMillis,
+       extractionStartEstimated, finalWeightGrams, recipeRatio, recipeTargetGrams, updatedAt
+FROM brew_history_metadata
+WHERE deviceId = ? AND startedAt = ?;
+
+replaceShotMetadata:
+INSERT OR REPLACE INTO brew_history_metadata(deviceId, startedAt, doseGrams, grindSetting, endedAt, extractionStartMillis, extractionStartEstimated, finalWeightGrams, recipeRatio, recipeTargetGrams, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 trimHistory:
 DELETE FROM brew_history

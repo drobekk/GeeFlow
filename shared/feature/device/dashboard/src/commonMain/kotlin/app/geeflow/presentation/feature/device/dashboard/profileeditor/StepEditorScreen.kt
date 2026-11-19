@@ -92,7 +92,9 @@ import app.geeflow.ui.GeeFlowInsets
 import app.geeflow.ui.components.GeeFlowSlider
 import app.geeflow.ui.components.VerticalSpacer
 import app.geeflow.ui.icons.GeeFlowIcon
+import app.geeflow.ui.icons.LessThan
 import app.geeflow.ui.icons.LessThanOrEqual
+import app.geeflow.ui.icons.MoreThan
 import app.geeflow.ui.icons.MoreThanOrEqual
 import app.geeflow.ui.isWidthExpanded
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
@@ -602,10 +604,11 @@ private fun ConditionContent(
             if (condition.metric in PressureAndFlowMetrics) {
                 FilledTonalIconButton(
                     onClick = {
-                        val comparison = if (condition.comparison == ThresholdComparison.Above) {
-                            ThresholdComparison.Below
-                        } else {
-                            ThresholdComparison.Above
+                        val comparison = when (condition.comparison) {
+                            ThresholdComparison.Above -> ThresholdComparison.Below
+                            ThresholdComparison.Below -> ThresholdComparison.Above
+                            ThresholdComparison.StrictlyAbove -> ThresholdComparison.StrictlyBelow
+                            ThresholdComparison.StrictlyBelow -> ThresholdComparison.StrictlyAbove
                         }
                         onEvent(StepEditorEvent.ConditionChanged(condition.copy(comparison = comparison)))
                     },
@@ -626,6 +629,8 @@ private fun ConditionContent(
                             imageVector = when (comparison) {
                                 ThresholdComparison.Above -> GeeFlowIcon.MoreThanOrEqual
                                 ThresholdComparison.Below -> GeeFlowIcon.LessThanOrEqual
+                                ThresholdComparison.StrictlyAbove -> GeeFlowIcon.MoreThan
+                                ThresholdComparison.StrictlyBelow -> GeeFlowIcon.LessThan
                             },
                             contentDescription = enumLabel(comparison),
                             modifier = Modifier.size(24.dp),

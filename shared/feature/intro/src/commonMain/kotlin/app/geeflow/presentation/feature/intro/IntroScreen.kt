@@ -1,5 +1,6 @@
 package app.geeflow.presentation.feature.intro
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,14 +16,9 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -34,22 +30,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.geeflow.navigation.Navigator
 import app.geeflow.navigation.NavigatorEffect
-import app.geeflow.ui.components.GeeFlowAgreementCheckbox
 import app.geeflow.ui.components.GeeFlowIconButton
 import app.geeflow.ui.components.GeeFlowOutlinedTextField
 import app.geeflow.ui.components.GeeFlowScaffold
 import app.geeflow.ui.components.VerticalSpacer
-import app.geeflow.ui.icons.GeeFlowIcon
-import app.geeflow.ui.icons.Logo
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
 import geeflow.shared.core.ui.generated.resources.app_name
 import geeflow.shared.core.ui.generated.resources.common_confirm
+import geeflow.shared.core.ui.generated.resources.liang_lita_app_icon
 import geeflow.shared.core.ui.generated.resources.common_user_name
 import geeflow.shared.feature.intro.generated.resources.Res
 import geeflow.shared.feature.intro.generated.resources.intro_screen_set_up
 import geeflow.shared.feature.intro.generated.resources.intro_screen_welcome_message
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import geeflow.shared.core.ui.generated.resources.Res as UiRes
 
@@ -104,11 +99,10 @@ private fun Logo(expanded: Boolean, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
     ) {
         VerticalSpacer(24.dp)
-        Icon(
-            painter = rememberVectorPainter(GeeFlowIcon.Logo),
+        Image(
+            painter = painterResource(UiRes.drawable.liang_lita_app_icon),
             modifier = Modifier.size(120.dp),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
         )
         VerticalSpacer(24.dp)
         Text(
@@ -140,7 +134,6 @@ private fun Form(
         verticalArrangement = Arrangement.Center,
     ) {
         val userNameTextFieldState = rememberTextFieldState()
-        var termsAgreed by rememberSaveable { mutableStateOf(false) }
         Text(
             text = stringResource(Res.string.intro_screen_set_up),
             style = MaterialTheme.typography.bodyLarge,
@@ -152,26 +145,20 @@ private fun Form(
             lineLimits = TextFieldLineLimits.SingleLine,
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             onKeyboardAction = {
-                if (userNameTextFieldState.text.isNotEmpty() && termsAgreed) {
+                if (userNameTextFieldState.text.isNotEmpty()) {
                     onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString()))
                 }
             },
             label = { Text(stringResource(UiRes.string.common_user_name)) },
         )
-        VerticalSpacer(16.dp)
-        GeeFlowAgreementCheckbox(
-            checked = termsAgreed,
-            onCheckedChange = { termsAgreed = it },
-            modifier = Modifier.fillMaxWidth(),
-        )
         VerticalSpacer(32.dp)
         VerticalSpacer(1f)
         GeeFlowIconButton(
             painter = rememberVectorPainter(Icons.Filled.Check),
-            enabled = userNameTextFieldState.text.isNotEmpty() && termsAgreed,
+            enabled = userNameTextFieldState.text.isNotEmpty(),
             contentDescription = stringResource(UiRes.string.common_confirm),
             onClick = {
-                if (userNameTextFieldState.text.isNotEmpty() && termsAgreed) {
+                if (userNameTextFieldState.text.isNotEmpty()) {
                     onEvent(IntroEvent.ConfirmClicked(userNameTextFieldState.text.toString()))
                 }
             },

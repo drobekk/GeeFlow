@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Opozorilo na nizek nivo vode</string>
     <string name="device_water_alarm_error">Nivo vode je nizek. Napolnite posodo za vodo.</string>
     <string name="device_dashboard_connecting">Povezovanje…</string>
-    <string name="device_settings_connectivity_smart_scale">Pametna tehtnica</string>
     <string name="device_settings_connectivity_smart_scale_description">Poišči pametne tehtnice v bližini</string>
     <string name="device_settings_connectivity_searching">Iskanje naprav…</string>
     <string name="device_settings_connectivity_not_found">Ne najdete svoje naprave?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Dolg pritisk ročice kot izpiranje</string>
     <string name="device_settings_treat_manual_as_flush_description">Brez zgodovine in grafa</string>
     <string name="device_settings_connectivity_enable_search">Omogoči iskanje</string>
-    <string name="device_settings_connectivity_single_dose_description">Poišči mlinčke v bližini</string>
     <string name="device_settings_connectivity_disabled_info">Omogočite iskanje, da najdete in povežete napravo.</string>
     <string name="device_settings_connectivity_connection_help">Povezava ni uspela. Preverite, ali je dodatek vklopljen in v bližini, ter poskusite znova. Po potrebi znova zaženite kavni aparat.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Vklopite upravljalni obroč. V nekaterih okoljih lahko pride do občasnih motenj.</string>
     <string name="device_settings_firmware_version">Vdelana programska oprema: %1$d</string>

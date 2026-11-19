@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Попередження про низький рівень</string>
     <string name="device_water_alarm_error">Мало води. Наповніть резервуар.</string>
     <string name="device_dashboard_connecting">Під\'єднання…</string>
-    <string name="device_settings_connectivity_smart_scale">Розумні ваги</string>
     <string name="device_settings_connectivity_smart_scale_description">Пошук розумних ваг поблизу</string>
     <string name="device_settings_connectivity_searching">Пошук сумісних пристроїв…</string>
     <string name="device_settings_connectivity_not_found">Не бачите свій пристрій?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Довге натискання як пролив</string>
     <string name="device_settings_treat_manual_as_flush_description">Без історії та графіка</string>
     <string name="device_settings_connectivity_enable_search">Увімкнути пошук</string>
-    <string name="device_settings_connectivity_single_dose_description">Пошук кавомолок поблизу</string>
     <string name="device_settings_connectivity_disabled_info">Увімкніть пошук, щоб знайти та під’єднати пристрій.</string>
     <string name="device_settings_connectivity_connection_help">Не вдалося під’єднатися. Переконайтеся, що аксесуар увімкнений і знаходиться поруч, та повторіть спробу. За потреби перезапустіть кавомашину.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Увімкніть кільце керування. У деяких умовах можливі періодичні перешкоди.</string>
     <string name="device_settings_firmware_version">Прошивка: %1$d</string>

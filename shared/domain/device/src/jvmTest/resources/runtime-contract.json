@@ -1,0 +1,687 @@
+[
+  {
+    "name": "previous-applied-after-early-exit",
+    "profile": {
+      "userId": 1,
+      "name": "Contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 2,
+        "phases": [
+          {
+            "id": "pressurize",
+            "control": {
+              "type": "pressure",
+              "bar": 9
+            },
+            "maximumDurationMillis": 10000,
+            "ramp": {
+              "style": "Linear",
+              "durationMillis": 10000,
+              "start": "CurrentMeasurement"
+            },
+            "exitConditions": [
+              {
+                "metric": "PumpPressure",
+                "comparison": "Above",
+                "threshold": 6
+              }
+            ]
+          },
+          {
+            "id": "decline",
+            "control": {
+              "type": "pressure",
+              "bar": 3
+            },
+            "maximumDurationMillis": 2000,
+            "ramp": {
+              "style": "Linear",
+              "durationMillis": 2000,
+              "start": "CurrentMeasurement",
+              "source": {
+                "kind": "PreviousApplied"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {
+          "PumpPressure": 3,
+          "PumpFlow": 1
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 0,
+          "PumpFlow": 0
+        }
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {
+          "PumpPressure": 4,
+          "PumpFlow": 1
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 500,
+          "PumpFlow": 500
+        }
+      },
+      {
+        "elapsedMillis": 1000,
+        "values": {
+          "PumpPressure": 6,
+          "PumpFlow": 1
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 1000,
+          "PumpFlow": 1000
+        }
+      },
+      {
+        "elapsedMillis": 1500,
+        "values": {
+          "PumpPressure": 6,
+          "PumpFlow": 1
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 1500,
+          "PumpFlow": 1500
+        }
+      }
+    ],
+    "expected": [
+      3,
+      3.3,
+      3.3,
+      3.225
+    ],
+    "metric": "pressure"
+  },
+  {
+    "name": "captured-flow-handoff",
+    "profile": {
+      "userId": 1,
+      "name": "Contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 2,
+        "phases": [
+          {
+            "id": "pressurize",
+            "control": {
+              "type": "pressure",
+              "bar": 9
+            },
+            "maximumDurationMillis": 10000,
+            "ramp": {
+              "style": "Linear",
+              "durationMillis": 10000,
+              "start": "CurrentMeasurement"
+            },
+            "exitConditions": [
+              {
+                "metric": "PumpPressure",
+                "comparison": "Above",
+                "threshold": 8
+              }
+            ],
+            "exitCaptures": [
+              {
+                "name": "handoff",
+                "metric": "PumpFlow",
+                "filter": "Latest"
+              }
+            ]
+          },
+          {
+            "id": "extract",
+            "control": {
+              "type": "flow",
+              "millilitresPerSecond": 3.5
+            },
+            "maximumDurationMillis": 60000,
+            "ramp": {
+              "style": "Linear",
+              "durationMillis": 60000,
+              "start": "CurrentMeasurement",
+              "source": {
+                "kind": "CapturedValue",
+                "capture": "handoff"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {
+          "PumpPressure": 3,
+          "PumpFlow": 1
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 0,
+          "PumpFlow": 0
+        }
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {
+          "PumpPressure": 8,
+          "PumpFlow": 2
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 500,
+          "PumpFlow": 500
+        }
+      },
+      {
+        "elapsedMillis": 1000,
+        "values": {
+          "PumpPressure": 8,
+          "PumpFlow": 2.2
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 1000,
+          "PumpFlow": 1000
+        }
+      }
+    ],
+    "expected": [
+      3,
+      2,
+      2.0125
+    ],
+    "metric": "mixed"
+  },
+  {
+    "name": "reactive-limit-recovery",
+    "profile": {
+      "userId": 1,
+      "name": "Contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 2,
+        "phases": [
+          {
+            "id": "limited",
+            "control": {
+              "type": "flow",
+              "millilitresPerSecond": 4
+            },
+            "maximumDurationMillis": 5000,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "CurrentMeasurement"
+            },
+            "secondaryLimit": {
+              "metric": "PumpPressure",
+              "ceiling": 9
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {
+          "PumpPressure": 8,
+          "PumpFlow": 2
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 0,
+          "PumpFlow": 0
+        }
+      },
+      {
+        "elapsedMillis": 100,
+        "values": {
+          "PumpPressure": 9.2,
+          "PumpFlow": 2
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 100,
+          "PumpFlow": 100
+        }
+      },
+      {
+        "elapsedMillis": 200,
+        "values": {
+          "PumpPressure": 8,
+          "PumpFlow": 2
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 200,
+          "PumpFlow": 200
+        }
+      }
+    ],
+    "expected": [
+      4,
+      3.9,
+      3.925
+    ],
+    "metric": "flow"
+  },
+  {
+    "name": "pressure-control-flow-range",
+    "profile": {
+      "userId": 1,
+      "name": "Controller contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 2,
+        "phases": [
+          {
+            "id": "feedback",
+            "control": {
+              "type": "pressure",
+              "bar": 9
+            },
+            "maximumDurationMillis": 5000,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            },
+            "secondaryLimit": {
+              "metric": "PumpFlow",
+              "minimum": 1.5,
+              "ceiling": 2.5,
+              "reductionPerSecond": 1,
+              "recoveryPerSecond": 0.5,
+              "overshootAllowance": 1
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {
+          "PumpFlow": 2
+        },
+        "sampledAtMillis": {
+          "PumpFlow": 0
+        }
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {
+          "PumpFlow": 3
+        },
+        "sampledAtMillis": {
+          "PumpFlow": 500
+        }
+      },
+      {
+        "elapsedMillis": 1000,
+        "values": {
+          "PumpFlow": 2
+        },
+        "sampledAtMillis": {
+          "PumpFlow": 1000
+        }
+      },
+      {
+        "elapsedMillis": 1500,
+        "values": {
+          "PumpFlow": 1
+        },
+        "sampledAtMillis": {
+          "PumpFlow": 1500
+        }
+      },
+      {
+        "elapsedMillis": 2000,
+        "values": {
+          "PumpFlow": 2.5
+        },
+        "sampledAtMillis": {
+          "PumpFlow": 2000
+        }
+      },
+      {
+        "elapsedMillis": 2500,
+        "values": {
+          "PumpFlow": 3
+        },
+        "sampledAtMillis": {
+          "PumpFlow": 2500
+        }
+      }
+    ],
+    "expected": [
+      9,
+      8.5,
+      8.5,
+      8.75,
+      8.75,
+      8.25
+    ],
+    "metric": "pressure"
+  },
+  {
+    "name": "flow-control-pressure-range",
+    "profile": {
+      "userId": 1,
+      "name": "Controller contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 2,
+        "phases": [
+          {
+            "id": "feedback",
+            "control": {
+              "type": "flow",
+              "millilitresPerSecond": 3
+            },
+            "maximumDurationMillis": 5000,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            },
+            "secondaryLimit": {
+              "metric": "PumpPressure",
+              "minimum": 7,
+              "ceiling": 9,
+              "reductionPerSecond": 0.5,
+              "recoveryPerSecond": 0.25,
+              "overshootAllowance": 2
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {
+          "PumpPressure": 8
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 0
+        }
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {
+          "PumpPressure": 10
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 500
+        }
+      },
+      {
+        "elapsedMillis": 1000,
+        "values": {
+          "PumpPressure": 8
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 1000
+        }
+      },
+      {
+        "elapsedMillis": 1500,
+        "values": {
+          "PumpPressure": 6
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 1500
+        }
+      },
+      {
+        "elapsedMillis": 2000,
+        "values": {
+          "PumpPressure": 9
+        },
+        "sampledAtMillis": {
+          "PumpPressure": 2000
+        }
+      }
+    ],
+    "expected": [
+      3,
+      2.75,
+      2.75,
+      2.875,
+      2.875
+    ],
+    "metric": "flow"
+  },
+  {
+    "name": "zero-target-controller-remains-selected",
+    "profile": {
+      "userId": 1,
+      "name": "Controller contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 2,
+        "phases": [
+          {
+            "id": "p",
+            "control": {
+              "type": "pressure",
+              "bar": 0
+            },
+            "maximumDurationMillis": 500,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            }
+          },
+          {
+            "id": "f",
+            "control": {
+              "type": "flow",
+              "millilitresPerSecond": 0
+            },
+            "maximumDurationMillis": 1000,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 1000,
+        "values": {},
+        "sampledAtMillis": {}
+      }
+    ],
+    "expected": [
+      0,
+      0,
+      0
+    ],
+    "expectedControllers": [
+      "pressure",
+      "flow",
+      "flow"
+    ]
+  },
+  {
+    "name": "legacy-waits-keep-flow-selected-at-zero",
+    "profile": {
+      "userId": 1,
+      "name": "Controller contract",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 1,
+        "phases": [
+          {
+            "id": "flow",
+            "control": {
+              "type": "flow",
+              "millilitresPerSecond": 2
+            },
+            "maximumDurationMillis": 500,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            }
+          },
+          {
+            "id": "wait1",
+            "control": {
+              "type": "pump_pause"
+            },
+            "maximumDurationMillis": 1000,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            }
+          },
+          {
+            "id": "wait2",
+            "control": {
+              "type": "pump_pause"
+            },
+            "maximumDurationMillis": 500,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            }
+          },
+          {
+            "id": "pressure",
+            "control": {
+              "type": "pressure",
+              "bar": 3
+            },
+            "maximumDurationMillis": 1000,
+            "ramp": {
+              "style": "Instant",
+              "durationMillis": 0,
+              "start": "PreviousTarget"
+            }
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 1000,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 1500,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 2000,
+        "values": {},
+        "sampledAtMillis": {}
+      }
+    ],
+    "expected": [
+      2,
+      0,
+      0,
+      0,
+      3
+    ],
+    "expectedControllers": [
+      "flow",
+      "flow",
+      "flow",
+      "flow",
+      "pressure"
+    ]
+  },
+  {
+    "name": "leading-wait-keeps-following-flow-selected",
+    "profile": {
+      "userId": 1,
+      "name": "Leading wait",
+      "description": "",
+      "program": {
+        "type": "phases",
+        "version": 1,
+        "phases": [
+          {
+            "id": "wait",
+            "control": {
+              "type": "pump_pause"
+            },
+            "maximumDurationMillis": 500
+          },
+          {
+            "id": "flow",
+            "control": {
+              "type": "flow",
+              "millilitresPerSecond": 2
+            },
+            "maximumDurationMillis": 1000
+          }
+        ]
+      }
+    },
+    "samples": [
+      {
+        "elapsedMillis": 0,
+        "values": {},
+        "sampledAtMillis": {}
+      },
+      {
+        "elapsedMillis": 500,
+        "values": {},
+        "sampledAtMillis": {}
+      }
+    ],
+    "expected": [
+      0,
+      2
+    ],
+    "expectedControllers": [
+      "flow",
+      "flow"
+    ]
+  }
+]

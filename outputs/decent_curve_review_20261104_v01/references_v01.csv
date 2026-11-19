@@ -1,0 +1,26 @@
+claim_id,source_url,source_location,metric,value,unit,basis,notes
+adaptive_probe,https://decentespresso.com/first_decent_espresso,Adaptive v2 / Why is it called Adaptive,probe_window,7,seconds,recipe_description,Flow rises for this period after preinfusion
+adaptive_pressure_limit,https://decentespresso.com/first_decent_espresso,Adaptive v2 / Why is it called Adaptive,pressure_ceiling,9,bar,recipe_description,Strictly below 9 bar
+adaptive_ideal_peak,https://decentespresso.com/first_decent_espresso,Adaptive v2 / Dialing in Adaptive v2,peak_pressure_min,8,bar,guide_target,Medium or medium-light example
+adaptive_ideal_peak,https://decentespresso.com/first_decent_espresso,Adaptive v2 / Dialing in Adaptive v2,peak_pressure_max,9,bar,guide_target,Medium or medium-light example
+adaptive_ideal_time,https://decentespresso.com/first_decent_espresso,Adaptive v2 / Dialing in Adaptive v2,shot_time,25,seconds,guide_target,Around 25 seconds
+adaptive_graph,https://fast.decentespresso.com/img/f/Screenshot_20260330_115248_AndroWish.jpg,visible graph table,preinfusion_time,18,seconds,observed_shot,Not a required recipe setting
+adaptive_graph,https://fast.decentespresso.com/img/f/Screenshot_20260330_115248_AndroWish.jpg,visible graph table,extraction_time,8,seconds,observed_shot,Not a required recipe setting
+adaptive_graph,https://fast.decentespresso.com/img/f/Screenshot_20260330_115248_AndroWish.jpg,visible graph table,peak_pressure,8.6,bar,observed_shot,Guide reports a range of 8 to 9 bar
+lr_v2_saturation,https://decentespresso.com/first_decent_espresso,Londonium / Why is it called Londonium,pressure,3,bar,recipe_description,Guide says held for 12 seconds
+lr_v2_saturation,https://decentespresso.com/first_decent_espresso,Londonium / Why is it called Londonium,duration,12,seconds,recipe_description,Guide says held for 12 seconds
+lr_v2_pressure_peak,https://decentespresso.com/first_decent_espresso,Londonium / Dialing in LRv2,peak_pressure,9,bar,guide_target,Good dial-in target
+lr_v2_ideal_time,https://decentespresso.com/first_decent_espresso,Londonium / Dialing in LRv2,shot_time_min,30,seconds,guide_target,Guide target range 30 to 35 seconds
+lr_v2_ideal_time,https://decentespresso.com/first_decent_espresso,Londonium / Dialing in LRv2,shot_time_max,35,seconds,guide_target,Guide target range 30 to 35 seconds
+lr_v2_flow_exit,https://github.com/decentespresso/de1app/blob/main/de1plus/profiles/Damian%27s%20LRv2.tcl,Pressure Decline / Pressure Hold,flow_exit_threshold,2.8,mL/s,source_profile,Flow-over exit
+lr_v2_flow_target,https://github.com/decentespresso/de1app/blob/main/de1plus/profiles/Damian%27s%20LRv2.tcl,Flow Limit,flow_target,2.5,mL/s,source_profile,Final flow-control stage
+lr_v2_rise,https://github.com/decentespresso/de1app/blob/main/de1plus/profiles/Damian%27s%20LRv2.tcl,Pressure Up,duration,8,seconds,source_profile,9 bar stage ramp window
+lr_v2_decline,https://github.com/decentespresso/de1app/blob/main/de1plus/profiles/Damian%27s%20LRv2.tcl,Pressure Decline,duration,55,seconds,source_profile,Ends early when flow exceeds threshold
+lr_v2_graph,https://fast.decentespresso.com/img/f/Screenshot_20260331_123832_AndroWish.jpg,visible graph table,total_time,33,seconds,observed_shot,14 second preinfusion plus 19 second extraction
+lr_v2_graph,https://fast.decentespresso.com/img/f/Screenshot_20260331_123832_AndroWish.jpg,visible graph table,pressure_peak,9.1,bar,observed_shot,Measured curve
+lr_v2_graph,https://fast.decentespresso.com/img/f/Screenshot_20260331_123832_AndroWish.jpg,visible graph table,pressure_end,7.8,bar,observed_shot,Measured extraction curve endpoint
+lr_v2_graph,https://fast.decentespresso.com/img/f/Screenshot_20260331_123832_AndroWish.jpg,visible graph table,flow_end,2.2,mL/s,observed_shot,Measured extraction curve endpoint
+lita_ba_variant,https://shop.wendougee.com/collections/lita-semi-automatic-espresso-machine,BA variant,flow_profiling,1,boolean,product_spec,BA is listed as dual pump / flow profiling
+lita_la_variant,https://shop.wendougee.com/collections/lita-semi-automatic-espresso-machine,LA variant,flow_profiling,1,boolean,product_spec,LA is listed as dual pump / flow profiling
+lita_br_variant,https://shop.wendougee.com/collections/lita-semi-automatic-espresso-machine,BR variant,flow_profiling,0,boolean,product_spec,BR is listed as single pump
+lita_lr_variant,https://shop.wendougee.com/collections/lita-semi-automatic-espresso-machine,LR variant,flow_profiling,0,boolean,product_spec,LR is listed as single pump

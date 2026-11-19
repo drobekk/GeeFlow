@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Nazaj</string>
     <string name="common_close">Zapri</string>
     <string name="common_confirm">Potrdi</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Izguba povezave z aparatom med ekstrakcijo.</string>
     <string name="error_required_measurement_lost">Zahtevan senzor je bil prekinjen.</string>
     <string name="error_profile_unavailable">Profil ni združljiv s trenutnim stanjem aparata.</string>
-    <string name="agreement_prefix">Sprejemam </string>
-    <string name="agreement_terms">Pogoje uporabe</string>
-    <string name="agreement_and"> in </string>
-    <string name="agreement_privacy">Pravilnik o zasebnosti</string>
     <string name="maintenance_daily">Dnevno čiščenje</string>
     <string name="maintenance_deep">Temeljito čiščenje</string>
     <string name="maintenance_daily_description">Rutinsko izpiranje kavnih usedlin iz kuhalne glave.</string>

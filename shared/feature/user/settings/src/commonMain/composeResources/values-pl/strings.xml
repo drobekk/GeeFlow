@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Wygląd i ekran</string>
     <string name="user_settings_appearance_description">Motyw, język i ekran</string>
     <string name="user_settings_about">O aplikacji</string>
-    <string name="user_settings_about_description">Regulamin, prywatność, licencje i wersja</string>
+    <string name="user_settings_about_description">Wersja aplikacji i licencje</string>
     <string name="user_settings_appearance_title">Wygląd i ekran</string>
     <string name="user_settings_appearance_dark_mode">Wygląd</string>
     <string name="user_settings_appearance_dark_mode_system">Systemowy</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Przywróć profile parzenia do ustawień fabrycznych</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Spowoduje to przywrócenie wszystkich profili do wartości domyślnych. Działania nie można cofnąć.</string>
     <string name="user_settings_about_title">O aplikacji</string>
-    <string name="user_settings_about_terms">Regulamin</string>
-    <string name="user_settings_about_terms_description">Regulamin i zastrzeżenia dotyczące sprzętu</string>
-    <string name="user_settings_about_privacy_policy">Polityka prywatności</string>
-    <string name="user_settings_about_privacy_policy_description">Zobacz, jakie dane zbieramy i dlaczego</string>
-    <string name="user_settings_about_source_code">Kod źródłowy</string>
-    <string name="user_settings_about_source_code_description">Przeglądaj kod, zgłaszaj błędy lub rozwijaj na GitHubie</string>
     <string name="user_settings_about_licenses">Licencje open source</string>
     <string name="user_settings_about_licenses_description">Informacje o licencjach zewnętrznych bibliotek</string>
     <string name="user_settings_about_version">Wersja</string>

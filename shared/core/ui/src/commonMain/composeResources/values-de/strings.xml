@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GeeFlow</string>
+    <string name="app_name">Liang&apos;s LITA</string>
     <string name="common_go_back">Zurück</string>
     <string name="common_close">Schließen</string>
     <string name="common_confirm">Bestätigen</string>
@@ -53,10 +53,6 @@
     <string name="error_telemetry_timeout">Verbindung zur Maschine während des Bezugs verloren.</string>
     <string name="error_required_measurement_lost">Ein benötigter Sensor wurde getrennt.</string>
     <string name="error_profile_unavailable">Profil mit aktuellem Maschinenzustand nicht kompatibel.</string>
-    <string name="agreement_prefix">Ich akzeptiere die </string>
-    <string name="agreement_terms">AGB</string>
-    <string name="agreement_and"> und </string>
-    <string name="agreement_privacy">Datenschutzerklärung</string>
     <string name="maintenance_daily">Tägliche Reinigung</string>
     <string name="maintenance_deep">Intensivreinigung</string>
     <string name="maintenance_daily_description">Spülen, um Kaffeereste aus der Brühgruppe zu entfernen.</string>

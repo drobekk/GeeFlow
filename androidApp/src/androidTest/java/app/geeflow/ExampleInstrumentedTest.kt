@@ -1,5 +1,6 @@
 package app.geeflow
 
+import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert
@@ -14,9 +15,16 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
     @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        Assert.assertEquals("app.geeflow.androidapp.test", appContext.packageName)
+    fun mainActivityStarts() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val appContext = instrumentation.targetContext
+        Assert.assertEquals("app.geeflow.debug", appContext.packageName)
+
+        val intent = Intent(appContext, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val activity = instrumentation.startActivitySync(intent)
+
+        Assert.assertTrue(activity is MainActivity)
+        activity.finish()
     }
 }

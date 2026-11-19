@@ -47,3 +47,12 @@ tasks.register<JavaExec>("generateStoreScreenshots") {
     mainClass.set("app.geeflow.presentation.feature.device.dashboard.StoreScreenshotGeneratorKt")
     args(rootProject.layout.projectDirectory.dir("docs/screenshots").asFile.absolutePath)
 }
+
+tasks.register<JavaExec>("generateReviewScreenshots") {
+    group = "documentation"
+    description = "Render active brewing and recipe browser review layouts for S24+ and tablet dimensions."
+    dependsOn(screenshotCompilation.compileTaskProvider)
+    classpath = files(screenshotCompilation.output.allOutputs, screenshotCompilation.runtimeDependencyFiles)
+    mainClass.set("app.geeflow.presentation.feature.device.dashboard.ReviewScreenshotGeneratorKt")
+    args(providers.gradleProperty("reviewOutputDir").orElse("${System.getProperty("java.io.tmpdir")}/geeflow-review-v02").get())
+}

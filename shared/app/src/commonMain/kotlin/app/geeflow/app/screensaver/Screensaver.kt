@@ -7,12 +7,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,12 +26,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.geeflow.platform.rememberFormattedDate
 import app.geeflow.platform.rememberFormattedTime
 import app.geeflow.ui.theme.GeeFlowPreviewWrapper
 import app.geeflow.ui.theme.GeeFlowScreenPreview
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.minutes
 
 @Composable
 internal fun Screensaver(
@@ -49,6 +57,14 @@ internal fun Screensaver(
     modifier: Modifier = Modifier,
 ) {
     val parsedTime = remember(formattedTime) { parseScreensaverTime(formattedTime) }
+    var pixelShiftIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(PixelShiftInterval)
+            pixelShiftIndex = (pixelShiftIndex + 1) % PixelShiftOffsets.size
+        }
+    }
 
     BoxWithConstraints(
         modifier = modifier
@@ -76,7 +92,9 @@ internal fun Screensaver(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier
+                .offset { PixelShiftOffsets[pixelShiftIndex] }
+                .padding(24.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -151,6 +169,39 @@ private val AmPmStackedFontRegular = 18.sp
 private val AmPmStackedFontExpanded = 24.sp
 private val AmPmSpacing = 8.dp
 private const val AmPmInactiveAlpha = 0.35f
+private val PixelShiftInterval = 1.minutes
+
+/**
+ * A balanced 5x5 physical-pixel cycle keeps the clock and date moving without
+ * changing the black background or visibly repositioning the screensaver.
+ */
+private val PixelShiftOffsets = listOf(
+    IntOffset(0, 0),
+    IntOffset(1, 1),
+    IntOffset(-1, 2),
+    IntOffset(-2, 0),
+    IntOffset(2, -1),
+    IntOffset(0, 2),
+    IntOffset(2, 2),
+    IntOffset(-1, -1),
+    IntOffset(1, -2),
+    IntOffset(-2, 2),
+    IntOffset(1, 0),
+    IntOffset(-2, -2),
+    IntOffset(2, 1),
+    IntOffset(0, -1),
+    IntOffset(-1, 1),
+    IntOffset(2, 0),
+    IntOffset(-2, 1),
+    IntOffset(1, 2),
+    IntOffset(-1, 0),
+    IntOffset(0, -2),
+    IntOffset(2, -2),
+    IntOffset(-2, -1),
+    IntOffset(0, 1),
+    IntOffset(1, -1),
+    IntOffset(-1, -2),
+)
 
 private val TimeDigitsRegex = Regex("""\d{1,2}[:.]\d{2}(?:[:.]\d{2})?""")
 

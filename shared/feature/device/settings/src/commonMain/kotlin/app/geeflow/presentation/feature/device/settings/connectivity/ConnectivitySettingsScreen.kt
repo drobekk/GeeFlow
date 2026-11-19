@@ -1,23 +1,17 @@
 package app.geeflow.presentation.feature.device.settings.connectivity
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material3.ButtonDefaults
@@ -25,11 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,7 +47,6 @@ import app.geeflow.presentation.feature.device.settings.connectivity.Connectivit
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.ConnectionClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.RescanClicked
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.SearchToggled
-import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsEvent.TypeSelected
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewModelEvent.ShowSnackbar
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.AccessoryConnectionStatus
 import app.geeflow.presentation.feature.device.settings.connectivity.ConnectivitySettingsViewState.AccessoryViewItem
@@ -80,9 +69,6 @@ import geeflow.shared.feature.device.settings.generated.resources.device_setting
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_not_found
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_rescan
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_searching
-import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_single_dose
-import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_single_dose_description
-import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_smart_scale
 import geeflow.shared.feature.device.settings.generated.resources.device_settings_connectivity_smart_scale_description
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -131,8 +117,8 @@ private fun ConnectivitySettingsContent(
     val snackbarHost: @Composable () -> Unit = { SnackbarHost(snackbarHostState) }
 
     GeeFlowDetailScaffold(
+        plain = true,
         title = stringResource(Res.string.device_settings_connectivity),
-        subtitle = stringResource(Res.string.device_settings_connectivity_description),
         navIconClick = { onEvent(CloseClicked) },
         scrollBehavior = scrollBehavior,
         snackbarHost = snackbarHost,
@@ -155,7 +141,7 @@ private fun CompactContent(
     onEvent: (ConnectivitySettingsEvent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val accessory = viewState.selectedAccessory
+    val accessory = viewState.scale
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(
@@ -164,17 +150,10 @@ private fun CompactContent(
         ),
         verticalArrangement = spacedBy(16.dp),
     ) {
-        item { AccessoryTypeSelector(viewState.selectedType, onEvent) }
         item {
             GeeFlowToggleListItem(
                 title = stringResource(Res.string.device_settings_connectivity_enable_search),
-                subtitle = stringResource(
-                    if (viewState.selectedType == ConnectivityAccessoryType.SmartScale) {
-                        Res.string.device_settings_connectivity_smart_scale_description
-                    } else {
-                        Res.string.device_settings_connectivity_single_dose_description
-                    },
-                ),
+                subtitle = stringResource(Res.string.device_settings_connectivity_smart_scale_description),
                 checked = accessory.enabled,
                 onCheckedChanged = { onEvent(SearchToggled(it)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -221,63 +200,6 @@ private fun CompactContent(
                         Text(stringResource(Res.string.device_settings_connectivity_rescan))
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AccessoryTypeSelector(
-    selectedType: ConnectivityAccessoryType,
-    onEvent: (ConnectivitySettingsEvent) -> Unit,
-) {
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        ConnectivityAccessoryType.entries.forEachIndexed { index, type ->
-            SegmentedButton(
-                selected = selectedType == type,
-                onClick = { onEvent(TypeSelected(type)) },
-                icon = {
-                    Box(
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .requiredSize(12.dp)
-                            .background(
-                                color = if (selectedType == type) {
-                                    LocalContentColor.current
-                                } else {
-                                    MaterialTheme.colorScheme.tertiary
-                                },
-                                shape = if (type == ConnectivityAccessoryType.SmartScale) {
-                                    RoundedCornerShape(1.5.dp)
-                                } else {
-                                    CircleShape
-                                },
-                            ),
-                    )
-                },
-                shape = SegmentedButtonDefaults.itemShape(
-                    index = index,
-                    count = ConnectivityAccessoryType.entries.size,
-                    baseShape = MaterialTheme.shapes.large,
-                ),
-                colors = SegmentedButtonDefaults.colors(
-                    activeContainerColor = MaterialTheme.colorScheme.primary,
-                    activeContentColor = MaterialTheme.colorScheme.onPrimary,
-                    inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    activeBorderColor = Color.Transparent,
-                    inactiveBorderColor = Color.Transparent,
-                ),
-                border = BorderStroke(0.dp, Color.Transparent),
-            ) {
-                Text(
-                    stringResource(
-                        if (type == ConnectivityAccessoryType.SmartScale) {
-                            Res.string.device_settings_connectivity_smart_scale
-                        } else {
-                            Res.string.device_settings_connectivity_single_dose
-                        },
-                    ),
-                )
             }
         }
     }

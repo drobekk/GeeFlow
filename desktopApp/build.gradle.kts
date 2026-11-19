@@ -51,14 +51,14 @@ compose.desktop {
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe)
-            packageName = "GeeFlow"
+            packageName = "Liang's LITA"
             packageVersion = (project.findProperty("appVersionName") as? String) ?: libs.versions.appVersion.get()
             
             modules("java.sql", "jdk.unsupported")
             
             windows {
                 iconFile.set(project.file("icon.ico"))
-                menuGroup = "GeeFlow"
+                menuGroup = "Liang's LITA"
                 shortcut = true
                 dirChooser = true
                 upgradeUuid = "1aed0245-316c-4b4d-89ad-46b5ce0b6a13"

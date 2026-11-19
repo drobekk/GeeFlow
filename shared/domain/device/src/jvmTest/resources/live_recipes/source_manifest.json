@@ -1,0 +1,15 @@
+{
+  "revision": "6278fcd2d7fb43a7a2385beff4328ef2816b5c0e",
+  "sources": [
+    {
+      "file": "best_practice.json",
+      "url": "https://raw.githubusercontent.com/decentespresso/decaid/6278fcd2d7fb43a7a2385beff4328ef2816b5c0e/assets/defaultProfiles/best_practice.json",
+      "sha256": "4127b75ba184c8c40c064762603aa96bcac78058d4d6db09ce56037997da6b87"
+    },
+    {
+      "file": "cremina.json",
+      "url": "https://raw.githubusercontent.com/decentespresso/decaid/6278fcd2d7fb43a7a2385beff4328ef2816b5c0e/assets/defaultProfiles/cremina.json",
+      "sha256": "0434a88c6249a562d07a7a9be3a285660b5c6fcc1745a3b7090994f10dedb6cc"
+    }
+  ]
+}

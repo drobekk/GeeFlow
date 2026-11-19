@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Avertisment nivel scăzut de apă</string>
     <string name="device_water_alarm_error">Nivel scăzut de apă. Umple rezervorul.</string>
     <string name="device_dashboard_connecting">Conectare…</string>
-    <string name="device_settings_connectivity_smart_scale">Cântar inteligent</string>
     <string name="device_settings_connectivity_smart_scale_description">Caută cântare inteligente în apropiere</string>
     <string name="device_settings_connectivity_searching">Căutare dispozitive…</string>
     <string name="device_settings_connectivity_not_found">Nu găsești dispozitivul?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Apăsare lungă ca și clătire</string>
     <string name="device_settings_treat_manual_as_flush_description">Fără istoric sau grafic</string>
     <string name="device_settings_connectivity_enable_search">Activează căutarea</string>
-    <string name="device_settings_connectivity_single_dose_description">Caută râșnițe în apropiere</string>
     <string name="device_settings_connectivity_disabled_info">Activează căutarea pentru a găsi și conecta un dispozitiv.</string>
     <string name="device_settings_connectivity_connection_help">Conectarea a eșuat. Verifică dacă accesoriul este pornit și în apropiere, apoi încearcă din nou. Dacă este necesar, repornește espressorul.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Activați inelul de control. În unele medii pot apărea interferențe ocazionale.</string>
     <string name="device_settings_firmware_version">Firmware: %1$d</string>

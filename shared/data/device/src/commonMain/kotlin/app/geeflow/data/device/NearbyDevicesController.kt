@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface NearbyDevicesController {
     val discoveredDevices: StateFlow<Set<DiscoveredBleDevice>>
     fun startScanning()
+    fun startManualScanning(serialNumber: String) = startScanning()
     fun stopScanning()
 }
 

@@ -9,7 +9,10 @@ import app.geeflow.data.brew.model.BrewDataPoint
 import app.geeflow.data.brew.model.BrewHistoryEntry
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.BookooScalePacketEvent
+import app.geeflow.data.device.BookooScaleState
 import app.geeflow.data.device.MaintenanceSettingsRepository
+import app.geeflow.data.device.ScaleReadingSource
 import app.geeflow.data.device.impl.controller.DemoDeviceController
 import app.geeflow.data.device.model.CleaningProgram
 import app.geeflow.data.device.model.CleaningReminder
@@ -34,6 +37,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -231,7 +235,11 @@ class MaintenanceReminderViewModelTest {
             override fun getBrewDataPoints(id: Long) = emptyMap<Float, BrewDataPoint>()
             override fun deleteBrew(id: Long) = Unit
         }
-        private val execution = ProfileExecutionCoordinator(provider, scope, ProfileExecutionRecorder(history))
+        private val scale = object : ScaleReadingSource {
+            override val state = MutableStateFlow(BookooScaleState())
+            override val packets = MutableSharedFlow<BookooScalePacketEvent>(extraBufferCapacity = 8)
+        }
+        private val execution = ProfileExecutionCoordinator(provider, scale, scope, ProfileExecutionRecorder(history))
         val viewModel = reminderViewModel(1)
         val secondViewModel = reminderViewModel(2)
 

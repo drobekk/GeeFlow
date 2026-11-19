@@ -92,6 +92,9 @@ fun GeeFlowValueListItem(
     valueRange: ClosedFloatingPointRange<Float>? = null,
     unit: String = "",
     allowDecimal: Boolean? = null,
+    initialValue: Float? = null,
+    adjustmentStep: Float? = null,
+    applyOnSelection: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = GeeFlowTheme.spacing.contentHorizontal,
         vertical = 8.dp,
@@ -127,7 +130,21 @@ fun GeeFlowValueListItem(
         contentPadding = contentPadding,
     )
 
-    if (showInputPad) {
+    if (showInputPad && applyOnSelection) {
+        val options = items.ifEmpty {
+            valueRange?.let { range -> (range.start.toInt()..range.endInclusive.toInt()).map(Int::toString) }.orEmpty()
+        }
+        if (options.isNotEmpty()) {
+            GeeFlowSettingOptions(
+                title = title,
+                options = options,
+                current = initialValue ?: value.extractFloat(),
+                unit = unit,
+                onSelect = onValueConfirmed,
+                onDismiss = { showInputPad = false },
+            )
+        }
+    } else if (showInputPad) {
         GeeFlowDialog(
             onDismissRequest = { showInputPad = false },
         ) {
@@ -157,6 +174,8 @@ fun GeeFlowValueListItem(
                         showInputPad = false
                     },
                     onBack = { showInputPad = false },
+                    initialValue = initialValue,
+                    adjustmentStep = adjustmentStep,
                 )
             }
         }

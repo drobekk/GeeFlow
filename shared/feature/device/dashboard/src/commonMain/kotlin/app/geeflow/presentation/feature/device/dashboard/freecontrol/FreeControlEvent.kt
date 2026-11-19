@@ -3,6 +3,7 @@ package app.geeflow.presentation.feature.device.dashboard.freecontrol
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.DashboardChartType
 
 sealed interface FreeControlEvent {
+    data class FlowRangeSelected(val range: app.geeflow.data.user.model.FlowChartRange) : FreeControlEvent
     data object BackClicked : FreeControlEvent
     data class ModeChanged(val mode: ControlMode) : FreeControlEvent
     data class TargetChanged(val value: Float) : FreeControlEvent

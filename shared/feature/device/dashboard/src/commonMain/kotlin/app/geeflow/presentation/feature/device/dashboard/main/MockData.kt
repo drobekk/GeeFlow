@@ -5,15 +5,19 @@ package app.geeflow.presentation.feature.device.dashboard.main
 import app.geeflow.data.brew.model.BrewPhase
 import app.geeflow.data.brew.model.BrewProgram
 import app.geeflow.data.brew.model.Condition
+import app.geeflow.data.brew.model.FreeHandControlMode
+import app.geeflow.data.brew.model.FreeHandRecording
 import app.geeflow.data.brew.model.PhaseControl
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Brew
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.Device
 import app.geeflow.presentation.feature.device.dashboard.main.DeviceDashboardViewState.User
 import app.geeflow.presentation.feature.device.dashboard.model.ChartData
 import app.geeflow.presentation.feature.device.dashboard.model.toTargetData
+import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileControlKind
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.HistoryBrew
 import app.geeflow.presentation.feature.device.dashboard.profiles.ProfileListViewState.Profile
+import app.geeflow.presentation.feature.device.dashboard.profiles.controlKind
 import kotlin.math.sin
 
 private val previewProfileProgram = BrewProgram.Phases(
@@ -37,6 +41,33 @@ private val previewProfileProgram = BrewProgram.Phases(
             maximumDurationMillis = 30000,
         ),
     ),
+)
+
+private val previewProgramsById = mapOf(
+    "2" to previewProgram(PhaseControl.Flow(1.5f), PhaseControl.PumpPause, PhaseControl.Flow(2.2f)),
+    "3" to previewProgram(PhaseControl.Flow(1.5f), PhaseControl.Pressure(9f)),
+    "4" to previewProgram(PhaseControl.Pressure(6f), PhaseControl.Pressure(4f)),
+    "5" to previewProgram(PhaseControl.Pressure(3f), PhaseControl.Flow(4f)),
+    "6" to previewProgram(PhaseControl.Pressure(6f)),
+    "7" to previewProgram(PhaseControl.Pressure(3f), PhaseControl.Pressure(9.5f), PhaseControl.Pressure(4.5f)),
+    "8" to previewProgram(PhaseControl.Flow(4.5f)),
+    "9" to previewProgram(PhaseControl.Flow(3f)),
+    "10" to previewProgram(PhaseControl.Pressure(2f), PhaseControl.Flow(3f)),
+    "11" to previewProgram(PhaseControl.Pressure(6f)),
+    "12" to previewProgram(PhaseControl.Pressure(9f)),
+    "13" to BrewProgram.Recording(FreeHandRecording(FreeHandControlMode.Flow, emptyList())),
+    "14" to previewProgram(PhaseControl.PumpPause),
+)
+
+private fun previewProgram(vararg controls: PhaseControl) = BrewProgram.Phases(
+    controls.mapIndexed { index, control ->
+        BrewPhase(
+            id = index.toString(),
+            name = "Step ${index + 1}",
+            control = control,
+            maximumDurationMillis = 5_000,
+        )
+    },
 )
 
 @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -95,7 +126,6 @@ fun getMockDeviceDashboardViewState(): DeviceDashboardViewState {
             connectionStatus = Device.ConnectionStatus.Connected,
             brewStatus = Device.BrewStatus.Profile,
             smartScaleConnected = true,
-            singleDoseGrinderConnected = true,
         ),
         brew = Brew(
             name = "Preinfusion",
@@ -115,7 +145,6 @@ private fun smoothRamp(time: Float, start: Float, end: Float, from: Float, to: F
 @Suppress("LongMethod")
 fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewState(
     smartScaleConnected = true,
-    singleDoseGrinderConnected = true,
     showHistory = showHistory,
     history = List(12) { index ->
         HistoryBrew(
@@ -138,7 +167,6 @@ fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewS
             name = "Preinfusion",
             description = "36g • 3 bar soak, 5s pause, then 6 bar extraction",
             brewByWeight = true,
-            singleDoseEnabled = true,
             selected = true,
             experimental = false,
             program = previewProfileProgram,
@@ -223,5 +251,27 @@ fun getMockProfileListViewState(showHistory: Boolean = false) = ProfileListViewS
             brewByWeight = true,
             bound = true,
         ),
-    ),
+        Profile(
+            id = "13",
+            number = "13",
+            name = "Recorded Cremina",
+            description = "Recorded flow-controlled shot from history",
+            brewByWeight = true,
+            finishCondition = Condition.Weight(36f),
+        ),
+        Profile(
+            id = "14",
+            number = "14",
+            name = "Pause-only soak",
+            description = "A timed pause with no programmed pressure or flow target",
+            brewByWeight = false,
+        ),
+    ).map { profile ->
+        val program = profile.program ?: previewProgramsById[profile.id]
+        profile.copy(
+            program = program,
+            controlKind = program?.controlKind() ?: ProfileControlKind.Other,
+            targetData = if (program is BrewProgram.Phases) program.toTargetData() else profile.targetData,
+        )
+    },
 )

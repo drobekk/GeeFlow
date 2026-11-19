@@ -52,25 +52,7 @@ class DemoDeviceController(
         private set
     override val connection: DeviceConnectionControl get() = this
     override val settings: DeviceSettingsControl get() = this
-    override val hotWater: DeviceHotWaterControl = object : DeviceHotWaterControl {
-        override suspend fun start() {
-            _deviceState.update { state ->
-                check(state.connectionStatus == DeviceState.ConnectionStatus.Connected)
-                check(!state.hasError && state.brewStatus == DeviceState.BrewStatus.Idle)
-                state.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.WaterFlow)
-            }
-        }
-
-        override suspend fun stop() {
-            _deviceState.update { state ->
-                if (state.brewStatus == DeviceState.BrewStatus.WaterFlow) {
-                    state.copy(statusTime = Clock.System.now(), brewStatus = DeviceState.BrewStatus.Idle)
-                } else {
-                    state
-                }
-            }
-        }
-    }
+    override val hotWater: DeviceHotWaterControl = DeviceHotWaterControl.Unsupported
     override val brewing: DeviceBrewingControl get() = this
     override val maintenance: DeviceMaintenanceControl get() = this
     override val profiles: DeviceProfileControl get() = this
@@ -78,7 +60,11 @@ class DemoDeviceController(
 
     override suspend fun stopLiveSession() = stopFreeVariableBrewing()
     override fun isLiveSessionActive(state: DeviceState) = state.brewStatus == DeviceState.BrewStatus.FreeVariable
-    override val profilingCapabilities = TimedPumpProfileSupport.capabilities
+    override val profilingCapabilities = TimedPumpProfileSupport.capabilities.copy(
+        liveModeSwitch = true,
+        verifiedSecondaryLimits = true,
+        timestampedCupWeight = true,
+    )
     override fun assessNativeProfile(profile: BrewProfile) = TimedPumpProfileSupport.assessNative(profile)
     override fun telemetry() = deviceState.value.let { state ->
         // A connected simulator has working pump sensors even before the first brew.
@@ -104,34 +90,9 @@ class DemoDeviceController(
     private val _foundScales = MutableStateFlow(listOfNotNull(_deviceState.value.smartScale))
     override val foundScales: StateFlow<List<SmartScale>> = _foundScales.asStateFlow()
 
-    override val constraints: DeviceConstraints = DeviceConstraints(
-        brewTempRange = 0..BREW_MAX_TEMP,
-        steamTempRange = 0..STEAM_MAX_TEMP,
-        manualBrewPressureRange = 1..PADDLE_PRESSURE_MAX_INT,
-        manualBrewTimeRange = 0..PADDLE_TIME_MAX,
-        cleaningTimeRange = 1..CLEANING_TIME_MAX,
-        cleaningRestRange = 1..CLEANING_REST_MAX,
-        cleaningCountRange = 1..CLEANING_COUNT_MAX,
-        pressureRange = 0f..BREW_PRESSURE_MAX,
-        flowRange = 0f..BREW_FLOW_MAX,
-    )
-
-    override val capabilities: Set<DeviceCapability> = setOf(
-        DeviceCapability.SteamBoiler,
-        DeviceCapability.BrewBoiler,
-        DeviceCapability.HeatingMode,
-        DeviceCapability.WaterAlarm,
-        DeviceCapability.ManualBrewing,
-        DeviceCapability.ProfileBrewing,
-        DeviceCapability.CleaningMode,
-        DeviceCapability.CleaningSettings,
-        DeviceCapability.SmartScaleConnectivity,
-        DeviceCapability.SingleDoseGrinderConnectivity,
-        DeviceCapability.CommercialGrinderConnectivity,
-        DeviceCapability.PressureProfiling,
-        DeviceCapability.FlowProfiling,
-        DeviceCapability.HotWaterDispensing,
-    )
+    /** The simulator mirrors LITA BA limits and features, without connecting to any physical machine. */
+    override val constraints: DeviceConstraints = wendougeeConstraints
+    override val capabilities: Set<DeviceCapability> = wendougeeCapabilities
 
     override suspend fun connect(device: Device): DeviceConnection {
         connectionGeneration++
@@ -187,9 +148,14 @@ class DemoDeviceController(
 
     override suspend fun startManualBrewing() {
         brewJob?.cancel()
+        val startedAt = Clock.System.now()
         _deviceState.update {
             it.copy(
-                statusTime = Clock.System.now(),
+                statusTime = startedAt,
+                telemetryTime = startedAt,
+                time = 0,
+                flowRate = 0f,
+                weightRate = 0f,
                 brewStatus = DeviceState.BrewStatus.Manual,
                 pressure = 0f,
                 weight = 0f,
@@ -204,7 +170,7 @@ class DemoDeviceController(
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.Manual) {
                 delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
-                if (elapsedMs >= durationMs) {
+                if (durationMs > 0 && elapsedMs >= durationMs) {
                     stopManualBrewing()
                     break
                 }
@@ -250,9 +216,14 @@ class DemoDeviceController(
         brewJob?.cancel()
         val recordingPoints = profile.recording?.playbackPoints()
         delay(500.milliseconds)
+        val startedAt = Clock.System.now()
         _deviceState.update {
             it.copy(
-                statusTime = Clock.System.now(),
+                statusTime = startedAt,
+                telemetryTime = startedAt,
+                time = 0,
+                flowRate = 0f,
+                weightRate = 0f,
                 brewStatus = DeviceState.BrewStatus.Profile,
                 pressure = 0f,
                 weight = 0f,
@@ -441,19 +412,25 @@ class DemoDeviceController(
     }
 
     private var freeVarFlowTarget = DEFAULT_FREE_VAR_FLOW
+    private var freeVarMode = FreeHandControlMode.Pressure
 
     override suspend fun startFreeVariableBrewing(mode: FreeHandControlMode) {
-        val isFlow = mode == FreeHandControlMode.Flow
         brewJob?.cancel()
+        freeVarMode = mode
+        val startedAt = Clock.System.now()
         _deviceState.update {
             it.copy(
-                statusTime = Clock.System.now(),
+                statusTime = startedAt,
+                telemetryTime = startedAt,
+                time = 0,
+                flowRate = 0f,
+                weightRate = 0f,
                 brewStatus = DeviceState.BrewStatus.FreeVariable,
                 pressure = 0f,
                 weight = 0f,
                 volume = 0f,
                 freeHandStopRequested = false,
-                freeHandControlMode = if (isFlow) FreeHandControlMode.Flow else FreeHandControlMode.Pressure,
+                freeHandControlMode = mode,
             )
         }
         brewJob = scope.launch {
@@ -462,7 +439,7 @@ class DemoDeviceController(
             while (_deviceState.value.brewStatus == DeviceState.BrewStatus.FreeVariable) {
                 delay(BREW_TICK_MS.milliseconds)
                 elapsedMs += BREW_TICK_MS
-                val control = if (isFlow) {
+                val control = if (freeVarMode == FreeHandControlMode.Flow) {
                     PhaseControl.Flow(freeVarFlowTarget)
                 } else {
                     PhaseControl.Pressure(_deviceState.value.config?.manualBrewPressure ?: DEFAULT_FREE_VAR_PRESSURE)
@@ -471,6 +448,14 @@ class DemoDeviceController(
                 _deviceState.update { it.withBrewPoint(point = point, elapsedMs = elapsedMs) }
             }
         }
+    }
+
+    override suspend fun setFreeVariableBrewingMode(mode: FreeHandControlMode) {
+        check(_deviceState.value.brewStatus == DeviceState.BrewStatus.FreeVariable) {
+            "Mode changes require an active free-variable brew"
+        }
+        freeVarMode = mode
+        _deviceState.update { it.copy(freeHandControlMode = mode) }
     }
 
     override suspend fun stopFreeVariableBrewing() {
@@ -616,15 +601,6 @@ class DemoDeviceController(
     }
 
     companion object {
-        private const val BREW_MAX_TEMP = 110
-        private const val STEAM_MAX_TEMP = 140
-        private const val PADDLE_PRESSURE_MAX_INT = 120
-        private const val PADDLE_TIME_MAX = 60
-        private const val BREW_PRESSURE_MAX = 12f
-        private const val BREW_FLOW_MAX = 12f
-        private const val CLEANING_TIME_MAX = 60
-        private const val CLEANING_REST_MAX = 60
-        private const val CLEANING_COUNT_MAX = 10
 
         private const val CONNECT_DELAY_MS = 500L
         private const val BREW_TICK_MS = 100L

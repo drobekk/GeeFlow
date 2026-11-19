@@ -4,6 +4,7 @@ import app.geeflow.data.brew.model.BrewProfile
 import app.geeflow.data.brew.model.ProfileStep
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.ScaleReadingSource
 import app.geeflow.data.device.MaintenanceSettingsRepository
 import app.geeflow.data.device.model.DeviceError
 import app.geeflow.data.device.model.DeviceState
@@ -51,7 +52,7 @@ class DeviceErrorGuardTest {
             { StartManualBrewingUseCase(coordinator, provider)(9) },
             { StartFreeVariableBrewingUseCase(coordinator, provider)(9, true) },
             { StartFreeVariableBrewingUseCase(coordinator, provider)(9, false) },
-            { StartProfileBrewingUseCase(provider, users, coordinator)(9, profile) },
+            { StartProfileBrewingUseCase(provider, users, coordinator, mockk<ScaleReadingSource>(relaxed = true))(9, profile) },
             { StartCleaningUseCase(coordinator, maintenance, provider)(9) },
             { SetFreeBrewFlowUseCase(coordinator, provider)(9, 2f) },
             { SetFreeBrewPressureUseCase(coordinator, provider)(9, 9f) },
@@ -128,7 +129,12 @@ class DeviceErrorGuardTest {
 
     @Test
     fun `when a fault is active then direct profile coordinator start rejects it`() = runTest {
-        val execution = ProfileExecutionCoordinator(provider, backgroundScope, mockk<ProfileExecutionRecorder>())
+        val execution = ProfileExecutionCoordinator(
+            provider,
+            mockk<ScaleReadingSource>(relaxed = true),
+            backgroundScope,
+            mockk<ProfileExecutionRecorder>(),
+        )
         state.value = state.value.copy(error = DeviceError(258))
 
         val result = runCatching { execution.start(9, profile) }

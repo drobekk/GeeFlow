@@ -31,7 +31,6 @@ import app.geeflow.platform.getThemeProvider
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.AppThemeChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.CustomColorChanged
-import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.CustomColorConfirmed
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DarkModeChanged
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.DialogDismissed
 import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSettingsEvent.PaletteStyleChanged
@@ -40,7 +39,7 @@ import app.geeflow.presentation.feature.user.settings.appearance.AppearanceSetti
 import app.geeflow.presentation.feature.user.settings.appearance.titleRes
 import app.geeflow.ui.components.GeeFlowDialog
 import app.geeflow.ui.components.GeeFlowDialogTopBar
-import app.geeflow.ui.components.GeeFlowInputPad
+import app.geeflow.ui.components.GeeFlowSettingOptions
 import app.geeflow.ui.components.VerticalSpacer
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -62,6 +61,7 @@ internal fun AppearanceDialogs(
     currentAppTheme: AppTheme,
     currentPaletteStyle: AppPaletteStyle,
     currentCustomSeedColor: Int,
+    currentScreensaverTimeout: Int,
     onEvent: (AppearanceSettingsEvent) -> Unit,
 ) {
     when (dialog) {
@@ -93,13 +93,13 @@ internal fun AppearanceDialogs(
             CustomColorDialog(
                 initialColor = Color(currentCustomSeedColor),
                 onColorChanged = { onEvent(CustomColorChanged(it.toArgb())) },
-                onColorConfirmed = { onEvent(CustomColorConfirmed(it.toArgb())) },
                 onDismiss = { onEvent(DialogDismissed) },
             )
         }
 
         Dialog.ScreensaverTimeout -> {
             ScreensaverTimeoutDialog(
+                current = currentScreensaverTimeout,
                 onTimeoutConfirmed = { onEvent(ScreensaverTimeoutConfirmed(it)) },
                 onDismiss = { onEvent(DialogDismissed) },
             )
@@ -109,36 +109,20 @@ internal fun AppearanceDialogs(
     }
 }
 
-private const val MinScreensaverTimeoutMinutes = 1f
-private const val MaxScreensaverTimeoutMinutes = 60f
-
 @Composable
 private fun ScreensaverTimeoutDialog(
+    current: Int,
     onTimeoutConfirmed: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    GeeFlowDialog(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .padding(24.dp)
-                .wrapContentWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(Res.string.user_settings_appearance_screensaver_timeout),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            VerticalSpacer(16.dp)
-            GeeFlowInputPad(
-                valueRange = MinScreensaverTimeoutMinutes..MaxScreensaverTimeoutMinutes,
-                unit = stringResource(Res.string.user_settings_appearance_screensaver_unit_minutes),
-                allowDecimal = false,
-                onConfirm = { onTimeoutConfirmed(it.toInt()) },
-                onBack = onDismiss,
-            )
-        }
-    }
+    GeeFlowSettingOptions(
+        title = stringResource(Res.string.user_settings_appearance_screensaver_timeout),
+        options = (1..60).map(Int::toString),
+        current = current.toFloat(),
+        unit = stringResource(Res.string.user_settings_appearance_screensaver_unit_minutes),
+        onSelect = { onTimeoutConfirmed(it.toInt()) },
+        onDismiss = onDismiss,
+    )
 }
 
 @Composable
@@ -193,17 +177,12 @@ private fun PaletteStyleDialog(
 private fun CustomColorDialog(
     initialColor: Color,
     onColorChanged: (Color) -> Unit,
-    onColorConfirmed: (Color) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val controller = rememberColorPickerController()
-    var selectedColor by remember { mutableStateOf(initialColor) }
 
     GeeFlowDialog(
-        onDismissRequest = {
-            onColorChanged(initialColor)
-            onDismiss()
-        },
+        onDismissRequest = onDismiss,
     ) {
         Column(
             modifier = Modifier
@@ -213,10 +192,7 @@ private fun CustomColorDialog(
         ) {
             GeeFlowDialogTopBar(
                 title = stringResource(Res.string.user_settings_appearance_custom_color),
-                onCloseClick = {
-                    onColorChanged(initialColor)
-                    onDismiss()
-                },
+                onCloseClick = onDismiss,
             )
             HsvColorPicker(
                 modifier = Modifier
@@ -227,19 +203,11 @@ private fun CustomColorDialog(
                 initialColor = initialColor,
                 onColorChanged = { envelope ->
                     if (envelope.fromUser) {
-                        selectedColor = envelope.color.copy(alpha = 1f)
-                        onColorChanged(selectedColor)
+                        onColorChanged(envelope.color.copy(alpha = 1f))
                     }
                 },
             )
-            VerticalSpacer(24.dp)
-            Button(
-                onClick = { onColorConfirmed(selectedColor) },
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text(stringResource(CoreRes.string.common_confirm))
-            }
-            VerticalSpacer(8.dp)
+
         }
     }
 }

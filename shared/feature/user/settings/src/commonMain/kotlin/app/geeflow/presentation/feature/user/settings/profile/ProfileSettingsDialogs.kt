@@ -3,6 +3,8 @@ package app.geeflow.presentation.feature.user.settings.profile
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
@@ -64,7 +66,11 @@ private fun RenameDialog(
     onDismiss: () -> Unit,
 ) {
     val nameState = rememberTextFieldState(initialText = currentName)
-    GeeFlowDialog(onDismissRequest = onDismiss) {
+    val finish = {
+        val name = nameState.text.toString().trim()
+        if (name.isNotEmpty() && name != currentName) onConfirm(name) else onDismiss()
+    }
+    GeeFlowDialog(onDismissRequest = finish) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -73,23 +79,18 @@ private fun RenameDialog(
         ) {
             GeeFlowDialogTopBar(
                 title = stringResource(Res.string.user_settings_profile_rename_title),
-                onCloseClick = onDismiss,
+                onCloseClick = finish,
             )
             VerticalSpacer(16.dp)
             GeeFlowOutlinedTextField(
                 state = nameState,
                 lineLimits = TextFieldLineLimits.SingleLine,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                onKeyboardAction = { finish() },
                 label = { Text(stringResource(Res.string.user_settings_profile_rename_name_hint)) },
                 modifier = Modifier.fillMaxWidth(),
             )
-            VerticalSpacer(24.dp)
-            Button(
-                onClick = { onConfirm(nameState.text.toString()) },
-                enabled = nameState.text.isNotBlank(),
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text(stringResource(CoreRes.string.common_confirm))
-            }
+
         }
     }
 }

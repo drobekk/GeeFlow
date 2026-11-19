@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Aviso de nível baixo de água</string>
     <string name="device_water_alarm_error">Nível de água baixo. Encha o reservatório.</string>
     <string name="device_dashboard_connecting">Conectando…</string>
-    <string name="device_settings_connectivity_smart_scale">Balança inteligente</string>
     <string name="device_settings_connectivity_smart_scale_description">Buscar balanças inteligentes próximas</string>
     <string name="device_settings_connectivity_searching">Buscando dispositivos compatíveis…</string>
     <string name="device_settings_connectivity_not_found">Não encontrou seu dispositivo?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Toque longo como purga</string>
     <string name="device_settings_treat_manual_as_flush_description">Sem histórico ou gráfico</string>
     <string name="device_settings_connectivity_enable_search">Ativar busca</string>
-    <string name="device_settings_connectivity_single_dose_description">Buscar moedores próximos</string>
     <string name="device_settings_connectivity_disabled_info">Ative a busca para encontrar e conectar um dispositivo.</string>
     <string name="device_settings_connectivity_connection_help">Não foi possível conectar. Verifique se o acessório está ligado e próximo e tente novamente. Se necessário, reinicie a máquina de café.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Ative o anel de controlo. Em alguns ambientes podem ocorrer interferências ocasionais.</string>
     <string name="device_settings_firmware_version">Firmware: %1$d</string>

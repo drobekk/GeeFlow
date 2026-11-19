@@ -17,7 +17,6 @@
     <string name="device_settings_maintenance_water_alarm_description">Varoitus alhaisesta vedenpinnasta</string>
     <string name="device_water_alarm_error">Vesi vähissä. Täytä vesisäiliö.</string>
     <string name="device_dashboard_connecting">Yhdistetään…</string>
-    <string name="device_settings_connectivity_smart_scale">Älyvaaka</string>
     <string name="device_settings_connectivity_smart_scale_description">Etsi lähellä olevia älyvaakoja</string>
     <string name="device_settings_connectivity_searching">Etsitään yhteensopivia laitteita…</string>
     <string name="device_settings_connectivity_not_found">Etkö löydä laitettasi?</string>
@@ -34,10 +33,8 @@
     <string name="device_settings_treat_manual_as_flush">Vivun pitkä painallus huuhteluna</string>
     <string name="device_settings_treat_manual_as_flush_description">Ei historiaa tai käyrää</string>
     <string name="device_settings_connectivity_enable_search">Ota haku käyttöön</string>
-    <string name="device_settings_connectivity_single_dose_description">Etsi lähellä olevia myllyjä</string>
     <string name="device_settings_connectivity_disabled_info">Ota haku käyttöön löytääksesi ja yhdistääksesi laitteen.</string>
     <string name="device_settings_connectivity_connection_help">Yhdistäminen epäonnistui. Varmista, että lisälaite on päällä ja lähellä, ja yritä uudelleen. Käynnistä kahvikone tarvittaessa uudelleen.</string>
-    <string name="device_settings_connectivity_single_dose">Single dose</string>
     <string name="device_settings_agile_ring">Agile Ring</string>
     <string name="device_settings_agile_ring_description">Ota ohjausrengas käyttöön. Joissakin ympäristöissä voi esiintyä satunnaisia häiriöitä.</string>
     <string name="device_settings_firmware_version">Laiteohjelmisto: %1$d</string>

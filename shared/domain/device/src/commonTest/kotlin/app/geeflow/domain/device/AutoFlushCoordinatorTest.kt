@@ -7,6 +7,9 @@ import app.geeflow.data.device.DeviceBrewingControl
 import app.geeflow.data.device.DeviceBrewingSettingsRepository
 import app.geeflow.data.device.DeviceController
 import app.geeflow.data.device.DeviceControllerProvider
+import app.geeflow.data.device.BookooScalePacketEvent
+import app.geeflow.data.device.BookooScaleState
+import app.geeflow.data.device.ScaleReadingSource
 import app.geeflow.data.device.impl.controller.DemoDeviceController
 import app.geeflow.data.device.model.DeviceBrewingSettings
 import app.geeflow.data.device.model.DeviceState
@@ -16,6 +19,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -318,7 +322,11 @@ class AutoFlushCoordinatorTest {
             override fun getBrewDataPoints(id: Long) = emptyMap<Float, BrewDataPoint>()
             override fun deleteBrew(id: Long) = Unit
         }
-        val execution = ProfileExecutionCoordinator(provider, scope, ProfileExecutionRecorder(history))
+        val scale = object : ScaleReadingSource {
+            override val state = MutableStateFlow(BookooScaleState())
+            override val packets = MutableSharedFlow<BookooScalePacketEvent>()
+        }
+        val execution = ProfileExecutionCoordinator(provider, scale, scope, ProfileExecutionRecorder(history))
         val coordinator = AutoFlushCoordinator(
             settingsRepository = repository,
             provider = provider,

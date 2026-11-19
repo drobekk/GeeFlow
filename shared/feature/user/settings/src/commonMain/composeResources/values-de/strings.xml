@@ -22,7 +22,7 @@
     <string name="user_settings_appearance">Darstellung &amp; Anzeige</string>
     <string name="user_settings_appearance_description">Design, Sprache und Bildschirm</string>
     <string name="user_settings_about">Über</string>
-    <string name="user_settings_about_description">AGB, Datenschutz, Lizenzen und Version</string>
+    <string name="user_settings_about_description">App-Version und Lizenzen</string>
     <string name="user_settings_appearance_title">Darstellung &amp; Anzeige</string>
     <string name="user_settings_appearance_dark_mode">Erscheinungsbild</string>
     <string name="user_settings_appearance_dark_mode_system">Systemstandard</string>
@@ -63,12 +63,6 @@
     <string name="user_settings_brewing_restore_default_profiles_description">Brühprofile auf Werkseinstellungen zurücksetzen</string>
     <string name="user_settings_brewing_restore_default_profiles_confirmation">Setzt alle Brühprofile zurück. Kann nicht rückgängig gemacht werden.</string>
     <string name="user_settings_about_title">Über</string>
-    <string name="user_settings_about_terms">AGB</string>
-    <string name="user_settings_about_terms_description">Nutzungsbedingungen und Sicherheitshinweise</string>
-    <string name="user_settings_about_privacy_policy">Datenschutzerklärung</string>
-    <string name="user_settings_about_privacy_policy_description">Erfahre, was erfasst wird und warum</string>
-    <string name="user_settings_about_source_code">Quellcode</string>
-    <string name="user_settings_about_source_code_description">Code ansehen, Fehler melden auf GitHub</string>
     <string name="user_settings_about_licenses">Open-Source-Lizenzen</string>
     <string name="user_settings_about_licenses_description">Lizenzinformationen zu Drittsoftware</string>
     <string name="user_settings_about_version">Version</string>

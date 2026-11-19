@@ -40,6 +40,7 @@ class DevicesDao(database: AppDatabase) {
                 version = device.version,
                 modelId = device.modelId,
                 modelSource = device.modelSource,
+                serialNumber = device.serialNumber,
             )
             id = dbQuery.lastInsertRowId().executeAsOne()
         }
@@ -61,6 +62,19 @@ class DevicesDao(database: AppDatabase) {
 
     fun updateName(id: Long, name: String) {
         dbQuery.updateName(name, id)
+    }
+
+    fun updateDefaultIdentity(id: Long, device: Device) {
+        dbQuery.updateDefaultIdentity(
+            name = device.name,
+            manufacturer = device.manufacturer,
+            model = device.model,
+            version = device.version,
+            modelId = device.modelId,
+            modelSource = device.modelSource,
+            serialNumber = device.serialNumber,
+            id = id,
+        )
     }
 
     fun bindProfile(deviceId: Long, profileId: Long) {
@@ -100,6 +114,7 @@ class DevicesDao(database: AppDatabase) {
         boundProfileId: Long?,
         modelId: String?,
         modelSource: String?,
+        serialNumber: String?,
     ): Device = Device(
         id = id,
         name = name,
@@ -111,6 +126,7 @@ class DevicesDao(database: AppDatabase) {
         boundProfileId = boundProfileId,
         modelId = modelId,
         modelSource = modelSource,
+        serialNumber = serialNumber,
     )
 
     private fun connectionFromColumns(

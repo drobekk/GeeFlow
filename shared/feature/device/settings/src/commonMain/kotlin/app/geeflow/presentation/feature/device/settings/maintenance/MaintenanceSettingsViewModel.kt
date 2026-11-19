@@ -17,6 +17,9 @@ import co.touchlab.kermit.Logger
 import geeflow.shared.core.ui.generated.resources.Res
 import geeflow.shared.core.ui.generated.resources.common_settings_applied
 import geeflow.shared.core.ui.generated.resources.error_generic
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.InjectedParam
@@ -34,6 +37,7 @@ internal class MaintenanceSettingsViewModel(
 ) : BaseViewModel<MaintenanceSettingsViewState, MaintenanceSettingsViewModelEvent>(MaintenanceSettingsViewState()) {
     private var savedSettings: MaintenanceSettings? = null
     private var savedWaterAlarm = false
+    private var saveJob: Job? = null
 
     init {
         launch {
@@ -58,16 +62,20 @@ internal class MaintenanceSettingsViewModel(
     }
 
     fun handleEvent(event: MaintenanceSettingsEvent) {
-        if (viewState.value.applyButtonLoading) return
+        if (event == MaintenanceSettingsEvent.CloseClicked) {
+            navigate(NavEvent.Back)
+            return
+        }
+        if (savedSettings == null) return
         when (event) {
             is MaintenanceSettingsEvent.CleaningTimeChanged -> edit(event.type) { copy(timeSec = event.timeSec) }
             is MaintenanceSettingsEvent.CleaningRestChanged -> edit(event.type) { copy(restSec = event.standbySec) }
             is MaintenanceSettingsEvent.CleaningCountChanged -> edit(event.type) { copy(count = event.count) }
             is MaintenanceSettingsEvent.WaterAlarmToggled -> modify { copy(waterAlarm = event.enabled).withChanges() }
             is MaintenanceSettingsEvent.ReminderChanged -> edit(event.type) { copy(reminder = event.reminder) }
-            MaintenanceSettingsEvent.ApplyClicked -> save()
-            MaintenanceSettingsEvent.CloseClicked -> navigate(NavEvent.Back)
+            MaintenanceSettingsEvent.CloseClicked -> Unit
         }
+        save()
     }
 
     private fun edit(
@@ -84,20 +92,35 @@ internal class MaintenanceSettingsViewModel(
     }
 
     private fun save() {
-        if (savedSettings == null) return
-        modify { copy(applyButtonLoading = true) }
-        launchCatching(onError = { error ->
+        if (saveJob?.isActive == true || !viewState.value.applyButtonVisible) return
+        saveJob = launchCatching(onError = { error ->
             Logger.e(error) { "Error saving maintenance settings" }
-            modify { copy(applyButtonLoading = false) }
+            savedSettings?.let { saved ->
+                modify {
+                    copy(
+                        cleaning = cleaning.withProgram(saved.daily, saved.dailyReminder),
+                        deepCleaning = deepCleaning.withProgram(saved.deep, saved.deepReminder),
+                        waterAlarm = savedWaterAlarm,
+                    ).withChanges()
+                }
+            }
             launch { emitEvent(MaintenanceSettingsViewModelEvent.ShowSnackbar(getString(Res.string.error_generic))) }
         }) {
-            val draft = viewState.value
-            setWaterAlarm(arguments.deviceId, draft.waterAlarm)
-            saveMaintenance(arguments.deviceId, draft.toSettings())
-            savedSettings = draft.toSettings()
-            savedWaterAlarm = draft.waterAlarm
-            modify { copy(applyButtonLoading = false, applyButtonVisible = false) }
-            emitEvent(MaintenanceSettingsViewModelEvent.ShowSnackbar(getString(Res.string.common_settings_applied)))
+            withContext(NonCancellable) {
+                while (viewState.value.applyButtonVisible) {
+                    val draft = viewState.value
+                    if (draft.waterAlarm != savedWaterAlarm) {
+                        setWaterAlarm(arguments.deviceId, draft.waterAlarm)
+                        savedWaterAlarm = draft.waterAlarm
+                    }
+                    val settings = draft.toSettings()
+                    if (settings != savedSettings) {
+                        saveMaintenance(arguments.deviceId, settings)
+                        savedSettings = settings
+                    }
+                    modify { withChanges() }
+                }
+            }
         }
     }
 

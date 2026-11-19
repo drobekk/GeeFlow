@@ -1,0 +1,6 @@
+CREATE TABLE pending_brew_profile_deletions (
+  userId INTEGER NOT NULL,
+  profileId INTEGER NOT NULL,
+  PRIMARY KEY (userId, profileId),
+  FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+);

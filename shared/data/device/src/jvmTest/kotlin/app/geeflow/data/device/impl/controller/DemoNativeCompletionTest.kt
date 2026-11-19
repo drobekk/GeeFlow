@@ -60,6 +60,54 @@ class DemoNativeCompletionTest {
         assertEquals(BrewStatus.Idle, controller.deviceState.value.brewStatus)
     }
 
+    @Test
+    fun `second demo shot publishes fresh zero telemetry and resets the timer`() = runTest {
+        val controller = DemoDeviceController(scope = backgroundScope)
+        controller.profiles.startProfileBrewing(profile(null))
+        delay(1500)
+        controller.profiles.stopProfileBrewing()
+        val oldTime = controller.deviceState.value.telemetryTime
+        delay(300000)
+        controller.profiles.startProfileBrewing(profile(null))
+        val start = controller.deviceState.value
+        assertEquals(0, start.time)
+        assertEquals(0f, start.pressure)
+        assertEquals(0f, start.flowRate)
+        assertEquals(start.statusTime, start.telemetryTime)
+        assertTrue(requireNotNull(start.telemetryTime) >= requireNotNull(oldTime))
+    }
+
+    @Test
+    fun `zero duration manual flush runs until explicitly stopped`() = runTest {
+        val controller = connectedDemo()
+        controller.settings.setManualBrewTime(0f)
+        controller.brewing.startManualBrewing()
+        delay(10000)
+        assertEquals(BrewStatus.Manual, controller.deviceState.value.brewStatus)
+        controller.brewing.stopManualBrewing()
+        assertEquals(BrewStatus.Idle, controller.deviceState.value.brewStatus)
+    }
+
+    @Test
+    fun `timed manual flush stops at its configured duration`() = runTest {
+        val controller = connectedDemo()
+        controller.settings.setManualBrewTime(5f)
+        controller.brewing.startManualBrewing()
+        delay(4000)
+        assertEquals(BrewStatus.Manual, controller.deviceState.value.brewStatus)
+        delay(2000)
+        assertEquals(BrewStatus.Idle, controller.deviceState.value.brewStatus)
+    }
+
+    private suspend fun kotlinx.coroutines.test.TestScope.connectedDemo(): DemoDeviceController {
+        val controller = DemoDeviceController(scope = backgroundScope)
+        controller.connection.connect(app.geeflow.data.device.model.Device(
+            name = "Demo",
+            connection = app.geeflow.data.device.model.DeviceConnection.Ble("demo", "demo"),
+        ))
+        return controller
+    }
+
     private fun profile(condition: Condition?) = BrewProfile(
         userId = 1,
         name = "Native completion",

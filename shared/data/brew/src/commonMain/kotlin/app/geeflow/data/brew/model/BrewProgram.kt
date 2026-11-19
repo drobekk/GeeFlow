@@ -10,11 +10,20 @@ sealed interface BrewProgram {
 
     @Serializable
     @SerialName("phases")
-    data class Phases(val phases: List<BrewPhase>, override val version: Int = 1) : BrewProgram
+    data class Phases(
+        val phases: List<BrewPhase>, override val version: Int = 1,
+        val execution: ExecutionPolicy = ExecutionPolicy(),
+        val recipe: RecipeDefinition? = null,
+    ) : BrewProgram
 
     @Serializable
     @SerialName("recording")
-    data class Recording(val recording: FreeHandRecording, override val version: Int = 1) : BrewProgram
+    data class Recording(
+        val recording: FreeHandRecording, override val version: Int = 1,
+        val execution: ExecutionPolicy = ExecutionPolicy(),
+        val originalRecording: FreeHandRecording? = null,
+        val replayPolicy: ReplayPolicy = ReplayPolicy.Legacy,
+    ) : BrewProgram
 }
 
 @Serializable
@@ -28,6 +37,22 @@ data class BrewPhase(
     /** PhaseTime thresholds use seconds. */
     val exitConditions: List<ExitCondition> = emptyList(),
     val conditionOperator: ConditionOperator = ConditionOperator.Or,
+    val adaptiveFlowProbe: AdaptiveFlowProbe? = null,
+    val targetSource: TargetSource? = null,
+    val entryCaptures: List<CaptureAction> = emptyList(),
+    val exitCaptures: List<CaptureAction> = emptyList(),
+    val secondaryLimit: SecondaryLimit? = null,
+    val temperatureC: Float? = null,
+    val stabilityDurationMillis: Long = 0,
+
+)
+
+/** Probe a rising flow target, then hold the fastest measured flow below a pressure ceiling. */
+@Serializable
+data class AdaptiveFlowProbe(
+    val samplingDurationMillis: Long,
+    val pressureCeilingBar: Float,
+    val flowBackoffMillilitresPerSecond: Float = 0.1f,
 )
 
 @Serializable
@@ -57,7 +82,7 @@ sealed interface PhaseControl {
     PhaseTime
 }
 
-@Serializable enum class ThresholdComparison { Above, Below }
+@Serializable enum class ThresholdComparison { Above, Below, StrictlyAbove, StrictlyBelow }
 
 @Serializable
 data class ExitCondition(
@@ -78,6 +103,7 @@ data class PhaseRamp(
     val style: RampStyle = RampStyle.Instant,
     val durationMillis: Long = 0,
     val start: RampStart = RampStart.PreviousTarget,
+    val source: TargetSource? = null,
 ) {
     fun fraction(elapsedMillis: Long): Float {
         if (style == RampStyle.Instant || durationMillis == 0L) return 1f
@@ -107,16 +133,66 @@ fun List<ProfileStep>.toProgram(): BrewProgram.Phases = BrewProgram.Phases(
 )
 
 fun BrewProgram.validate() {
-    require(version == 1) { "Unsupported program version: $version" }
+    require(version in 1..2) { "Unsupported program version: $version" }
+    val policy = when (this) { is BrewProgram.Phases -> execution; is BrewProgram.Recording -> execution }
+    require(version == 2 || policy.maximumTotalDurationMillis == 40000L)
+    require(policy.maximumTotalDurationMillis in 1..40000) { "Live total deadline may not exceed 40 seconds" }
     when (this) {
-        is BrewProgram.Recording -> recording.playbackPoints()
+        is BrewProgram.Recording -> {
+            recording.playbackPoints()
+            originalRecording?.playbackPoints()
+            require(version == 2 || (originalRecording == null && replayPolicy == ReplayPolicy.Legacy))
+        }
         is BrewProgram.Phases -> {
             require(phases.isNotEmpty()) { "The program needs a phase" }
             require(phases.map { it.id }.distinct().size == phases.size) { "Duplicate phase IDs" }
+            require(version == 2 || recipe == null)
+            recipe?.let { definition ->
+                require(definition.templateId.isNotBlank() && definition.source.sha256.matches(Regex("[a-fA-F0-9]{64}")))
+                require(definition.source.format.isNotBlank())
+                listOf(definition.settings.doseG, definition.settings.ratio, definition.settings.targetYieldG).forEach { value -> require(value == null || (value.isFinite() && value > 0)) }
+                require(definition.settings.effectiveYieldG == null || definition.settings.effectiveYieldG?.isFinite() == true)
+                BrewProgram.Phases(definition.templatePhases, version = 2).validate()
+            }
+            val captures = mutableSetOf<String>()
             phases.forEach { phase ->
+                require(phase.stabilityDurationMillis in 0..phase.maximumDurationMillis)
+                require(phase.temperatureC == null || (phase.temperatureC.isFinite() && phase.temperatureC in 0f..130f))
+                require(version == 2 || (phase.targetSource == null && phase.ramp.source == null && phase.entryCaptures.isEmpty() && phase.exitCaptures.isEmpty() && phase.secondaryLimit == null && phase.temperatureC == null && phase.stabilityDurationMillis == 0L))
+                fun validateCaptures(actions: List<CaptureAction>) {
+                    actions.forEach { action ->
+                        require(action.name.isNotBlank() && action.metric != BrewMetric.PhaseTime)
+                        require(action.windowMillis in 0..10000 && action.maximumAgeMillis in 1..10000)
+                        require(action.minimum.isFinite() && action.maximum.isFinite() && action.minimum >= 0 && action.minimum <= action.maximum)
+                        require(action.fallback == null || (action.fallback.isFinite() && action.fallback in action.minimum..action.maximum))
+                        require(captures.add(action.name)) { "Duplicate capture: ${action.name}" }
+                    }
+                }
+                validateCaptures(phase.entryCaptures)
+                phase.targetSource?.validateSource(captures)
+                phase.ramp.source?.validateSource(captures)
+                phase.secondaryLimit?.let { limit ->
+                    require((phase.control is PhaseControl.Flow && limit.metric == BrewMetric.PumpPressure) ||
+                        (phase.control is PhaseControl.Pressure && limit.metric == BrewMetric.PumpFlow))
+                    require(limit.minimum == null || (limit.minimum.isFinite() && limit.minimum >= 0 && limit.minimum < limit.ceiling))
+                    require(limit.ceiling.isFinite() && limit.ceiling > 0 && limit.hysteresis.isFinite() && limit.hysteresis >= 0 && limit.hysteresis < limit.ceiling)
+                    require(limit.reductionPerSecond.isFinite() && limit.reductionPerSecond > 0 && limit.recoveryPerSecond.isFinite() && limit.recoveryPerSecond >= 0)
+                    require(limit.overshootAllowance.isFinite() && limit.overshootAllowance >= 0 && limit.tripDurationMillis in 1..10000)
+                }
+                validateCaptures(phase.exitCaptures)
                 require(phase.maximumDurationMillis > 0 && phase.minimumDurationMillis in 0..phase.maximumDurationMillis)
                 require(phase.ramp.durationMillis in 0..phase.maximumDurationMillis)
                 require(phase.control != PhaseControl.PumpPause || phase.ramp.style == RampStyle.Instant)
+                phase.adaptiveFlowProbe?.let { probe ->
+                    require(phase.control is PhaseControl.Flow)
+                    require(probe.samplingDurationMillis in 1..phase.maximumDurationMillis)
+                    require(phase.ramp.style != RampStyle.Instant && phase.ramp.durationMillis >= probe.samplingDurationMillis)
+                    require(probe.pressureCeilingBar.isFinite() && probe.pressureCeilingBar > 0f)
+                    require(
+                        probe.flowBackoffMillilitresPerSecond.isFinite() &&
+                            probe.flowBackoffMillilitresPerSecond >= 0f,
+                    )
+                }
                 val value = when (val control = phase.control) {
                     is PhaseControl.Pressure -> control.bar
                     is PhaseControl.Flow -> control.millilitresPerSecond
@@ -141,7 +217,8 @@ private fun ExitCondition.hasValidScope(): Boolean = scope == MeasurementScope.T
 /** A single time condition has a known deadline even when a longer safety limit is configured. */
 fun BrewPhase.plannedDurationMillis(): Long {
     val time = exitConditions.singleOrNull()?.takeIf {
-        it.metric == BrewMetric.PhaseTime && it.comparison == ThresholdComparison.Above
+        it.metric == BrewMetric.PhaseTime &&
+            it.comparison in setOf(ThresholdComparison.Above, ThresholdComparison.StrictlyAbove)
     } ?: return maximumDurationMillis
     return minOf(
         maximumDurationMillis,

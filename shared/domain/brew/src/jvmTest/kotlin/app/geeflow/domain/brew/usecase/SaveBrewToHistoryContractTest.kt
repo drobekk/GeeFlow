@@ -62,12 +62,15 @@ class SaveBrewToHistoryContractTest {
             history.addBrew(
                 BrewHistoryEntry(
                     userId = 7,
+                    deviceId = 9,
                     profileId = 3,
                     profileName = "Shot",
                     mode = BrewMode.Profile,
                     startedAt = Instant.fromEpochSeconds(100),
                     durationSeconds = 30,
-                    profileSteps = profile.steps
+                    profileSteps = profile.steps,
+                    endedAt = Instant.fromEpochSeconds(100),
+                    finalWeightGrams = 36f,
                 ),
                 session.dataPoints
             )

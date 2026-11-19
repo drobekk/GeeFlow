@@ -1,0 +1,26 @@
+[Unit]
+Description=GeeFlow profile library API
+After=network.target
+
+[Service]
+Type=simple
+User=geeflow-profile-library
+Group=geeflow-profile-library
+EnvironmentFile=/etc/geeflow-profile-library.env
+ExecStart=/usr/bin/python3 /opt/geeflow-profile-library/server.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/geeflow-profile-library
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target
